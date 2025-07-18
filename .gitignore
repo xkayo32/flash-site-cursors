@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+build/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Laravel specific
+/bootstrap/cache/*
+/storage/*.key
+/storage/app/*
+/storage/framework/*
+/storage/logs/*
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+# Frontend specific
+.vite/
+*.local
+
+# Testing
+coverage/
+.nyc_output/
+
+# OS files
+Thumbs.db
+
+# Claude settings (keep)
+!.claude/
