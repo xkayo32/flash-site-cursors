@@ -22,18 +22,25 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Permitir Composer rodar como root (apenas para desenvolvimento)
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 # Definir diretório de trabalho
 WORKDIR /var/www/html
 
-# Copiar arquivos do projeto
+# Copiar arquivos do projeto (se existirem)
 COPY . .
 
-# Instalar dependências do Laravel
-RUN composer install
+# Criar estrutura básica se não existir composer.json
+RUN if [ ! -f "composer.json" ]; then \
+        composer create-project laravel/laravel . --prefer-dist; \
+    else \
+        composer install; \
+    fi
 
 # Dar permissões
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage
+    && if [ -d "storage" ]; then chmod -R 755 /var/www/html/storage; fi
 
 # Expor porta
 EXPOSE 8000
