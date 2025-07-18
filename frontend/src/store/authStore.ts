@@ -6,6 +6,12 @@ interface User {
   name: string;
   email: string;
   role: 'student' | 'admin' | 'instructor';
+  avatar?: string;
+  subscription?: {
+    plan: string;
+    expiresAt: string;
+    status: 'active' | 'expired' | 'cancelled';
+  };
 }
 
 interface AuthState {
