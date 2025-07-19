@@ -211,7 +211,7 @@ export default function HomePage() {
                 { href: "#features", label: "Funcionalidades", icon: BookOpen },
                 { href: "#courses", label: "Cursos", icon: GraduationCap },
                 { href: "#testimonials", label: "Depoimentos", icon: Users },
-                { href: "#pricing", label: "Preços", icon: CreditCard }
+                { href: "/checkout", label: "Preços", icon: CreditCard }
               ].map((item, index) => (
                 <motion.a
                   key={item.href}
@@ -276,15 +276,15 @@ export default function HomePage() {
                   Entrar
                 </motion.button>
               </Link>
-              <Link to="/register">
+              <Link to="/checkout?plan=price_monthly_premium">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl"
                 >
                   <Rocket className="w-5 h-5" />
-                  <span className="hidden sm:inline">Começar Agora</span>
-                  <span className="sm:hidden">Começar</span>
+                  <span className="hidden sm:inline">Assinar Agora</span>
+                  <span className="sm:hidden">Assinar</span>
                 </motion.button>
               </Link>
               
@@ -325,14 +325,14 @@ export default function HomePage() {
               variants={fadeInUp}
               className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
             >
-              <Link to="/register">
+              <Link to="/checkout?plan=price_monthly_premium">
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
                   whileTap={{ scale: 0.95 }}
                   className="group flex items-center gap-3 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white text-lg font-bold px-8 py-4 rounded-2xl shadow-xl transition-all duration-300"
                 >
                   <Rocket className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-                  Começar Gratuitamente
+                  Assinar Agora
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </motion.button>
               </Link>
@@ -654,9 +654,9 @@ export default function HomePage() {
               Junte-se a milhares de candidatos que já escolheram a StudyPro para realizar seus sonhos
             </motion.p>
             <motion.div variants={fadeInUp}>
-              <Link to="/register">
+              <Link to="/checkout">
                 <Button size="lg" className="bg-accent-500 hover:bg-accent-600 text-lg px-8 py-4">
-                  Começar Agora - Grátis
+                  Escolher Plano
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>

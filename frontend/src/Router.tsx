@@ -6,6 +6,7 @@ import { Layout } from './components/layout/Layout';
 import HomePage from './pages/public/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import CheckoutPage from './pages/public/CheckoutPage';
 
 // Páginas protegidas
 import DashboardPage from './pages/student/DashboardPage';
@@ -24,6 +25,7 @@ import LegislationPage from './pages/student/LegislationPage';
 import TacticalPanelPage from './pages/student/TacticalPanelPage';
 import SubscriptionPage from './pages/student/SubscriptionPage';
 import SettingsPage from './pages/student/SettingsPage';
+import PaymentSettingsPage from './pages/student/PaymentSettingsPage';
 
 // Páginas do Admin
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -73,6 +75,7 @@ function Router() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/checkout" element={<CheckoutPage />} />
       <Route path="/course/:id" element={<CourseDetailsPage />} />
       
       {/* Rotas de learning e exames sem layout padrão */}
@@ -121,6 +124,7 @@ function Router() {
         <Route path="/tactical" element={<TacticalPanelPage />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/payment-settings" element={<PaymentSettingsPage />} />
       </Route>
       
       {/* Rotas do Admin */}
