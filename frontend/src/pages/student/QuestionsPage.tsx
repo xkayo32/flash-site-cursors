@@ -895,20 +895,47 @@ export default function QuestionsPage() {
                   </div>
                   
                   {/* Lista de questões selecionadas */}
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {questions
-                      .filter(q => selectedQuestions.includes(q.id))
-                      .map((q, idx) => (
-                        <div key={q.id} className="flex items-center gap-2 text-sm">
-                          <span className="text-gray-500">{idx + 1}.</span>
-                          <Badge variant="secondary" className="text-xs">
-                            {q.subject}
-                          </Badge>
-                          <span className="text-gray-700 truncate flex-1">
-                            {q.question}
-                          </span>
-                        </div>
-                      ))}
+                  <div className="relative">
+                    <div className="border border-gray-200 rounded-lg p-3 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    {selectedQuestions.length > 0 ? (
+                      <div className="space-y-2">
+                        {questions
+                          .filter(q => selectedQuestions.includes(q.id))
+                          .map((q, idx) => (
+                            <div key={q.id} className="flex items-start gap-2 text-sm pb-2 border-b border-gray-100 last:border-0 last:pb-0">
+                              <span className="text-gray-500 font-medium min-w-[20px]">{idx + 1}.</span>
+                              <div className="flex-1 space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="secondary" className="text-xs">
+                                    {q.subject}
+                                  </Badge>
+                                  <Badge 
+                                    className={cn(
+                                      "text-xs",
+                                      q.difficulty === 'Fácil' && "bg-green-100 text-green-700",
+                                      q.difficulty === 'Médio' && "bg-yellow-100 text-yellow-700",
+                                      q.difficulty === 'Difícil' && "bg-red-100 text-red-700"
+                                    )}
+                                  >
+                                    {q.difficulty}
+                                  </Badge>
+                                </div>
+                                <p className="text-gray-700 line-clamp-2">
+                                  {q.question}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    ) : (
+                      <p className="text-center text-gray-500 py-8">
+                        Nenhuma questão selecionada
+                      </p>
+                    )}
+                    </div>
+                    {selectedQuestions.length > 3 && (
+                      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none rounded-b-lg" />
+                    )}
                   </div>
                 </div>
                 
