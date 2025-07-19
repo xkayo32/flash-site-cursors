@@ -1,11 +1,4 @@
 import { useState } from 'react';
-import {
-  Elements,
-  CardElement,
-  useStripe,
-  useElements
-} from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
 import { motion } from 'framer-motion';
 import {
   CreditCard,
@@ -17,25 +10,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-
-// Initialize Stripe (use your publishable key)
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_...');
-
-const CARD_ELEMENT_OPTIONS = {
-  style: {
-    base: {
-      fontSize: '16px',
-      color: '#424770',
-      '::placeholder': {
-        color: '#aab7c4',
-      },
-    },
-    invalid: {
-      color: '#9e2146',
-    },
-  },
-  hidePostalCode: true,
-};
 
 interface CheckoutFormProps {
   plan: {
@@ -50,8 +24,6 @@ interface CheckoutFormProps {
 }
 
 function CheckoutForm({ plan, onSuccess, onError }: CheckoutFormProps) {
-  const stripe = useStripe();
-  const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [paymentSucceeded, setPaymentSucceeded] = useState(false);
@@ -66,77 +38,71 @@ function CheckoutForm({ plan, onSuccess, onError }: CheckoutFormProps) {
       country: 'BR'
     }
   });
+  const [cardInfo, setCardInfo] = useState({
+    number: '',
+    expiry: '',
+    cvc: '',
+    name: ''
+  });
+
+  const formatCardNumber = (value: string) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = matches && matches[0] || '';
+    const parts = [];
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+    if (parts.length) {
+      return parts.join(' ');
+    } else {
+      return v;
+    }
+  };
+
+  const formatExpiry = (value: string) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    if (v.length >= 2) {
+      return v.substring(0, 2) + '/' + v.substring(2, 4);
+    }
+    return v;
+  };
+
+  const handleCardChange = (field: string, value: string) => {
+    let formattedValue = value;
+    
+    if (field === 'number') {
+      formattedValue = formatCardNumber(value);
+    } else if (field === 'expiry') {
+      formattedValue = formatExpiry(value);
+    } else if (field === 'cvc') {
+      formattedValue = value.replace(/[^0-9]/g, '').substring(0, 4);
+    }
+    
+    setCardInfo(prev => ({
+      ...prev,
+      [field]: formattedValue
+    }));
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!stripe || !elements) {
+    if (!customerInfo.name || !customerInfo.email || !cardInfo.number) {
+      setErrorMessage('Por favor, preencha todos os campos obrigatórios');
       return;
     }
 
     setIsProcessing(true);
     setErrorMessage(null);
 
-    const cardElement = elements.getElement(CardElement);
-
-    if (!cardElement) {
-      setErrorMessage('Erro ao carregar o formulário de pagamento');
-      setIsProcessing(false);
-      return;
-    }
-
     try {
-      // Create payment method
-      const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-        billing_details: {
-          name: customerInfo.name,
-          email: customerInfo.email,
-          address: customerInfo.address,
-        },
-      });
-
-      if (paymentMethodError) {
-        throw new Error(paymentMethodError.message);
-      }
-
-      // In a real application, you would send the payment method to your backend
-      // to create a payment intent or subscription
+      // Mock payment processing - replace with real Stripe integration
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Mock success for demo purposes
-      setTimeout(() => {
-        setPaymentSucceeded(true);
-        setIsProcessing(false);
-        onSuccess?.(paymentMethod);
-      }, 2000);
-
-      // Example of what you would do in a real application:
-      /*
-      const response = await fetch('/api/create-subscription', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          payment_method: paymentMethod.id,
-          price_id: plan.id,
-          customer_info: customerInfo,
-        }),
-      });
-
-      const { client_secret } = await response.json();
-
-      const { error: confirmError } = await stripe.confirmCardPayment(client_secret);
-
-      if (confirmError) {
-        throw new Error(confirmError.message);
-      }
-
+      // Simulate success
       setPaymentSucceeded(true);
-      onSuccess?.(paymentMethod);
-      */
-
+      onSuccess?.({ id: 'mock_payment_intent' });
     } catch (error: any) {
       setErrorMessage(error.message || 'Erro ao processar pagamento');
       onError?.(error.message);
@@ -259,7 +225,6 @@ function CheckoutForm({ plan, onSuccess, onError }: CheckoutFormProps) {
               <option value="RJ">Rio de Janeiro</option>
               <option value="MG">Minas Gerais</option>
               <option value="RS">Rio Grande do Sul</option>
-              {/* Add more states */}
             </select>
           </div>
           
@@ -288,17 +253,72 @@ function CheckoutForm({ plan, onSuccess, onError }: CheckoutFormProps) {
           Informações de Pagamento
         </h3>
         
-        <div className="p-4 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900">
-          <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-            Cartão de Crédito *
-          </label>
-          <CardElement options={CARD_ELEMENT_OPTIONS} />
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
+              Número do Cartão *
+            </label>
+            <input
+              type="text"
+              required
+              value={cardInfo.number}
+              onChange={(e) => handleCardChange('number', e.target.value)}
+              placeholder="1234 5678 9012 3456"
+              maxLength={19}
+              className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
+                Validade *
+              </label>
+              <input
+                type="text"
+                required
+                value={cardInfo.expiry}
+                onChange={(e) => handleCardChange('expiry', e.target.value)}
+                placeholder="MM/AA"
+                maxLength={5}
+                className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
+                CVC *
+              </label>
+              <input
+                type="text"
+                required
+                value={cardInfo.cvc}
+                onChange={(e) => handleCardChange('cvc', e.target.value)}
+                placeholder="123"
+                maxLength={4}
+                className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
+              Nome no Cartão *
+            </label>
+            <input
+              type="text"
+              required
+              value={cardInfo.name}
+              onChange={(e) => handleCardChange('name', e.target.value)}
+              placeholder="João Silva"
+              className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white"
+            />
+          </div>
         </div>
 
         <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
           <Shield className="w-5 h-5 text-blue-600" />
           <p className="text-sm text-blue-700 dark:text-blue-300">
-            Pagamento seguro processado pelo Stripe. Seus dados são protegidos com criptografia SSL.
+            Pagamento seguro. Em ambiente de produção, seria processado pelo Stripe com criptografia SSL.
           </p>
         </div>
       </div>
@@ -320,7 +340,7 @@ function CheckoutForm({ plan, onSuccess, onError }: CheckoutFormProps) {
       {/* Submit Button */}
       <Button
         type="submit"
-        disabled={!stripe || isProcessing}
+        disabled={isProcessing}
         className="w-full gap-2 py-3"
         size="lg"
       >
@@ -332,13 +352,13 @@ function CheckoutForm({ plan, onSuccess, onError }: CheckoutFormProps) {
         ) : (
           <>
             <Lock className="w-5 h-5" />
-            Assinar por R$ {plan.price.toFixed(2)}/{plan.interval === 'month' ? 'mês' : 'ano'}
+            Simular Pagamento R$ {plan.price.toFixed(2)}/{plan.interval === 'month' ? 'mês' : 'ano'}
           </>
         )}
       </Button>
 
       <p className="text-xs text-center text-primary-600 dark:text-gray-400">
-        Ao continuar, você concorda com nossos Termos de Serviço e Política de Privacidade.
+        Esta é uma simulação. Em produção, o pagamento seria processado pelo Stripe de forma segura.
       </p>
     </form>
   );
@@ -352,41 +372,39 @@ interface StripeCheckoutProps {
 
 export default function StripeCheckout({ plan, onSuccess, onError }: StripeCheckoutProps) {
   return (
-    <Elements stripe={stripePromise}>
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Finalizar Assinatura - {plan.name}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Plan Summary */}
-          <div className="mb-6 p-4 bg-primary-50 dark:bg-gray-800 rounded-lg">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-semibold text-primary-900 dark:text-white">
-                {plan.name}
-              </h4>
-              <span className="text-2xl font-bold text-primary-900 dark:text-white">
-                R$ {plan.price.toFixed(2)}
-                <span className="text-sm font-normal text-primary-600 dark:text-gray-400">
-                  /{plan.interval === 'month' ? 'mês' : 'ano'}
-                </span>
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <CreditCard className="w-5 h-5" />
+          Finalizar Assinatura - {plan.name}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* Plan Summary */}
+        <div className="mb-6 p-4 bg-primary-50 dark:bg-gray-800 rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-semibold text-primary-900 dark:text-white">
+              {plan.name}
+            </h4>
+            <span className="text-2xl font-bold text-primary-900 dark:text-white">
+              R$ {plan.price.toFixed(2)}
+              <span className="text-sm font-normal text-primary-600 dark:text-gray-400">
+                /{plan.interval === 'month' ? 'mês' : 'ano'}
               </span>
-            </div>
-            <ul className="space-y-1 text-sm text-primary-700 dark:text-gray-300">
-              {plan.features.map((feature, index) => (
-                <li key={index} className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
+            </span>
           </div>
+          <ul className="space-y-1 text-sm text-primary-700 dark:text-gray-300">
+            {plan.features.map((feature, index) => (
+              <li key={index} className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                {feature}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-          <CheckoutForm plan={plan} onSuccess={onSuccess} onError={onError} />
-        </CardContent>
-      </Card>
-    </Elements>
+        <CheckoutForm plan={plan} onSuccess={onSuccess} onError={onError} />
+      </CardContent>
+    </Card>
   );
 }
