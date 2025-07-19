@@ -116,29 +116,38 @@ export default function AdminLayout() {
         {/* Sidebar */}
         <motion.aside
           initial={{ x: -250 }}
-          animate={{ x: 0 }}
+          animate={{ 
+            x: 0,
+            width: isCollapsed ? 80 : 256 
+          }}
           className={`${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } lg:translate-x-0 fixed lg:relative z-20 ${
-            isCollapsed ? 'w-16' : 'w-64'
-          } h-full bg-primary-900 dark:bg-gray-800 transition-all duration-300`}
+          } lg:translate-x-0 fixed lg:relative z-20 h-full bg-primary-900 dark:bg-gray-800 transition-transform duration-300`}
+          style={{ overflow: 'hidden' }}
         >
           <div className="flex flex-col h-full">
             {/* Logo */}
-            <div className={`${isCollapsed ? 'p-3' : 'p-6'} border-b border-primary-800 dark:border-gray-700 hidden lg:block transition-all duration-300`}>
-              {isCollapsed ? (
-                <div className="flex justify-center">
-                  <Logo variant="icon" size="sm" theme="dark" />
-                </div>
-              ) : (
-                <>
-                  <Logo variant="full" size="md" theme="dark" />
-                  <div className="mt-3 flex items-center gap-2 text-primary-300">
+            <div className="p-6 border-b border-primary-800 dark:border-gray-700 hidden lg:block">
+              <div className={isCollapsed ? "flex justify-center" : "flex flex-col"}>
+                <Logo 
+                  variant={isCollapsed ? "icon" : "full"} 
+                  size={isCollapsed ? "sm" : "md"} 
+                  theme="dark" 
+                  className="flex-shrink-0"
+                />
+                {!isCollapsed && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2, delay: 0.1 }}
+                    className="mt-3 flex items-center gap-2 text-primary-300"
+                  >
                     <Shield className="w-4 h-4" />
                     <span className="text-sm font-medium">Painel Administrativo</span>
-                  </div>
-                </>
-              )}
+                  </motion.div>
+                )}
+              </div>
             </div>
 
             {/* User Info */}
@@ -147,52 +156,68 @@ export default function AdminLayout() {
                 <img
                   src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}&background=14242f&color=fff`}
                   alt={user?.name}
-                  className="w-10 h-10 rounded-full"
+                  className="w-10 h-10 rounded-full flex-shrink-0"
                 />
                 {!isCollapsed && (
-                  <div>
-                    <p className="text-sm font-medium text-white">
+                  <motion.div 
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: "auto" }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex-1 min-w-0"
+                  >
+                    <p className="text-sm font-medium text-white truncate">
                       {user?.name}
                     </p>
-                    <p className="text-xs text-primary-400">
+                    <p className="text-xs text-primary-400 truncate">
                       Administrador
                     </p>
-                  </div>
+                  </motion.div>
                 )}
               </div>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 p-4">
+            <nav className={`flex-1 ${isCollapsed ? 'px-2 py-4 overflow-hidden' : 'p-4 overflow-y-auto'}`}>
               <ul className="space-y-2">
                 {adminNavItems.map((item) => {
                   const isActive = location.pathname === item.path;
                   return (
                     <li key={item.path}>
-                      <Link
-                        to={item.path}
-                        onClick={() => setIsSidebarOpen(false)}
-                        className={`relative flex items-center ${
-                          isCollapsed ? 'justify-center px-4 py-3' : 'gap-3 px-4 py-3'
-                        } rounded-lg transition-all group ${
-                          isActive
-                            ? 'bg-primary-800 dark:bg-gray-700 text-white'
-                            : 'text-primary-300 hover:bg-primary-800 dark:hover:bg-gray-700 hover:text-white'
-                        }`}
-                        title={isCollapsed ? item.title : undefined}
-                      >
-                        <item.icon className="w-5 h-5" />
-                        {!isCollapsed && (
-                          <span className="font-medium">{item.title}</span>
-                        )}
+                      <div className="relative group">
+                        <Link
+                          to={item.path}
+                          onClick={() => setIsSidebarOpen(false)}
+                          className={`flex items-center rounded-lg transition-all ${
+                            isActive
+                              ? 'bg-primary-800 dark:bg-gray-700 text-white shadow-lg'
+                              : 'text-primary-300 hover:bg-primary-800 dark:hover:bg-gray-700 hover:text-white'
+                          } ${
+                            isCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-4 py-3'
+                          }`}
+                        >
+                          <item.icon className="w-5 h-5 flex-shrink-0" />
+                          {!isCollapsed && (
+                            <motion.span 
+                              initial={{ opacity: 0, width: 0 }}
+                              animate={{ opacity: 1, width: "auto" }}
+                              exit={{ opacity: 0, width: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="font-medium whitespace-nowrap overflow-hidden"
+                            >
+                              {item.title}
+                            </motion.span>
+                          )}
+                        </Link>
                         
                         {/* Tooltip for collapsed state */}
                         {isCollapsed && (
-                          <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-primary-800 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 border border-primary-600">
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-primary-800"></div>
                             {item.title}
                           </div>
                         )}
-                      </Link>
+                      </div>
                     </li>
                   );
                 })}
@@ -200,55 +225,93 @@ export default function AdminLayout() {
             </nav>
 
             {/* Footer Actions */}
-            <div className="p-4 border-t border-primary-800 dark:border-gray-700 space-y-2">
-              <Button
-                variant="ghost"
-                className={`w-full ${
-                  isCollapsed ? 'justify-center px-3' : 'justify-start gap-2'
-                } text-primary-300 hover:text-white hover:bg-primary-800 dark:hover:bg-gray-700 relative group`}
-                onClick={handleBackToStudent}
-                title={isCollapsed ? 'Voltar ao Portal' : undefined}
-              >
-                <ChevronLeft className="w-4 h-4" />
-                {!isCollapsed && <span>Voltar ao Portal</span>}
+            <div className={`border-t border-primary-800 dark:border-gray-700 space-y-1 ${isCollapsed ? 'px-2 py-4' : 'p-4'}`}>
+              <div className="relative group">
+                <Button
+                  variant="ghost"
+                  className={`w-full flex items-center rounded-lg transition-all text-primary-300 hover:text-white hover:bg-primary-800 dark:hover:bg-gray-700 ${
+                    isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-start gap-3 px-3 py-2.5'
+                  }`}
+                  onClick={handleBackToStudent}
+                >
+                  <ChevronLeft className="w-5 h-5 flex-shrink-0" />
+                  {!isCollapsed && (
+                    <motion.span 
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="font-medium whitespace-nowrap overflow-hidden"
+                    >
+                      Voltar ao Portal
+                    </motion.span>
+                  )}
+                </Button>
                 {isCollapsed && (
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-primary-800 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 border border-primary-600">
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-primary-800"></div>
                     Voltar ao Portal
                   </div>
                 )}
-              </Button>
-              <Button
-                variant="ghost"
-                className={`w-full ${
-                  isCollapsed ? 'justify-center px-3' : 'justify-start gap-2'
-                } text-primary-300 hover:text-white hover:bg-primary-800 dark:hover:bg-gray-700 relative group`}
-                onClick={() => navigate('/admin/settings')}
-                title={isCollapsed ? 'Configurações' : undefined}
-              >
-                <Settings className="w-4 h-4" />
-                {!isCollapsed && <span>Configurações</span>}
+              </div>
+
+              <div className="relative group">
+                <Button
+                  variant="ghost"
+                  className={`w-full flex items-center rounded-lg transition-all text-primary-300 hover:text-white hover:bg-primary-800 dark:hover:bg-gray-700 ${
+                    isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-start gap-3 px-3 py-2.5'
+                  }`}
+                  onClick={() => navigate('/admin/settings')}
+                >
+                  <Settings className="w-5 h-5 flex-shrink-0" />
+                  {!isCollapsed && (
+                    <motion.span 
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="font-medium whitespace-nowrap overflow-hidden"
+                    >
+                      Configurações
+                    </motion.span>
+                  )}
+                </Button>
                 {isCollapsed && (
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-primary-800 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 border border-primary-600">
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-primary-800"></div>
                     Configurações
                   </div>
                 )}
-              </Button>
-              <Button
-                variant="ghost"
-                className={`w-full ${
-                  isCollapsed ? 'justify-center px-3' : 'justify-start gap-2'
-                } text-red-400 hover:text-red-300 hover:bg-red-900/20 relative group`}
-                onClick={handleLogout}
-                title={isCollapsed ? 'Sair' : undefined}
-              >
-                <LogOut className="w-4 h-4" />
-                {!isCollapsed && <span>Sair</span>}
+              </div>
+
+              <div className="relative group">
+                <Button
+                  variant="ghost"
+                  className={`w-full flex items-center rounded-lg transition-all text-red-400 hover:text-red-300 hover:bg-red-600 ${
+                    isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-start gap-3 px-3 py-2.5'
+                  }`}
+                  onClick={handleLogout}
+                >
+                  <LogOut className="w-5 h-5 flex-shrink-0" />
+                  {!isCollapsed && (
+                    <motion.span 
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="font-medium whitespace-nowrap overflow-hidden"
+                    >
+                      Sair
+                    </motion.span>
+                  )}
+                </Button>
                 {isCollapsed && (
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-red-800 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 border border-red-600">
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-red-800"></div>
                     Sair
                   </div>
                 )}
-              </Button>
+              </div>
             </div>
           </div>
         </motion.aside>
