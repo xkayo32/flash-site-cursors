@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronUp,
   Eye,
+  EyeOff,
   Download,
   Share2,
   Bookmark,
@@ -228,6 +229,7 @@ export default function SummariesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'reading'>('grid');
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
+  const [showFlashcardAnswers, setShowFlashcardAnswers] = useState<{ [key: string]: boolean }>({});
 
   // Filtrar resumos
   const filteredSummaries = mockSummaries.filter(summary => {
@@ -247,6 +249,14 @@ export default function SummariesPage() {
         ? prev.filter(id => id !== sectionId)
         : [...prev, sectionId]
     );
+  };
+
+  // Toggle resposta do flashcard
+  const toggleFlashcardAnswer = (flashcardId: string) => {
+    setShowFlashcardAnswers(prev => ({
+      ...prev,
+      [flashcardId]: !prev[flashcardId]
+    }));
   };
 
   // Card de resumo
@@ -496,13 +506,50 @@ export default function SummariesPage() {
                                     <p className="font-medium text-blue-900 mb-2">
                                       Flashcard
                                     </p>
-                                    <p className="text-blue-800">
-                                      {item.data.front}
-                                    </p>
-                                    <Button size="sm" variant="outline" className="mt-2">
-                                      <Eye className="w-4 h-4 mr-1" />
-                                      Ver resposta
-                                    </Button>
+                                    <div className="space-y-3">
+                                      <div>
+                                        <p className="text-sm font-medium text-blue-700 mb-1">Pergunta:</p>
+                                        <p className="text-blue-800">
+                                          {item.data.front}
+                                        </p>
+                                      </div>
+                                      
+                                      <AnimatePresence>
+                                        {showFlashcardAnswers[item.id] && (
+                                          <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                            className="border-t border-blue-200 pt-3"
+                                          >
+                                            <p className="text-sm font-medium text-blue-700 mb-1">Resposta:</p>
+                                            <p className="text-blue-800 bg-white/50 p-3 rounded">
+                                              {item.data.back}
+                                            </p>
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                      
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="w-full"
+                                        onClick={() => toggleFlashcardAnswer(item.id)}
+                                      >
+                                        {showFlashcardAnswers[item.id] ? (
+                                          <>
+                                            <EyeOff className="w-4 h-4 mr-1" />
+                                            Ocultar resposta
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Eye className="w-4 h-4 mr-1" />
+                                            Ver resposta
+                                          </>
+                                        )}
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
                               </CardContent>
