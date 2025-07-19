@@ -32,6 +32,7 @@ import ExamResultsPage from './pages/student/ExamResultsPage';
 import FlashcardsPage from './pages/student/FlashcardsPage';
 import SchedulePage from './pages/student/SchedulePage';
 import QuestionsPage from './pages/student/QuestionsPage';
+import SummariesPage from './pages/student/SummariesPage';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -96,13 +97,7 @@ function Router() {
         <Route path="/simulations" element={<SimuladosPage />} />
         <Route path="/flashcards" element={<FlashcardsPage />} />
         <Route path="/questions" element={<QuestionsPage />} />
-        <Route path="/summaries" element={
-          <UnderDevelopment 
-            title="Resumos Interativos" 
-            description="Conteúdo didático com flashcards e questões incorporados" 
-            icon={FileText}
-          />
-        } />
+        <Route path="/summaries" element={<SummariesPage />} />
         <Route path="/legislation" element={
           <UnderDevelopment 
             title="Legislação" 
