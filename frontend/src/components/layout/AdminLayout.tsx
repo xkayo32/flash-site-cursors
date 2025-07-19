@@ -14,7 +14,8 @@ import {
   Menu,
   X,
   Shield,
-  Upload
+  Upload,
+  Tag
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -67,6 +68,11 @@ const adminNavItems = [
     title: 'Importação em Massa',
     icon: Upload,
     path: '/admin/import'
+  },
+  {
+    title: 'Categorias',
+    icon: Tag,
+    path: '/admin/categories'
   }
 ];
 
