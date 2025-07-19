@@ -154,10 +154,54 @@ export default function DashboardPage() {
   ];
 
   const dailyGoals = [
-    { task: 'Resolver 50 questões', completed: 32, total: 50, icon: BookOpen },
-    { task: 'Revisar 30 flashcards', completed: 30, total: 30, icon: Brain },
-    { task: 'Estudar por 4 horas', completed: 2.5, total: 4, icon: Clock },
-    { task: 'Fazer 1 simulado', completed: 0, total: 1, icon: Trophy },
+    { 
+      task: 'Resolver 50 questões', 
+      completed: 32, 
+      total: 50, 
+      icon: BookOpen,
+      color: 'blue',
+      bgGradient: 'from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30',
+      borderColor: 'border-blue-200 dark:border-blue-700',
+      iconBg: 'bg-blue-100 dark:bg-blue-800/50',
+      iconColor: 'text-blue-600 dark:text-blue-400',
+      progressGradient: 'from-blue-400 to-blue-600'
+    },
+    { 
+      task: 'Revisar 30 flashcards', 
+      completed: 30, 
+      total: 30, 
+      icon: Brain,
+      color: 'purple',
+      bgGradient: 'from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30',
+      borderColor: 'border-purple-200 dark:border-purple-700',
+      iconBg: 'bg-purple-100 dark:bg-purple-800/50',
+      iconColor: 'text-purple-600 dark:text-purple-400',
+      progressGradient: 'from-purple-400 to-purple-600'
+    },
+    { 
+      task: 'Estudar por 4 horas', 
+      completed: 2.5, 
+      total: 4, 
+      icon: Clock,
+      color: 'amber',
+      bgGradient: 'from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30',
+      borderColor: 'border-amber-200 dark:border-amber-700',
+      iconBg: 'bg-amber-100 dark:bg-amber-800/50',
+      iconColor: 'text-amber-600 dark:text-amber-400',
+      progressGradient: 'from-amber-400 to-amber-600'
+    },
+    { 
+      task: 'Fazer 1 simulado', 
+      completed: 0, 
+      total: 1, 
+      icon: Trophy,
+      color: 'green',
+      bgGradient: 'from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30',
+      borderColor: 'border-green-200 dark:border-green-700',
+      iconBg: 'bg-green-100 dark:bg-green-800/50',
+      iconColor: 'text-green-600 dark:text-green-400',
+      progressGradient: 'from-green-400 to-green-600'
+    },
   ];
 
   const upcomingEvents = [
@@ -295,7 +339,7 @@ export default function DashboardPage() {
                   transition={{ delay: index * 0.1 }}
                   whileHover={{ y: -4, shadow: "0 10px 25px -3px rgba(0, 0, 0, 0.1)" }}
                 >
-                  <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary-500 bg-gradient-to-br from-white to-primary-50/30">
+                  <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary-500 bg-gradient-to-br from-white to-primary-50/30 dark:from-gray-800 dark:to-gray-800/50">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className={`p-3 rounded-xl ${stat.bgColor} shadow-sm`}>
@@ -376,7 +420,7 @@ export default function DashboardPage() {
             initial="hidden"
             animate="visible"
           >
-            <Card className="bg-gradient-to-br from-white to-primary-50/20 border-primary-200">
+            <Card className="bg-gradient-to-br from-white to-primary-50/20 dark:from-gray-800 dark:to-gray-800/50 border-primary-200 dark:border-gray-700">
               <CardHeader className="bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-white">
@@ -413,8 +457,8 @@ export default function DashboardPage() {
                       >
                         <div className={`p-4 rounded-xl border-2 transition-all duration-300 relative overflow-hidden ${
                           isCompleted 
-                            ? 'border-green-300 bg-gradient-to-br from-green-50 to-green-100 shadow-green-100' 
-                            : 'border-primary-200 bg-gradient-to-br from-white to-primary-50 hover:border-primary-300'
+                            ? `border-green-300 dark:border-green-600 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 shadow-green-100` 
+                            : `${goal.borderColor} bg-gradient-to-br ${goal.bgGradient} hover:shadow-lg`
                         } shadow-lg hover:shadow-xl`}>
                           {/* Efeito de confete para metas concluídas */}
                           {isCompleted && (
@@ -428,11 +472,11 @@ export default function DashboardPage() {
                           <div className="flex items-center gap-3 mb-3">
                             <div className={`p-2.5 rounded-xl transition-all ${
                               isCompleted 
-                                ? 'bg-green-200 shadow-md scale-110' 
-                                : 'bg-primary-100 hover:bg-primary-200'
+                                ? 'bg-green-200 dark:bg-green-800/70 shadow-md scale-110' 
+                                : goal.iconBg
                             }`}>
                               <Icon className={`w-5 h-5 ${
-                                isCompleted ? 'text-green-700' : 'text-primary-600'
+                                isCompleted ? 'text-green-700 dark:text-green-300' : goal.iconColor
                               }`} />
                             </div>
                             {isCompleted && (
@@ -456,8 +500,8 @@ export default function DashboardPage() {
                             </span>
                             <span className={`font-bold px-2 py-1 rounded-full text-xs ${
                               isCompleted 
-                                ? 'bg-green-200 text-green-800' 
-                                : 'bg-primary-100 text-primary-700'
+                                ? 'bg-green-200 dark:bg-green-800/70 text-green-800 dark:text-green-200' 
+                                : `${goal.iconBg} ${goal.iconColor}`
                             }`}>
                               {Math.round(progress)}%
                             </span>
@@ -472,7 +516,7 @@ export default function DashboardPage() {
                                 className={`h-full rounded-full transition-all ${
                                   isCompleted 
                                     ? 'bg-gradient-to-r from-green-400 to-green-600' 
-                                    : 'bg-gradient-to-r from-primary-400 to-primary-600'
+                                    : `bg-gradient-to-r ${goal.progressGradient}`
                                 }`}
                               />
                             </div>
@@ -484,7 +528,7 @@ export default function DashboardPage() {
                 </div>
                 
                 {/* Motivational message */}
-                <div className="mt-6 p-4 bg-gradient-to-r from-primary-50 to-accent-50 rounded-xl border border-primary-200">
+                <div className="mt-6 p-4 bg-gradient-to-r from-primary-50 to-accent-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-primary-200 dark:border-gray-700">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
                       <Flame className="w-5 h-5 text-primary-600" />
@@ -524,7 +568,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {editalProgress.map((materia, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800/50">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-medium text-primary-900">{materia.materia}</h4>
                     <div className="flex items-center gap-4">
@@ -532,14 +576,14 @@ export default function DashboardPage() {
                         {materia.concluido}/{materia.total} tópicos
                       </span>
                       <span className={`text-sm font-medium ${
-                        materia.porcentagem >= 75 ? 'text-green-600' :
-                        materia.porcentagem >= 50 ? 'text-yellow-600' : 'text-red-600'
+                        materia.porcentagem >= 75 ? 'text-green-600 dark:text-green-400' :
+                        materia.porcentagem >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {materia.porcentagem}%
                       </span>
                     </div>
                   </div>
-                  <div className="bg-gray-200 rounded-full h-2">
+                  <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all ${
                         materia.porcentagem >= 75 ? 'bg-green-500' :
@@ -550,21 +594,21 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 p-4 bg-gray-50 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 p-4 bg-gray-50 dark:bg-gray-800/30 rounded-lg">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {Math.round(editalProgress.reduce((acc, curr) => acc + curr.porcentagem, 0) / editalProgress.length)}%
                   </p>
                   <p className="text-sm text-primary-600">Progresso Geral</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-primary-600">
+                  <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
                     {editalProgress.reduce((acc, curr) => acc + curr.concluido, 0)}
                   </p>
                   <p className="text-sm text-primary-600">Tópicos Concluídos</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-orange-600">
+                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                     {editalProgress.reduce((acc, curr) => acc + (curr.total - curr.concluido), 0)}
                   </p>
                   <p className="text-sm text-primary-600">Tópicos Restantes</p>
@@ -577,7 +621,7 @@ export default function DashboardPage() {
 
       {/* Quick Actions melhorado */}
       <motion.div variants={itemVariants}>
-        <Card className="bg-gradient-to-br from-white to-primary-50/30 border-primary-200">
+        <Card className="bg-gradient-to-br from-white to-primary-50/30 dark:from-gray-800 dark:to-gray-800/50 border-primary-200 dark:border-gray-700">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-primary-900">
               <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
@@ -595,9 +639,9 @@ export default function DashboardPage() {
                   subtitle: "32/50 questões hoje",
                   color: "blue",
                   path: "/questions",
-                  bgGradient: "from-blue-50 to-blue-100",
-                  borderColor: "border-blue-200",
-                  hoverColor: "hover:border-blue-300"
+                  bgGradient: "from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30",
+                  borderColor: "border-blue-200 dark:border-blue-700",
+                  hoverColor: "hover:border-blue-300 dark:hover:border-blue-600"
                 },
                 {
                   icon: Brain,
@@ -605,9 +649,9 @@ export default function DashboardPage() {
                   subtitle: "15 cards para hoje",
                   color: "purple",
                   path: "/flashcards",
-                  bgGradient: "from-purple-50 to-purple-100",
-                  borderColor: "border-purple-200",
-                  hoverColor: "hover:border-purple-300"
+                  bgGradient: "from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30",
+                  borderColor: "border-purple-200 dark:border-purple-700",
+                  hoverColor: "hover:border-purple-300 dark:hover:border-purple-600"
                 },
                 {
                   icon: Trophy,
@@ -615,9 +659,9 @@ export default function DashboardPage() {
                   subtitle: "Teste seus conhecimentos",
                   color: "green",
                   path: "/simulations",
-                  bgGradient: "from-green-50 to-green-100",
-                  borderColor: "border-green-200",
-                  hoverColor: "hover:border-green-300"
+                  bgGradient: "from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30",
+                  borderColor: "border-green-200 dark:border-green-700",
+                  hoverColor: "hover:border-green-300 dark:hover:border-green-600"
                 },
                 {
                   icon: Calendar,
@@ -625,9 +669,9 @@ export default function DashboardPage() {
                   subtitle: "Planejar estudos",
                   color: "amber",
                   path: "/schedule",
-                  bgGradient: "from-amber-50 to-amber-100",
-                  borderColor: "border-amber-200",
-                  hoverColor: "hover:border-amber-300"
+                  bgGradient: "from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30",
+                  borderColor: "border-amber-200 dark:border-amber-700",
+                  hoverColor: "hover:border-amber-300 dark:hover:border-amber-600"
                 }
               ].map((action, index) => {
                 const Icon = action.icon;

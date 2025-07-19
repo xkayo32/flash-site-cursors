@@ -9,12 +9,18 @@ import {
   ArrowRight,
   Zap,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Users,
+  Sun,
+  Moon,
+  Monitor
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
+import { Logo } from '@/components/ui/Logo';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Componentes dos ícones das redes sociais
 const GoogleIcon = () => (
@@ -56,6 +62,7 @@ const fadeInUp = {
 export default function LoginPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -116,6 +123,26 @@ export default function LoginPage() {
 
         toast.success('Login realizado com sucesso!');
         navigate('/dashboard');
+      } else if (formData.email === 'admin@studypro.com' && formData.password === 'admin123') {
+        // Mock login como admin
+        setAuth(
+          {
+            id: '999',
+            name: 'Administrador',
+            email: formData.email,
+            role: 'admin',
+            avatar: `https://ui-avatars.com/api/?name=Admin&background=DC2626&color=fff`,
+            subscription: {
+              plan: 'Unlimited',
+              expiresAt: null,
+              status: 'active'
+            }
+          },
+          'fake-admin-token'
+        );
+
+        toast.success('Login administrativo realizado com sucesso!');
+        navigate('/admin/dashboard');
       } else {
         // Para outros emails, simular login normal
         setAuth(
@@ -151,8 +178,47 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
+      {/* Theme Selector */}
+      <div className="absolute top-4 right-4 z-10">
+        <div className="flex items-center gap-2 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg">
+          <button
+            onClick={() => setTheme('light')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'light' 
+                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Tema Claro"
+          >
+            <Sun className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setTheme('dark')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'dark' 
+                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Tema Escuro"
+          >
+            <Moon className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setTheme('system')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'system' 
+                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Seguir Sistema"
+          >
+            <Monitor className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       {/* Left Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-white">
+      <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-gray-900">
         <motion.div
           initial="initial"
           animate="animate"
@@ -163,16 +229,13 @@ export default function LoginPage() {
         >
           {/* Logo and Title */}
           <motion.div variants={fadeInUp} className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center">
-                <Zap className="w-7 h-7 text-white" />
-              </div>
-              <span className="text-3xl font-bold text-primary-900">StudyPro</span>
+            <div className="flex justify-center mb-6">
+              <Logo variant="icon" size="lg" animated={true} />
             </div>
-            <h1 className="text-2xl font-bold text-primary-900 mb-2">
+            <h1 className="text-2xl font-bold text-primary-900 dark:text-white mb-2">
               Bem-vindo de volta!
             </h1>
-            <p className="text-primary-600">
+            <p className="text-primary-600 dark:text-gray-300">
               Faça login para continuar seus estudos
             </p>
           </motion.div>
@@ -181,7 +244,7 @@ export default function LoginPage() {
           <motion.div variants={fadeInUp} className="space-y-3 mb-6">
             <Button
               variant="outline"
-              className="w-full h-12 text-left justify-start gap-3 border-gray-300 hover:border-primary-300"
+              className="w-full h-12 text-left justify-start gap-3 border-gray-300 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400 dark:bg-gray-800 dark:text-white"
               onClick={() => handleSocialLogin('google')}
             >
               <GoogleIcon />
@@ -190,7 +253,7 @@ export default function LoginPage() {
             
             <Button
               variant="outline"
-              className="w-full h-12 text-left justify-start gap-3 border-gray-300 hover:border-primary-300"
+              className="w-full h-12 text-left justify-start gap-3 border-gray-300 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400 dark:bg-gray-800 dark:text-white"
               onClick={() => handleSocialLogin('microsoft')}
             >
               <MicrosoftIcon />
@@ -201,21 +264,32 @@ export default function LoginPage() {
           {/* Divider */}
           <motion.div variants={fadeInUp} className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">ou continue com email</span>
+              <span className="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">ou continue com email</span>
             </div>
           </motion.div>
 
           {/* Test Credentials Info */}
-          <motion.div variants={fadeInUp} className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="text-sm text-blue-800">
-              <span className="font-semibold">Credenciais de teste:</span>
-              <br />
-              Email: <code className="bg-blue-100 px-1 rounded">teste@studypro.com</code>
-              <br />
-              Senha: <code className="bg-blue-100 px-1 rounded">123456</code>
+          <motion.div variants={fadeInUp} className="mb-4 space-y-2">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="text-sm text-blue-800 dark:text-blue-200">
+                <span className="font-semibold">Credenciais de teste (Aluno):</span>
+                <br />
+                Email: <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">teste@studypro.com</code>
+                <br />
+                Senha: <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">123456</code>
+              </div>
+            </div>
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div className="text-sm text-red-800 dark:text-red-200">
+                <span className="font-semibold">Credenciais de teste (Admin):</span>
+                <br />
+                Email: <code className="bg-red-100 dark:bg-red-800 px-1 rounded">admin@studypro.com</code>
+                <br />
+                Senha: <code className="bg-red-100 dark:bg-red-800 px-1 rounded">admin123</code>
+              </div>
             </div>
           </motion.div>
 
@@ -223,7 +297,7 @@ export default function LoginPage() {
           <motion.form variants={fadeInUp} onSubmit={handleSubmit} className="space-y-4">
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-primary-700 mb-2">
+              <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                 Email
               </label>
               <div className="relative">
@@ -231,7 +305,7 @@ export default function LoginPage() {
                 <input
                   type="email"
                   required
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition ${
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition dark:bg-gray-800 dark:border-gray-600 dark:text-white ${
                     errors.email ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="seu@email.com"
@@ -252,7 +326,7 @@ export default function LoginPage() {
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-primary-700 mb-2">
+              <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                 Senha
               </label>
               <div className="relative">
@@ -260,7 +334,7 @@ export default function LoginPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition ${
+                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition dark:bg-gray-800 dark:border-gray-600 dark:text-white ${
                     errors.password ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="••••••••"
@@ -293,13 +367,13 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={formData.rememberMe}
                   onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  className="w-4 h-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 dark:bg-gray-800"
                 />
-                <span className="text-sm text-primary-700">Lembrar de mim</span>
+                <span className="text-sm text-primary-700 dark:text-gray-300">Lembrar de mim</span>
               </label>
               <Link
                 to="/forgot-password"
-                className="text-sm text-primary-600 hover:text-primary-700 hover:underline"
+                className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:underline"
               >
                 Esqueceu a senha?
               </Link>
@@ -321,7 +395,7 @@ export default function LoginPage() {
             <span className="text-primary-600">Não tem uma conta? </span>
             <Link
               to="/register"
-              className="text-primary-600 font-medium hover:text-primary-700 hover:underline"
+              className="text-primary-600 dark:text-primary-400 font-medium hover:text-primary-700 dark:hover:text-primary-300 hover:underline"
             >
               Cadastre-se gratuitamente
             </Link>
@@ -336,66 +410,122 @@ export default function LoginPage() {
         </motion.div>
       </div>
 
-      {/* Right Side - Features */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white p-12 items-center">
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-lg"
-        >
-          <h2 className="text-4xl font-bold mb-6">
-            Sua aprovação está a um clique de distância
-          </h2>
-          <p className="text-xl text-primary-100 mb-8">
-            Junte-se a mais de 15.000 candidatos aprovados que escolheram a StudyPro
-          </p>
-
-          <div className="space-y-4">
-            {[
-              'Mais de 50.000 questões atualizadas',
-              'Flashcards com inteligência artificial',
-              'Simulados idênticos às provas reais',
-              'Cronograma personalizado com IA',
-              'Relatórios detalhados de desempenho'
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
-                className="flex items-center gap-3"
-              >
-                <div className="w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-primary-100">{feature}</span>
-              </motion.div>
-            ))}
-          </div>
-
+      {/* Right Side - New Courses */}
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full filter blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-60 h-60 bg-accent-500 rounded-full filter blur-3xl"></div>
+        </div>
+        
+        <div className="relative z-10 flex items-center justify-center w-full p-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.9 }}
-            className="mt-8 p-6 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="max-w-xl w-full"
           >
-            <div className="flex items-center gap-4 mb-3">
-              <img
-                src="https://ui-avatars.com/api/?name=Maria+Santos&background=14242f&color=fff"
-                alt="Maria Santos"
-                className="w-12 h-12 rounded-full"
-              />
-              <div>
-                <div className="font-semibold">Maria Santos</div>
-                <div className="text-sm text-primary-200">Aprovada PF - Agente</div>
-              </div>
+            {/* Header */}
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-center mb-10"
+            >
+              <h2 className="text-4xl font-bold mb-4">
+                🎯 Novos Cursos Disponíveis
+              </h2>
+              <p className="text-xl text-primary-100">
+                Materiais atualizados para os concursos mais aguardados
+              </p>
+            </motion.div>
+
+            {/* Course Cards */}
+            <div className="space-y-4">
+              {[
+                {
+                  title: 'Polícia Federal 2024',
+                  badge: 'NOVO',
+                  badgeColor: 'bg-green-500',
+                  students: '2.341',
+                  modules: '18 módulos',
+                  questions: '8.500+ questões',
+                  icon: '👮‍♂️'
+                },
+                {
+                  title: 'Receita Federal - Auditor',
+                  badge: 'ATUALIZADO',
+                  badgeColor: 'bg-blue-500',
+                  students: '1.856',
+                  modules: '22 módulos',
+                  questions: '12.300+ questões',
+                  icon: '💼'
+                },
+                {
+                  title: 'Tribunais - TRT/TRF',
+                  badge: 'EM ALTA',
+                  badgeColor: 'bg-orange-500',
+                  students: '987',
+                  modules: '15 módulos',
+                  questions: '6.700+ questões',
+                  icon: '⚖️'
+                }
+              ].map((course, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                  className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 hover:bg-white/15 transition-all duration-300 transform hover:scale-105"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{course.icon}</span>
+                      <div>
+                        <h3 className="font-bold text-lg">{course.title}</h3>
+                        <div className="flex items-center gap-4 text-sm text-primary-200 mt-1">
+                          <span className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            {course.students} alunos
+                          </span>
+                          <span>{course.modules}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <span className={`${course.badgeColor} text-white text-xs px-2 py-1 rounded-full font-bold`}>
+                      {course.badge}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-primary-300">{course.questions}</span>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="text-accent-400 hover:text-accent-300 transition-colors"
+                    >
+                      <ArrowRight className="w-5 h-5" />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-            <p className="text-primary-100 italic">
-              "A StudyPro foi essencial para minha aprovação. O sistema de estudos é realmente eficiente!"
-            </p>
+
+            {/* Bottom Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
+              className="mt-8 text-center"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent-500/20 rounded-full">
+                <Zap className="w-5 h-5 text-accent-400" />
+                <span className="text-accent-300 font-medium">
+                  +12 novos cursos este mês
+                </span>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

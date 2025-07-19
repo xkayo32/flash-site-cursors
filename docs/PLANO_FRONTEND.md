@@ -241,12 +241,12 @@ interface SpacedRepetition {
 ### 3.10 Painel Administrativo (Semana 7)
 
 #### Componentes
-- [ ] AdminDashboard
-- [ ] ContentManager
-- [ ] UserManager
+- [x] AdminDashboard
+- [x] ContentManager
+- [x] UserManager
 - [ ] CourseEditor
-- [ ] QuestionEditor
-- [ ] Analytics
+- [x] QuestionEditor
+- [x] Analytics
 
 #### Features
 - [ ] CRUD completo

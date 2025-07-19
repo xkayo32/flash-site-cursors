@@ -9,7 +9,7 @@ interface User {
   avatar?: string;
   subscription?: {
     plan: string;
-    expiresAt: string;
+    expiresAt: string | null;
     status: 'active' | 'expired' | 'cancelled';
   };
 }
@@ -20,6 +20,7 @@ interface AuthState {
   isAuthenticated: boolean;
   setAuth: (user: User, token: string) => void;
   logout: () => void;
+  clearAuth: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -33,6 +34,10 @@ export const useAuthStore = create<AuthState>()(
         set({ user, token, isAuthenticated: true });
       },
       logout: () => {
+        localStorage.removeItem('token');
+        set({ user: null, token: null, isAuthenticated: false });
+      },
+      clearAuth: () => {
         localStorage.removeItem('token');
         set({ user: null, token: null, isAuthenticated: false });
       },

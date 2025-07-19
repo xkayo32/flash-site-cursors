@@ -13,12 +13,20 @@ import {
   AlertCircle,
   Shield,
   TrendingUp,
-  Award
+  Award,
+  Users,
+  Star,
+  Sparkles,
+  Sun,
+  Moon,
+  Monitor
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
+import { Logo } from '@/components/ui/Logo';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Componentes dos ícones das redes sociais (reutilizados do LoginPage)
 const GoogleIcon = () => (
@@ -60,6 +68,7 @@ const fadeInUp = {
 export default function RegisterPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -151,8 +160,47 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex">
+      {/* Theme Selector */}
+      <div className="absolute top-4 right-4 z-10">
+        <div className="flex items-center gap-2 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg">
+          <button
+            onClick={() => setTheme('light')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'light' 
+                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Tema Claro"
+          >
+            <Sun className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setTheme('dark')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'dark' 
+                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Tema Escuro"
+          >
+            <Moon className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setTheme('system')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'system' 
+                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Seguir Sistema"
+          >
+            <Monitor className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       {/* Left Side - Register Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-white">
+      <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-gray-900">
         <motion.div
           initial="initial"
           animate="animate"
@@ -163,11 +211,8 @@ export default function RegisterPage() {
         >
           {/* Logo and Title */}
           <motion.div variants={fadeInUp} className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center">
-                <Zap className="w-7 h-7 text-white" />
-              </div>
-              <span className="text-3xl font-bold text-primary-900">StudyPro</span>
+            <div className="flex justify-center mb-6">
+              <Logo variant="icon" size="lg" animated={true} />
             </div>
             <h1 className="text-2xl font-bold text-primary-900 mb-2">
               Comece sua jornada
@@ -399,81 +444,97 @@ export default function RegisterPage() {
       </div>
 
       {/* Right Side - Benefits */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white p-12 items-center">
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-lg"
-        >
-          <h2 className="text-4xl font-bold mb-6">
-            Transforme seus estudos
-          </h2>
-          <p className="text-xl text-primary-100 mb-8">
-            Junte-se a mais de 15.000 candidatos que já descobriram o método mais eficiente de estudar
-          </p>
-
-          <div className="space-y-4">
-            {[
-              {
-                icon: Shield,
-                title: 'Método comprovado',
-                description: '98% de taxa de satisfação dos usuários'
-              },
-              {
-                icon: TrendingUp,
-                title: 'Evolução garantida',
-                description: 'Acompanhe seu progresso com analytics detalhados'
-              },
-              {
-                icon: Award,
-                title: 'Resultados reais',
-                description: 'Mais de 5.000 aprovações em 2024'
-              }
-            ].map((benefit, index) => {
-              const Icon = benefit.icon;
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
-                  className="flex items-start gap-4"
-                >
-                  <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <Icon className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white mb-1">{benefit.title}</h3>
-                    <p className="text-primary-100 text-sm">{benefit.description}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-accent-500 rounded-full filter blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-60 h-60 bg-white rounded-full filter blur-3xl"></div>
+        </div>
+        
+        <div className="relative z-10 flex items-center justify-center w-full p-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.9 }}
-            className="mt-8 p-6 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="max-w-xl w-full"
           >
-            <div className="flex items-center gap-4 mb-3">
-              <img
-                src="https://ui-avatars.com/api/?name=Carlos+Oliveira&background=14242f&color=fff"
-                alt="Carlos Oliveira"
-                className="w-12 h-12 rounded-full"
-              />
-              <div>
-                <div className="font-semibold">Carlos Oliveira</div>
-                <div className="text-sm text-primary-200">Aprovado TCU - Auditor</div>
-              </div>
+            {/* Header */}
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-center mb-10"
+            >
+              <h2 className="text-4xl font-bold mb-4">
+                ✨ Por que escolher a StudyPro?
+              </h2>
+              <p className="text-xl text-primary-100">
+                Veja o que nossos alunos conquistaram
+              </p>
+            </motion.div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              {[
+                { number: '15.000+', label: 'Alunos ativos', icon: Users },
+                { number: '5.432', label: 'Aprovações em 2024', icon: Award },
+                { number: '98%', label: 'Taxa de satisfação', icon: Star },
+                { number: '50.000+', label: 'Questões no banco', icon: Sparkles }
+              ].map((stat, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                  className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 text-center hover:bg-white/15 transition-all duration-300"
+                >
+                  <stat.icon className="w-8 h-8 mx-auto mb-2 text-accent-400" />
+                  <div className="text-2xl font-bold mb-1">{stat.number}</div>
+                  <div className="text-sm text-primary-200">{stat.label}</div>
+                </motion.div>
+              ))}
             </div>
-            <p className="text-primary-100 italic">
-              "O sistema de flashcards me fez memorizar toda a legislação. Incrível como funciona!"
-            </p>
+
+            {/* Benefits List */}
+            <div className="space-y-3">
+              {[
+                'Cronograma personalizado com IA',
+                'Simulados idênticos às provas',
+                'Flashcards inteligentes',
+                'Suporte direto com professores',
+                'Garantia de 7 dias'
+              ].map((benefit, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
+                  className="flex items-center gap-3"
+                >
+                  <div className="w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <CheckCircle className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-primary-100">{benefit}</span>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Bottom CTA */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1.2 }}
+              className="mt-8 text-center"
+            >
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-accent-500/20 rounded-full">
+                <Zap className="w-5 h-5 text-accent-400" />
+                <span className="text-accent-300 font-medium">
+                  Comece grátis por 7 dias
+                </span>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

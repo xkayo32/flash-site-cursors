@@ -18,16 +18,21 @@ import {
   Scale,
   Target,
   GraduationCap,
-  TrendingUp
+  TrendingUp,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Logo } from '@/components/ui/Logo';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
-  { icon: GraduationCap, label: 'Cursos', path: '/courses' },
+  { icon: BookOpen, label: 'Meus Cursos', path: '/my-courses' },
+  { icon: GraduationCap, label: 'Explorar Cursos', path: '/courses' },
   { icon: Calendar, label: 'Cronograma', path: '/schedule' },
   { icon: Trophy, label: 'Simulados', path: '/simulations' },
   { icon: Brain, label: 'Flashcards', path: '/flashcards' },
@@ -47,6 +52,7 @@ export function Sidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuthStore();
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleMobileSidebar = () => setIsMobileOpen(!isMobileOpen);
@@ -81,7 +87,7 @@ export function Sidebar() {
           width: isOpen ? 280 : 80,
         }}
         className={cn(
-          'lg:relative top-0 left-0 h-screen bg-primary-600 text-white z-40',
+          'lg:relative top-0 left-0 h-screen bg-primary-600 dark:bg-gray-800 text-white z-40',
           'flex flex-col transition-all duration-300 ease-in-out',
           'fixed lg:translate-x-0',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
@@ -89,32 +95,24 @@ export function Sidebar() {
         style={{ overflow: 'hidden' }}
       >
         {/* Header */}
-        <div className="p-4 border-b border-primary-500">
+        <div className="p-4 border-b border-primary-500 dark:border-gray-700">
           <div className={cn(
             "flex items-center",
             isOpen ? "justify-between" : "justify-center"
           )}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Zap className="w-6 h-6" />
-              </div>
-              {isOpen && (
-                <motion.span 
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: "auto" }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-xl font-bold whitespace-nowrap"
-                >
-                  StudyPro
-                </motion.span>
-              )}
+            <div className="flex items-center">
+              <Logo 
+                variant={isOpen ? "full" : "icon"} 
+                size="sm" 
+                animated={true} 
+                className="flex-shrink-0"
+              />
             </div>
             
             {isOpen && (
               <button
                 onClick={toggleSidebar}
-                className="hidden lg:block p-1.5 rounded-lg hover:bg-primary-500 transition-colors flex-shrink-0"
+                className="hidden lg:block p-1.5 rounded-lg hover:bg-primary-500 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
               >
                 <ChevronRight className="w-5 h-5 transition-transform" />
               </button>
@@ -123,7 +121,7 @@ export function Sidebar() {
             {!isOpen && (
               <button
                 onClick={toggleSidebar}
-                className="hidden lg:block absolute top-4 right-2 p-1.5 rounded-lg hover:bg-primary-500 transition-colors"
+                className="hidden lg:block absolute top-4 right-2 p-1.5 rounded-lg hover:bg-primary-500 dark:hover:bg-gray-700 transition-colors"
               >
                 <ChevronRight className="w-5 h-5 transition-transform rotate-180" />
               </button>
@@ -133,7 +131,7 @@ export function Sidebar() {
 
         {/* User Info */}
         {user && (
-          <div className="p-4 border-b border-primary-500">
+          <div className="p-4 border-b border-primary-500 dark:border-gray-700">
             <div className={cn(
               "flex items-center",
               isOpen ? "gap-3" : "justify-center"
@@ -275,6 +273,48 @@ export function Sidebar() {
               <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-red-800 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 border border-red-600">
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-red-800"></div>
                 Sair
+              </div>
+            )}
+          </div>
+
+          {/* Theme Toggle */}
+          <div className="relative group">
+            <button
+              onClick={() => {
+                const themes: ('light' | 'dark' | 'system')[] = ['light', 'dark', 'system'];
+                const currentIndex = themes.indexOf(theme);
+                const nextIndex = (currentIndex + 1) % themes.length;
+                setTheme(themes[nextIndex]);
+              }}
+              className={cn(
+                'w-full flex items-center rounded-lg transition-all text-left',
+                'hover:bg-primary-500 dark:hover:bg-gray-700',
+                isOpen ? 'gap-3 px-3 py-2.5' : 'justify-center px-2 py-2.5'
+              )}
+            >
+              {resolvedTheme === 'dark' ? (
+                <Moon className="w-5 h-5 flex-shrink-0" />
+              ) : (
+                <Sun className="w-5 h-5 flex-shrink-0" />
+              )}
+              {isOpen && (
+                <motion.span 
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="font-medium whitespace-nowrap overflow-hidden"
+                >
+                  {theme === 'light' ? 'Tema Claro' : theme === 'dark' ? 'Tema Escuro' : 'Sistema'}
+                </motion.span>
+              )}
+            </button>
+            
+            {/* Tooltip para menu minimizado */}
+            {!isOpen && (
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-primary-800 dark:bg-gray-700 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 border border-primary-700 dark:border-gray-600">
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-primary-800 dark:border-r-gray-700"></div>
+                Tema
               </div>
             )}
           </div>
