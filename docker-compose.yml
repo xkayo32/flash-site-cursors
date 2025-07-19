@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # Frontend React com Vite
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: estudos-frontend
+    ports:
+      - "5273:5173"  # Porta diferente (5273) para evitar conflitos
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - estudos-network
+
+  # Backend Laravel (PHP)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: estudos-backend
+    ports:
+      - "8180:8000"  # Porta diferente (8180) para evitar conflitos
+    volumes:
+      - ./backend:/var/www/html
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=estudos_db
+      - DB_USERNAME=estudos_user
+      - DB_PASSWORD=estudos_pass
+    depends_on:
+      - db
+      - redis
+    networks:
+      - estudos-network
+
+  # Banco de dados MySQL
+  db:
+    image: mysql:8.0
+    container_name: estudos-mysql
+    ports:
+      - "3406:3306"  # Porta diferente (3406) para evitar conflitos
+    environment:
+      - MYSQL_DATABASE=estudos_db
+      - MYSQL_USER=estudos_user
+      - MYSQL_PASSWORD=estudos_pass
+      - MYSQL_ROOT_PASSWORD=root_pass
+    volumes:
+      - estudos-mysql-data:/var/lib/mysql
+    networks:
+      - estudos-network
+
+  # Redis para cache e filas
+  redis:
+    image: redis:7-alpine
+    container_name: estudos-redis
+    ports:
+      - "6479:6379"  # Porta diferente (6479) para evitar conflitos
+    volumes:
+      - estudos-redis-data:/data
+    networks:
+      - estudos-network
+
+  # phpMyAdmin (opcional)
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: estudos-phpmyadmin
+    ports:
+      - "8280:80"  # Porta diferente (8280) para evitar conflitos
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+    depends_on:
+      - db
+    networks:
+      - estudos-network
+
+volumes:
+  estudos-mysql-data:
+  estudos-redis-data:
+
+networks:
+  estudos-network:
+    driver: bridge
