@@ -15,6 +15,7 @@ import {
   Download,
   ChevronRight,
   ChevronDown,
+  ChevronUp,
   AlertTriangle,
   CheckCircle,
   XCircle,
