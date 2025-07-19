@@ -27,6 +27,8 @@ import CourseDetailsPage from './pages/student/CourseDetailsPage';
 import MyCoursesPage from './pages/student/MyCoursesPage';
 import CourseLearningPage from './pages/student/CourseLearningPage';
 import SimuladosPage from './pages/student/SimuladosPage';
+import ExamTakingPage from './pages/student/ExamTakingPage';
+import ExamResultsPage from './pages/student/ExamResultsPage';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -50,12 +52,28 @@ function Router() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/course/:id" element={<CourseDetailsPage />} />
       
-      {/* Rota de learning sem layout padrão */}
+      {/* Rotas de learning e exames sem layout padrão */}
       <Route 
         path="/course/:courseId/learn" 
         element={
           <ProtectedRoute>
             <CourseLearningPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/simulations/:examId/take" 
+        element={
+          <ProtectedRoute>
+            <ExamTakingPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/simulations/:examId/results" 
+        element={
+          <ProtectedRoute>
+            <ExamResultsPage />
           </ProtectedRoute>
         } 
       />

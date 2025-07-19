@@ -30,6 +30,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
+import { Link } from 'react-router-dom';
 
 // Tipos
 interface MockExam {
@@ -362,10 +363,12 @@ export default function SimuladosPage() {
           )}
 
           {/* Botão de ação */}
-          <Button className="w-full gap-2">
-            <Play className="w-4 h-4" />
-            {exam.lastAttempt ? 'Tentar novamente' : 'Iniciar simulado'}
-          </Button>
+          <Link to={`/simulations/${exam.id}/take`}>
+            <Button className="w-full gap-2">
+              <Play className="w-4 h-4" />
+              {exam.lastAttempt ? 'Tentar novamente' : 'Iniciar simulado'}
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     </motion.div>
