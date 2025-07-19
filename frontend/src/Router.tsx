@@ -35,6 +35,7 @@ import QuestionsPage from './pages/student/QuestionsPage';
 import SummariesPage from './pages/student/SummariesPage';
 import LegislationPage from './pages/student/LegislationPage';
 import TacticalPanelPage from './pages/student/TacticalPanelPage';
+import SubscriptionPage from './pages/student/SubscriptionPage';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -102,13 +103,7 @@ function Router() {
         <Route path="/summaries" element={<SummariesPage />} />
         <Route path="/legislation" element={<LegislationPage />} />
         <Route path="/tactical" element={<TacticalPanelPage />} />
-        <Route path="/subscription" element={
-          <UnderDevelopment 
-            title="Gerenciar Assinatura" 
-            description="Visualizar, atualizar ou cancelar assinatura" 
-            icon={CreditCard}
-          />
-        } />
+        <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/settings" element={
           <UnderDevelopment 
             title="Configurações" 
