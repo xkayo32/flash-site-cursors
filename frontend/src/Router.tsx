@@ -30,6 +30,7 @@ import SimuladosPage from './pages/student/SimuladosPage';
 import ExamTakingPage from './pages/student/ExamTakingPage';
 import ExamResultsPage from './pages/student/ExamResultsPage';
 import FlashcardsPage from './pages/student/FlashcardsPage';
+import SchedulePage from './pages/student/SchedulePage';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -90,13 +91,7 @@ function Router() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/my-courses" element={<MyCoursesPage />} />
-        <Route path="/schedule" element={
-          <UnderDevelopment 
-            title="Cronograma Personalizado" 
-            description="Plano de estudos gerado por IA baseado na data da prova e edital" 
-            icon={Calendar}
-          />
-        } />
+        <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/simulations" element={<SimuladosPage />} />
         <Route path="/flashcards" element={<FlashcardsPage />} />
         <Route path="/questions" element={
