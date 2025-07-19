@@ -143,7 +143,7 @@ const mockFlashcards: Flashcard[] = [
       interval: 3,
       repetitions: 2,
       easeFactor: 2.2,
-      nextReview: '2024-01-21',
+      nextReview: '2024-01-19', // vencido
       lastReviewed: '2024-01-18',
       quality: 4
     },
@@ -166,7 +166,7 @@ const mockFlashcards: Flashcard[] = [
       interval: 1,
       repetitions: 1,
       easeFactor: 1.8,
-      nextReview: '2024-01-19',
+      nextReview: '2024-01-19', // vencido
       lastReviewed: '2024-01-18',
       quality: 2
     },
@@ -175,6 +175,75 @@ const mockFlashcards: Flashcard[] = [
       correctReviews: 1,
       streak: 0,
       averageTime: 18
+    }
+  },
+  {
+    id: '3',
+    front: 'O que é firewall e qual sua função?',
+    back: 'Firewall é um sistema de segurança que monitora e controla o tráfego de rede, permitindo ou bloqueando conexões baseado em regras de segurança predefinidas. Atua como uma barreira entre redes confiáveis e não confiáveis.',
+    subject: 'Informática',
+    tags: ['firewall', 'segurança', 'rede'],
+    difficulty: 'Fácil',
+    createdAt: '2024-01-12',
+    srsData: {
+      interval: 7,
+      repetitions: 3,
+      easeFactor: 2.5,
+      nextReview: '2024-01-20',
+      lastReviewed: '2024-01-13',
+      quality: 5
+    },
+    stats: {
+      totalReviews: 4,
+      correctReviews: 4,
+      streak: 4,
+      averageTime: 8
+    }
+  },
+  {
+    id: '4',
+    front: 'Explique a regra de concordância verbal com sujeito composto.',
+    back: 'Com sujeito composto anteposto ao verbo, o verbo vai para o plural. Ex: "João e Maria chegaram". Com sujeito composto posposto, o verbo pode concordar com o núcleo mais próximo ou ir para o plural. Ex: "Chegou João e Maria" ou "Chegaram João e Maria".',
+    subject: 'Português',
+    tags: ['concordância verbal', 'sujeito composto', 'gramática'],
+    difficulty: 'Médio',
+    createdAt: '2024-01-14',
+    srsData: {
+      interval: 2,
+      repetitions: 1,
+      easeFactor: 2.0,
+      nextReview: '2024-01-21',
+      lastReviewed: '2024-01-19',
+      quality: 3
+    },
+    stats: {
+      totalReviews: 2,
+      correctReviews: 1,
+      streak: 1,
+      averageTime: 15
+    }
+  },
+  {
+    id: '5',
+    front: 'Quais são os princípios da Administração Pública?',
+    back: 'Art. 37 da CF/88: LIMPE - Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência. A administração pública deve seguir estes princípios em todos os seus atos.',
+    subject: 'Direito Constitucional',
+    tags: ['administração pública', 'princípios', 'LIMPE'],
+    difficulty: 'Fácil',
+    createdAt: '2024-01-15',
+    srsData: {
+      interval: 1,
+      repetitions: 0,
+      easeFactor: 2.5,
+      nextReview: '2024-01-19', // vencido
+      lastReviewed: '2024-01-18',
+      quality: 1
+    },
+    stats: {
+      totalReviews: 1,
+      correctReviews: 0,
+      streak: 0,
+      averageTime: 20
     }
   }
 ];
@@ -195,10 +264,17 @@ export default function FlashcardsPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'study' | 'create' | 'stats'>('overview');
   const [selectedDeck, setSelectedDeck] = useState<FlashcardDeck | null>(null);
   const [currentCard, setCurrentCard] = useState<Flashcard | null>(null);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [studyCards, setStudyCards] = useState<Flashcard[]>([]);
   const [showAnswer, setShowAnswer] = useState(false);
   const [studySession, setStudySession] = useState<StudySession | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSubject, setFilterSubject] = useState('all');
+  const [sessionStats, setSessionStats] = useState({
+    correct: 0,
+    total: 0,
+    startTime: Date.now()
+  });
 
   // Filtrar decks
   const filteredDecks = mockDecks.filter(deck => {
@@ -251,27 +327,91 @@ export default function FlashcardsPage() {
   };
 
   const handleAnswer = (quality: number) => {
-    if (!currentCard) return;
+    if (!currentCard || !studySession) return;
+
+    // Atualiza estatísticas da sessão
+    const isCorrect = quality >= 3;
+    setSessionStats(prev => ({
+      ...prev,
+      correct: prev.correct + (isCorrect ? 1 : 0),
+      total: prev.total + 1
+    }));
 
     // Simula atualização do card com SRS
     const updatedSRS = calculateNextReview(quality, currentCard);
     console.log('Card updated with SRS:', updatedSRS);
 
-    // Próximo card (aqui você buscaria o próximo card do deck)
-    setShowAnswer(false);
-    setCurrentCard(null);
-    
-    // Atualiza estatísticas da sessão
-    if (studySession) {
-      setStudySession({
-        ...studySession,
-        cardsStudied: studySession.cardsStudied + 1
-      });
+    // Atualiza o card atual com novos dados SRS
+    const updatedCard = {
+      ...currentCard,
+      srsData: updatedSRS,
+      stats: {
+        ...currentCard.stats,
+        totalReviews: currentCard.stats.totalReviews + 1,
+        correctReviews: currentCard.stats.correctReviews + (isCorrect ? 1 : 0),
+        streak: isCorrect ? currentCard.stats.streak + 1 : 0
+      }
+    };
+
+    // Atualiza o array de cards
+    const newStudyCards = [...studyCards];
+    newStudyCards[currentCardIndex] = updatedCard;
+    setStudyCards(newStudyCards);
+
+    // Próximo card
+    const nextIndex = currentCardIndex + 1;
+    if (nextIndex < studyCards.length) {
+      setCurrentCardIndex(nextIndex);
+      setCurrentCard(studyCards[nextIndex]);
+      setShowAnswer(false);
+    } else {
+      // Sessão finalizada
+      finishStudySession();
     }
+
+    // Atualiza estatísticas da sessão
+    setStudySession({
+      ...studySession,
+      cardsStudied: studySession.cardsStudied + 1,
+      accuracy: Math.round(((sessionStats.correct + (isCorrect ? 1 : 0)) / (sessionStats.total + 1)) * 100)
+    });
+  };
+
+  const finishStudySession = () => {
+    const timeSpent = Math.round((Date.now() - sessionStats.startTime) / 1000 / 60); // em minutos
+    const accuracy = Math.round((sessionStats.correct / sessionStats.total) * 100);
+    
+    // Mostra estatísticas finais com um modal mais atrativo
+    const message = `🎉 Sessão finalizada!\n\n📚 Cards estudados: ${sessionStats.total}\n✅ Acertos: ${sessionStats.correct}\n🎯 Precisão: ${accuracy}%\n⏱️ Tempo: ${timeSpent} minuto${timeSpent !== 1 ? 's' : ''}\n\n${accuracy >= 80 ? '🌟 Excelente trabalho!' : accuracy >= 60 ? '👍 Bom desempenho!' : '💪 Continue praticando!'}`;
+    
+    alert(message);
+    
+    // Reset da sessão
+    setStudySession(null);
+    setCurrentCard(null);
+    setCurrentCardIndex(0);
+    setStudyCards([]);
+    setShowAnswer(false);
+    setSessionStats({ correct: 0, total: 0, startTime: Date.now() });
+    setActiveTab('overview');
   };
 
   const startStudySession = (deck: FlashcardDeck) => {
+    // Filtra cards do deck selecionado + alguns cards exemplo
+    const deckCards = [...mockFlashcards]; // Em produção, filtraria por deck.id
+    
+    // Ordena cards por prioridade SRS (cards vencidos primeiro)
+    const sortedCards = deckCards.sort((a, b) => {
+      const aDate = new Date(a.srsData.nextReview);
+      const bDate = new Date(b.srsData.nextReview);
+      return aDate.getTime() - bDate.getTime();
+    });
+
     setSelectedDeck(deck);
+    setStudyCards(sortedCards);
+    setCurrentCardIndex(0);
+    setCurrentCard(sortedCards[0]);
+    setSessionStats({ correct: 0, total: 0, startTime: Date.now() });
     setStudySession({
       deckId: deck.id,
       startedAt: new Date().toISOString(),
@@ -280,7 +420,6 @@ export default function FlashcardsPage() {
       accuracy: 0,
       isActive: true
     });
-    setCurrentCard(mockFlashcards[0]); // Simula carregamento do primeiro card
     setActiveTab('study');
   };
 
@@ -628,27 +767,37 @@ export default function FlashcardsPage() {
                 {/* Header da sessão */}
                 {studySession && (
                   <div className="mb-6 p-4 bg-primary-50 rounded-lg">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                       <div>
                         <h3 className="font-semibold text-primary-900">
                           {selectedDeck?.name}
                         </h3>
-                        <p className="text-sm text-primary-600">
-                          Cards estudados: {studySession.cardsStudied}
-                        </p>
+                        <div className="flex items-center gap-4 text-sm text-primary-600">
+                          <span>Card {currentCardIndex + 1} de {studyCards.length}</span>
+                          <span>Estudados: {studySession.cardsStudied}</span>
+                          <span>Precisão: {studySession.accuracy}%</span>
+                        </div>
                       </div>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setActiveTab('overview');
-                          setStudySession(null);
-                          setCurrentCard(null);
-                          setShowAnswer(false);
+                          if (confirm('Tem certeza que deseja encerrar a sessão?')) {
+                            finishStudySession();
+                          }
                         }}
                       >
                         Encerrar sessão
                       </Button>
+                    </div>
+                    
+                    {/* Barra de progresso */}
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${((currentCardIndex + 1) / studyCards.length) * 100}%` }}
+                        className="bg-primary-500 h-full rounded-full transition-all duration-500"
+                      />
                     </div>
                   </div>
                 )}
