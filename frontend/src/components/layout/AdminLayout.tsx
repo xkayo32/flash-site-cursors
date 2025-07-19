@@ -7,12 +7,14 @@ import {
   Brain,
   BarChart3,
   BookOpen,
+  Scale,
   LogOut,
   ChevronLeft,
   Settings,
   Menu,
   X,
-  Shield
+  Shield,
+  Upload
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -37,6 +39,16 @@ const adminNavItems = [
     path: '/admin/courses'
   },
   {
+    title: 'Resumos Interativos',
+    icon: FileText,
+    path: '/admin/summaries'
+  },
+  {
+    title: 'Legislação',
+    icon: Scale,
+    path: '/admin/legislation'
+  },
+  {
     title: 'Gestão de Usuários',
     icon: Users,
     path: '/admin/users'
@@ -50,6 +62,11 @@ const adminNavItems = [
     title: 'Analytics',
     icon: BarChart3,
     path: '/admin/analytics'
+  },
+  {
+    title: 'Importação em Massa',
+    icon: Upload,
+    path: '/admin/import'
   }
 ];
 

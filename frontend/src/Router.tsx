@@ -32,6 +32,9 @@ import UserManager from './pages/admin/UserManager';
 import QuestionEditor from './pages/admin/QuestionEditor';
 import Analytics from './pages/admin/Analytics';
 import CourseEditor from './pages/admin/CourseEditor';
+import SummaryEditor from './pages/admin/SummaryEditor';
+import LegislationManager from './pages/admin/LegislationManager';
+import ImportManager from './pages/admin/ImportManager';
 import AdminLayout from './components/layout/AdminLayout';
 
 // Componente para rotas protegidas
@@ -131,9 +134,12 @@ function Router() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/content" element={<ContentManager />} />
         <Route path="/admin/courses" element={<CourseEditor />} />
+        <Route path="/admin/summaries" element={<SummaryEditor />} />
+        <Route path="/admin/legislation" element={<LegislationManager />} />
         <Route path="/admin/users" element={<UserManager />} />
         <Route path="/admin/questions" element={<QuestionEditor />} />
         <Route path="/admin/analytics" element={<Analytics />} />
+        <Route path="/admin/import" element={<ImportManager />} />
       </Route>
       
       {/* Rota padrão */}
