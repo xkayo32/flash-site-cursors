@@ -17,7 +17,9 @@ import {
   Brain,
   Target,
   Zap,
-  X
+  X,
+  Grid,
+  List
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
@@ -224,6 +226,7 @@ export default function CoursesPage() {
   const [sortBy, setSortBy] = useState('popular');
   const [showFilters, setShowFilters] = useState(false);
   const [showOnlyEnrolled, setShowOnlyEnrolled] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Filtrar e ordenar cursos
   const filteredCourses = useMemo(() => {
@@ -398,6 +401,121 @@ export default function CoursesPage() {
     </motion.div>
   );
 
+  const CourseListItem = ({ course, index }: { course: Course; index: number }) => (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
+    >
+      <Card className="mb-4 hover:shadow-lg transition-all duration-300 overflow-hidden">
+        <div className="flex items-stretch">
+          {/* Imagem */}
+          <div className="relative w-48 h-32">
+            <img
+              src={course.image}
+              alt={course.title}
+              className="w-full h-full object-cover"
+            />
+            {course.badge && (
+              <Badge className={cn("absolute top-2 left-2", course.badge.color)}>
+                {course.badge.text}
+              </Badge>
+            )}
+          </div>
+
+          {/* Conteúdo */}
+          <div className="flex-1 p-4">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                {/* Categoria e Nível */}
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {course.category}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {course.level}
+                  </Badge>
+                  {course.enrolled && (
+                    <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">
+                      Matriculado
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Título e Descrição */}
+                <h3 className="font-bold text-lg text-primary-900 mb-1">
+                  {course.title}
+                </h3>
+                <p className="text-sm text-primary-600 mb-2 line-clamp-2">
+                  {course.description}
+                </p>
+
+                {/* Instrutor e Stats */}
+                <div className="flex items-center gap-4 text-sm text-primary-500">
+                  <span>Por {course.instructor}</span>
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    <span>{course.duration}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    <span>{course.students.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                    <span>{course.rating}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Preço e Ação */}
+              <div className="text-right ml-6">
+                {course.originalPrice && (
+                  <span className="text-sm text-primary-400 line-through">
+                    R$ {course.originalPrice}
+                  </span>
+                )}
+                <div className="text-2xl font-bold text-primary-900 mb-2">
+                  R$ {course.price}
+                </div>
+                {course.enrolled ? (
+                  <Link to={`/course/${course.id}`}>
+                    <Button size="sm" variant="secondary">
+                      Continuar
+                      <Play className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to={`/course/${course.id}`}>
+                    <Button size="sm">
+                      Ver detalhes
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+
+            {/* Progresso se matriculado */}
+            {course.enrolled && course.progress !== undefined && (
+              <div className="mt-3 pt-3 border-t">
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="text-primary-600">{course.progress}% concluído</span>
+                  <span className="text-primary-500">{course.modules} módulos • {course.questions} questões</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-accent-500 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${course.progress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+    </motion.div>
+  );
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -471,6 +589,26 @@ export default function CoursesPage() {
               Filtros
               <ChevronDown className={cn("w-4 h-4 transition-transform", showFilters && "rotate-180")} />
             </Button>
+
+            {/* Modo de visualização */}
+            <div className="flex items-center gap-1 ml-2">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="p-2"
+              >
+                <Grid className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="p-2"
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -538,11 +676,19 @@ export default function CoursesPage() {
 
       {/* Lista de cursos */}
       {filteredCourses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.map((course, index) => (
-            <CourseCard key={course.id} course={course} index={index} />
-          ))}
-        </div>
+        viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCourses.map((course, index) => (
+              <CourseCard key={course.id} course={course} index={index} />
+            ))}
+          </div>
+        ) : (
+          <div>
+            {filteredCourses.map((course, index) => (
+              <CourseListItem key={course.id} course={course} index={index} />
+            ))}
+          </div>
+        )
       ) : (
         <motion.div
           initial={{ opacity: 0 }}

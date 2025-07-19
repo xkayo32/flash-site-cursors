@@ -77,6 +77,7 @@ const mockCourseDetails = {
     number: 12,
     value: 19.70
   },
+  questions: 8500,
   image: 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=800&h=450&fit=crop',
   videoPreview: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   
@@ -366,7 +367,7 @@ export default function CourseDetailsPage() {
 
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-primary-700 to-primary-800 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto px-6 py-6 md:py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Informações principais */}
             <div className="lg:col-span-2">
@@ -394,7 +395,7 @@ export default function CourseDetailsPage() {
                 </div>
               </div>
               
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 mb-8">
                 <img
                   src={course.instructor.avatar}
                   alt={course.instructor.name}
@@ -404,6 +405,47 @@ export default function CourseDetailsPage() {
                   <p className="font-medium">Criado por</p>
                   <p className="text-primary-100">{course.instructor.name}</p>
                 </div>
+              </div>
+
+              {/* Informações adicionais do curso */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 bg-white/10 backdrop-blur-sm rounded-xl">
+                <div className="text-center">
+                  <Clock className="w-8 h-8 mx-auto mb-2 text-accent-400" />
+                  <div className="text-2xl font-bold">{course.duration}</div>
+                  <p className="text-sm text-primary-200">de conteúdo</p>
+                </div>
+                <div className="text-center">
+                  <Video className="w-8 h-8 mx-auto mb-2 text-accent-400" />
+                  <div className="text-2xl font-bold">
+                    {course.modules.reduce((acc, mod) => acc + mod.lessons, 0)}
+                  </div>
+                  <p className="text-sm text-primary-200">videoaulas</p>
+                </div>
+                <div className="text-center">
+                  <FileText className="w-8 h-8 mx-auto mb-2 text-accent-400" />
+                  <div className="text-2xl font-bold">{course.questions.toLocaleString()}</div>
+                  <p className="text-sm text-primary-200">questões</p>
+                </div>
+                <div className="text-center">
+                  <Calendar className="w-8 h-8 mx-auto mb-2 text-accent-400" />
+                  <div className="text-2xl font-bold">12</div>
+                  <p className="text-sm text-primary-200">meses de acesso</p>
+                </div>
+              </div>
+
+              {/* Diferenciais em lista */}
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  'Material atualizado conforme edital 2024',
+                  'Simulados semanais no padrão CESPE',
+                  'PDFs para download e impressão',
+                  'Certificado de conclusão'
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-accent-400 flex-shrink-0" />
+                    <span className="text-primary-100">{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
 

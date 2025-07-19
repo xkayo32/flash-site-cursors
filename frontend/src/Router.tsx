@@ -24,6 +24,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 import DashboardPage from './pages/student/DashboardPage';
 import CoursesPage from './pages/student/CoursesPage';
 import CourseDetailsPage from './pages/student/CourseDetailsPage';
+import MyCoursesPage from './pages/student/MyCoursesPage';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -57,6 +58,7 @@ function Router() {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/courses" element={<CoursesPage />} />
+        <Route path="/my-courses" element={<MyCoursesPage />} />
         <Route path="/schedule" element={
           <UnderDevelopment 
             title="Cronograma Personalizado" 

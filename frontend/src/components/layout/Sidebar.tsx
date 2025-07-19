@@ -28,7 +28,8 @@ import { Logo } from '@/components/ui/Logo';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
-  { icon: GraduationCap, label: 'Cursos', path: '/courses' },
+  { icon: BookOpen, label: 'Meus Cursos', path: '/my-courses' },
+  { icon: GraduationCap, label: 'Explorar Cursos', path: '/courses' },
   { icon: Calendar, label: 'Cronograma', path: '/schedule' },
   { icon: Trophy, label: 'Simulados', path: '/simulations' },
   { icon: Brain, label: 'Flashcards', path: '/flashcards' },
