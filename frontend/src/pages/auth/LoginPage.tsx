@@ -10,13 +10,17 @@ import {
   Zap,
   CheckCircle,
   AlertCircle,
-  Users
+  Users,
+  Sun,
+  Moon,
+  Monitor
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 import { Logo } from '@/components/ui/Logo';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Componentes dos ícones das redes sociais
 const GoogleIcon = () => (
@@ -58,6 +62,7 @@ const fadeInUp = {
 export default function LoginPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -153,8 +158,47 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
+      {/* Theme Selector */}
+      <div className="absolute top-4 right-4 z-10">
+        <div className="flex items-center gap-2 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg">
+          <button
+            onClick={() => setTheme('light')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'light' 
+                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Tema Claro"
+          >
+            <Sun className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setTheme('dark')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'dark' 
+                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Tema Escuro"
+          >
+            <Moon className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setTheme('system')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'system' 
+                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Seguir Sistema"
+          >
+            <Monitor className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       {/* Left Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-white">
+      <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-gray-900">
         <motion.div
           initial="initial"
           animate="animate"
@@ -168,10 +212,10 @@ export default function LoginPage() {
             <div className="flex justify-center mb-6">
               <Logo variant="icon" size="lg" animated={true} />
             </div>
-            <h1 className="text-2xl font-bold text-primary-900 mb-2">
+            <h1 className="text-2xl font-bold text-primary-900 dark:text-white mb-2">
               Bem-vindo de volta!
             </h1>
-            <p className="text-primary-600">
+            <p className="text-primary-600 dark:text-gray-300">
               Faça login para continuar seus estudos
             </p>
           </motion.div>
@@ -180,7 +224,7 @@ export default function LoginPage() {
           <motion.div variants={fadeInUp} className="space-y-3 mb-6">
             <Button
               variant="outline"
-              className="w-full h-12 text-left justify-start gap-3 border-gray-300 hover:border-primary-300"
+              className="w-full h-12 text-left justify-start gap-3 border-gray-300 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400 dark:bg-gray-800 dark:text-white"
               onClick={() => handleSocialLogin('google')}
             >
               <GoogleIcon />
@@ -189,7 +233,7 @@ export default function LoginPage() {
             
             <Button
               variant="outline"
-              className="w-full h-12 text-left justify-start gap-3 border-gray-300 hover:border-primary-300"
+              className="w-full h-12 text-left justify-start gap-3 border-gray-300 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-400 dark:bg-gray-800 dark:text-white"
               onClick={() => handleSocialLogin('microsoft')}
             >
               <MicrosoftIcon />
@@ -222,7 +266,7 @@ export default function LoginPage() {
           <motion.form variants={fadeInUp} onSubmit={handleSubmit} className="space-y-4">
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-primary-700 mb-2">
+              <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                 Email
               </label>
               <div className="relative">
@@ -230,7 +274,7 @@ export default function LoginPage() {
                 <input
                   type="email"
                   required
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition ${
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition dark:bg-gray-800 dark:border-gray-600 dark:text-white ${
                     errors.email ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="seu@email.com"
@@ -251,7 +295,7 @@ export default function LoginPage() {
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-primary-700 mb-2">
+              <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                 Senha
               </label>
               <div className="relative">
@@ -259,7 +303,7 @@ export default function LoginPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition ${
+                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition dark:bg-gray-800 dark:border-gray-600 dark:text-white ${
                     errors.password ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="••••••••"
@@ -292,13 +336,13 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={formData.rememberMe}
                   onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  className="w-4 h-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 dark:bg-gray-800"
                 />
-                <span className="text-sm text-primary-700">Lembrar de mim</span>
+                <span className="text-sm text-primary-700 dark:text-gray-300">Lembrar de mim</span>
               </label>
               <Link
                 to="/forgot-password"
-                className="text-sm text-primary-600 hover:text-primary-700 hover:underline"
+                className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:underline"
               >
                 Esqueceu a senha?
               </Link>
@@ -320,7 +364,7 @@ export default function LoginPage() {
             <span className="text-primary-600">Não tem uma conta? </span>
             <Link
               to="/register"
-              className="text-primary-600 font-medium hover:text-primary-700 hover:underline"
+              className="text-primary-600 dark:text-primary-400 font-medium hover:text-primary-700 dark:hover:text-primary-300 hover:underline"
             >
               Cadastre-se gratuitamente
             </Link>

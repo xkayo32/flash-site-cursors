@@ -16,13 +16,17 @@ import {
   Award,
   Users,
   Star,
-  Sparkles
+  Sparkles,
+  Sun,
+  Moon,
+  Monitor
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 import { Logo } from '@/components/ui/Logo';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Componentes dos ícones das redes sociais (reutilizados do LoginPage)
 const GoogleIcon = () => (
@@ -64,6 +68,7 @@ const fadeInUp = {
 export default function RegisterPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -155,8 +160,47 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex">
+      {/* Theme Selector */}
+      <div className="absolute top-4 right-4 z-10">
+        <div className="flex items-center gap-2 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg">
+          <button
+            onClick={() => setTheme('light')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'light' 
+                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Tema Claro"
+          >
+            <Sun className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setTheme('dark')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'dark' 
+                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Tema Escuro"
+          >
+            <Moon className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setTheme('system')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'system' 
+                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}
+            title="Seguir Sistema"
+          >
+            <Monitor className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       {/* Left Side - Register Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-white">
+      <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-gray-900">
         <motion.div
           initial="initial"
           animate="animate"
