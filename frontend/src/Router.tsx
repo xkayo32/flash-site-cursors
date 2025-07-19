@@ -25,7 +25,6 @@ import LegislationPage from './pages/student/LegislationPage';
 import TacticalPanelPage from './pages/student/TacticalPanelPage';
 import SubscriptionPage from './pages/student/SubscriptionPage';
 import SettingsPage from './pages/student/SettingsPage';
-import PaymentSettingsPage from './pages/student/PaymentSettingsPage';
 
 // Páginas do Admin
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -124,7 +123,6 @@ function Router() {
         <Route path="/tactical" element={<TacticalPanelPage />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/payment-settings" element={<PaymentSettingsPage />} />
       </Route>
       
       {/* Rotas do Admin */}

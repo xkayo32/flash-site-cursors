@@ -31,7 +31,12 @@ import {
   ExternalLink,
   ToggleLeft,
   ToggleRight,
-  Info
+  Info,
+  CreditCard,
+  Upload,
+  Image,
+  Type,
+  Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
@@ -121,14 +126,20 @@ export default function SettingsPage() {
   const [privacy, setPrivacy] = useState(privacySettings);
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [systemName, setSystemName] = useState('Study Pro');
+  const [logoLight, setLogoLight] = useState<string | null>(null);
+  const [logoDark, setLogoDark] = useState<string | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const user = useAuthStore((state) => state.user);
 
   // Sections do menu
   const sections = [
     { id: 'account', label: 'Conta', icon: User },
+    { id: 'payments', label: 'Pagamentos', icon: CreditCard },
+    { id: 'branding', label: 'Personalização', icon: Palette },
     { id: 'notifications', label: 'Notificações', icon: Bell },
     { id: 'privacy', label: 'Privacidade', icon: Shield },
-    { id: 'appearance', label: 'Aparência', icon: Palette },
+    { id: 'appearance', label: 'Aparência', icon: Monitor },
     { id: 'study', label: 'Estudos', icon: Settings },
     { id: 'data', label: 'Dados', icon: Download },
     { id: 'help', label: 'Ajuda', icon: HelpCircle }
@@ -156,6 +167,32 @@ export default function SettingsPage() {
     setPrivacy(prev => prev.map(setting => 
       setting.id === id ? { ...setting, enabled: !setting.enabled } : setting
     ));
+  };
+
+  // Upload de logo
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'light' | 'dark') => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        if (type === 'light') {
+          setLogoLight(result);
+        } else {
+          setLogoDark(result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Remover logo
+  const removeLogo = (type: 'light' | 'dark') => {
+    if (type === 'light') {
+      setLogoLight(null);
+    } else {
+      setLogoDark(null);
+    }
   };
 
   // Salvar configurações
@@ -372,6 +409,264 @@ export default function SettingsPage() {
                             Salvar Alterações
                           </>
                         )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Seção: Pagamentos */}
+            {activeSection === 'payments' && (
+              <motion.div
+                key="payments"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Configurações de Pagamento</h2>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Assinatura Atual */}
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-green-800 dark:text-green-300">Plano Premium Ativo</h3>
+                          <p className="text-sm text-green-600 dark:text-green-400">R$ 49,90/mês • Renova em 15/02/2024</p>
+                        </div>
+                        <Badge className="bg-green-100 text-green-800">Ativo</Badge>
+                      </div>
+                    </div>
+
+                    {/* Métodos de Pagamento */}
+                    <div>
+                      <h3 className="font-medium text-primary-900 dark:text-white mb-3">Métodos de Pagamento</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 border border-primary-200 dark:border-gray-600 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-5 bg-blue-600 rounded flex items-center justify-center">
+                              <span className="text-white text-xs font-bold">VI</span>
+                            </div>
+                            <div>
+                              <p className="font-medium text-primary-900 dark:text-white">•••• •••• •••• 4242</p>
+                              <p className="text-sm text-primary-600 dark:text-gray-400">Expires 12/25</p>
+                            </div>
+                          </div>
+                          <Badge variant="secondary">Padrão</Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Histórico de Pagamentos */}
+                    <div>
+                      <h3 className="font-medium text-primary-900 dark:text-white mb-3">Últimas Transações</h3>
+                      <div className="space-y-2">
+                        {[
+                          { date: '15/01/2024', amount: 'R$ 49,90', status: 'success' },
+                          { date: '15/12/2023', amount: 'R$ 49,90', status: 'success' },
+                          { date: '15/11/2023', amount: 'R$ 49,90', status: 'failed' }
+                        ].map((payment, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div>
+                              <p className="font-medium text-primary-900 dark:text-white">{payment.amount}</p>
+                              <p className="text-sm text-primary-600 dark:text-gray-400">{payment.date}</p>
+                            </div>
+                            <Badge className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                              {payment.status === 'success' ? 'Pago' : 'Falhou'}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Ações */}
+                    <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-primary-200 dark:border-gray-700">
+                      <Button variant="outline" onClick={() => setShowPaymentModal(true)} className="gap-2">
+                        <CreditCard className="w-4 h-4" />
+                        Gerenciar Pagamentos
+                      </Button>
+                      <Button variant="outline" className="gap-2">
+                        <Download className="w-4 h-4" />
+                        Baixar Faturas
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Seção: Personalização */}
+            {activeSection === 'branding' && (
+              <motion.div
+                key="branding"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Personalização do Sistema</h2>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Nome do Sistema */}
+                    <div>
+                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
+                        Nome do Sistema
+                      </label>
+                      <div className="flex gap-3">
+                        <input
+                          type="text"
+                          value={systemName}
+                          onChange={(e) => setSystemName(e.target.value)}
+                          className="flex-1 px-4 py-2 border border-primary-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          placeholder="Nome da sua plataforma"
+                        />
+                        <Button className="gap-2">
+                          <Type className="w-4 h-4" />
+                          Atualizar
+                        </Button>
+                      </div>
+                      <p className="text-sm text-primary-600 dark:text-gray-400 mt-1">
+                        Este nome aparecerá no cabeçalho e em toda a plataforma
+                      </p>
+                    </div>
+
+                    {/* Logo Tema Claro */}
+                    <div>
+                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
+                        Logo - Tema Claro
+                      </label>
+                      <div className="border-2 border-dashed border-primary-300 dark:border-gray-600 rounded-lg p-6">
+                        {logoLight ? (
+                          <div className="text-center">
+                            <img src={logoLight} alt="Logo Claro" className="max-h-16 mx-auto mb-3" />
+                            <div className="flex gap-2 justify-center">
+                              <Button variant="outline" size="sm" onClick={() => removeLogo('light')} className="gap-2">
+                                <Trash2 className="w-4 h-4" />
+                                Remover
+                              </Button>
+                              <label className="cursor-pointer">
+                                <Button variant="outline" size="sm" className="gap-2">
+                                  <Upload className="w-4 h-4" />
+                                  Substituir
+                                </Button>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => handleLogoUpload(e, 'light')}
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        ) : (
+                          <label className="cursor-pointer block text-center">
+                            <div className="text-primary-600 dark:text-gray-400">
+                              <Upload className="w-8 h-8 mx-auto mb-2" />
+                              <p className="text-sm font-medium">Clique para fazer upload</p>
+                              <p className="text-xs">PNG, JPG até 2MB</p>
+                            </div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handleLogoUpload(e, 'light')}
+                            />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Logo Tema Escuro */}
+                    <div>
+                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
+                        Logo - Tema Escuro
+                      </label>
+                      <div className="border-2 border-dashed border-primary-300 dark:border-gray-600 rounded-lg p-6 bg-gray-900">
+                        {logoDark ? (
+                          <div className="text-center">
+                            <img src={logoDark} alt="Logo Escuro" className="max-h-16 mx-auto mb-3" />
+                            <div className="flex gap-2 justify-center">
+                              <Button variant="outline" size="sm" onClick={() => removeLogo('dark')} className="gap-2 bg-white text-gray-900">
+                                <Trash2 className="w-4 h-4" />
+                                Remover
+                              </Button>
+                              <label className="cursor-pointer">
+                                <Button variant="outline" size="sm" className="gap-2 bg-white text-gray-900">
+                                  <Upload className="w-4 h-4" />
+                                  Substituir
+                                </Button>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => handleLogoUpload(e, 'dark')}
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        ) : (
+                          <label className="cursor-pointer block text-center">
+                            <div className="text-gray-400">
+                              <Upload className="w-8 h-8 mx-auto mb-2" />
+                              <p className="text-sm font-medium">Clique para fazer upload</p>
+                              <p className="text-xs">PNG, JPG até 2MB • Versão para tema escuro</p>
+                            </div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handleLogoUpload(e, 'dark')}
+                            />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Preview */}
+                    <div>
+                      <h3 className="font-medium text-primary-900 dark:text-white mb-3">Preview</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-white border border-gray-200 rounded-lg p-4">
+                          <p className="text-xs text-gray-500 mb-2">Tema Claro</p>
+                          <div className="flex items-center gap-2">
+                            {logoLight ? (
+                              <img src={logoLight} alt="Logo" className="h-8" />
+                            ) : (
+                              <div className="w-8 h-8 bg-primary-600 rounded flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">SP</span>
+                              </div>
+                            )}
+                            <span className="font-bold text-gray-900">{systemName}</span>
+                          </div>
+                        </div>
+                        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                          <p className="text-xs text-gray-400 mb-2">Tema Escuro</p>
+                          <div className="flex items-center gap-2">
+                            {logoDark ? (
+                              <img src={logoDark} alt="Logo" className="h-8" />
+                            ) : (
+                              <div className="w-8 h-8 bg-primary-600 rounded flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">SP</span>
+                              </div>
+                            )}
+                            <span className="font-bold text-white">{systemName}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Ações */}
+                    <div className="flex gap-3 pt-4 border-t border-primary-200 dark:border-gray-700">
+                      <Button onClick={saveSettings} disabled={isLoading} className="gap-2">
+                        <Save className="w-4 h-4" />
+                        Salvar Personalização
+                      </Button>
+                      <Button variant="outline" className="gap-2">
+                        <Zap className="w-4 h-4" />
+                        Restaurar Padrão
                       </Button>
                     </div>
                   </CardContent>
@@ -829,6 +1124,168 @@ export default function SettingsPage() {
                 >
                   Excluir Conta
                 </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Pagamentos */}
+      <AnimatePresence>
+        {showPaymentModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            onClick={() => setShowPaymentModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-primary-900 dark:text-white">
+                    Gerenciar Pagamentos
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPaymentModal(false)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Assinatura Atual */}
+                <div>
+                  <h4 className="font-semibold text-primary-900 dark:text-white mb-3">Assinatura Atual</h4>
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h5 className="font-semibold text-green-800 dark:text-green-300">Plano Premium</h5>
+                        <p className="text-sm text-green-600 dark:text-green-400">R$ 49,90/mês</p>
+                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">Próxima cobrança: 15/02/2024</p>
+                      </div>
+                      <div className="text-right">
+                        <Badge className="bg-green-100 text-green-800 mb-2">Ativo</Badge>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline">Alterar Plano</Button>
+                          <Button size="sm" variant="outline" className="text-red-600">Cancelar</Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Métodos de Pagamento */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-primary-900 dark:text-white">Métodos de Pagamento</h4>
+                    <Button size="sm" className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Adicionar Cartão
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-4 border border-primary-200 dark:border-gray-600 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-6 bg-blue-600 rounded flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">VISA</span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-primary-900 dark:text-white">•••• •••• •••• 4242</p>
+                          <p className="text-sm text-primary-600 dark:text-gray-400">Expira em 12/25</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">Padrão</Badge>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 border border-primary-200 dark:border-gray-600 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-6 bg-red-600 rounded flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">MC</span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-primary-900 dark:text-white">•••• •••• •••• 5555</p>
+                          <p className="text-sm text-primary-600 dark:text-gray-400">Expira em 08/26</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Endereço de Cobrança */}
+                <div>
+                  <h4 className="font-semibold text-primary-900 dark:text-white mb-3">Endereço de Cobrança</h4>
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    <div className="text-sm text-primary-700 dark:text-gray-300">
+                      <p className="font-medium">João Silva</p>
+                      <p>joao@email.com</p>
+                      <p>Rua das Flores, 123, Apt 45</p>
+                      <p>São Paulo, SP 01234-567</p>
+                    </div>
+                    <Button size="sm" variant="outline" className="mt-3">
+                      Editar Endereço
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Histórico Recente */}
+                <div>
+                  <h4 className="font-semibold text-primary-900 dark:text-white mb-3">Transações Recentes</h4>
+                  <div className="space-y-2">
+                    {[
+                      { date: '15/01/2024', amount: 'R$ 49,90', status: 'success', method: 'Visa ••••4242' },
+                      { date: '15/12/2023', amount: 'R$ 49,90', status: 'success', method: 'Visa ••••4242' },
+                      { date: '15/11/2023', amount: 'R$ 49,90', status: 'failed', method: 'Visa ••••4242' }
+                    ].map((payment, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div>
+                          <p className="font-medium text-primary-900 dark:text-white">{payment.amount}</p>
+                          <p className="text-sm text-primary-600 dark:text-gray-400">{payment.date} • {payment.method}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                            {payment.status === 'success' ? 'Pago' : 'Falhou'}
+                          </Badge>
+                          <Button variant="ghost" size="sm">
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Ações */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <Button variant="outline" className="gap-2">
+                    <Download className="w-4 h-4" />
+                    Baixar Todas as Faturas
+                  </Button>
+                  <Button variant="outline" className="gap-2">
+                    <Mail className="w-4 h-4" />
+                    Configurar Notificações
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
