@@ -568,7 +568,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {editalProgress.map((materia, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800/50">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-medium text-primary-900">{materia.materia}</h4>
                     <div className="flex items-center gap-4">
@@ -576,14 +576,14 @@ export default function DashboardPage() {
                         {materia.concluido}/{materia.total} tópicos
                       </span>
                       <span className={`text-sm font-medium ${
-                        materia.porcentagem >= 75 ? 'text-green-600' :
-                        materia.porcentagem >= 50 ? 'text-yellow-600' : 'text-red-600'
+                        materia.porcentagem >= 75 ? 'text-green-600 dark:text-green-400' :
+                        materia.porcentagem >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {materia.porcentagem}%
                       </span>
                     </div>
                   </div>
-                  <div className="bg-gray-200 rounded-full h-2">
+                  <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all ${
                         materia.porcentagem >= 75 ? 'bg-green-500' :
@@ -594,21 +594,21 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 p-4 bg-gray-50 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 p-4 bg-gray-50 dark:bg-gray-800/30 rounded-lg">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {Math.round(editalProgress.reduce((acc, curr) => acc + curr.porcentagem, 0) / editalProgress.length)}%
                   </p>
                   <p className="text-sm text-primary-600">Progresso Geral</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-primary-600">
+                  <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
                     {editalProgress.reduce((acc, curr) => acc + curr.concluido, 0)}
                   </p>
                   <p className="text-sm text-primary-600">Tópicos Concluídos</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-orange-600">
+                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                     {editalProgress.reduce((acc, curr) => acc + (curr.total - curr.concluido), 0)}
                   </p>
                   <p className="text-sm text-primary-600">Tópicos Restantes</p>
