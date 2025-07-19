@@ -261,7 +261,7 @@ const studyStats = {
 };
 
 export default function FlashcardsPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'study' | 'create' | 'stats'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'study' | 'stats'>('overview');
   const [selectedDeck, setSelectedDeck] = useState<FlashcardDeck | null>(null);
   const [currentCard, setCurrentCard] = useState<Flashcard | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -663,7 +663,6 @@ export default function FlashcardsPage() {
           {[
             { key: 'overview', label: 'Visão Geral', icon: BookOpen },
             { key: 'study', label: 'Estudar', icon: Brain },
-            { key: 'create', label: 'Criar', icon: Plus },
             { key: 'stats', label: 'Estatísticas', icon: BarChart3 }
           ].map(tab => {
             const Icon = tab.icon;
@@ -722,10 +721,6 @@ export default function FlashcardsPage() {
                       </option>
                     ))}
                   </select>
-                  <Button variant="outline" className="gap-2">
-                    <Plus className="w-4 h-4" />
-                    Novo Deck
-                  </Button>
                 </div>
               </div>
             </div>
@@ -744,11 +739,12 @@ export default function FlashcardsPage() {
                   Nenhum deck encontrado
                 </h3>
                 <p className="text-primary-600 mb-6">
-                  Crie seu primeiro deck de flashcards para começar a estudar
+                  Não há decks disponíveis para esta matéria no momento.
+                  <br />
+                  Novos decks são adicionados regularmente pelos professores.
                 </p>
-                <Button className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Criar primeiro deck
+                <Button variant="outline" onClick={() => setFilterSubject('all')}>
+                  Ver todos os decks
                 </Button>
               </div>
             )}
@@ -821,92 +817,6 @@ export default function FlashcardsPage() {
           </motion.div>
         )}
 
-        {activeTab === 'create' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ delay: 0.1 }}
-            className="max-w-2xl mx-auto"
-          >
-            <Card>
-              <CardHeader>
-                <h3 className="text-xl font-bold text-primary-900">Criar Novo Flashcard</h3>
-                <p className="text-primary-600">
-                  Adicione um novo flashcard ao seu deck de estudos
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-primary-700 mb-2">
-                    Frente do Card
-                  </label>
-                  <textarea
-                    placeholder="Digite a pergunta ou conceito..."
-                    className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[100px]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-primary-700 mb-2">
-                    Verso do Card
-                  </label>
-                  <textarea
-                    placeholder="Digite a resposta ou explicação..."
-                    className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[150px]"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-primary-700 mb-2">
-                      Matéria
-                    </label>
-                    <select className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
-                      <option>Direito Constitucional</option>
-                      <option>Direito Penal</option>
-                      <option>Informática</option>
-                      <option>Português</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-primary-700 mb-2">
-                      Dificuldade
-                    </label>
-                    <select className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
-                      <option>Fácil</option>
-                      <option>Médio</option>
-                      <option>Difícil</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-primary-700 mb-2">
-                    Tags (separadas por vírgula)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="ex: direitos fundamentais, liberdades, CF88"
-                    className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
-
-                <div className="flex gap-3">
-                  <Button className="flex-1 gap-2">
-                    <Plus className="w-4 h-4" />
-                    Criar Flashcard
-                  </Button>
-                  <Button variant="outline" className="gap-2">
-                    <Eye className="w-4 h-4" />
-                    Visualizar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
 
         {activeTab === 'stats' && (
           <motion.div
@@ -991,11 +901,16 @@ export default function FlashcardsPage() {
           O sistema de repetição espaçada otimiza seu tempo de estudo, mostrando os cards no momento ideal para fixação
         </p>
         <div className="flex gap-3 justify-center">
-          <Button variant="secondary" size="lg" onClick={() => setActiveTab('create')}>
-            Criar Flashcards
+          <Button variant="secondary" size="lg" onClick={() => setActiveTab('overview')}>
+            Começar a Estudar
           </Button>
-          <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-primary-700">
-            Saiba mais sobre SRS
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="border-white text-white hover:bg-white hover:text-primary-700"
+            onClick={() => setActiveTab('stats')}
+          >
+            Ver Estatísticas
           </Button>
         </div>
       </motion.div>
