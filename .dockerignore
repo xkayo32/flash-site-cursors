@@ -12,3 +12,6 @@ coverage
 *.log
 dist
 build
+CLAUDE.md
+DescricaoProjeto.md
+PLANO_PROJETO.md

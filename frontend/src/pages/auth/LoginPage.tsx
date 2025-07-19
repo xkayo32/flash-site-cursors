@@ -95,25 +95,48 @@ export default function LoginPage() {
       // Simular chamada de API
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Mock login
-      setAuth(
-        {
-          id: '1',
-          name: 'João Silva',
-          email: formData.email,
-          role: 'student',
-          avatar: `https://ui-avatars.com/api/?name=João+Silva&background=14242f&color=fff`,
-          subscription: {
-            plan: 'Premium',
-            expiresAt: '2024-12-31',
-            status: 'active'
-          }
-        },
-        'fake-token'
-      );
+      // Verificar credenciais de teste
+      if (formData.email === 'teste@studypro.com' && formData.password === '123456') {
+        // Mock login com credenciais de teste
+        setAuth(
+          {
+            id: '1',
+            name: 'Usuário Teste',
+            email: formData.email,
+            role: 'student',
+            avatar: `https://ui-avatars.com/api/?name=Usuário+Teste&background=14242f&color=fff`,
+            subscription: {
+              plan: 'Premium',
+              expiresAt: '2024-12-31',
+              status: 'active'
+            }
+          },
+          'fake-token'
+        );
 
-      toast.success('Login realizado com sucesso!');
-      navigate('/dashboard');
+        toast.success('Login realizado com sucesso!');
+        navigate('/dashboard');
+      } else {
+        // Para outros emails, simular login normal
+        setAuth(
+          {
+            id: '1',
+            name: 'João Silva',
+            email: formData.email,
+            role: 'student',
+            avatar: `https://ui-avatars.com/api/?name=João+Silva&background=14242f&color=fff`,
+            subscription: {
+              plan: 'Premium',
+              expiresAt: '2024-12-31',
+              status: 'active'
+            }
+          },
+          'fake-token'
+        );
+
+        toast.success('Login realizado com sucesso!');
+        navigate('/dashboard');
+      }
     } catch (error) {
       toast.error('Erro ao fazer login. Tente novamente.');
     } finally {
@@ -182,6 +205,17 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-white text-gray-500">ou continue com email</span>
+            </div>
+          </motion.div>
+
+          {/* Test Credentials Info */}
+          <motion.div variants={fadeInUp} className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="text-sm text-blue-800">
+              <span className="font-semibold">Credenciais de teste:</span>
+              <br />
+              Email: <code className="bg-blue-100 px-1 rounded">teste@studypro.com</code>
+              <br />
+              Senha: <code className="bg-blue-100 px-1 rounded">123456</code>
             </div>
           </motion.div>
 
