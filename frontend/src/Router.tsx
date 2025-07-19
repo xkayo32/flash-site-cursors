@@ -36,6 +36,7 @@ import SummariesPage from './pages/student/SummariesPage';
 import LegislationPage from './pages/student/LegislationPage';
 import TacticalPanelPage from './pages/student/TacticalPanelPage';
 import SubscriptionPage from './pages/student/SubscriptionPage';
+import SettingsPage from './pages/student/SettingsPage';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -104,13 +105,7 @@ function Router() {
         <Route path="/legislation" element={<LegislationPage />} />
         <Route path="/tactical" element={<TacticalPanelPage />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
-        <Route path="/settings" element={
-          <UnderDevelopment 
-            title="Configurações" 
-            description="Preferências do usuário e configurações da conta" 
-            icon={Settings}
-          />
-        } />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
       
       {/* Rota padrão */}
