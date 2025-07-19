@@ -172,7 +172,7 @@ export default function SettingsPage() {
       onClick={onChange}
       className={cn(
         "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-        enabled ? "bg-primary-600" : "bg-gray-200"
+        enabled ? "bg-primary-600" : "bg-gray-200 dark:bg-gray-600"
       )}
     >
       <span
@@ -192,8 +192,8 @@ export default function SettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl font-bold text-primary-900 mb-2">Configurações</h1>
-        <p className="text-primary-600">
+        <h1 className="text-3xl font-bold text-primary-900 dark:text-white mb-2">Configurações</h1>
+        <p className="text-primary-600 dark:text-gray-300">
           Gerencie suas preferências e configurações da conta
         </p>
       </motion.div>
@@ -210,8 +210,8 @@ export default function SettingsPage() {
                   className={cn(
                     "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors",
                     activeSection === section.id
-                      ? "bg-primary-100 text-primary-900"
-                      : "hover:bg-gray-100 text-primary-600"
+                      ? "bg-primary-100 dark:bg-primary-900/30 text-primary-900 dark:text-white"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700 text-primary-600 dark:text-gray-300"
                   )}
                 >
                   <section.icon className="w-5 h-5" />
@@ -236,12 +236,12 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900">Informações da Conta</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Informações da Conta</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Foto de perfil */}
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-3">
+                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-3">
                         Foto de Perfil
                       </label>
                       <div className="flex items-center gap-4">
@@ -253,7 +253,7 @@ export default function SettingsPage() {
                             <Camera className="w-4 h-4" />
                             Alterar Foto
                           </Button>
-                          <p className="text-xs text-primary-500 mt-1">
+                          <p className="text-xs text-primary-500 dark:text-gray-400 mt-1">
                             JPG, PNG ou GIF. Máximo 2MB.
                           </p>
                         </div>
@@ -263,59 +263,59 @@ export default function SettingsPage() {
                     {/* Informações pessoais */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 mb-2">
+                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                           Nome Completo
                         </label>
                         <input
                           type="text"
                           defaultValue={user?.name}
-                          className="w-full px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 mb-2">
+                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                           Email
                         </label>
                         <input
                           type="email"
                           defaultValue={user?.email}
-                          className="w-full px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 mb-2">
+                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                           Telefone
                         </label>
                         <input
                           type="tel"
                           placeholder="(00) 00000-0000"
-                          className="w-full px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 mb-2">
+                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                           CPF
                         </label>
                         <input
                           type="text"
                           placeholder="000.000.000-00"
-                          className="w-full px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
                       </div>
                     </div>
 
                     {/* Alterar senha */}
                     <div className="border-t pt-6">
-                      <h3 className="text-lg font-semibold text-primary-900 mb-4">Segurança</h3>
+                      <h3 className="text-lg font-semibold text-primary-900 dark:text-white mb-4">Segurança</h3>
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-primary-700 mb-2">
+                          <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                             Senha Atual
                           </label>
                           <div className="relative">
                             <input
                               type={showPassword ? "text" : "password"}
-                              className="w-full px-4 py-2 pr-10 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              className="w-full px-4 py-2 pr-10 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                             />
                             <button
                               type="button"
@@ -332,21 +332,21 @@ export default function SettingsPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-primary-700 mb-2">
+                            <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                               Nova Senha
                             </label>
                             <input
                               type="password"
-                              className="w-full px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-primary-700 mb-2">
+                            <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                               Confirmar Nova Senha
                             </label>
                             <input
                               type="password"
-                              className="w-full px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                             />
                           </div>
                         </div>
@@ -389,15 +389,15 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900">Preferências de Notificação</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Preferências de Notificação</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {notifications.map(notif => (
-                      <div key={notif.id} className="border rounded-lg p-4">
+                      <div key={notif.id} className="border dark:border-gray-600 rounded-lg p-4">
                         <div className="flex items-start justify-between mb-3">
                           <div>
-                            <h3 className="font-medium text-primary-900">{notif.title}</h3>
-                            <p className="text-sm text-primary-600">{notif.description}</p>
+                            <h3 className="font-medium text-primary-900 dark:text-white">{notif.title}</h3>
+                            <p className="text-sm text-primary-600 dark:text-gray-300">{notif.description}</p>
                           </div>
                           <Toggle
                             enabled={notif.enabled}
@@ -462,14 +462,14 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900">Configurações de Privacidade</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Configurações de Privacidade</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {privacy.map(setting => (
-                      <div key={setting.id} className="flex items-start justify-between p-4 border rounded-lg">
+                      <div key={setting.id} className="flex items-start justify-between p-4 border dark:border-gray-600 rounded-lg">
                         <div>
-                          <h3 className="font-medium text-primary-900">{setting.title}</h3>
-                          <p className="text-sm text-primary-600">{setting.description}</p>
+                          <h3 className="font-medium text-primary-900 dark:text-white">{setting.title}</h3>
+                          <p className="text-sm text-primary-600 dark:text-gray-300">{setting.description}</p>
                         </div>
                         <Toggle
                           enabled={setting.enabled}
@@ -478,15 +478,15 @@ export default function SettingsPage() {
                       </div>
                     ))}
                     
-                    <div className="bg-blue-50 rounded-lg p-4">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
                       <div className="flex items-start gap-3">
                         <Info className="w-5 h-5 text-blue-600 mt-0.5" />
                         <div>
-                          <p className="text-sm text-blue-800">
+                          <p className="text-sm text-blue-800 dark:text-blue-200">
                             Suas informações pessoais são protegidas de acordo com a LGPD.
                             Nunca compartilhamos seus dados com terceiros sem sua autorização.
                           </p>
-                          <Button variant="link" size="sm" className="text-blue-600 p-0 mt-2">
+                          <Button variant="link" size="sm" className="text-blue-600 dark:text-blue-400 p-0 mt-2">
                             Ler Política de Privacidade
                             <ExternalLink className="w-3 h-3 ml-1" />
                           </Button>
@@ -514,61 +514,61 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900">Personalização Visual</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Personalização Visual</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Tema */}
                     <div>
-                      <h3 className="text-lg font-semibold text-primary-900 mb-4">Tema</h3>
+                      <h3 className="text-lg font-semibold text-primary-900 dark:text-white mb-4">Tema</h3>
                       <div className="grid grid-cols-3 gap-4">
                         <button
                           onClick={() => setTheme('light')}
                           className={cn(
                             "p-4 border-2 rounded-lg transition-colors",
-                            theme === 'light' ? "border-primary-500" : "border-primary-200"
+                            theme === 'light' ? "border-primary-500" : "border-primary-200 dark:border-gray-600"
                           )}
                         >
                           <Sun className="w-8 h-8 mx-auto mb-2 text-yellow-500" />
-                          <p className="font-medium">Claro</p>
+                          <p className="font-medium dark:text-white">Claro</p>
                         </button>
                         <button
                           onClick={() => setTheme('dark')}
                           className={cn(
                             "p-4 border-2 rounded-lg transition-colors",
-                            theme === 'dark' ? "border-primary-500" : "border-primary-200"
+                            theme === 'dark' ? "border-primary-500" : "border-primary-200 dark:border-gray-600"
                           )}
                         >
                           <Moon className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                          <p className="font-medium">Escuro</p>
+                          <p className="font-medium dark:text-white">Escuro</p>
                         </button>
                         <button
                           onClick={() => setTheme('system')}
                           className={cn(
                             "p-4 border-2 rounded-lg transition-colors",
-                            theme === 'system' ? "border-primary-500" : "border-primary-200"
+                            theme === 'system' ? "border-primary-500" : "border-primary-200 dark:border-gray-600"
                           )}
                         >
                           <Monitor className="w-8 h-8 mx-auto mb-2 text-gray-600" />
-                          <p className="font-medium">Sistema</p>
+                          <p className="font-medium dark:text-white">Sistema</p>
                         </button>
                       </div>
                     </div>
 
                     {/* Outras preferências visuais */}
                     <div>
-                      <h3 className="text-lg font-semibold text-primary-900 mb-4">Preferências Visuais</h3>
+                      <h3 className="text-lg font-semibold text-primary-900 dark:text-white mb-4">Preferências Visuais</h3>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium text-primary-900">Animações</p>
-                            <p className="text-sm text-primary-600">Ativar animações e transições</p>
+                            <p className="font-medium text-primary-900 dark:text-white">Animações</p>
+                            <p className="text-sm text-primary-600 dark:text-gray-300">Ativar animações e transições</p>
                           </div>
                           <Toggle enabled={true} onChange={() => {}} />
                         </div>
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium text-primary-900">Modo Compacto</p>
-                            <p className="text-sm text-primary-600">Reduzir espaçamentos na interface</p>
+                            <p className="font-medium text-primary-900 dark:text-white">Modo Compacto</p>
+                            <p className="text-sm text-primary-600 dark:text-gray-300">Reduzir espaçamentos na interface</p>
                           </div>
                           <Toggle enabled={false} onChange={() => {}} />
                         </div>
@@ -595,15 +595,15 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900">Preferências de Estudo</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Preferências de Estudo</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Metas diárias */}
                     <div>
-                      <h3 className="text-lg font-semibold text-primary-900 mb-4">Metas Diárias</h3>
+                      <h3 className="text-lg font-semibold text-primary-900 dark:text-white mb-4">Metas Diárias</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-primary-700 mb-2">
+                          <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                             Tempo de Estudo (minutos)
                           </label>
                           <input
@@ -611,11 +611,11 @@ export default function SettingsPage() {
                             defaultValue="120"
                             min="15"
                             max="480"
-                            className="w-full px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-primary-700 mb-2">
+                          <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                             Questões por Dia
                           </label>
                           <input
@@ -623,7 +623,7 @@ export default function SettingsPage() {
                             defaultValue="50"
                             min="10"
                             max="200"
-                            className="w-full px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                           />
                         </div>
                       </div>
@@ -670,14 +670,14 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900">Seus Dados</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Seus Dados</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
-                      <div className="p-4 border rounded-lg flex items-center justify-between">
+                      <div className="p-4 border dark:border-gray-600 rounded-lg flex items-center justify-between">
                         <div>
-                          <h3 className="font-medium text-primary-900">Exportar Dados</h3>
-                          <p className="text-sm text-primary-600">
+                          <h3 className="font-medium text-primary-900 dark:text-white">Exportar Dados</h3>
+                          <p className="text-sm text-primary-600 dark:text-gray-300">
                             Baixe todos os seus dados em formato JSON
                           </p>
                         </div>
@@ -687,10 +687,10 @@ export default function SettingsPage() {
                         </Button>
                       </div>
                       
-                      <div className="p-4 border rounded-lg flex items-center justify-between">
+                      <div className="p-4 border dark:border-gray-600 rounded-lg flex items-center justify-between">
                         <div>
-                          <h3 className="font-medium text-primary-900">Histórico de Atividades</h3>
-                          <p className="text-sm text-primary-600">
+                          <h3 className="font-medium text-primary-900 dark:text-white">Histórico de Atividades</h3>
+                          <p className="text-sm text-primary-600 dark:text-gray-300">
                             Relatório detalhado de todas as suas atividades
                           </p>
                         </div>
@@ -700,10 +700,10 @@ export default function SettingsPage() {
                         </Button>
                       </div>
                       
-                      <div className="p-4 border border-red-200 rounded-lg flex items-center justify-between">
+                      <div className="p-4 border border-red-200 dark:border-red-700 rounded-lg flex items-center justify-between">
                         <div>
-                          <h3 className="font-medium text-red-900">Limpar Cache</h3>
-                          <p className="text-sm text-red-600">
+                          <h3 className="font-medium text-red-900 dark:text-red-400">Limpar Cache</h3>
+                          <p className="text-sm text-red-600 dark:text-red-400">
                             Remove dados temporários para liberar espaço
                           </p>
                         </div>
@@ -728,38 +728,38 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900">Central de Ajuda</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Central de Ajuda</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <a href="#" className="p-4 border rounded-lg hover:border-primary-500 transition-colors">
-                        <FileText className="w-8 h-8 text-primary-600 mb-3" />
-                        <h3 className="font-medium text-primary-900">Documentação</h3>
-                        <p className="text-sm text-primary-600">Guias e tutoriais</p>
+                      <a href="#" className="p-4 border dark:border-gray-600 rounded-lg hover:border-primary-500 dark:hover:border-primary-400 transition-colors">
+                        <FileText className="w-8 h-8 text-primary-600 dark:text-primary-400 mb-3" />
+                        <h3 className="font-medium text-primary-900 dark:text-white">Documentação</h3>
+                        <p className="text-sm text-primary-600 dark:text-gray-300">Guias e tutoriais</p>
                       </a>
                       
-                      <a href="#" className="p-4 border rounded-lg hover:border-primary-500 transition-colors">
-                        <Mail className="w-8 h-8 text-primary-600 mb-3" />
-                        <h3 className="font-medium text-primary-900">Suporte</h3>
-                        <p className="text-sm text-primary-600">Entre em contato</p>
+                      <a href="#" className="p-4 border dark:border-gray-600 rounded-lg hover:border-primary-500 dark:hover:border-primary-400 transition-colors">
+                        <Mail className="w-8 h-8 text-primary-600 dark:text-primary-400 mb-3" />
+                        <h3 className="font-medium text-primary-900 dark:text-white">Suporte</h3>
+                        <p className="text-sm text-primary-600 dark:text-gray-300">Entre em contato</p>
                       </a>
                       
-                      <a href="#" className="p-4 border rounded-lg hover:border-primary-500 transition-colors">
-                        <HelpCircle className="w-8 h-8 text-primary-600 mb-3" />
-                        <h3 className="font-medium text-primary-900">FAQ</h3>
-                        <p className="text-sm text-primary-600">Perguntas frequentes</p>
+                      <a href="#" className="p-4 border dark:border-gray-600 rounded-lg hover:border-primary-500 dark:hover:border-primary-400 transition-colors">
+                        <HelpCircle className="w-8 h-8 text-primary-600 dark:text-primary-400 mb-3" />
+                        <h3 className="font-medium text-primary-900 dark:text-white">FAQ</h3>
+                        <p className="text-sm text-primary-600 dark:text-gray-300">Perguntas frequentes</p>
                       </a>
                       
-                      <a href="#" className="p-4 border rounded-lg hover:border-primary-500 transition-colors">
-                        <Shield className="w-8 h-8 text-primary-600 mb-3" />
-                        <h3 className="font-medium text-primary-900">Termos de Uso</h3>
-                        <p className="text-sm text-primary-600">Políticas e termos</p>
+                      <a href="#" className="p-4 border dark:border-gray-600 rounded-lg hover:border-primary-500 dark:hover:border-primary-400 transition-colors">
+                        <Shield className="w-8 h-8 text-primary-600 dark:text-primary-400 mb-3" />
+                        <h3 className="font-medium text-primary-900 dark:text-white">Termos de Uso</h3>
+                        <p className="text-sm text-primary-600 dark:text-gray-300">Políticas e termos</p>
                       </a>
                     </div>
                     
-                    <div className="bg-gray-50 rounded-lg p-6 text-center">
-                      <h3 className="font-medium text-primary-900 mb-2">Precisa de ajuda?</h3>
-                      <p className="text-sm text-primary-600 mb-4">
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center">
+                      <h3 className="font-medium text-primary-900 dark:text-white mb-2">Precisa de ajuda?</h3>
+                      <p className="text-sm text-primary-600 dark:text-gray-300 mb-4">
                         Nossa equipe está disponível de segunda a sexta, das 9h às 18h
                       </p>
                       <Button>
@@ -789,29 +789,29 @@ export default function SettingsPage() {
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="bg-white rounded-lg p-6 max-w-md w-full"
+              className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <AlertCircle className="w-8 h-8 text-red-600" />
                 </div>
-                <h3 className="text-xl font-bold text-primary-900 mb-2">
+                <h3 className="text-xl font-bold text-primary-900 dark:text-white mb-2">
                   Excluir Conta Permanentemente?
                 </h3>
-                <p className="text-primary-600">
+                <p className="text-primary-600 dark:text-gray-300">
                   Esta ação não pode ser desfeita. Todos os seus dados serão permanentemente removidos.
                 </p>
               </div>
               
               <div className="mb-6">
-                <label className="block text-sm font-medium text-primary-700 mb-2">
+                <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                   Digite "EXCLUIR" para confirmar
                 </label>
                 <input
                   type="text"
                   placeholder="EXCLUIR"
-                  className="w-full px-4 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-2 border border-red-300 dark:border-red-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               
