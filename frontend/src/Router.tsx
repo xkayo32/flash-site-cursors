@@ -1,6 +1,19 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { Layout } from './components/layout/Layout';
+import { UnderDevelopment } from './components/ui/UnderDevelopment';
+import { 
+  GraduationCap, 
+  Calendar, 
+  Trophy, 
+  Brain, 
+  FileQuestion, 
+  FileText, 
+  Scale, 
+  Target, 
+  CreditCard, 
+  Settings 
+} from 'lucide-react';
 
 // Páginas públicas
 import HomePage from './pages/public/HomePage';
@@ -40,16 +53,76 @@ function Router() {
         }
       >
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/courses" element={<div className="p-6"><h2 className="text-2xl font-bold mb-4">Catálogo de Cursos</h2><p>Lista completa de cursos disponíveis na plataforma - Em desenvolvimento</p></div>} />
-        <Route path="/schedule" element={<div className="p-6"><h2 className="text-2xl font-bold mb-4">Cronograma Personalizado</h2><p>Plano de estudos gerado por IA baseado na data da prova e edital - Em desenvolvimento</p></div>} />
-        <Route path="/simulations" element={<div className="p-6"><h2 className="text-2xl font-bold mb-4">Simulados</h2><p>Simulados com condições reais de prova - Em desenvolvimento</p></div>} />
-        <Route path="/flashcards" element={<div className="p-6"><h2 className="text-2xl font-bold mb-4">Flashcards</h2><p>Sistema de repetição espaçada (SRS) para memorização - Em desenvolvimento</p></div>} />
-        <Route path="/questions" element={<div className="p-6"><h2 className="text-2xl font-bold mb-4">Banco de Questões</h2><p>Questões organizadas por disciplina, banca e ano - Em desenvolvimento</p></div>} />
-        <Route path="/summaries" element={<div className="p-6"><h2 className="text-2xl font-bold mb-4">Resumos Interativos</h2><p>Conteúdo didático com flashcards e questões incorporados - Em desenvolvimento</p></div>} />
-        <Route path="/legislation" element={<div className="p-6"><h2 className="text-2xl font-bold mb-4">Legislação</h2><p>Textos de leis relevantes para os cursos - Em desenvolvimento</p></div>} />
-        <Route path="/tactical" element={<div className="p-6"><h2 className="text-2xl font-bold mb-4">Painel Tático</h2><p>Dashboard avançado com cruzamento de dados de desempenho - Em desenvolvimento</p></div>} />
-        <Route path="/subscription" element={<div className="p-6"><h2 className="text-2xl font-bold mb-4">Gerenciar Assinatura</h2><p>Visualizar, atualizar ou cancelar assinatura - Em desenvolvimento</p></div>} />
-        <Route path="/settings" element={<div className="p-6"><h2 className="text-2xl font-bold mb-4">Configurações</h2><p>Preferências do usuário e configurações da conta - Em desenvolvimento</p></div>} />
+        <Route path="/courses" element={
+          <UnderDevelopment 
+            title="Catálogo de Cursos" 
+            description="Lista completa de cursos disponíveis na plataforma" 
+            icon={GraduationCap}
+          />
+        } />
+        <Route path="/schedule" element={
+          <UnderDevelopment 
+            title="Cronograma Personalizado" 
+            description="Plano de estudos gerado por IA baseado na data da prova e edital" 
+            icon={Calendar}
+          />
+        } />
+        <Route path="/simulations" element={
+          <UnderDevelopment 
+            title="Simulados" 
+            description="Simulados com condições reais de prova" 
+            icon={Trophy}
+          />
+        } />
+        <Route path="/flashcards" element={
+          <UnderDevelopment 
+            title="Flashcards" 
+            description="Sistema de repetição espaçada (SRS) para memorização" 
+            icon={Brain}
+          />
+        } />
+        <Route path="/questions" element={
+          <UnderDevelopment 
+            title="Banco de Questões" 
+            description="Questões organizadas por disciplina, banca e ano" 
+            icon={FileQuestion}
+          />
+        } />
+        <Route path="/summaries" element={
+          <UnderDevelopment 
+            title="Resumos Interativos" 
+            description="Conteúdo didático com flashcards e questões incorporados" 
+            icon={FileText}
+          />
+        } />
+        <Route path="/legislation" element={
+          <UnderDevelopment 
+            title="Legislação" 
+            description="Textos de leis relevantes para os cursos" 
+            icon={Scale}
+          />
+        } />
+        <Route path="/tactical" element={
+          <UnderDevelopment 
+            title="Painel Tático" 
+            description="Dashboard avançado com cruzamento de dados de desempenho" 
+            icon={Target}
+          />
+        } />
+        <Route path="/subscription" element={
+          <UnderDevelopment 
+            title="Gerenciar Assinatura" 
+            description="Visualizar, atualizar ou cancelar assinatura" 
+            icon={CreditCard}
+          />
+        } />
+        <Route path="/settings" element={
+          <UnderDevelopment 
+            title="Configurações" 
+            description="Preferências do usuário e configurações da conta" 
+            icon={Settings}
+          />
+        } />
       </Route>
       
       {/* Rota padrão */}

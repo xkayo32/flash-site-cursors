@@ -9,12 +9,14 @@ import {
   ArrowRight,
   Zap,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
+import { Logo } from '@/components/ui/Logo';
 
 // Componentes dos ícones das redes sociais
 const GoogleIcon = () => (
@@ -163,11 +165,8 @@ export default function LoginPage() {
         >
           {/* Logo and Title */}
           <motion.div variants={fadeInUp} className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center">
-                <Zap className="w-7 h-7 text-white" />
-              </div>
-              <span className="text-3xl font-bold text-primary-900">StudyPro</span>
+            <div className="flex justify-center mb-6">
+              <Logo variant="icon" size="lg" animated={true} />
             </div>
             <h1 className="text-2xl font-bold text-primary-900 mb-2">
               Bem-vindo de volta!
@@ -336,66 +335,122 @@ export default function LoginPage() {
         </motion.div>
       </div>
 
-      {/* Right Side - Features */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white p-12 items-center">
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-lg"
-        >
-          <h2 className="text-4xl font-bold mb-6">
-            Sua aprovação está a um clique de distância
-          </h2>
-          <p className="text-xl text-primary-100 mb-8">
-            Junte-se a mais de 15.000 candidatos aprovados que escolheram a StudyPro
-          </p>
-
-          <div className="space-y-4">
-            {[
-              'Mais de 50.000 questões atualizadas',
-              'Flashcards com inteligência artificial',
-              'Simulados idênticos às provas reais',
-              'Cronograma personalizado com IA',
-              'Relatórios detalhados de desempenho'
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
-                className="flex items-center gap-3"
-              >
-                <div className="w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-primary-100">{feature}</span>
-              </motion.div>
-            ))}
-          </div>
-
+      {/* Right Side - New Courses */}
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full filter blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-60 h-60 bg-accent-500 rounded-full filter blur-3xl"></div>
+        </div>
+        
+        <div className="relative z-10 flex items-center justify-center w-full p-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.9 }}
-            className="mt-8 p-6 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="max-w-xl w-full"
           >
-            <div className="flex items-center gap-4 mb-3">
-              <img
-                src="https://ui-avatars.com/api/?name=Maria+Santos&background=14242f&color=fff"
-                alt="Maria Santos"
-                className="w-12 h-12 rounded-full"
-              />
-              <div>
-                <div className="font-semibold">Maria Santos</div>
-                <div className="text-sm text-primary-200">Aprovada PF - Agente</div>
-              </div>
+            {/* Header */}
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-center mb-10"
+            >
+              <h2 className="text-4xl font-bold mb-4">
+                🎯 Novos Cursos Disponíveis
+              </h2>
+              <p className="text-xl text-primary-100">
+                Materiais atualizados para os concursos mais aguardados
+              </p>
+            </motion.div>
+
+            {/* Course Cards */}
+            <div className="space-y-4">
+              {[
+                {
+                  title: 'Polícia Federal 2024',
+                  badge: 'NOVO',
+                  badgeColor: 'bg-green-500',
+                  students: '2.341',
+                  modules: '18 módulos',
+                  questions: '8.500+ questões',
+                  icon: '👮‍♂️'
+                },
+                {
+                  title: 'Receita Federal - Auditor',
+                  badge: 'ATUALIZADO',
+                  badgeColor: 'bg-blue-500',
+                  students: '1.856',
+                  modules: '22 módulos',
+                  questions: '12.300+ questões',
+                  icon: '💼'
+                },
+                {
+                  title: 'Tribunais - TRT/TRF',
+                  badge: 'EM ALTA',
+                  badgeColor: 'bg-orange-500',
+                  students: '987',
+                  modules: '15 módulos',
+                  questions: '6.700+ questões',
+                  icon: '⚖️'
+                }
+              ].map((course, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                  className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 hover:bg-white/15 transition-all duration-300 transform hover:scale-105"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{course.icon}</span>
+                      <div>
+                        <h3 className="font-bold text-lg">{course.title}</h3>
+                        <div className="flex items-center gap-4 text-sm text-primary-200 mt-1">
+                          <span className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            {course.students} alunos
+                          </span>
+                          <span>{course.modules}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <span className={`${course.badgeColor} text-white text-xs px-2 py-1 rounded-full font-bold`}>
+                      {course.badge}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-primary-300">{course.questions}</span>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="text-accent-400 hover:text-accent-300 transition-colors"
+                    >
+                      <ArrowRight className="w-5 h-5" />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-            <p className="text-primary-100 italic">
-              "A StudyPro foi essencial para minha aprovação. O sistema de estudos é realmente eficiente!"
-            </p>
+
+            {/* Bottom Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
+              className="mt-8 text-center"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent-500/20 rounded-full">
+                <Zap className="w-5 h-5 text-accent-400" />
+                <span className="text-accent-300 font-medium">
+                  +12 novos cursos este mês
+                </span>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

@@ -24,6 +24,7 @@ import { useState } from 'react';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Logo } from '@/components/ui/Logo';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
@@ -94,21 +95,13 @@ export function Sidebar() {
             "flex items-center",
             isOpen ? "justify-between" : "justify-center"
           )}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Zap className="w-6 h-6" />
-              </div>
-              {isOpen && (
-                <motion.span 
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: "auto" }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-xl font-bold whitespace-nowrap"
-                >
-                  StudyPro
-                </motion.span>
-              )}
+            <div className="flex items-center">
+              <Logo 
+                variant={isOpen ? "full" : "icon"} 
+                size="sm" 
+                animated={true} 
+                className="flex-shrink-0"
+              />
             </div>
             
             {isOpen && (

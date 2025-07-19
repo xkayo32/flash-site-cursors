@@ -17,10 +17,16 @@ import {
   Award,
   Clock,
   TrendingUp,
-  MessageCircle
+  MessageCircle,
+  GraduationCap,
+  CreditCard,
+  LogIn,
+  Rocket,
+  Menu
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Logo } from '@/components/ui/Logo';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -180,42 +186,74 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+      <motion.header 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 100 }}
+        className="bg-white/95 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-primary-100"
+      >
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-primary-900">StudyPro</span>
-            </div>
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              className="cursor-pointer"
+            >
+              <Logo variant="full" size="sm" animated={true} />
+            </motion.div>
             
-            <nav className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-primary-700 hover:text-primary-600 transition">
-                Funcionalidades
-              </a>
-              <a href="#courses" className="text-primary-700 hover:text-primary-600 transition">
-                Cursos
-              </a>
-              <a href="#testimonials" className="text-primary-700 hover:text-primary-600 transition">
-                Depoimentos
-              </a>
-              <a href="#pricing" className="text-primary-700 hover:text-primary-600 transition">
-                Preços
-              </a>
+            <nav className="hidden lg:flex items-center gap-10">
+              {[
+                { href: "#features", label: "Funcionalidades", icon: BookOpen },
+                { href: "#courses", label: "Cursos", icon: GraduationCap },
+                { href: "#testimonials", label: "Depoimentos", icon: Users },
+                { href: "#pricing", label: "Preços", icon: CreditCard }
+              ].map((item, index) => (
+                <motion.a
+                  key={item.href}
+                  href={item.href}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="group flex items-center gap-2 text-primary-700 hover:text-primary-900 transition-all duration-300 font-medium relative"
+                >
+                  <item.icon className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {item.label}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
+                </motion.a>
+              ))}
             </nav>
 
-            <div className="flex items-center gap-4">
-              <Link to="/login" className="text-primary-700 hover:text-primary-600 transition">
-                Entrar
+            <div className="flex items-center gap-3">
+              <Link to="/login">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="hidden sm:flex items-center gap-2 px-5 py-2.5 text-primary-700 hover:text-primary-900 font-medium transition-all duration-300 border-2 border-transparent hover:border-primary-200 rounded-xl"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Entrar
+                </motion.button>
               </Link>
               <Link to="/register">
-                <Button>Começar Agora</Button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl"
+                >
+                  <Rocket className="w-5 h-5" />
+                  <span className="hidden sm:inline">Começar Agora</span>
+                  <span className="sm:hidden">Começar</span>
+                </motion.button>
               </Link>
+              
+              {/* Mobile Menu Button */}
+              <button className="lg:hidden p-2 rounded-lg hover:bg-primary-100 transition-colors">
+                <Menu className="w-6 h-6 text-primary-700" />
+              </button>
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white py-20">
@@ -246,19 +284,26 @@ export default function HomePage() {
               className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
             >
               <Link to="/register">
-                <Button size="lg" className="bg-accent-500 hover:bg-accent-600 text-lg px-8 py-4">
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
+                  whileTap={{ scale: 0.95 }}
+                  className="group flex items-center gap-3 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white text-lg font-bold px-8 py-4 rounded-2xl shadow-xl transition-all duration-300"
+                >
+                  <Rocket className="w-6 h-6 group-hover:rotate-12 transition-transform" />
                   Começar Gratuitamente
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </motion.button>
               </Link>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-white text-white hover:bg-white hover:text-primary-600 text-lg px-8 py-4"
+              <motion.button
+                whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.2)" }}
+                whileTap={{ scale: 0.95 }}
+                className="group flex items-center gap-2 border-2 border-white/50 backdrop-blur-sm text-white hover:border-white text-lg font-semibold px-8 py-4 rounded-2xl transition-all duration-300"
               >
-                <Play className="mr-2 w-5 h-5" />
-                Ver Demo
-              </Button>
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                  <Play className="w-6 h-6 ml-1" />
+                </div>
+                Ver Demonstração
+              </motion.button>
             </motion.div>
 
             {/* Stats */}
