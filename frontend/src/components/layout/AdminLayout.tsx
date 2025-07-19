@@ -186,6 +186,7 @@ export default function AdminLayout() {
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-2 text-primary-300 hover:text-white hover:bg-primary-800 dark:hover:bg-gray-700"
+                onClick={() => navigate('/admin/settings')}
               >
                 <Settings className="w-4 h-4" />
                 Configurações

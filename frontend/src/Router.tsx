@@ -37,6 +37,7 @@ import SummaryEditor from './pages/admin/SummaryEditor';
 import LegislationManager from './pages/admin/LegislationManager';
 import ImportManager from './pages/admin/ImportManager';
 import CategoryManager from './pages/admin/CategoryManager';
+import AdminSettings from './pages/admin/AdminSettings';
 import AdminLayout from './components/layout/AdminLayout';
 
 // Componente para rotas protegidas
@@ -144,6 +145,7 @@ function Router() {
         <Route path="/admin/analytics" element={<Analytics />} />
         <Route path="/admin/import" element={<ImportManager />} />
         <Route path="/admin/categories" element={<CategoryManager />} />
+        <Route path="/admin/settings" element={<AdminSettings />} />
       </Route>
       
       {/* Rota padrão */}
