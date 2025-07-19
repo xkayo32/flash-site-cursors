@@ -25,6 +25,7 @@ import DashboardPage from './pages/student/DashboardPage';
 import CoursesPage from './pages/student/CoursesPage';
 import CourseDetailsPage from './pages/student/CourseDetailsPage';
 import MyCoursesPage from './pages/student/MyCoursesPage';
+import CourseLearningPage from './pages/student/CourseLearningPage';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -47,6 +48,16 @@ function Router() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/course/:id" element={<CourseDetailsPage />} />
+      
+      {/* Rota de learning sem layout padrão */}
+      <Route 
+        path="/course/:courseId/learn" 
+        element={
+          <ProtectedRoute>
+            <CourseLearningPage />
+          </ProtectedRoute>
+        } 
+      />
       
       {/* Rotas protegidas com layout */}
       <Route
