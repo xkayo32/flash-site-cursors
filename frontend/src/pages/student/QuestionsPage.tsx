@@ -814,11 +814,12 @@ export default function QuestionsPage() {
             
             {/* Modal */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white rounded-2xl shadow-2xl z-50 max-h-[90vh] overflow-auto"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-0 flex items-center justify-center p-4 z-50"
             >
+              <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-auto">
               <div className="p-6 border-b">
                 <h2 className="text-2xl font-bold text-primary-900">Criar Novo Caderno</h2>
                 <p className="text-primary-600 mt-1">
@@ -932,6 +933,7 @@ export default function QuestionsPage() {
                     Cancelar
                   </Button>
                 </div>
+              </div>
               </div>
             </motion.div>
           </>
