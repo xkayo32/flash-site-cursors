@@ -123,6 +123,26 @@ export default function LoginPage() {
 
         toast.success('Login realizado com sucesso!');
         navigate('/dashboard');
+      } else if (formData.email === 'admin@studypro.com' && formData.password === 'admin123') {
+        // Mock login como admin
+        setAuth(
+          {
+            id: '999',
+            name: 'Administrador',
+            email: formData.email,
+            role: 'admin',
+            avatar: `https://ui-avatars.com/api/?name=Admin&background=DC2626&color=fff`,
+            subscription: {
+              plan: 'Unlimited',
+              expiresAt: null,
+              status: 'active'
+            }
+          },
+          'fake-admin-token'
+        );
+
+        toast.success('Login administrativo realizado com sucesso!');
+        navigate('/admin/dashboard');
       } else {
         // Para outros emails, simular login normal
         setAuth(
@@ -244,21 +264,32 @@ export default function LoginPage() {
           {/* Divider */}
           <motion.div variants={fadeInUp} className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">ou continue com email</span>
+              <span className="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">ou continue com email</span>
             </div>
           </motion.div>
 
           {/* Test Credentials Info */}
-          <motion.div variants={fadeInUp} className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="text-sm text-blue-800">
-              <span className="font-semibold">Credenciais de teste:</span>
-              <br />
-              Email: <code className="bg-blue-100 px-1 rounded">teste@studypro.com</code>
-              <br />
-              Senha: <code className="bg-blue-100 px-1 rounded">123456</code>
+          <motion.div variants={fadeInUp} className="mb-4 space-y-2">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="text-sm text-blue-800 dark:text-blue-200">
+                <span className="font-semibold">Credenciais de teste (Aluno):</span>
+                <br />
+                Email: <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">teste@studypro.com</code>
+                <br />
+                Senha: <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">123456</code>
+              </div>
+            </div>
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div className="text-sm text-red-800 dark:text-red-200">
+                <span className="font-semibold">Credenciais de teste (Admin):</span>
+                <br />
+                Email: <code className="bg-red-100 dark:bg-red-800 px-1 rounded">admin@studypro.com</code>
+                <br />
+                Senha: <code className="bg-red-100 dark:bg-red-800 px-1 rounded">admin123</code>
+              </div>
             </div>
           </motion.div>
 

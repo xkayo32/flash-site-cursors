@@ -1,19 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { Layout } from './components/layout/Layout';
-import { UnderDevelopment } from './components/ui/UnderDevelopment';
-import { 
-  GraduationCap, 
-  Calendar, 
-  Trophy, 
-  Brain, 
-  FileQuestion, 
-  FileText, 
-  Scale, 
-  Target, 
-  CreditCard, 
-  Settings 
-} from 'lucide-react';
 
 // Páginas públicas
 import HomePage from './pages/public/HomePage';
@@ -38,12 +25,35 @@ import TacticalPanelPage from './pages/student/TacticalPanelPage';
 import SubscriptionPage from './pages/student/SubscriptionPage';
 import SettingsPage from './pages/student/SettingsPage';
 
+// Páginas do Admin
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ContentManager from './pages/admin/ContentManager';
+import UserManager from './pages/admin/UserManager';
+import QuestionEditor from './pages/admin/QuestionEditor';
+import Analytics from './pages/admin/Analytics';
+import CourseEditor from './pages/admin/CourseEditor';
+import AdminLayout from './components/layout/AdminLayout';
+
 // Componente para rotas protegidas
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole?: 'admin' | 'student' }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+  
+  if (requiredRole && user?.role !== requiredRole) {
+    // Se é admin tentando acessar rota de student, redireciona para admin
+    if (user?.role === 'admin' && requiredRole === 'student') {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
+    // Se é student tentando acessar rota de admin, redireciona para dashboard
+    if (user?.role === 'student' && requiredRole === 'admin') {
+      return <Navigate to="/dashboard" replace />;
+    }
+    // Fallback
+    return <Navigate to="/" replace />;
   }
   
   return <>{children}</>;
@@ -51,6 +61,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function Router() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
 
   return (
     <Routes>
@@ -108,8 +119,30 @@ function Router() {
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
       
+      {/* Rotas do Admin */}
+      <Route
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/content" element={<ContentManager />} />
+        <Route path="/admin/courses" element={<CourseEditor />} />
+        <Route path="/admin/users" element={<UserManager />} />
+        <Route path="/admin/questions" element={<QuestionEditor />} />
+        <Route path="/admin/analytics" element={<Analytics />} />
+      </Route>
+      
       {/* Rota padrão */}
-      <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/"} replace />} />
+      <Route path="*" element={
+        <Navigate 
+          to={isAuthenticated ? (user?.role === 'admin' ? '/admin/dashboard' : '/dashboard') : '/'} 
+          replace 
+        />
+      } />
     </Routes>
   );
 }
