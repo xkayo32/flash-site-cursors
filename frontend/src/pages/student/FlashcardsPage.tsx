@@ -300,6 +300,10 @@ export default function FlashcardsPage() {
     total: 0,
     startTime: Date.now()
   });
+  const [selectedCards, setSelectedCards] = useState<string[]>([]);
+  const [newDeckName, setNewDeckName] = useState('');
+  const [newDeckDescription, setNewDeckDescription] = useState('');
+  const [newDeckSubject, setNewDeckSubject] = useState('');
 
   // Filtrar decks
   const filteredDecks = mockDecks.filter(deck => {
@@ -313,6 +317,51 @@ export default function FlashcardsPage() {
   });
 
   const subjects = ['all', ...new Set(mockDecks.map(deck => deck.subject))];
+
+  // Handle card selection
+  const handleCardSelection = (cardId: string) => {
+    setSelectedCards(prev => {
+      if (prev.includes(cardId)) {
+        return prev.filter(id => id !== cardId);
+      } else {
+        return [...prev, cardId];
+      }
+    });
+  };
+
+  // Create new deck with selected cards
+  const handleCreateDeck = () => {
+    if (selectedCards.length === 0 || !newDeckName.trim()) {
+      return;
+    }
+
+    // Simula criação do deck
+    const newDeck: FlashcardDeck = {
+      id: Date.now().toString(),
+      name: newDeckName,
+      description: newDeckDescription,
+      subject: newDeckSubject || 'Misto/Várias matérias',
+      totalCards: selectedCards.length,
+      dueCards: selectedCards.length,
+      newCards: selectedCards.length,
+      color: 'bg-indigo-500',
+      createdAt: new Date().toISOString(),
+      isUserDeck: true,
+      author: 'Você'
+    };
+
+    console.log('Deck criado:', newDeck);
+    console.log('Cards selecionados:', selectedCards);
+    
+    alert(`Deck "${newDeckName}" criado com sucesso com ${selectedCards.length} flashcard${selectedCards.length > 1 ? 's' : ''}!`);
+    
+    // Reset form
+    setNewDeckName('');
+    setNewDeckDescription('');
+    setNewDeckSubject('');
+    setSelectedCards([]);
+    setActiveTab('overview');
+  };
 
   // Algoritmo SRS (Simplified)
   const calculateNextReview = (quality: number, card: Flashcard) => {
@@ -873,16 +922,17 @@ export default function FlashcardsPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ delay: 0.1 }}
-            className="max-w-3xl mx-auto"
+            className="max-w-4xl mx-auto"
           >
             <Card>
               <CardHeader>
                 <h3 className="text-xl font-bold text-primary-900">Criar Novo Deck</h3>
                 <p className="text-primary-600">
-                  Crie seu próprio deck de flashcards para estudar
+                  Monte sua coleção personalizada selecionando flashcards existentes do sistema
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Informações básicas do deck */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-primary-700 mb-2">
@@ -890,24 +940,29 @@ export default function FlashcardsPage() {
                     </label>
                     <input
                       type="text"
-                      placeholder="Ex: Meus resumos de Direito Civil"
+                      placeholder="Ex: Revisão PF - Constitucional e Penal"
+                      value={newDeckName}
+                      onChange={(e) => setNewDeckName(e.target.value)}
                       className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-primary-700 mb-2">
-                      Matéria
+                      Matéria Principal
                     </label>
-                    <select className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
-                      <option>Selecione uma matéria</option>
-                      <option>Direito Constitucional</option>
-                      <option>Direito Penal</option>
-                      <option>Direito Administrativo</option>
-                      <option>Informática</option>
-                      <option>Português</option>
-                      <option>Matemática</option>
-                      <option>Outras</option>
+                    <select 
+                      value={newDeckSubject}
+                      onChange={(e) => setNewDeckSubject(e.target.value)}
+                      className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value="">Selecione uma matéria</option>
+                      <option value="Misto/Várias matérias">Misto/Várias matérias</option>
+                      <option value="Direito Constitucional">Direito Constitucional</option>
+                      <option value="Direito Penal">Direito Penal</option>
+                      <option value="Direito Administrativo">Direito Administrativo</option>
+                      <option value="Informática">Informática</option>
+                      <option value="Português">Português</option>
                     </select>
                   </div>
                 </div>
@@ -917,95 +972,134 @@ export default function FlashcardsPage() {
                     Descrição
                   </label>
                   <textarea
-                    placeholder="Descreva o conteúdo do seu deck..."
-                    className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[100px]"
+                    placeholder="Descreva o objetivo do seu deck personalizado..."
+                    value={newDeckDescription}
+                    onChange={(e) => setNewDeckDescription(e.target.value)}
+                    className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[80px]"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <label className="block text-sm font-medium text-primary-700 col-span-full mb-2">
-                    Cor do Deck
-                  </label>
-                  {[
-                    { color: 'bg-blue-500', name: 'Azul' },
-                    { color: 'bg-green-500', name: 'Verde' },
-                    { color: 'bg-purple-500', name: 'Roxo' },
-                    { color: 'bg-orange-500', name: 'Laranja' },
-                    { color: 'bg-red-500', name: 'Vermelho' },
-                    { color: 'bg-pink-500', name: 'Rosa' },
-                    { color: 'bg-yellow-500', name: 'Amarelo' },
-                    { color: 'bg-gray-500', name: 'Cinza' }
-                  ].map((colorOption) => (
-                    <div key={colorOption.color} className="text-center">
-                      <button
-                        type="button"
-                        className={cn(
-                          "w-full h-12 rounded-lg mb-1 ring-2 ring-offset-2 transition-all",
-                          colorOption.color,
-                          "hover:ring-primary-500"
-                        )}
-                      />
-                      <span className="text-xs text-primary-600">{colorOption.name}</span>
-                    </div>
-                  ))}
-                </div>
-
+                {/* Seleção de cards existentes */}
                 <div className="pt-4 border-t">
-                  <h4 className="font-semibold text-primary-900 mb-4">Adicionar Primeiro Card</h4>
+                  <h4 className="font-semibold text-primary-900 mb-4">Selecionar Flashcards</h4>
                   
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-2">
-                        Frente (Pergunta)
-                      </label>
-                      <textarea
-                        placeholder="Digite a pergunta ou conceito..."
-                        className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[80px]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-2">
-                        Verso (Resposta)
-                      </label>
-                      <textarea
-                        placeholder="Digite a resposta ou explicação..."
-                        className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[120px]"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
+                  {/* Filtros para encontrar cards */}
+                  <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-primary-700 mb-2">
+                          Filtrar por Matéria
+                        </label>
+                        <select className="w-full p-2 border border-primary-200 rounded focus:outline-none focus:ring-2 focus:ring-primary-500">
+                          <option>Todas</option>
+                          <option>Direito Constitucional</option>
+                          <option>Direito Penal</option>
+                          <option>Informática</option>
+                        </select>
+                      </div>
                       <div>
                         <label className="block text-sm font-medium text-primary-700 mb-2">
                           Dificuldade
                         </label>
-                        <select className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <select className="w-full p-2 border border-primary-200 rounded focus:outline-none focus:ring-2 focus:ring-primary-500">
+                          <option>Todas</option>
                           <option>Fácil</option>
                           <option>Médio</option>
                           <option>Difícil</option>
                         </select>
                       </div>
-
                       <div>
                         <label className="block text-sm font-medium text-primary-700 mb-2">
-                          Tags (opcional)
+                          Buscar
                         </label>
                         <input
                           type="text"
-                          placeholder="tag1, tag2, tag3"
-                          className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          placeholder="Palavras-chave..."
+                          className="w-full p-2 border border-primary-200 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
                       </div>
                     </div>
                   </div>
+
+                  {/* Lista de cards disponíveis */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm text-primary-600">
+                        {mockFlashcards.length} flashcards disponíveis
+                      </p>
+                      <p className="text-sm font-medium text-primary-900">
+                        {selectedCards.length} selecionado{selectedCards.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    
+                    <div className="border border-primary-200 rounded-lg max-h-96 overflow-y-auto">
+                      {mockFlashcards.map((card) => (
+                        <div
+                          key={card.id}
+                          className="p-4 border-b border-primary-100 hover:bg-primary-50 transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-start gap-4">
+                            <input
+                              type="checkbox"
+                              checked={selectedCards.includes(card.id)}
+                              onChange={() => handleCardSelection(card.id)}
+                              className="mt-1 w-4 h-4 text-primary-600 border-primary-300 rounded focus:ring-primary-500"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant="secondary" className="text-xs">
+                                  {card.subject}
+                                </Badge>
+                                <Badge 
+                                  className={cn(
+                                    "text-xs",
+                                    card.difficulty === 'Fácil' && "bg-green-100 text-green-700",
+                                    card.difficulty === 'Médio' && "bg-yellow-100 text-yellow-700",
+                                    card.difficulty === 'Difícil' && "bg-red-100 text-red-700"
+                                  )}
+                                >
+                                  {card.difficulty}
+                                </Badge>
+                              </div>
+                              <p className="font-medium text-primary-900 mb-1">
+                                {card.front}
+                              </p>
+                              <p className="text-sm text-primary-600 line-clamp-2">
+                                {card.back}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Dica:</strong> Você pode adicionar mais flashcards ao seu deck a qualquer momento. 
+                      Comece com alguns e vá expandindo conforme sua necessidade de estudo.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex gap-3">
-                  <Button className="flex-1 gap-2">
+                  <Button 
+                    className="flex-1 gap-2" 
+                    disabled={selectedCards.length === 0 || !newDeckName.trim()}
+                    onClick={handleCreateDeck}
+                  >
                     <Plus className="w-4 h-4" />
-                    Criar Deck e Card
+                    {selectedCards.length === 0 
+                      ? 'Criar Deck (Selecione pelo menos 1 card)' 
+                      : `Criar Deck com ${selectedCards.length} card${selectedCards.length > 1 ? 's' : ''}`}
                   </Button>
-                  <Button variant="outline" onClick={() => setActiveTab('overview')}>
+                  <Button variant="outline" onClick={() => {
+                    setSelectedCards([]);
+                    setNewDeckName('');
+                    setNewDeckDescription('');
+                    setNewDeckSubject('');
+                    setActiveTab('overview');
+                  }}>
                     Cancelar
                   </Button>
                 </div>
