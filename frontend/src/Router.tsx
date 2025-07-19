@@ -29,6 +29,7 @@ import CourseLearningPage from './pages/student/CourseLearningPage';
 import SimuladosPage from './pages/student/SimuladosPage';
 import ExamTakingPage from './pages/student/ExamTakingPage';
 import ExamResultsPage from './pages/student/ExamResultsPage';
+import FlashcardsPage from './pages/student/FlashcardsPage';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -97,13 +98,7 @@ function Router() {
           />
         } />
         <Route path="/simulations" element={<SimuladosPage />} />
-        <Route path="/flashcards" element={
-          <UnderDevelopment 
-            title="Flashcards" 
-            description="Sistema de repetição espaçada (SRS) para memorização" 
-            icon={Brain}
-          />
-        } />
+        <Route path="/flashcards" element={<FlashcardsPage />} />
         <Route path="/questions" element={
           <UnderDevelopment 
             title="Banco de Questões" 
