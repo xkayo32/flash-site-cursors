@@ -23,6 +23,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 // Páginas protegidas
 import DashboardPage from './pages/student/DashboardPage';
 import CoursesPage from './pages/student/CoursesPage';
+import CourseDetailsPage from './pages/student/CourseDetailsPage';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -44,6 +45,7 @@ function Router() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/course/:id" element={<CourseDetailsPage />} />
       
       {/* Rotas protegidas com layout */}
       <Route
