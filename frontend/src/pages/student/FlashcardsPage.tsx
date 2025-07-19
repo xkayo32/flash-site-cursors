@@ -68,6 +68,8 @@ interface FlashcardDeck {
   color: string;
   createdAt: string;
   lastStudied?: string;
+  isUserDeck?: boolean; // true se criado pelo usuário, false/undefined se do sistema
+  author?: string;
 }
 
 interface StudySession {
@@ -91,7 +93,9 @@ const mockDecks: FlashcardDeck[] = [
     newCards: 12,
     color: 'bg-blue-500',
     createdAt: '2024-01-10',
-    lastStudied: '2024-01-18'
+    lastStudied: '2024-01-18',
+    isUserDeck: false,
+    author: 'Prof. Carlos Mendez'
   },
   {
     id: '2',
@@ -103,7 +107,9 @@ const mockDecks: FlashcardDeck[] = [
     newCards: 8,
     color: 'bg-red-500',
     createdAt: '2024-01-08',
-    lastStudied: '2024-01-17'
+    lastStudied: '2024-01-17',
+    isUserDeck: false,
+    author: 'Prof. Ana Silva'
   },
   {
     id: '3',
@@ -115,7 +121,9 @@ const mockDecks: FlashcardDeck[] = [
     newCards: 5,
     color: 'bg-green-500',
     createdAt: '2024-01-05',
-    lastStudied: '2024-01-16'
+    lastStudied: '2024-01-16',
+    isUserDeck: false,
+    author: 'StudyPro Team'
   },
   {
     id: '4',
@@ -126,7 +134,23 @@ const mockDecks: FlashcardDeck[] = [
     dueCards: 8,
     newCards: 18,
     color: 'bg-purple-500',
-    createdAt: '2024-01-12'
+    createdAt: '2024-01-12',
+    isUserDeck: false,
+    author: 'Prof. Maria Santos'
+  },
+  {
+    id: '5',
+    name: 'Meus Resumos - Direito Administrativo',
+    description: 'Cards pessoais sobre princípios e atos administrativos',
+    subject: 'Direito Administrativo',
+    totalCards: 32,
+    dueCards: 5,
+    newCards: 0,
+    color: 'bg-orange-500',
+    createdAt: '2024-01-15',
+    lastStudied: '2024-01-18',
+    isUserDeck: true,
+    author: 'Você'
   }
 ];
 
@@ -261,7 +285,7 @@ const studyStats = {
 };
 
 export default function FlashcardsPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'study' | 'stats'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'study' | 'create' | 'stats'>('overview');
   const [selectedDeck, setSelectedDeck] = useState<FlashcardDeck | null>(null);
   const [currentCard, setCurrentCard] = useState<Flashcard | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -270,6 +294,7 @@ export default function FlashcardsPage() {
   const [studySession, setStudySession] = useState<StudySession | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSubject, setFilterSubject] = useState('all');
+  const [deckFilter, setDeckFilter] = useState<'all' | 'my' | 'system'>('all');
   const [sessionStats, setSessionStats] = useState({
     correct: 0,
     total: 0,
@@ -281,7 +306,10 @@ export default function FlashcardsPage() {
     const matchesSearch = deck.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          deck.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSubject = filterSubject === 'all' || deck.subject === filterSubject;
-    return matchesSearch && matchesSubject;
+    const matchesOrigin = deckFilter === 'all' || 
+                         (deckFilter === 'my' && deck.isUserDeck) || 
+                         (deckFilter === 'system' && !deck.isUserDeck);
+    return matchesSearch && matchesSubject && matchesOrigin;
   });
 
   const subjects = ['all', ...new Set(mockDecks.map(deck => deck.subject))];
@@ -445,15 +473,27 @@ export default function FlashcardsPage() {
             <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", deck.color)}>
               <Brain className="w-6 h-6 text-white" />
             </div>
-            <Badge variant="secondary">{deck.subject}</Badge>
+            <div className="flex flex-col items-end gap-1">
+              <Badge variant="secondary">{deck.subject}</Badge>
+              {deck.isUserDeck && (
+                <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">
+                  Meu Deck
+                </Badge>
+              )}
+            </div>
           </div>
 
           <h3 className="font-bold text-lg text-primary-900 mb-2 line-clamp-2">
             {deck.name}
           </h3>
-          <p className="text-sm text-primary-600 mb-4 line-clamp-2">
+          <p className="text-sm text-primary-600 mb-2 line-clamp-2">
             {deck.description}
           </p>
+          {deck.author && (
+            <p className="text-xs text-primary-500 mb-4">
+              Criado por: {deck.author}
+            </p>
+          )}
 
           {/* Estatísticas */}
           <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
@@ -663,6 +703,7 @@ export default function FlashcardsPage() {
           {[
             { key: 'overview', label: 'Visão Geral', icon: BookOpen },
             { key: 'study', label: 'Estudar', icon: Brain },
+            { key: 'create', label: 'Criar Deck', icon: Plus },
             { key: 'stats', label: 'Estatísticas', icon: BarChart3 }
           ].map(tab => {
             const Icon = tab.icon;
@@ -710,6 +751,15 @@ export default function FlashcardsPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  <select
+                    value={deckFilter}
+                    onChange={(e) => setDeckFilter(e.target.value as any)}
+                    className="px-4 py-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="all">Todos os decks</option>
+                    <option value="my">Meus decks</option>
+                    <option value="system">Decks do sistema</option>
+                  </select>
                   <select
                     value={filterSubject}
                     onChange={(e) => setFilterSubject(e.target.value)}
@@ -817,6 +867,152 @@ export default function FlashcardsPage() {
           </motion.div>
         )}
 
+        {activeTab === 'create' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.1 }}
+            className="max-w-3xl mx-auto"
+          >
+            <Card>
+              <CardHeader>
+                <h3 className="text-xl font-bold text-primary-900">Criar Novo Deck</h3>
+                <p className="text-primary-600">
+                  Crie seu próprio deck de flashcards para estudar
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-primary-700 mb-2">
+                      Nome do Deck
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Meus resumos de Direito Civil"
+                      className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-primary-700 mb-2">
+                      Matéria
+                    </label>
+                    <select className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                      <option>Selecione uma matéria</option>
+                      <option>Direito Constitucional</option>
+                      <option>Direito Penal</option>
+                      <option>Direito Administrativo</option>
+                      <option>Informática</option>
+                      <option>Português</option>
+                      <option>Matemática</option>
+                      <option>Outras</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-primary-700 mb-2">
+                    Descrição
+                  </label>
+                  <textarea
+                    placeholder="Descreva o conteúdo do seu deck..."
+                    className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[100px]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <label className="block text-sm font-medium text-primary-700 col-span-full mb-2">
+                    Cor do Deck
+                  </label>
+                  {[
+                    { color: 'bg-blue-500', name: 'Azul' },
+                    { color: 'bg-green-500', name: 'Verde' },
+                    { color: 'bg-purple-500', name: 'Roxo' },
+                    { color: 'bg-orange-500', name: 'Laranja' },
+                    { color: 'bg-red-500', name: 'Vermelho' },
+                    { color: 'bg-pink-500', name: 'Rosa' },
+                    { color: 'bg-yellow-500', name: 'Amarelo' },
+                    { color: 'bg-gray-500', name: 'Cinza' }
+                  ].map((colorOption) => (
+                    <div key={colorOption.color} className="text-center">
+                      <button
+                        type="button"
+                        className={cn(
+                          "w-full h-12 rounded-lg mb-1 ring-2 ring-offset-2 transition-all",
+                          colorOption.color,
+                          "hover:ring-primary-500"
+                        )}
+                      />
+                      <span className="text-xs text-primary-600">{colorOption.name}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-4 border-t">
+                  <h4 className="font-semibold text-primary-900 mb-4">Adicionar Primeiro Card</h4>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-primary-700 mb-2">
+                        Frente (Pergunta)
+                      </label>
+                      <textarea
+                        placeholder="Digite a pergunta ou conceito..."
+                        className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[80px]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-primary-700 mb-2">
+                        Verso (Resposta)
+                      </label>
+                      <textarea
+                        placeholder="Digite a resposta ou explicação..."
+                        className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[120px]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-primary-700 mb-2">
+                          Dificuldade
+                        </label>
+                        <select className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                          <option>Fácil</option>
+                          <option>Médio</option>
+                          <option>Difícil</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-primary-700 mb-2">
+                          Tags (opcional)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="tag1, tag2, tag3"
+                          className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button className="flex-1 gap-2">
+                    <Plus className="w-4 h-4" />
+                    Criar Deck e Card
+                  </Button>
+                  <Button variant="outline" onClick={() => setActiveTab('overview')}>
+                    Cancelar
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {activeTab === 'stats' && (
           <motion.div
@@ -901,16 +1097,17 @@ export default function FlashcardsPage() {
           O sistema de repetição espaçada otimiza seu tempo de estudo, mostrando os cards no momento ideal para fixação
         </p>
         <div className="flex gap-3 justify-center">
-          <Button variant="secondary" size="lg" onClick={() => setActiveTab('overview')}>
-            Começar a Estudar
+          <Button variant="secondary" size="lg" onClick={() => setActiveTab('create')}>
+            <Plus className="w-5 h-5 mr-2" />
+            Criar Meu Deck
           </Button>
           <Button 
             variant="outline" 
             size="lg" 
             className="border-white text-white hover:bg-white hover:text-primary-700"
-            onClick={() => setActiveTab('stats')}
+            onClick={() => setActiveTab('overview')}
           >
-            Ver Estatísticas
+            Explorar Decks
           </Button>
         </div>
       </motion.div>
