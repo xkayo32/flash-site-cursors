@@ -241,6 +241,10 @@ export default function QuestionsPage() {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [currentNotebook, setCurrentNotebook] = useState<StudySession | null>(null);
+  const [showCreateNotebook, setShowCreateNotebook] = useState(false);
+  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+  const [notebookName, setNotebookName] = useState('');
+  const [notebookDescription, setNotebookDescription] = useState('');
 
   // Função para responder questão
   const handleAnswer = (questionId: string, answerIndex: number) => {
@@ -265,6 +269,41 @@ export default function QuestionsPage() {
     setQuestions(prev => prev.map(q => 
       q.id === questionId ? { ...q, isFavorite: !q.isFavorite } : q
     ));
+  };
+
+  // Função para selecionar/deselecionar questão
+  const toggleQuestionSelection = (questionId: string) => {
+    setSelectedQuestions(prev => {
+      if (prev.includes(questionId)) {
+        return prev.filter(id => id !== questionId);
+      } else {
+        return [...prev, questionId];
+      }
+    });
+  };
+
+  // Função para criar caderno
+  const handleCreateNotebook = () => {
+    if (selectedQuestions.length === 0 || !notebookName.trim()) {
+      return;
+    }
+
+    const newNotebook: StudySession = {
+      id: Date.now().toString(),
+      name: notebookName,
+      questionsIds: selectedQuestions,
+      createdAt: new Date().toISOString(),
+      progress: 0
+    };
+
+    console.log('Caderno criado:', newNotebook);
+    alert(`Caderno "${notebookName}" criado com ${selectedQuestions.length} questões!`);
+    
+    // Reset
+    setNotebookName('');
+    setNotebookDescription('');
+    setSelectedQuestions([]);
+    setShowCreateNotebook(false);
   };
 
   // Filtrar questões
@@ -292,28 +331,38 @@ export default function QuestionsPage() {
       <CardContent className="p-6">
         {/* Header da questão */}
         <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="secondary">{question.subject}</Badge>
-              <Badge 
-                className={cn(
-                  question.difficulty === 'Fácil' && "bg-green-100 text-green-700",
-                  question.difficulty === 'Médio' && "bg-yellow-100 text-yellow-700",
-                  question.difficulty === 'Difícil' && "bg-red-100 text-red-700"
-                )}
-              >
-                {question.difficulty}
-              </Badge>
-              <span className="text-sm text-primary-600">
-                {question.exam} • {question.year}
-              </span>
-            </div>
+          <div className="flex items-start gap-3 flex-1">
+            {/* Checkbox para seleção */}
+            <input
+              type="checkbox"
+              checked={selectedQuestions.includes(question.id)}
+              onChange={() => toggleQuestionSelection(question.id)}
+              className="mt-1 w-4 h-4 text-primary-600 border-primary-300 rounded focus:ring-primary-500"
+            />
             
-            {question.topic && (
-              <p className="text-sm text-primary-600 mb-2">
-                {question.topic} {question.subtopic && `> ${question.subtopic}`}
-              </p>
-            )}
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="secondary">{question.subject}</Badge>
+                <Badge 
+                  className={cn(
+                    question.difficulty === 'Fácil' && "bg-green-100 text-green-700",
+                    question.difficulty === 'Médio' && "bg-yellow-100 text-yellow-700",
+                    question.difficulty === 'Difícil' && "bg-red-100 text-red-700"
+                  )}
+                >
+                  {question.difficulty}
+                </Badge>
+                <span className="text-sm text-primary-600">
+                  {question.exam} • {question.year}
+                </span>
+              </div>
+              
+              {question.topic && (
+                <p className="text-sm text-primary-600 mb-2">
+                  {question.topic} {question.subtopic && `> ${question.subtopic}`}
+                </p>
+              )}
+            </div>
           </div>
           
           <div className="flex items-center gap-2">
@@ -562,9 +611,13 @@ export default function QuestionsPage() {
               {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </Button>
             
-            <Button className="gap-2">
+            <Button 
+              className="gap-2"
+              onClick={() => setShowCreateNotebook(true)}
+              disabled={selectedQuestions.length === 0}
+            >
               <Plus className="w-4 h-4" />
-              Criar Caderno
+              Criar Caderno {selectedQuestions.length > 0 && `(${selectedQuestions.length})`}
             </Button>
           </div>
         </div>
@@ -690,6 +743,37 @@ export default function QuestionsPage() {
         </AnimatePresence>
       </motion.div>
 
+      {/* Indicador de seleção */}
+      {selectedQuestions.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 bg-primary-100 border border-primary-300 rounded-lg p-4 flex items-center justify-between"
+        >
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-primary-600" />
+            <span className="text-primary-700 font-medium">
+              {selectedQuestions.length} questão(ões) selecionada(s)
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedQuestions([])}
+            >
+              Limpar seleção
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setShowCreateNotebook(true)}
+            >
+              Criar Caderno
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
       {/* Lista de questões */}
       <div className="space-y-4">
         {filteredQuestions.length > 0 ? (
@@ -714,6 +798,145 @@ export default function QuestionsPage() {
           </Card>
         )}
       </div>
+
+      {/* Modal de Criar Caderno */}
+      <AnimatePresence>
+        {showCreateNotebook && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-40"
+              onClick={() => setShowCreateNotebook(false)}
+            />
+            
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white rounded-2xl shadow-2xl z-50 max-h-[90vh] overflow-auto"
+            >
+              <div className="p-6 border-b">
+                <h2 className="text-2xl font-bold text-primary-900">Criar Novo Caderno</h2>
+                <p className="text-primary-600 mt-1">
+                  Organize suas questões em um caderno personalizado
+                </p>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                {/* Nome do caderno */}
+                <div>
+                  <label className="block text-sm font-medium text-primary-700 mb-2">
+                    Nome do Caderno
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Questões de Direito Constitucional - CF/88"
+                    value={notebookName}
+                    onChange={(e) => setNotebookName(e.target.value)}
+                    className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                
+                {/* Descrição */}
+                <div>
+                  <label className="block text-sm font-medium text-primary-700 mb-2">
+                    Descrição (opcional)
+                  </label>
+                  <textarea
+                    placeholder="Descreva o objetivo deste caderno..."
+                    value={notebookDescription}
+                    onChange={(e) => setNotebookDescription(e.target.value)}
+                    className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[80px]"
+                  />
+                </div>
+                
+                {/* Resumo das questões selecionadas */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-primary-900 mb-3">
+                    Questões Selecionadas ({selectedQuestions.length})
+                  </h3>
+                  
+                  {/* Estatísticas das questões selecionadas */}
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary-600">
+                        {selectedQuestions.length}
+                      </div>
+                      <div className="text-sm text-gray-600">Total</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {(() => {
+                          const subjects = new Set(
+                            questions
+                              .filter(q => selectedQuestions.includes(q.id))
+                              .map(q => q.subject)
+                          );
+                          return subjects.size;
+                        })()}
+                      </div>
+                      <div className="text-sm text-gray-600">Matérias</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {Math.round(
+                          questions
+                            .filter(q => selectedQuestions.includes(q.id))
+                            .reduce((acc, q) => acc + q.stats.avgTime, 0) / 60
+                        )}min
+                      </div>
+                      <div className="text-sm text-gray-600">Tempo estimado</div>
+                    </div>
+                  </div>
+                  
+                  {/* Lista de questões selecionadas */}
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {questions
+                      .filter(q => selectedQuestions.includes(q.id))
+                      .map((q, idx) => (
+                        <div key={q.id} className="flex items-center gap-2 text-sm">
+                          <span className="text-gray-500">{idx + 1}.</span>
+                          <Badge variant="secondary" className="text-xs">
+                            {q.subject}
+                          </Badge>
+                          <span className="text-gray-700 truncate flex-1">
+                            {q.question}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+                
+                {/* Ações */}
+                <div className="flex gap-3">
+                  <Button
+                    className="flex-1"
+                    onClick={handleCreateNotebook}
+                    disabled={!notebookName.trim()}
+                  >
+                    <BookMarked className="w-4 h-4 mr-2" />
+                    Criar Caderno
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowCreateNotebook(false);
+                      setNotebookName('');
+                      setNotebookDescription('');
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Call to Action */}
       <motion.div
