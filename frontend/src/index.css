@@ -1,3 +1,64 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 203 44% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 203 44% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 203 44% 13%;
+    --primary: 203 44% 13%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 211 100% 45%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 203 44% 13%;
+  }
+
+  .dark {
+    --background: 203 44% 7%;
+    --foreground: 0 0% 98%;
+    --card: 203 44% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 203 44% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 211 100% 45%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 203 44% 20%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 203 44% 20%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 211 100% 60%;
+    --accent-foreground: 203 44% 7%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 203 44% 20%;
+    --input: 203 44% 20%;
+    --ring: 211 100% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Transições suaves para mudança de tema */
+  .dark {
+    color-scheme: dark;
+  }
+}

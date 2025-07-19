@@ -3,16 +3,16 @@ import { VariantProps, cva } from 'class-variance-authority';
 import { cn } from '@/utils/cn';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
+  'inline-flex items-center justify-center rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none dark:focus:ring-offset-gray-900',
   {
     variants: {
       variant: {
-        default: 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl',
-        secondary: 'bg-primary-100 text-primary-700 hover:bg-primary-200',
-        outline: 'border-2 border-primary-300 text-primary-700 hover:bg-primary-50',
-        ghost: 'text-primary-700 hover:bg-primary-100',
-        danger: 'bg-red-600 text-white hover:bg-red-700',
-        success: 'bg-green-600 text-white hover:bg-green-700',
+        default: 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl dark:bg-primary-500 dark:hover:bg-primary-600',
+        secondary: 'bg-primary-100 text-primary-700 hover:bg-primary-200 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600',
+        outline: 'border-2 border-primary-300 text-primary-700 hover:bg-primary-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800',
+        ghost: 'text-primary-700 hover:bg-primary-100 dark:text-gray-300 dark:hover:bg-gray-800',
+        danger: 'bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600',
+        success: 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600',
       },
       size: {
         sm: 'text-sm px-3 py-1.5',

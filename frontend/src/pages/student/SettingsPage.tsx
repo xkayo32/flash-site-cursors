@@ -38,6 +38,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store/authStore';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Tipos
 interface NotificationSetting {
@@ -114,7 +115,7 @@ const privacySettings: PrivacySetting[] = [
 
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState('account');
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('light');
+  const { theme, setTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [notifications, setNotifications] = useState(notificationSettings);
   const [privacy, setPrivacy] = useState(privacySettings);
