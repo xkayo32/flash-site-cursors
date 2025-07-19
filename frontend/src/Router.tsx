@@ -31,6 +31,7 @@ import ExamTakingPage from './pages/student/ExamTakingPage';
 import ExamResultsPage from './pages/student/ExamResultsPage';
 import FlashcardsPage from './pages/student/FlashcardsPage';
 import SchedulePage from './pages/student/SchedulePage';
+import QuestionsPage from './pages/student/QuestionsPage';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -94,13 +95,7 @@ function Router() {
         <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/simulations" element={<SimuladosPage />} />
         <Route path="/flashcards" element={<FlashcardsPage />} />
-        <Route path="/questions" element={
-          <UnderDevelopment 
-            title="Banco de Questões" 
-            description="Questões organizadas por disciplina, banca e ano" 
-            icon={FileQuestion}
-          />
-        } />
+        <Route path="/questions" element={<QuestionsPage />} />
         <Route path="/summaries" element={
           <UnderDevelopment 
             title="Resumos Interativos" 
