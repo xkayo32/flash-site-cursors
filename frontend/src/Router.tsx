@@ -33,6 +33,7 @@ import FlashcardsPage from './pages/student/FlashcardsPage';
 import SchedulePage from './pages/student/SchedulePage';
 import QuestionsPage from './pages/student/QuestionsPage';
 import SummariesPage from './pages/student/SummariesPage';
+import LegislationPage from './pages/student/LegislationPage';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -98,13 +99,7 @@ function Router() {
         <Route path="/flashcards" element={<FlashcardsPage />} />
         <Route path="/questions" element={<QuestionsPage />} />
         <Route path="/summaries" element={<SummariesPage />} />
-        <Route path="/legislation" element={
-          <UnderDevelopment 
-            title="Legislação" 
-            description="Textos de leis relevantes para os cursos" 
-            icon={Scale}
-          />
-        } />
+        <Route path="/legislation" element={<LegislationPage />} />
         <Route path="/tactical" element={
           <UnderDevelopment 
             title="Painel Tático" 
