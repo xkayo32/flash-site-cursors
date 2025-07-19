@@ -26,6 +26,7 @@ import CoursesPage from './pages/student/CoursesPage';
 import CourseDetailsPage from './pages/student/CourseDetailsPage';
 import MyCoursesPage from './pages/student/MyCoursesPage';
 import CourseLearningPage from './pages/student/CourseLearningPage';
+import SimuladosPage from './pages/student/SimuladosPage';
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -77,13 +78,7 @@ function Router() {
             icon={Calendar}
           />
         } />
-        <Route path="/simulations" element={
-          <UnderDevelopment 
-            title="Simulados" 
-            description="Simulados com condições reais de prova" 
-            icon={Trophy}
-          />
-        } />
+        <Route path="/simulations" element={<SimuladosPage />} />
         <Route path="/flashcards" element={
           <UnderDevelopment 
             title="Flashcards" 
