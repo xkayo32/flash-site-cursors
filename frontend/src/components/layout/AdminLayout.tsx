@@ -15,7 +15,8 @@ import {
   X,
   Shield,
   Upload,
-  Tag
+  Tag,
+  PanelLeft
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -81,6 +82,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const { user, clearAuth } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogout = () => {
     clearAuth();
@@ -117,34 +119,46 @@ export default function AdminLayout() {
           animate={{ x: 0 }}
           className={`${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } lg:translate-x-0 fixed lg:relative z-20 w-64 h-full bg-primary-900 dark:bg-gray-800 transition-transform duration-300`}
+          } lg:translate-x-0 fixed lg:relative z-20 ${
+            isCollapsed ? 'w-16' : 'w-64'
+          } h-full bg-primary-900 dark:bg-gray-800 transition-all duration-300`}
         >
           <div className="flex flex-col h-full">
             {/* Logo */}
-            <div className="p-6 border-b border-primary-800 dark:border-gray-700 hidden lg:block">
-              <Logo variant="full" size="md" theme="dark" />
-              <div className="mt-3 flex items-center gap-2 text-primary-300">
-                <Shield className="w-4 h-4" />
-                <span className="text-sm font-medium">Painel Administrativo</span>
-              </div>
+            <div className={`${isCollapsed ? 'p-3' : 'p-6'} border-b border-primary-800 dark:border-gray-700 hidden lg:block transition-all duration-300`}>
+              {isCollapsed ? (
+                <div className="flex justify-center">
+                  <Logo variant="icon" size="sm" theme="dark" />
+                </div>
+              ) : (
+                <>
+                  <Logo variant="full" size="md" theme="dark" />
+                  <div className="mt-3 flex items-center gap-2 text-primary-300">
+                    <Shield className="w-4 h-4" />
+                    <span className="text-sm font-medium">Painel Administrativo</span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* User Info */}
             <div className="p-4 border-b border-primary-800 dark:border-gray-700">
-              <div className="flex items-center gap-3">
+              <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
                 <img
                   src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}&background=14242f&color=fff`}
                   alt={user?.name}
                   className="w-10 h-10 rounded-full"
                 />
-                <div>
-                  <p className="text-sm font-medium text-white">
-                    {user?.name}
-                  </p>
-                  <p className="text-xs text-primary-400">
-                    Administrador
-                  </p>
-                </div>
+                {!isCollapsed && (
+                  <div>
+                    <p className="text-sm font-medium text-white">
+                      {user?.name}
+                    </p>
+                    <p className="text-xs text-primary-400">
+                      Administrador
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -158,14 +172,26 @@ export default function AdminLayout() {
                       <Link
                         to={item.path}
                         onClick={() => setIsSidebarOpen(false)}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                        className={`relative flex items-center ${
+                          isCollapsed ? 'justify-center px-4 py-3' : 'gap-3 px-4 py-3'
+                        } rounded-lg transition-all group ${
                           isActive
                             ? 'bg-primary-800 dark:bg-gray-700 text-white'
                             : 'text-primary-300 hover:bg-primary-800 dark:hover:bg-gray-700 hover:text-white'
                         }`}
+                        title={isCollapsed ? item.title : undefined}
                       >
                         <item.icon className="w-5 h-5" />
-                        <span className="font-medium">{item.title}</span>
+                        {!isCollapsed && (
+                          <span className="font-medium">{item.title}</span>
+                        )}
+                        
+                        {/* Tooltip for collapsed state */}
+                        {isCollapsed && (
+                          <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                            {item.title}
+                          </div>
+                        )}
                       </Link>
                     </li>
                   );
@@ -177,27 +203,51 @@ export default function AdminLayout() {
             <div className="p-4 border-t border-primary-800 dark:border-gray-700 space-y-2">
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-2 text-primary-300 hover:text-white hover:bg-primary-800 dark:hover:bg-gray-700"
+                className={`w-full ${
+                  isCollapsed ? 'justify-center px-3' : 'justify-start gap-2'
+                } text-primary-300 hover:text-white hover:bg-primary-800 dark:hover:bg-gray-700 relative group`}
                 onClick={handleBackToStudent}
+                title={isCollapsed ? 'Voltar ao Portal' : undefined}
               >
                 <ChevronLeft className="w-4 h-4" />
-                Voltar ao Portal
+                {!isCollapsed && <span>Voltar ao Portal</span>}
+                {isCollapsed && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                    Voltar ao Portal
+                  </div>
+                )}
               </Button>
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-2 text-primary-300 hover:text-white hover:bg-primary-800 dark:hover:bg-gray-700"
+                className={`w-full ${
+                  isCollapsed ? 'justify-center px-3' : 'justify-start gap-2'
+                } text-primary-300 hover:text-white hover:bg-primary-800 dark:hover:bg-gray-700 relative group`}
                 onClick={() => navigate('/admin/settings')}
+                title={isCollapsed ? 'Configurações' : undefined}
               >
                 <Settings className="w-4 h-4" />
-                Configurações
+                {!isCollapsed && <span>Configurações</span>}
+                {isCollapsed && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                    Configurações
+                  </div>
+                )}
               </Button>
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-2 text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                className={`w-full ${
+                  isCollapsed ? 'justify-center px-3' : 'justify-start gap-2'
+                } text-red-400 hover:text-red-300 hover:bg-red-900/20 relative group`}
                 onClick={handleLogout}
+                title={isCollapsed ? 'Sair' : undefined}
               >
                 <LogOut className="w-4 h-4" />
-                Sair
+                {!isCollapsed && <span>Sair</span>}
+                {isCollapsed && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                    Sair
+                  </div>
+                )}
               </Button>
             </div>
           </div>
@@ -216,9 +266,19 @@ export default function AdminLayout() {
           {/* Top Bar */}
           <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 hidden lg:block">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {adminNavItems.find(item => item.path === location.pathname)?.title || 'Admin'}
-              </h1>
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                >
+                  <PanelLeft className="w-5 h-5" />
+                </Button>
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {adminNavItems.find(item => item.path === location.pathname)?.title || 'Admin'}
+                </h1>
+              </div>
               <div className="flex items-center gap-4">
                 <ThemeToggle />
                 <Button
