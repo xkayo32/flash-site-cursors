@@ -154,10 +154,54 @@ export default function DashboardPage() {
   ];
 
   const dailyGoals = [
-    { task: 'Resolver 50 questões', completed: 32, total: 50, icon: BookOpen },
-    { task: 'Revisar 30 flashcards', completed: 30, total: 30, icon: Brain },
-    { task: 'Estudar por 4 horas', completed: 2.5, total: 4, icon: Clock },
-    { task: 'Fazer 1 simulado', completed: 0, total: 1, icon: Trophy },
+    { 
+      task: 'Resolver 50 questões', 
+      completed: 32, 
+      total: 50, 
+      icon: BookOpen,
+      color: 'blue',
+      bgGradient: 'from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30',
+      borderColor: 'border-blue-200 dark:border-blue-700',
+      iconBg: 'bg-blue-100 dark:bg-blue-800/50',
+      iconColor: 'text-blue-600 dark:text-blue-400',
+      progressGradient: 'from-blue-400 to-blue-600'
+    },
+    { 
+      task: 'Revisar 30 flashcards', 
+      completed: 30, 
+      total: 30, 
+      icon: Brain,
+      color: 'purple',
+      bgGradient: 'from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30',
+      borderColor: 'border-purple-200 dark:border-purple-700',
+      iconBg: 'bg-purple-100 dark:bg-purple-800/50',
+      iconColor: 'text-purple-600 dark:text-purple-400',
+      progressGradient: 'from-purple-400 to-purple-600'
+    },
+    { 
+      task: 'Estudar por 4 horas', 
+      completed: 2.5, 
+      total: 4, 
+      icon: Clock,
+      color: 'amber',
+      bgGradient: 'from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30',
+      borderColor: 'border-amber-200 dark:border-amber-700',
+      iconBg: 'bg-amber-100 dark:bg-amber-800/50',
+      iconColor: 'text-amber-600 dark:text-amber-400',
+      progressGradient: 'from-amber-400 to-amber-600'
+    },
+    { 
+      task: 'Fazer 1 simulado', 
+      completed: 0, 
+      total: 1, 
+      icon: Trophy,
+      color: 'green',
+      bgGradient: 'from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30',
+      borderColor: 'border-green-200 dark:border-green-700',
+      iconBg: 'bg-green-100 dark:bg-green-800/50',
+      iconColor: 'text-green-600 dark:text-green-400',
+      progressGradient: 'from-green-400 to-green-600'
+    },
   ];
 
   const upcomingEvents = [
@@ -413,8 +457,8 @@ export default function DashboardPage() {
                       >
                         <div className={`p-4 rounded-xl border-2 transition-all duration-300 relative overflow-hidden ${
                           isCompleted 
-                            ? 'border-green-300 bg-gradient-to-br from-green-50 to-green-100 shadow-green-100' 
-                            : 'border-primary-200 dark:border-gray-700 bg-gradient-to-br from-white to-primary-50 dark:from-gray-800 dark:to-gray-800/50 hover:border-primary-300 dark:hover:border-gray-600'
+                            ? `border-green-300 dark:border-green-600 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 shadow-green-100` 
+                            : `${goal.borderColor} bg-gradient-to-br ${goal.bgGradient} hover:shadow-lg`
                         } shadow-lg hover:shadow-xl`}>
                           {/* Efeito de confete para metas concluídas */}
                           {isCompleted && (
@@ -428,11 +472,11 @@ export default function DashboardPage() {
                           <div className="flex items-center gap-3 mb-3">
                             <div className={`p-2.5 rounded-xl transition-all ${
                               isCompleted 
-                                ? 'bg-green-200 shadow-md scale-110' 
-                                : 'bg-primary-100 hover:bg-primary-200'
+                                ? 'bg-green-200 dark:bg-green-800/70 shadow-md scale-110' 
+                                : goal.iconBg
                             }`}>
                               <Icon className={`w-5 h-5 ${
-                                isCompleted ? 'text-green-700' : 'text-primary-600'
+                                isCompleted ? 'text-green-700 dark:text-green-300' : goal.iconColor
                               }`} />
                             </div>
                             {isCompleted && (
@@ -456,8 +500,8 @@ export default function DashboardPage() {
                             </span>
                             <span className={`font-bold px-2 py-1 rounded-full text-xs ${
                               isCompleted 
-                                ? 'bg-green-200 text-green-800' 
-                                : 'bg-primary-100 text-primary-700'
+                                ? 'bg-green-200 dark:bg-green-800/70 text-green-800 dark:text-green-200' 
+                                : `${goal.iconBg} ${goal.iconColor}`
                             }`}>
                               {Math.round(progress)}%
                             </span>
@@ -472,7 +516,7 @@ export default function DashboardPage() {
                                 className={`h-full rounded-full transition-all ${
                                   isCompleted 
                                     ? 'bg-gradient-to-r from-green-400 to-green-600' 
-                                    : 'bg-gradient-to-r from-primary-400 to-primary-600'
+                                    : `bg-gradient-to-r ${goal.progressGradient}`
                                 }`}
                               />
                             </div>
