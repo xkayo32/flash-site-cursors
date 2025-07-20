@@ -31,60 +31,35 @@ services:
       - APP_ENV=local
       - APP_DEBUG=true
       - DB_HOST=db
-      - DB_PORT=3306
+      - DB_PORT=5532
       - DB_DATABASE=estudos_db
       - DB_USERNAME=estudos_user
       - DB_PASSWORD=estudos_pass
     depends_on:
-      - db
-      - redis
+      - postgres
     networks:
       - estudos-network
 
-  # Banco de dados MySQL
-  db:
-    image: mysql:8.0
-    container_name: estudos-mysql
+
+  # Banco de dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: estudos-postgres
     ports:
-      - "3406:3306"  # Porta diferente (3406) para evitar conflitos
+      - "5532:5432"  # Porta diferente (5532) para evitar conflitos
     environment:
-      - MYSQL_DATABASE=estudos_db
-      - MYSQL_USER=estudos_user
-      - MYSQL_PASSWORD=estudos_pass
-      - MYSQL_ROOT_PASSWORD=root_pass
+      - POSTGRES_DB=estudos_db
+      - POSTGRES_USER=estudos_user
+      - POSTGRES_PASSWORD=estudos_pass
     volumes:
-      - estudos-mysql-data:/var/lib/mysql
+      - estudos-postgres-data:/var/lib/postgresql/data
     networks:
       - estudos-network
 
-  # Redis para cache e filas
-  redis:
-    image: redis:7-alpine
-    container_name: estudos-redis
-    ports:
-      - "6479:6379"  # Porta diferente (6479) para evitar conflitos
-    volumes:
-      - estudos-redis-data:/data
-    networks:
-      - estudos-network
 
-  # phpMyAdmin (opcional)
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: estudos-phpmyadmin
-    ports:
-      - "8280:80"  # Porta diferente (8280) para evitar conflitos
-    environment:
-      - PMA_HOST=db
-      - PMA_PORT=3306
-    depends_on:
-      - db
-    networks:
-      - estudos-network
 
 volumes:
-  estudos-mysql-data:
-  estudos-redis-data:
+  estudos-postgres-data:
 
 networks:
   estudos-network:

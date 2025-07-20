@@ -8,16 +8,17 @@ GREEN := \033[0;32m
 YELLOW := \033[1;33m
 NC := \033[0m
 
-.PHONY: up down restart build logs shell-backend shell-frontend migrate clean help
+.PHONY: up down restart build logs shell-backend shell-frontend migrate clean help up-postgres
 
 help:
 	@echo "$(GREEN)StudyPro - Available commands:$(NC)"
-	@echo "  make up        - Start all services"
-	@echo "  make down      - Stop all services"
-	@echo "  make restart   - Restart all services"
-	@echo "  make build     - Rebuild all containers"
-	@echo "  make logs      - View logs for all services"
-	@echo "  make clean     - Remove all containers and volumes"
+	@echo "  make up          - Start all services (with MySQL)"
+	@echo "  make up-postgres - Start all services (with PostgreSQL)"
+	@echo "  make down        - Stop all services"
+	@echo "  make restart     - Restart all services"
+	@echo "  make build       - Rebuild all containers"
+	@echo "  make logs        - View logs for all services"
+	@echo "  make clean       - Remove all containers and volumes"
 
 up:
 	@echo "$(GREEN)Starting StudyPro services...$(NC)"
@@ -65,3 +66,13 @@ clean:
 	@read confirm
 	@docker compose down -v
 	@echo "$(GREEN)✅ Cleanup complete$(NC)"
+
+up-postgres:
+	@echo "$(GREEN)Starting StudyPro with PostgreSQL...$(NC)"
+	@docker compose -f docker-compose.yml -f docker-compose.postgres.yml up -d
+	@echo ""
+	@echo "$(GREEN)✅ Services started with PostgreSQL!$(NC)"
+	@echo ""
+	@echo "$(YELLOW)🌐 Access points:$(NC)"
+	@echo "   Frontend:    http://$(SERVER_IP):5273"
+	@echo "   Backend API: http://$(SERVER_IP):8180"

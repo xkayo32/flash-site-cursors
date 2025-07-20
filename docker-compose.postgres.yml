@@ -1,0 +1,25 @@
+version: '3.8'
+
+# Override para usar PostgreSQL ao invés de MySQL
+services:
+  backend:
+    environment:
+      - DB_TYPE=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=estudos_db
+      - DB_USERNAME=estudos_user
+      - DB_PASSWORD=estudos_pass
+    depends_on:
+      - postgres
+      - redis
+
+  # Desabilitar MySQL e phpMyAdmin quando usar PostgreSQL
+  db:
+    profiles: ["mysql"]
+  
+  phpmyadmin:
+    profiles: ["mysql"]
+
+# Para usar este arquivo:
+# docker-compose -f docker-compose.yml -f docker-compose.postgres.yml up -d

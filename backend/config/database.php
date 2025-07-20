@@ -2,8 +2,8 @@
 // Configuração do banco de dados
 
 return [
-    'host' => $_ENV['DB_HOST'] ?? 'db',
-    'port' => $_ENV['DB_PORT'] ?? '3306',
+    'host' => $_ENV['DB_HOST'] ?? '173.208.151.106',
+    'port' => $_ENV['DB_PORT'] ?? '5532',
     'database' => $_ENV['DB_DATABASE'] ?? 'estudos_db',
     'username' => $_ENV['DB_USERNAME'] ?? 'estudos_user',
     'password' => $_ENV['DB_PASSWORD'] ?? 'estudos_pass',

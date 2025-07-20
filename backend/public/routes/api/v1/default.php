@@ -24,10 +24,10 @@ $obRouter->post('/api/v1/inventory/insert', [
 
 $obRouter->get('/api/v1/usuarios', [
   'middlewares' => [
-    'cache'
+    'api'
   ],
-  function() {
-    return new Response(200, Api\Usuario::getUsers(), 'application/json');
+  function($request) {
+    return new Response(200, Api\Usuario::getUsers($request), 'application/json');
   }
 ]);
 

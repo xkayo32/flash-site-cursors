@@ -12,9 +12,4 @@ class Api {
     ];
   }
 
-  public static function inventoryInsert($request) {
-    $inventoryInsert = new HardwareInventory();
-    return json_encode($inventoryInsert->inventoryInsert());
-  }
-
 }
