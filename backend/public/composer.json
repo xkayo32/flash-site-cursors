@@ -1,8 +1,5 @@
 {
-    "name":"projeto/mvc-rotas",
-    "autoload": {
-        "psr-4": {
-            "App\\":"app/"
-        }
+    "require": {
+        "firebase/php-jwt": "^6.11"
     }
 }

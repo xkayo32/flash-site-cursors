@@ -44,10 +44,25 @@ class Request
   public function __construct($router) {
     $this->router      = $router;
     $this->queryParams = $_GET ?? [];
-    $this->postVars    = $_POST ?? [];
     $this->headers     = getallheaders();
     $this->httpMethod  = $_SERVER['REQUEST_METHOD'] ?? '';
     $this->setUri();
+    $this->setPostVars();
+  }
+
+  /**
+   * Metodo responsavel por definir as variaveis POST
+   */
+  private function setPostVars() {
+    // Se for JSON, decodificar o corpo da requisição
+    $contentType = $this->headers['Content-Type'] ?? '';
+    
+    if (strpos($contentType, 'application/json') !== false) {
+      $input = file_get_contents('php://input');
+      $this->postVars = json_decode($input, true) ?: [];
+    } else {
+      $this->postVars = $_POST ?? [];
+    }
   }
 
   /**

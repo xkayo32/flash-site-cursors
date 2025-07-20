@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -25,137 +25,143 @@ import {
   Download,
   Upload,
   CreditCard,
-  Activity
+  Activity,
+  Loader
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-
-// Mock data
-const users = [
-  {
-    id: 1,
-    name: 'João Silva',
-    email: 'joao.silva@email.com',
-    phone: '(11) 99999-9999',
-    role: 'student',
-    status: 'active',
-    plan: 'Premium',
-    subscriptionStatus: 'active',
-    subscriptionExpiry: '2024-06-15',
-    joinDate: '2024-01-15',
-    lastLogin: '2024-01-15 14:30',
-    totalSpent: 149.80,
-    coursesEnrolled: 3,
-    questionsAnswered: 1234,
-    flashcardsStudied: 567,
-    studyStreak: 15,
-    avatar: 'https://ui-avatars.com/api/?name=João+Silva&background=14242f&color=fff'
-  },
-  {
-    id: 2,
-    name: 'Maria Santos',
-    email: 'maria.santos@email.com',
-    phone: '(11) 88888-8888',
-    role: 'student',
-    status: 'active',
-    plan: 'Básico',
-    subscriptionStatus: 'active',
-    subscriptionExpiry: '2024-05-20',
-    joinDate: '2024-01-10',
-    lastLogin: '2024-01-14 09:15',
-    totalSpent: 59.90,
-    coursesEnrolled: 1,
-    questionsAnswered: 456,
-    flashcardsStudied: 234,
-    studyStreak: 7,
-    avatar: 'https://ui-avatars.com/api/?name=Maria+Santos&background=14242f&color=fff'
-  },
-  {
-    id: 3,
-    name: 'Pedro Costa',
-    email: 'pedro.costa@email.com',
-    phone: '(11) 77777-7777',
-    role: 'instructor',
-    status: 'active',
-    plan: 'VIP',
-    subscriptionStatus: 'expired',
-    subscriptionExpiry: '2024-01-10',
-    joinDate: '2023-12-01',
-    lastLogin: '2024-01-12 16:45',
-    totalSpent: 299.70,
-    coursesEnrolled: 5,
-    questionsAnswered: 2345,
-    flashcardsStudied: 1123,
-    studyStreak: 0,
-    avatar: 'https://ui-avatars.com/api/?name=Pedro+Costa&background=14242f&color=fff'
-  },
-  {
-    id: 4,
-    name: 'Ana Oliveira',
-    email: 'ana.oliveira@email.com',
-    phone: '(11) 66666-6666',
-    role: 'student',
-    status: 'suspended',
-    plan: 'Premium',
-    subscriptionStatus: 'cancelled',
-    subscriptionExpiry: '2024-02-28',
-    joinDate: '2023-11-15',
-    lastLogin: '2024-01-08 11:20',
-    totalSpent: 89.90,
-    coursesEnrolled: 2,
-    questionsAnswered: 678,
-    flashcardsStudied: 345,
-    studyStreak: 0,
-    avatar: 'https://ui-avatars.com/api/?name=Ana+Oliveira&background=14242f&color=fff'
-  },
-  {
-    id: 5,
-    name: 'Carlos Lima',
-    email: 'carlos.lima@email.com',
-    phone: '(11) 55555-5555',
-    role: 'admin',
-    status: 'active',
-    plan: 'Unlimited',
-    subscriptionStatus: 'active',
-    subscriptionExpiry: null,
-    joinDate: '2023-01-01',
-    lastLogin: '2024-01-15 15:00',
-    totalSpent: 0,
-    coursesEnrolled: 0,
-    questionsAnswered: 0,
-    flashcardsStudied: 0,
-    studyStreak: 0,
-    avatar: 'https://ui-avatars.com/api/?name=Carlos+Lima&background=14242f&color=fff'
-  }
-];
+import { userService } from '@/services/userService';
+import toast from 'react-hot-toast';
 
 const plans = ['Todos', 'Básico', 'Premium', 'VIP', 'Unlimited'];
 const roles = ['Todos', 'student', 'instructor', 'admin'];
-const statuses = ['Todos', 'active', 'suspended', 'pending'];
-const subscriptionStatuses = ['Todos', 'active', 'expired', 'cancelled', 'trial'];
+const statuses = ['Todos', 'active', 'suspended', 'pending', 'inactive'];
 
 export default function UserManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlan, setSelectedPlan] = useState('Todos');
   const [selectedRole, setSelectedRole] = useState('Todos');
   const [selectedStatus, setSelectedStatus] = useState('Todos');
-  const [selectedSubscriptionStatus, setSelectedSubscriptionStatus] = useState('Todos');
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [showBulkActions, setShowBulkActions] = useState(false);
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
-
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPlan = selectedPlan === 'Todos' || user.plan === selectedPlan;
-    const matchesRole = selectedRole === 'Todos' || user.role === selectedRole;
-    const matchesStatus = selectedStatus === 'Todos' || user.status === selectedStatus;
-    const matchesSubscription = selectedSubscriptionStatus === 'Todos' || user.subscriptionStatus === selectedSubscriptionStatus;
-    
-    return matchesSearch && matchesPlan && matchesRole && matchesStatus && matchesSubscription;
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'student',
+    status: 'active',
+    phone: '',
+    plan_id: ''
   });
+
+  useEffect(() => {
+    loadUsers();
+  }, [currentPage, searchTerm, selectedRole, selectedStatus]);
+
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await userService.listUsers({
+        page: currentPage,
+        limit: 10,
+        search: searchTerm,
+        role: selectedRole,
+        status: selectedStatus
+      });
+
+      if (response.success && response.data) {
+        setUsers(response.data);
+        if (response.pagination) {
+          setTotalPages(response.pagination.pages);
+          setTotalUsers(response.pagination.total);
+        }
+      } else {
+        toast.error(response.message || 'Erro ao carregar usuários');
+      }
+    } catch (error) {
+      toast.error('Erro ao carregar usuários');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateUser = async () => {
+    if (!formData.email || !formData.password || !formData.name) {
+      toast.error('Preencha todos os campos obrigatórios');
+      return;
+    }
+
+    try {
+      const response = await userService.createUser(formData);
+      if (response.success) {
+        toast.success('Usuário criado com sucesso');
+        setShowCreateModal(false);
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+          role: 'student',
+          status: 'active',
+          phone: '',
+          plan_id: ''
+        });
+        loadUsers();
+      } else {
+        toast.error(response.message || 'Erro ao criar usuário');
+      }
+    } catch (error) {
+      toast.error('Erro ao criar usuário');
+    }
+  };
+
+  const handleUpdateUser = async () => {
+    if (!selectedUser) return;
+
+    try {
+      const updateData: any = {};
+      if (formData.name && formData.name !== selectedUser.name) updateData.name = formData.name;
+      if (formData.email && formData.email !== selectedUser.email) updateData.email = formData.email;
+      if (formData.password) updateData.password = formData.password;
+      if (formData.role !== selectedUser.role) updateData.role = formData.role;
+      if (formData.status !== selectedUser.status) updateData.status = formData.status;
+      if (formData.phone !== selectedUser.phone) updateData.phone = formData.phone;
+
+      const response = await userService.updateUser(selectedUser.id, updateData);
+      if (response.success) {
+        toast.success('Usuário atualizado com sucesso');
+        setShowEditModal(false);
+        loadUsers();
+      } else {
+        toast.error(response.message || 'Erro ao atualizar usuário');
+      }
+    } catch (error) {
+      toast.error('Erro ao atualizar usuário');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Tem certeza que deseja desativar este usuário?')) return;
+
+    try {
+      const response = await userService.deleteUser(userId);
+      if (response.success) {
+        toast.success('Usuário desativado com sucesso');
+        loadUsers();
+      } else {
+        toast.error(response.message || 'Erro ao desativar usuário');
+      }
+    } catch (error) {
+      toast.error('Erro ao desativar usuário');
+    }
+  };
 
   const getRoleBadge = (role: string) => {
     const roleConfig = {
@@ -164,7 +170,7 @@ export default function UserManager() {
       student: { label: 'Aluno', variant: 'secondary' as const, icon: User, color: 'bg-blue-100 text-blue-800' }
     };
     
-    const config = roleConfig[role as keyof typeof roleConfig];
+    const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.student;
     const Icon = config.icon;
     
     return (
@@ -179,10 +185,11 @@ export default function UserManager() {
     const statusConfig = {
       active: { label: 'Ativo', color: 'bg-green-100 text-green-800' },
       suspended: { label: 'Suspenso', color: 'bg-red-100 text-red-800' },
-      pending: { label: 'Pendente', color: 'bg-yellow-100 text-yellow-800' }
+      pending: { label: 'Pendente', color: 'bg-yellow-100 text-yellow-800' },
+      inactive: { label: 'Inativo', color: 'bg-gray-100 text-gray-800' }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig];
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
     return (
       <Badge className={config.color}>
         {config.label}
@@ -193,12 +200,13 @@ export default function UserManager() {
   const getSubscriptionBadge = (status: string) => {
     const statusConfig = {
       active: { label: 'Ativa', color: 'bg-green-100 text-green-800', icon: CheckCircle },
+      inactive: { label: 'Inativa', color: 'bg-gray-100 text-gray-800', icon: X },
       expired: { label: 'Expirada', color: 'bg-red-100 text-red-800', icon: AlertCircle },
       cancelled: { label: 'Cancelada', color: 'bg-gray-100 text-gray-800', icon: X },
       trial: { label: 'Trial', color: 'bg-blue-100 text-blue-800', icon: Clock }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig];
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.inactive;
     const Icon = config.icon;
     
     return (
@@ -209,25 +217,32 @@ export default function UserManager() {
     );
   };
 
-  const handleSelectUser = (id: number) => {
-    setSelectedUsers(prev => 
-      prev.includes(id) 
-        ? prev.filter(user => user !== id)
-        : [...prev, id]
-    );
+  const handleViewUser = async (user: any) => {
+    try {
+      const response = await userService.getUser(user.id);
+      if (response.success && response.data) {
+        setSelectedUser(response.data);
+        setShowUserModal(true);
+      } else {
+        toast.error('Erro ao carregar detalhes do usuário');
+      }
+    } catch (error) {
+      toast.error('Erro ao carregar detalhes do usuário');
+    }
   };
 
-  const handleSelectAll = () => {
-    setSelectedUsers(
-      selectedUsers.length === filteredUsers.length 
-        ? [] 
-        : filteredUsers.map(user => user.id)
-    );
-  };
-
-  const handleViewUser = (user: any) => {
+  const handleEditUser = (user: any) => {
     setSelectedUser(user);
-    setShowUserModal(true);
+    setFormData({
+      name: user.name || '',
+      email: user.email,
+      password: '',
+      role: user.role,
+      status: user.status,
+      phone: user.phone || '',
+      plan_id: ''
+    });
+    setShowEditModal(true);
   };
 
   return (
@@ -256,7 +271,7 @@ export default function UserManager() {
             <Download className="w-4 h-4" />
             Exportar
           </Button>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setShowCreateModal(true)}>
             <Plus className="w-4 h-4" />
             Novo Usuário
           </Button>
@@ -278,7 +293,7 @@ export default function UserManager() {
                   Total de Usuários
                 </p>
                 <p className="text-2xl font-bold text-primary-900 dark:text-white">
-                  {users.length}
+                  {totalUsers}
                 </p>
               </div>
               <User className="w-8 h-8 text-blue-600" />
@@ -294,7 +309,7 @@ export default function UserManager() {
                   Assinaturas Ativas
                 </p>
                 <p className="text-2xl font-bold text-primary-900 dark:text-white">
-                  {users.filter(u => u.subscriptionStatus === 'active').length}
+                  {users.filter(u => u.subscription?.status === 'active').length}
                 </p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-600" />
@@ -307,13 +322,13 @@ export default function UserManager() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Receita Total
+                  Novos este Mês
                 </p>
                 <p className="text-2xl font-bold text-primary-900 dark:text-white">
-                  R$ {users.reduce((acc, user) => acc + user.totalSpent, 0).toFixed(2)}
+                  12
                 </p>
               </div>
-              <DollarSign className="w-8 h-8 text-emerald-600" />
+              <Activity className="w-8 h-8 text-purple-600" />
             </div>
           </CardContent>
         </Card>
@@ -323,13 +338,13 @@ export default function UserManager() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Novos este Mês
+                  Taxa de Churn
                 </p>
                 <p className="text-2xl font-bold text-primary-900 dark:text-white">
-                  {users.filter(u => u.joinDate.startsWith('2024-01')).length}
+                  2.3%
                 </p>
               </div>
-              <Activity className="w-8 h-8 text-purple-600" />
+              <DollarSign className="w-8 h-8 text-yellow-600" />
             </div>
           </CardContent>
         </Card>
@@ -340,385 +355,538 @@ export default function UserManager() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
+        className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
       >
-        <Card>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {/* Search */}
-              <div className="relative md:col-span-2">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar usuários..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
-                />
-              </div>
-
-              {/* Plan Filter */}
-              <select
-                value={selectedPlan}
-                onChange={(e) => setSelectedPlan(e.target.value)}
-                className="px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
-              >
-                {plans.map(plan => (
-                  <option key={plan} value={plan}>{plan}</option>
-                ))}
-              </select>
-
-              {/* Role Filter */}
-              <select
-                value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value)}
-                className="px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
-              >
-                {roles.map(role => (
-                  <option key={role} value={role}>
-                    {role === 'Todos' ? role : role.charAt(0).toUpperCase() + role.slice(1)}
-                  </option>
-                ))}
-              </select>
-
-              {/* Status Filter */}
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
-              >
-                {statuses.map(status => (
-                  <option key={status} value={status}>
-                    {status === 'Todos' ? status : status.charAt(0).toUpperCase() + status.slice(1)}
-                  </option>
-                ))}
-              </select>
-
-              {/* Bulk Actions */}
-              <Button
-                variant="outline"
-                onClick={() => setShowBulkActions(!showBulkActions)}
-                className="gap-2"
-              >
-                <Filter className="w-4 h-4" />
-                Ações em Lote
-              </Button>
-            </div>
-
-            {/* Bulk Actions Bar */}
-            <AnimatePresence>
-              {showBulkActions && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="mt-4 p-4 bg-primary-50 dark:bg-gray-800 rounded-lg border border-primary-200 dark:border-gray-700"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={selectedUsers.length === filteredUsers.length}
-                          onChange={handleSelectAll}
-                          className="rounded border-primary-300"
-                        />
-                        <span className="text-sm text-primary-900 dark:text-white">
-                          Selecionar todos ({selectedUsers.length})
-                        </span>
-                      </label>
-                    </div>
-                    
-                    {selectedUsers.length > 0 && (
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" className="gap-1">
-                          <Mail className="w-3 h-3" />
-                          Enviar Email
-                        </Button>
-                        <Button variant="outline" size="sm" className="gap-1">
-                          <Ban className="w-3 h-3" />
-                          Suspender
-                        </Button>
-                        <Button variant="outline" size="sm" className="gap-1 text-red-600">
-                          <Trash2 className="w-3 h-3" />
-                          Excluir
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar por nome ou email..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex gap-2">
+            <select
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+            >
+              {roles.map(role => (
+                <option key={role} value={role}>{role}</option>
+              ))}
+            </select>
+            
+            <select
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+            >
+              {statuses.map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </motion.div>
 
       {/* Users Table */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
+        className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
       >
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-primary-50 dark:bg-gray-800">
-                  <tr>
-                    {showBulkActions && (
-                      <th className="text-left py-4 px-6">
-                        <input
-                          type="checkbox"
-                          checked={selectedUsers.length === filteredUsers.length}
-                          onChange={handleSelectAll}
-                          className="rounded border-primary-300"
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Usuário
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Função
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Assinatura
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Último Acesso
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <Loader className="w-8 h-8 animate-spin mx-auto text-primary-600" />
+                    <p className="mt-2 text-gray-500">Carregando usuários...</p>
+                  </td>
+                </tr>
+              ) : users.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    Nenhum usuário encontrado
+                  </td>
+                </tr>
+              ) : (
+                users.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <img
+                          className="h-10 w-10 rounded-full"
+                          src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=14242f&color=fff`}
+                          alt={user.name}
                         />
-                      </th>
-                    )}
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Usuário
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Papel
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Plano
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Status
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Assinatura
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Atividade
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr
-                      key={user.id}
-                      className="border-b border-primary-100 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-gray-800"
-                    >
-                      {showBulkActions && (
-                        <td className="py-4 px-6">
-                          <input
-                            type="checkbox"
-                            checked={selectedUsers.includes(user.id)}
-                            onChange={() => handleSelectUser(user.id)}
-                            className="rounded border-primary-300"
-                          />
-                        </td>
-                      )}
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={user.avatar}
-                            alt={user.name}
-                            className="w-10 h-10 rounded-full"
-                          />
-                          <div>
-                            <p className="font-medium text-primary-900 dark:text-white">
-                              {user.name}
-                            </p>
-                            <p className="text-sm text-primary-600 dark:text-gray-400">
-                              {user.email}
-                            </p>
-                            <p className="text-xs text-primary-500 dark:text-gray-500">
-                              Entrou em {user.joinDate}
-                            </p>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {user.name}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {user.email}
                           </div>
                         </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        {getRoleBadge(user.role)}
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-2">
-                          <Crown className="w-4 h-4 text-yellow-500" />
-                          <span className="text-primary-900 dark:text-white font-medium">
-                            {user.plan}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        {getStatusBadge(user.status)}
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="space-y-1">
-                          {getSubscriptionBadge(user.subscriptionStatus)}
-                          {user.subscriptionExpiry && (
-                            <p className="text-xs text-primary-500 dark:text-gray-500">
-                              Expira em {user.subscriptionExpiry}
-                            </p>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="space-y-1 text-sm">
-                          <p className="text-primary-600 dark:text-gray-400">
-                            Último login: {user.lastLogin}
-                          </p>
-                          <p className="text-primary-600 dark:text-gray-400">
-                            Sequência: {user.studyStreak} dias
-                          </p>
-                          <p className="text-primary-600 dark:text-gray-400">
-                            Total gasto: R$ {user.totalSpent.toFixed(2)}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            title="Visualizar"
-                            onClick={() => handleViewUser(user)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" title="Editar">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" title="Gerenciar Assinatura">
-                            <CreditCard className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" title="Mais opções">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getRoleBadge(user.role)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(user.status)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {user.subscription?.plan || 'Sem plano'}
+                        </p>
+                        {getSubscriptionBadge(user.subscription?.status || 'inactive')}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {user.lastLogin ? new Date(user.lastLogin).toLocaleString('pt-BR') : 'Nunca'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleViewUser(user)}
+                          className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
+                          title="Visualizar"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEditUser(user)}
+                          className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
+                          title="Editar"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                          title="Desativar"
+                        >
+                          <Ban className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-3 bg-gray-50 dark:bg-gray-700">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
+              Mostrando página {currentPage} de {totalPages}
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+              >
+                Anterior
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Próximo
+              </Button>
+            </div>
+          </div>
+        )}
       </motion.div>
 
-      {/* User Details Modal */}
+      {/* Create User Modal */}
+      <AnimatePresence>
+        {showCreateModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            onClick={() => setShowCreateModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-primary-900 dark:text-white">
+                  Novo Usuário
+                </h2>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Nome *
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Senha *
+                  </label>
+                  <input
+                    type="password"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Telefone
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Função
+                  </label>
+                  <select
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  >
+                    <option value="student">Aluno</option>
+                    <option value="instructor">Instrutor</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Status
+                  </label>
+                  <select
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  >
+                    <option value="active">Ativo</option>
+                    <option value="suspended">Suspenso</option>
+                    <option value="pending">Pendente</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <Button variant="outline" onClick={() => setShowCreateModal(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleCreateUser} className="gap-2">
+                  <Save className="w-4 h-4" />
+                  Criar Usuário
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit User Modal */}
+      <AnimatePresence>
+        {showEditModal && selectedUser && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            onClick={() => setShowEditModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-primary-900 dark:text-white">
+                  Editar Usuário
+                </h2>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Nome
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Nova Senha (deixe em branco para manter a atual)
+                  </label>
+                  <input
+                    type="password"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Telefone
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Função
+                  </label>
+                  <select
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  >
+                    <option value="student">Aluno</option>
+                    <option value="instructor">Instrutor</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Status
+                  </label>
+                  <select
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  >
+                    <option value="active">Ativo</option>
+                    <option value="suspended">Suspenso</option>
+                    <option value="pending">Pendente</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <Button variant="outline" onClick={() => setShowEditModal(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleUpdateUser} className="gap-2">
+                  <Save className="w-4 h-4" />
+                  Salvar Alterações
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* View User Modal */}
       <AnimatePresence>
         {showUserModal && selectedUser && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
             onClick={() => setShowUserModal(false)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-primary-900 dark:text-white">
+                <h2 className="text-2xl font-bold text-primary-900 dark:text-white">
                   Detalhes do Usuário
-                </h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                </h2>
+                <button
                   onClick={() => setShowUserModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
-                  <X className="w-4 h-4" />
-                </Button>
+                  <X className="w-6 h-6" />
+                </button>
               </div>
 
               <div className="space-y-6">
                 {/* User Info */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-start gap-6">
                   <img
-                    src={selectedUser.avatar}
+                    src={selectedUser.avatar || `https://ui-avatars.com/api/?name=${selectedUser.name}&background=14242f&color=fff`}
                     alt={selectedUser.name}
-                    className="w-16 h-16 rounded-full"
+                    className="w-24 h-24 rounded-full"
                   />
-                  <div>
-                    <h4 className="text-lg font-semibold text-primary-900 dark:text-white">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-primary-900 dark:text-white">
                       {selectedUser.name}
-                    </h4>
-                    <p className="text-primary-600 dark:text-gray-400">
-                      {selectedUser.email}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
+                    </h3>
+                    <p className="text-primary-600 dark:text-gray-300">{selectedUser.email}</p>
+                    <div className="flex items-center gap-4 mt-2">
                       {getRoleBadge(selectedUser.role)}
                       {getStatusBadge(selectedUser.status)}
                     </div>
                   </div>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-3 bg-primary-50 dark:bg-gray-700 rounded-lg">
-                    <p className="text-2xl font-bold text-primary-900 dark:text-white">
-                      {selectedUser.coursesEnrolled}
-                    </p>
-                    <p className="text-sm text-primary-600 dark:text-gray-400">
-                      Cursos
-                    </p>
+                {/* Contact Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                    <div>
+                      <p className="text-sm text-primary-600 dark:text-gray-400">Email</p>
+                      <p className="font-medium text-primary-900 dark:text-white">
+                        {selectedUser.email}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-center p-3 bg-primary-50 dark:bg-gray-700 rounded-lg">
-                    <p className="text-2xl font-bold text-primary-900 dark:text-white">
-                      {selectedUser.questionsAnswered}
-                    </p>
-                    <p className="text-sm text-primary-600 dark:text-gray-400">
-                      Questões
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                    <div>
+                      <p className="text-sm text-primary-600 dark:text-gray-400">Telefone</p>
+                      <p className="font-medium text-primary-900 dark:text-white">
+                        {selectedUser.phone || 'Não informado'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-center p-3 bg-primary-50 dark:bg-gray-700 rounded-lg">
-                    <p className="text-2xl font-bold text-primary-900 dark:text-white">
-                      {selectedUser.flashcardsStudied}
-                    </p>
-                    <p className="text-sm text-primary-600 dark:text-gray-400">
-                      Flashcards
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                    <div>
+                      <p className="text-sm text-primary-600 dark:text-gray-400">Cadastro</p>
+                      <p className="font-medium text-primary-900 dark:text-white">
+                        {new Date(selectedUser.createdAt).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-center p-3 bg-primary-50 dark:bg-gray-700 rounded-lg">
-                    <p className="text-2xl font-bold text-primary-900 dark:text-white">
-                      {selectedUser.studyStreak}
-                    </p>
-                    <p className="text-sm text-primary-600 dark:text-gray-400">
-                      Sequência
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <Activity className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                    <div>
+                      <p className="text-sm text-primary-600 dark:text-gray-400">Último Acesso</p>
+                      <p className="font-medium text-primary-900 dark:text-white">
+                        {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString('pt-BR') : 'Nunca'}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
                 {/* Subscription Info */}
-                <div className="p-4 border border-primary-200 dark:border-gray-700 rounded-lg">
-                  <h5 className="font-semibold text-primary-900 dark:text-white mb-3">
+                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <h4 className="font-bold text-primary-900 dark:text-white mb-3">
                     Informações da Assinatura
-                  </h5>
+                  </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <p className="text-sm text-primary-600 dark:text-gray-400">Plano</p>
                       <p className="font-medium text-primary-900 dark:text-white">
-                        {selectedUser.plan}
+                        {selectedUser.subscription?.plan || 'Sem plano'}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-primary-600 dark:text-gray-400">Status</p>
-                      {getSubscriptionBadge(selectedUser.subscriptionStatus)}
-                    </div>
-                    <div>
-                      <p className="text-sm text-primary-600 dark:text-gray-400">Total Gasto</p>
-                      <p className="font-medium text-primary-900 dark:text-white">
-                        R$ {selectedUser.totalSpent.toFixed(2)}
-                      </p>
+                      {getSubscriptionBadge(selectedUser.subscription?.status || 'inactive')}
                     </div>
                   </div>
-                  {selectedUser.subscriptionExpiry && (
-                    <div className="mt-3">
-                      <p className="text-sm text-primary-600 dark:text-gray-400">Expira em</p>
-                      <p className="font-medium text-primary-900 dark:text-white">
-                        {selectedUser.subscriptionExpiry}
-                      </p>
-                    </div>
-                  )}
                 </div>
 
                 {/* Actions */}
@@ -727,7 +895,14 @@ export default function UserManager() {
                     <Mail className="w-4 h-4" />
                     Enviar Email
                   </Button>
-                  <Button variant="outline" className="gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="gap-2"
+                    onClick={() => {
+                      handleEditUser(selectedUser);
+                      setShowUserModal(false);
+                    }}
+                  >
                     <Edit className="w-4 h-4" />
                     Editar
                   </Button>
