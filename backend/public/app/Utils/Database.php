@@ -33,12 +33,19 @@ class Database {
   }
 
   /**
-   * Estabelece a conexão com MySQL
+   * Estabelece a conexão com MySQL ou PostgreSQL
    */
   private function setConnection(){
     try {
-      $this->connection = new PDO('mysql:host='.self::$host.';dbname='.self::$name.';port='.self::$port,self::$user,self::$pass);
-      $this->connection->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+      // Detectar tipo de banco baseado na porta (5432 = PostgreSQL, 3306 = MySQL)
+      if (self::$port == 5432 || getenv('DB_TYPE') === 'pgsql') {
+        $dsn = 'pgsql:host='.self::$host.';port='.self::$port.';dbname='.self::$name;
+      } else {
+        $dsn = 'mysql:host='.self::$host.';dbname='.self::$name.';port='.self::$port;
+      }
+      
+      $this->connection = new PDO($dsn, self::$user, self::$pass);
+      $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch(PDOException $e) {
       die('ERROR: '.$e->getMessage());
     }
