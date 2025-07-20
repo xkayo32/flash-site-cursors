@@ -1,55 +1,67 @@
-# Makefile para facilitar comandos Docker
+# StudyPro Makefile
 
-.PHONY: help up down build logs shell clean
+# Get server IP
+SERVER_IP := $(shell ip route get 1 | awk '{print $$7; exit}' 2>/dev/null || hostname -I | awk '{print $$1}' 2>/dev/null || echo "localhost")
 
-help: ## Mostra esta mensagem de ajuda
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+# Colors
+GREEN := \033[0;32m
+YELLOW := \033[1;33m
+NC := \033[0m
 
-up: ## Inicia todos os containers
-	docker-compose up -d
-	@echo "\n✅ Serviços iniciados:"
-	@echo "   Frontend: http://localhost:5273"
-	@echo "   Backend: http://localhost:8180"
-	@echo "   phpMyAdmin: http://localhost:8280"
+.PHONY: up down restart build logs shell-backend shell-frontend migrate clean help
 
-down: ## Para todos os containers
-	docker-compose down
+help:
+	@echo "$(GREEN)StudyPro - Available commands:$(NC)"
+	@echo "  make up        - Start all services"
+	@echo "  make down      - Stop all services"
+	@echo "  make restart   - Restart all services"
+	@echo "  make build     - Rebuild all containers"
+	@echo "  make logs      - View logs for all services"
+	@echo "  make clean     - Remove all containers and volumes"
 
-build: ## Reconstrói os containers
-	docker-compose build --no-cache
+up:
+	@echo "$(GREEN)Starting StudyPro services...$(NC)"
+	@docker compose up -d
+	@echo ""
+	@echo "$(GREEN)✅ Services started successfully!$(NC)"
+	@echo ""
+	@echo "$(YELLOW)🌐 Access points:$(NC)"
+	@echo "   Frontend:    http://$(SERVER_IP):5273"
+	@echo "   Backend API: http://$(SERVER_IP):8180"
+	@echo "   phpMyAdmin:  http://$(SERVER_IP):8280"
 
-logs: ## Mostra logs de todos os serviços
-	docker-compose logs -f
+down:
+	@echo "$(YELLOW)Stopping StudyPro services...$(NC)"
+	@docker compose down
+	@echo "$(GREEN)✅ Services stopped$(NC)"
 
-logs-frontend: ## Mostra logs do frontend
-	docker-compose logs -f frontend
+restart:
+	@echo "$(YELLOW)Restarting StudyPro services...$(NC)"
+	@docker compose restart
+	@echo "$(GREEN)✅ Services restarted$(NC)"
 
-logs-backend: ## Mostra logs do backend
-	docker-compose logs -f backend
+build:
+	@echo "$(GREEN)Building StudyPro containers...$(NC)"
+	@docker compose build
+	@echo "$(GREEN)✅ Build complete$(NC)"
 
-shell-frontend: ## Acessa shell do container frontend
-	docker-compose exec frontend sh
+logs:
+	@docker compose logs -f
 
-shell-backend: ## Acessa shell do container backend
-	docker-compose exec backend bash
+shell-backend:
+	@docker compose exec backend sh
 
-shell-db: ## Acessa MySQL
-	docker-compose exec db mysql -u estudos_user -pestudos_pass estudos_db
+shell-frontend:
+	@docker compose exec frontend sh
 
-install: ## Instala dependências nos containers
-	docker-compose exec frontend npm install
-	docker-compose exec backend composer install
+migrate:
+	@echo "$(GREEN)Running database migrations...$(NC)"
+	@docker compose exec backend php artisan migrate
+	@echo "$(GREEN)✅ Migrations complete$(NC)"
 
-migrate: ## Roda migrations do Laravel
-	docker-compose exec backend php artisan migrate
-
-fresh: ## Limpa banco e roda migrations
-	docker-compose exec backend php artisan migrate:fresh --seed
-
-clean: ## Remove containers, volumes e imagens
-	docker-compose down -v --rmi all
-
-restart: down up ## Reinicia todos os serviços
-
-status: ## Mostra status dos containers
-	docker-compose ps
+clean:
+	@echo "$(YELLOW)⚠️  This will remove all containers and volumes!$(NC)"
+	@echo "Press Ctrl+C to cancel or Enter to continue..."
+	@read confirm
+	@docker compose down -v
+	@echo "$(GREEN)✅ Cleanup complete$(NC)"

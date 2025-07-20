@@ -17,7 +17,7 @@ services:
     networks:
       - estudos-network
 
-  # Backend Laravel (PHP)
+  # Backend PHP
   backend:
     build:
       context: ./backend

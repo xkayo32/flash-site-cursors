@@ -1,5 +1,5 @@
-# Dockerfile para desenvolvimento do Backend Laravel
-FROM php:8.2-fpm
+# Dockerfile para PHP puro
+FROM php:8.2-cli
 
 # Instalar dependências do sistema
 RUN apt-get update && apt-get install -y \
@@ -9,41 +9,32 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     zip \
-    unzip \
-    nodejs \
-    npm
+    unzip
 
 # Limpar cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Instalar extensões PHP
+# Instalar extensões PHP necessárias
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# Instalar Composer
+# Instalar Composer (caso precise no futuro)
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Permitir Composer rodar como root (apenas para desenvolvimento)
-ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Definir diretório de trabalho
 WORKDIR /var/www/html
 
-# Copiar arquivos do projeto (se existirem)
+# Copiar arquivos do projeto
 COPY . .
 
-# Criar estrutura básica se não existir composer.json
-RUN if [ ! -f "composer.json" ]; then \
-        composer create-project laravel/laravel . --prefer-dist; \
-    else \
-        composer install; \
-    fi
+# Install do composer
+WORKDIR /var/www/html/public
+RUN composer install --no-interaction
 
-# Dar permissões
-RUN chown -R www-data:www-data /var/www/html \
-    && if [ -d "storage" ]; then chmod -R 755 /var/www/html/storage; fi
+# Voltar ao diretório raiz
+WORKDIR /var/www/html
 
 # Expor porta
 EXPOSE 8000
 
-# Comando para iniciar o servidor
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Comando para iniciar o servidor PHP built-in
+CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
