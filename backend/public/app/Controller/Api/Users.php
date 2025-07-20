@@ -359,15 +359,34 @@ class Users {
         }
         
         try {
-            // Check if user exists
-            $checkStmt = $pdo->prepare("SELECT id FROM users WHERE id = :id");
+            // Check if user exists and get current data
+            $checkStmt = $pdo->prepare("SELECT id, role FROM users WHERE id = :id");
             $checkStmt->execute(['id' => $id]);
+            $targetUser = $checkStmt->fetch();
             
-            if (!$checkStmt->fetch()) {
+            if (!$targetUser) {
                 http_response_code(404);
                 return [
                     'success' => false,
                     'message' => 'Usuário não encontrado'
+                ];
+            }
+            
+            // Protection: Admin cannot change their own status
+            if ($userData->userId == $id && $status !== null) {
+                http_response_code(403);
+                return [
+                    'success' => false,
+                    'message' => 'Você não pode alterar seu próprio status'
+                ];
+            }
+            
+            // Protection: Admin cannot change status of other admins
+            if ($targetUser['role'] === 'admin' && $userData->userId != $id && $status !== null) {
+                http_response_code(403);
+                return [
+                    'success' => false,
+                    'message' => 'Você não pode alterar o status de outros administradores'
                 ];
             }
             
@@ -518,8 +537,8 @@ class Users {
         }
         
         try {
-            // Check if user exists and is not already inactive
-            $checkStmt = $pdo->prepare("SELECT id, status FROM users WHERE id = :id");
+            // Check if user exists and get current data
+            $checkStmt = $pdo->prepare("SELECT id, status, role FROM users WHERE id = :id");
             $checkStmt->execute(['id' => $id]);
             $user = $checkStmt->fetch();
             
@@ -528,6 +547,15 @@ class Users {
                 return [
                     'success' => false,
                     'message' => 'Usuário não encontrado'
+                ];
+            }
+            
+            // Protection: Admin cannot deactivate other admins
+            if ($user['role'] === 'admin') {
+                http_response_code(403);
+                return [
+                    'success' => false,
+                    'message' => 'Você não pode desativar outros administradores'
                 ];
             }
             

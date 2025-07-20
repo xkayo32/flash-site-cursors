@@ -60,6 +60,14 @@ class Request
     if (strpos($contentType, 'application/json') !== false) {
       $input = file_get_contents('php://input');
       $this->postVars = json_decode($input, true) ?: [];
+    } elseif (in_array($this->httpMethod, ['PUT', 'PATCH', 'DELETE'])) {
+      // Para métodos PUT, PATCH, DELETE, os dados estão em php://input
+      $input = file_get_contents('php://input');
+      if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
+        parse_str($input, $this->postVars);
+      } else {
+        $this->postVars = [];
+      }
     } else {
       $this->postVars = $_POST ?? [];
     }

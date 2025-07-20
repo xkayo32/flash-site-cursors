@@ -71,6 +71,7 @@ class UserService {
     search?: string;
     status?: string;
     role?: string;
+    includeInactive?: boolean;
   }): Promise<UsersResponse> {
     try {
       const queryParams = new URLSearchParams();
@@ -79,6 +80,7 @@ class UserService {
       if (params?.search) queryParams.append('search', params.search);
       if (params?.status && params.status !== 'Todos') queryParams.append('status', params.status);
       if (params?.role && params.role !== 'Todos') queryParams.append('role', params.role);
+      if (params?.includeInactive) queryParams.append('include_inactive', 'true');
 
       const response = await fetch(`${API_ENDPOINTS.users.list}?${queryParams}`, {
         method: 'GET',

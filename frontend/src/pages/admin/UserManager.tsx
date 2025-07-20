@@ -32,6 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { userService } from '@/services/userService';
+import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 
 const plans = ['Todos', 'Básico', 'Premium', 'VIP', 'Unlimited'];
@@ -39,10 +40,12 @@ const roles = ['Todos', 'student', 'instructor', 'admin'];
 const statuses = ['Todos', 'active', 'suspended', 'pending', 'inactive'];
 
 export default function UserManager() {
+  const { user: currentUser } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlan, setSelectedPlan] = useState('Todos');
   const [selectedRole, setSelectedRole] = useState('Todos');
   const [selectedStatus, setSelectedStatus] = useState('Todos');
+  const [includeInactive, setIncludeInactive] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -64,7 +67,7 @@ export default function UserManager() {
 
   useEffect(() => {
     loadUsers();
-  }, [currentPage, searchTerm, selectedRole, selectedStatus]);
+  }, [currentPage, searchTerm, selectedRole, selectedStatus, includeInactive]);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -74,7 +77,8 @@ export default function UserManager() {
         limit: 10,
         search: searchTerm,
         role: selectedRole,
-        status: selectedStatus
+        status: selectedStatus,
+        includeInactive: includeInactive
       });
 
       if (response.success && response.data) {
@@ -161,6 +165,32 @@ export default function UserManager() {
     } catch (error) {
       toast.error('Erro ao desativar usuário');
     }
+  };
+
+  // Check if current admin can modify user status
+  const canModifyUserStatus = (user: any) => {
+    if (!currentUser) return false;
+    
+    // Cannot modify own status
+    if (currentUser.id === user.id) return false;
+    
+    // Cannot modify other admin's status
+    if (user.role === 'admin') return false;
+    
+    return true;
+  };
+
+  // Check if current admin can delete user
+  const canDeleteUser = (user: any) => {
+    if (!currentUser) return false;
+    
+    // Cannot delete self
+    if (currentUser.id === user.id) return false;
+    
+    // Cannot delete other admins
+    if (user.role === 'admin') return false;
+    
+    return true;
   };
 
   const getRoleBadge = (role: string) => {
@@ -389,6 +419,16 @@ export default function UserManager() {
                 <option key={status} value={status}>{status}</option>
               ))}
             </select>
+            
+            <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+              <input
+                type="checkbox"
+                checked={includeInactive}
+                onChange={(e) => setIncludeInactive(e.target.checked)}
+                className="rounded focus:ring-2 focus:ring-primary-500"
+              />
+              <span className="text-gray-700 dark:text-gray-300">Incluir inativos</span>
+            </label>
           </div>
         </div>
       </motion.div>
@@ -493,8 +533,13 @@ export default function UserManager() {
                         </button>
                         <button
                           onClick={() => handleDeleteUser(user.id)}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                          title="Desativar"
+                          disabled={!canDeleteUser(user)}
+                          className={`${
+                            canDeleteUser(user)
+                              ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
+                              : 'text-gray-400 cursor-not-allowed'
+                          }`}
+                          title={canDeleteUser(user) ? "Desativar" : "Não é possível desativar este usuário"}
                         >
                           <Ban className="w-4 h-4" />
                         </button>
@@ -640,6 +685,7 @@ export default function UserManager() {
                     <option value="active">Ativo</option>
                     <option value="suspended">Suspenso</option>
                     <option value="pending">Pendente</option>
+                    <option value="inactive">Inativo</option>
                   </select>
                 </div>
               </div>
@@ -686,6 +732,18 @@ export default function UserManager() {
                   <X className="w-6 h-6" />
                 </button>
               </div>
+
+              {selectedUser && !canModifyUserStatus(selectedUser) && (
+                <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    <AlertCircle className="w-4 h-4 inline mr-2" />
+                    {currentUser?.id === selectedUser.id 
+                      ? "Você não pode alterar seu próprio status"
+                      : "O status de outros administradores não pode ser alterado"
+                    }
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-4">
                 <div>
@@ -754,15 +812,20 @@ export default function UserManager() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Status
+                    {selectedUser && !canModifyUserStatus(selectedUser) && (
+                      <span className="text-xs text-gray-500 ml-2">(não editável)</span>
+                    )}
                   </label>
                   <select
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    disabled={selectedUser && !canModifyUserStatus(selectedUser)}
                   >
                     <option value="active">Ativo</option>
                     <option value="suspended">Suspenso</option>
                     <option value="pending">Pendente</option>
+                    <option value="inactive">Inativo</option>
                   </select>
                 </div>
               </div>
