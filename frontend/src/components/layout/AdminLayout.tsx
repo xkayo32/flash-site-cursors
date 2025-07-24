@@ -16,13 +16,15 @@ import {
   Shield,
   Upload,
   Tag,
-  PanelLeft
+  PanelLeft,
+  GripVertical
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
 import { useAuthStore } from '@/store/authStore';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { cn } from '@/utils/cn';
 
 const adminNavItems = [
   {
@@ -83,6 +85,55 @@ export default function AdminLayout() {
   const { user, clearAuth } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const [isResizing, setIsResizing] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  const MIN_WIDTH = 200;
+  const MAX_WIDTH = 430; // 280px + 150px
+  const COLLAPSED_WIDTH = 80;
+
+  useEffect(() => {
+    // Load saved width from localStorage
+    const savedWidth = localStorage.getItem('adminSidebarWidth');
+    if (savedWidth) {
+      setSidebarWidth(Number(savedWidth));
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+      
+      const newWidth = e.clientX;
+      if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
+        setSidebarWidth(newWidth);
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isResizing) {
+        setIsResizing(false);
+        // Save width to localStorage
+        localStorage.setItem('adminSidebarWidth', sidebarWidth.toString());
+      }
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      // Prevent text selection while resizing
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'col-resize';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+  }, [isResizing, sidebarWidth]);
 
   const handleLogout = () => {
     clearAuth();
@@ -115,15 +166,16 @@ export default function AdminLayout() {
       <div className="flex h-screen">
         {/* Sidebar */}
         <motion.aside
+          ref={sidebarRef}
           initial={{ x: -250 }}
           animate={{ 
             x: 0,
-            width: isCollapsed ? 80 : 256 
+            width: isCollapsed ? COLLAPSED_WIDTH : sidebarWidth 
           }}
           className={`${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } lg:translate-x-0 fixed lg:relative z-20 h-full bg-primary-900 dark:bg-gray-800 transition-transform duration-300`}
-          style={{ overflow: 'hidden' }}
+          } lg:translate-x-0 fixed lg:relative z-20 h-full bg-primary-900 dark:bg-gray-800 transition-transform duration-300 shadow-xl`}
+          style={{ overflow: 'hidden', position: 'relative' }}
         >
           <div className="flex flex-col h-full">
             {/* Logo */}
@@ -314,6 +366,24 @@ export default function AdminLayout() {
               </div>
             </div>
           </div>
+
+          {/* Resize Handle - only show on desktop when sidebar is not collapsed */}
+          {!isCollapsed && (
+            <div
+              className={cn(
+                "hidden lg:block absolute right-0 top-0 h-full w-1 hover:w-2 cursor-col-resize transition-all duration-200 group",
+                isResizing ? "bg-primary-700 dark:bg-gray-600 w-2" : "bg-primary-800 dark:bg-gray-700 hover:bg-primary-700 dark:hover:bg-gray-600"
+              )}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setIsResizing(true);
+              }}
+            >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <GripVertical className="w-4 h-4 text-white/80" />
+              </div>
+            </div>
+          )}
         </motion.aside>
 
         {/* Overlay for mobile */}

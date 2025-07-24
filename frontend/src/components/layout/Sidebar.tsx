@@ -51,9 +51,58 @@ const bottomItems = [
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const [isResizing, setIsResizing] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  const MIN_WIDTH = 200;
+  const MAX_WIDTH = 430; // 280px + 150px
+  const COLLAPSED_WIDTH = 80;
+
+  useEffect(() => {
+    // Load saved width from localStorage
+    const savedWidth = localStorage.getItem('sidebarWidth');
+    if (savedWidth) {
+      setSidebarWidth(Number(savedWidth));
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+      
+      const newWidth = e.clientX;
+      if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
+        setSidebarWidth(newWidth);
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isResizing) {
+        setIsResizing(false);
+        // Save width to localStorage
+        localStorage.setItem('sidebarWidth', sidebarWidth.toString());
+      }
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      // Prevent text selection while resizing
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'col-resize';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+  }, [isResizing, sidebarWidth]);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleMobileSidebar = () => setIsMobileOpen(!isMobileOpen);
@@ -83,13 +132,14 @@ export function Sidebar() {
 
       {/* Sidebar */}
       <motion.aside
+        ref={sidebarRef}
         initial={false}
         animate={{
-          width: isOpen ? 280 : 80,
+          width: isOpen ? sidebarWidth : COLLAPSED_WIDTH,
         }}
         className={cn(
           'lg:relative top-0 left-0 h-screen bg-primary-600 dark:bg-gray-800 text-white z-40',
-          'flex flex-col transition-all duration-300 ease-in-out',
+          'flex flex-col transition-all duration-300 ease-in-out shadow-xl',
           'fixed lg:translate-x-0',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
@@ -320,6 +370,24 @@ export function Sidebar() {
             )}
           </div>
         </div>
+
+        {/* Resize Handle - only show on desktop when sidebar is open */}
+        {isOpen && (
+          <div
+            className={cn(
+              "hidden lg:block absolute right-0 top-0 h-full w-1 hover:w-2 cursor-col-resize transition-all duration-200 group",
+              isResizing ? "bg-primary-400 dark:bg-gray-600 w-2" : "bg-primary-500 dark:bg-gray-700 hover:bg-primary-400 dark:hover:bg-gray-600"
+            )}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setIsResizing(true);
+            }}
+          >
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <GripVertical className="w-4 h-4 text-white/80" />
+            </div>
+          </div>
+        )}
       </motion.aside>
     </>
   );
