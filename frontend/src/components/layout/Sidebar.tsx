@@ -20,9 +20,10 @@ import {
   GraduationCap,
   TrendingUp,
   Moon,
-  Sun
+  Sun,
+  GripVertical
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';

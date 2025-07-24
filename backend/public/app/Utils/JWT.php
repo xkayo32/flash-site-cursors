@@ -91,12 +91,28 @@ class JWT {
     public static function requireRole($requiredRole) {
         $userData = self::authenticate();
         
-        if ($userData->role !== $requiredRole) {
-            http_response_code(403);
-            echo json_encode(['error' => 'Acesso negado']);
-            exit;
+        // Handle array of roles
+        if (is_array($requiredRole)) {
+            if (!in_array($userData->role, $requiredRole)) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Acesso negado']);
+                exit;
+            }
+        } else {
+            if ($userData->role !== $requiredRole) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Acesso negado']);
+                exit;
+            }
         }
         
         return $userData;
+    }
+    
+    /**
+     * Get authenticated user without role verification
+     */
+    public static function requireAuth() {
+        return self::authenticate();
     }
 }

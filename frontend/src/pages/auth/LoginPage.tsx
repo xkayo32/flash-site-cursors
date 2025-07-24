@@ -74,6 +74,9 @@ export default function LoginPage() {
       params.append('email', formData.email);
       params.append('password', formData.password);
 
+      console.log('Attempting login to:', API_ENDPOINTS.auth.login);
+      console.log('Login data:', { email: formData.email });
+
       const response = await fetch(API_ENDPOINTS.auth.login, {
         method: 'POST',
         headers: {
@@ -85,6 +88,8 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (data.success) {
+        console.log('Login successful:', data);
+        
         // Save JWT token and user data
         setAuth(
           {
@@ -104,6 +109,9 @@ export default function LoginPage() {
 
         toast.success('Login realizado com sucesso!');
         
+        console.log('User role:', data.user.role);
+        console.log('Navigating to:', data.user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
+        
         // Redirect based on role
         if (data.user.role === 'admin') {
           navigate('/admin/dashboard');
@@ -111,6 +119,7 @@ export default function LoginPage() {
           navigate('/dashboard');
         }
       } else {
+        console.error('Login failed:', data);
         toast.error(data.message || 'Email ou senha inválidos');
       }
     } catch (error) {

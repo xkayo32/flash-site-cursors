@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://173.208.151.106:8180';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8180';
 
 export const API_ENDPOINTS = {
   auth: {
@@ -17,6 +17,26 @@ export const API_ENDPOINTS = {
   },
   courses: {
     list: `${API_BASE_URL}/api/v1/courses`,
-    detail: (id: string) => `${API_BASE_URL}/api/v1/courses/${id}`,
+    get: (id: string) => `${API_BASE_URL}/api/v1/courses/${id}`,
+    create: `${API_BASE_URL}/api/v1/courses`,
+    update: (id: string) => `${API_BASE_URL}/api/v1/courses/${id}`,
+    delete: (id: string) => `${API_BASE_URL}/api/v1/courses/${id}`,
+    modules: {
+      list: (courseId: string) => `${API_BASE_URL}/api/v1/courses/${courseId}/modules`,
+      get: (courseId: string, id: string) => `${API_BASE_URL}/api/v1/courses/${courseId}/modules/${id}`,
+      create: (courseId: string) => `${API_BASE_URL}/api/v1/courses/${courseId}/modules`,
+      update: (courseId: string, id: string) => `${API_BASE_URL}/api/v1/courses/${courseId}/modules/${id}`,
+      delete: (courseId: string, id: string) => `${API_BASE_URL}/api/v1/courses/${courseId}/modules/${id}`,
+      reorder: (courseId: string) => `${API_BASE_URL}/api/v1/courses/${courseId}/modules/reorder`,
+    },
+    lessons: {
+      list: (moduleId: string) => `${API_BASE_URL}/api/v1/modules/${moduleId}/lessons`,
+      get: (moduleId: string, id: string) => `${API_BASE_URL}/api/v1/modules/${moduleId}/lessons/${id}`,
+      create: (moduleId: string) => `${API_BASE_URL}/api/v1/modules/${moduleId}/lessons`,
+      update: (moduleId: string, id: string) => `${API_BASE_URL}/api/v1/modules/${moduleId}/lessons/${id}`,
+      delete: (moduleId: string, id: string) => `${API_BASE_URL}/api/v1/modules/${moduleId}/lessons/${id}`,
+      reorder: (moduleId: string) => `${API_BASE_URL}/api/v1/modules/${moduleId}/lessons/reorder`,
+      addResource: (moduleId: string, lessonId: string) => `${API_BASE_URL}/api/v1/modules/${moduleId}/lessons/${lessonId}/resources`,
+    },
   },
 };

@@ -33,6 +33,7 @@ import UserManager from './pages/admin/UserManager';
 import QuestionEditor from './pages/admin/QuestionEditor';
 import Analytics from './pages/admin/Analytics';
 import CourseEditor from './pages/admin/CourseEditor';
+import CourseCreator from './pages/admin/CourseCreator';
 import SummaryEditor from './pages/admin/SummaryEditor';
 import LegislationManager from './pages/admin/LegislationManager';
 import ImportManager from './pages/admin/ImportManager';
@@ -138,6 +139,7 @@ function Router() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/content" element={<ContentManager />} />
         <Route path="/admin/courses" element={<CourseEditor />} />
+        <Route path="/admin/courses/new" element={<CourseCreator />} />
         <Route path="/admin/summaries" element={<SummaryEditor />} />
         <Route path="/admin/legislation" element={<LegislationManager />} />
         <Route path="/admin/users" element={<UserManager />} />
