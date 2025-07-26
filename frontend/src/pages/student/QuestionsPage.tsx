@@ -296,7 +296,6 @@ export default function QuestionsPage() {
       progress: 0
     };
 
-    console.log('Caderno criado:', newNotebook);
     alert(`Caderno "${notebookName}" criado com ${selectedQuestions.length} questões!`);
     
     // Reset

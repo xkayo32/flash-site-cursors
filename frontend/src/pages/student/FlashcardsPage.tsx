@@ -350,9 +350,6 @@ export default function FlashcardsPage() {
       author: 'Você'
     };
 
-    console.log('Deck criado:', newDeck);
-    console.log('Cards selecionados:', selectedCards);
-    
     alert(`Deck "${newDeckName}" criado com sucesso com ${selectedCards.length} flashcard${selectedCards.length > 1 ? 's' : ''}!`);
     
     // Reset form
@@ -416,8 +413,6 @@ export default function FlashcardsPage() {
 
     // Simula atualização do card com SRS
     const updatedSRS = calculateNextReview(quality, currentCard);
-    console.log('Card updated with SRS:', updatedSRS);
-
     // Atualiza o card atual com novos dados SRS
     const updatedCard = {
       ...currentCard,

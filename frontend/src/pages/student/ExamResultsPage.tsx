@@ -186,7 +186,6 @@ export default function ExamResultsPage() {
           url: window.location.href
         });
       } catch (error) {
-        console.log('Erro ao compartilhar:', error);
       }
     } else {
       // Fallback para copy to clipboard

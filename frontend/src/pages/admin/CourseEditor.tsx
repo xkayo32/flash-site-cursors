@@ -64,17 +64,9 @@ export default function CourseEditor() {
   // Load courses from API
   const loadCourses = async () => {
     try {
-      console.log('loadCourses: Starting to load courses from API');
       setLoadingCourses(true);
       const response = await courseService.listCourses();
-      console.log('loadCourses: API response:', response);
-      console.log('loadCourses: Raw response data:', JSON.stringify(response.data, null, 2));
       if (response.success && response.data) {
-        console.log('loadCourses: Setting courses data:', response.data);
-        // Log first course ID to debug ID format
-        if (response.data.length > 0) {
-          console.log('loadCourses: First course ID:', response.data[0].id, 'Type:', typeof response.data[0].id);
-        }
         setCourses(response.data);
       } else {
         console.error('Failed to load courses:', response.message);
@@ -150,10 +142,8 @@ export default function CourseEditor() {
 
   // Image upload handlers
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('handleImageSelect called', e.target.files);
     const file = e.target.files?.[0];
     if (file) {
-      console.log('File selected:', file.name, file.type, file.size);
       
       // Validate file type
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
@@ -177,15 +167,12 @@ export default function CourseEditor() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
-        console.log('Image preview created');
       };
       reader.onerror = () => {
         toast.error('Erro ao ler arquivo de imagem');
         console.error('FileReader error');
       };
       reader.readAsDataURL(file);
-    } else {
-      console.log('No file selected');
     }
   };
   
@@ -198,23 +185,15 @@ export default function CourseEditor() {
   };
 
   const triggerFileInput = () => {
-    console.log('triggerFileInput called');
     if (fileInputRef.current) {
-      console.log('fileInputRef exists, clicking...');
       fileInputRef.current.click();
-    } else {
-      console.log('fileInputRef is null');
     }
   };
 
 
   const handleSaveCourse = async () => {
-    console.log('1. handleSaveCourse called');
-    console.log('2. selectedCourse:', selectedCourse);
-    console.log('3. imageFile:', imageFile);
     
     if (!selectedCourse) {
-      console.log('5. Error: No selected course');
       toast.error('Nenhum curso selecionado');
       return;
     }
@@ -233,16 +212,13 @@ export default function CourseEditor() {
       return;
     }
 
-    console.log('6. Setting loading to true');
     setIsLoading(true);
     
     try {
-      console.log('7. Entered try block');
       let updateData: any = {};
       
       // If this is a new course creation, collect form data
       if (!selectedCourse.id) {
-        console.log('8. Creating new course (no ID found)');
         // Get form data from the modal form fields
         const titleInput = document.querySelector('#course-title') as HTMLInputElement;
         const categorySelect = document.querySelector('#course-category') as HTMLSelectElement;
@@ -262,12 +238,10 @@ export default function CourseEditor() {
           description: descriptionTextarea?.value || '',
         };
 
-        console.log('9. New course data collected:', updateData);
 
         // For new courses, use createCourse
         let createData: any;
         if (imageFile) {
-          console.log('10. Adding image to new course FormData');
           const formData = new FormData();
           Object.keys(updateData).forEach(key => {
             const value = updateData[key];
@@ -278,16 +252,12 @@ export default function CourseEditor() {
           formData.append('thumbnail', imageFile);
           createData = formData;
         } else {
-          console.log('10. No image for new course');
           createData = updateData;
         }
 
-        console.log('11. About to call courseService.createCourse');
         const response = await courseService.createCourse(createData);
-        console.log('12. Create response:', response);
         
         if (response.success) {
-          console.log('13. Create success');
           toast.success('Curso criado com sucesso!');
           await loadCourses(); // Reload courses from API
           setShowCourseModal(false);
@@ -295,7 +265,6 @@ export default function CourseEditor() {
           setImageFile(null);
           setImagePreview(null);
         } else {
-          console.log('14. Create failed:', response.message);
           
           // Show specific validation errors if available
           if (response.validation_errors && Array.isArray(response.validation_errors)) {
@@ -313,7 +282,6 @@ export default function CourseEditor() {
           }
         }
       } else {
-        console.log('8. Updating existing course (ID found):', selectedCourse.id);
         
         // Step 1: Update course data first
         const titleInput = document.querySelector('#course-title') as HTMLInputElement;
@@ -334,12 +302,10 @@ export default function CourseEditor() {
           description: descriptionTextarea?.value || selectedCourse.description,
         };
 
-        console.log('9. Update data prepared:', updateData);
 
         // Prepare update data - if there's an image, use FormData
         let requestData: any;
         if (imageFile) {
-          console.log('10. Creating FormData with image');
           const formData = new FormData();
           
           // Add all update fields to FormData
@@ -353,17 +319,13 @@ export default function CourseEditor() {
           formData.append('thumbnail', imageFile);
           requestData = formData;
         } else {
-          console.log('10. No image, using regular data');
           requestData = updateData;
         }
 
         // Update course data first
-        console.log('11. Updating course data');
         const updateResponse = await courseService.updateCourse(selectedCourse.id, updateData);
-        console.log('12. Course update response:', updateResponse);
         
         if (!updateResponse.success) {
-          console.log('13. Course update failed:', updateResponse.message);
           
           // Show specific validation errors if available
           if (updateResponse.validation_errors && Array.isArray(updateResponse.validation_errors)) {
@@ -382,12 +344,10 @@ export default function CourseEditor() {
 
         // Step 3: Upload image if selected
         if (imageFile && updateResponse.success) {
-          console.log('13. Uploading image separately');
           const imageFormData = new FormData();
           imageFormData.append('thumbnail', imageFile);
           
           const imageUploadResponse = await courseService.uploadCourseImage(selectedCourse.id, imageFormData);
-          console.log('14. Image upload response:', imageUploadResponse);
           
           if (!imageUploadResponse.success) {
             toast.error('Curso atualizado, mas erro ao enviar imagem');
@@ -395,7 +355,6 @@ export default function CourseEditor() {
         }
         
         // Step 4: Success - course updated
-        console.log('17. Course save completed successfully');
         toast.success('Curso atualizado com sucesso!');
         await loadCourses(); // Reload courses from API
         setShowCourseModal(false);
@@ -405,11 +364,9 @@ export default function CourseEditor() {
       }
       
     } catch (error) {
-      console.log('18. Caught error:', error);
       console.error('Error saving course:', error);
       toast.error('Erro ao salvar curso');
     } finally {
-      console.log('19. Finally block - setting loading to false');
       setIsLoading(false);
     }
   };
@@ -1126,7 +1083,6 @@ export default function CourseEditor() {
                   <Button 
                     className="gap-2"
                     onClick={(e) => {
-                      console.log('Save button clicked, event:', e);
                       e.preventDefault();
                       e.stopPropagation();
                       handleSaveCourse();

@@ -35,7 +35,6 @@ export function CourseImage({ src, alt, className = '', fallbackCategory }: Cour
   };
 
   const handleImageError = () => {
-    console.error(`Failed to load image: ${src}`);
     setImageError(true);
     setIsLoading(false);
   };

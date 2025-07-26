@@ -104,10 +104,8 @@ export default function CourseCreator() {
 
   // Handle image selection
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('handleImageSelect called', e.target.files);
     const file = e.target.files?.[0];
     if (file) {
-      console.log('File selected:', file.name, file.type, file.size);
       
       // Validate file type
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
@@ -131,7 +129,6 @@ export default function CourseCreator() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
-        console.log('Image preview created');
       };
       reader.onerror = () => {
         toast.error('Erro ao ler arquivo de imagem');
@@ -139,7 +136,6 @@ export default function CourseCreator() {
       };
       reader.readAsDataURL(file);
     } else {
-      console.log('No file selected');
     }
   };
   
@@ -152,12 +148,9 @@ export default function CourseCreator() {
   };
 
   const triggerFileInput = () => {
-    console.log('triggerFileInput called');
     if (fileInputRef.current) {
-      console.log('fileInputRef exists, clicking...');
       fileInputRef.current.click();
     } else {
-      console.log('fileInputRef is null');
     }
   };
 

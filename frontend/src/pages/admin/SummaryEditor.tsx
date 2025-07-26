@@ -226,7 +226,6 @@ export default function SummaryEditor() {
       setShowEmbedModal(true);
     } else {
       // Handle other toolbar actions
-      console.log('Toolbar action:', action);
     }
   };
 

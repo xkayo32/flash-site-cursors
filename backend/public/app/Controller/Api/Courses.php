@@ -787,46 +787,36 @@ class Courses {
      * PUT /api/v1/courses/:id
      */
     public static function update($request, $id) {
-        error_log('Course update - Function called with ID: ' . $id);
         
         // Capture any output that might be breaking JSON
         ob_start();
         
         // Verify authentication and admin/instructor role
         try {
-            error_log('Course update - Verifying authentication');
             $userData = JWT::requireRole(['admin', 'instructor']);
-            error_log('Course update - Authentication successful for user: ' . $userData->userId);
         } catch (Exception $e) {
-            error_log('Course update - Authentication failed: ' . $e->getMessage());
             ob_end_clean();
             return ['success' => false, 'message' => 'Acesso negado'];
         }
         
         // Get database connection
-        error_log('Course update - Getting database connection');
         $pdo = self::getConnection();
         if (!$pdo) {
-            error_log('Course update - Database connection failed');
             ob_end_clean();
             return [
                 'success' => false,
                 'message' => 'Erro de conexão com banco de dados'
             ];
         }
-        error_log('Course update - Database connection successful');
         
         try {
-            error_log('Course update - Entering try block for course ID: ' . $id);
             
             // Check if course exists and verify permissions
-            error_log('Course update - Checking if course exists');
             $checkStmt = $pdo->prepare("SELECT instructor_id, slug, thumbnail_file_path FROM courses WHERE id = :id");
             $checkStmt->execute(['id' => $id]);
             $course = $checkStmt->fetch();
             
             if (!$course) {
-                error_log('Course update - Course not found');
                 ob_end_clean();
                 return [
                     'success' => false,
@@ -834,11 +824,9 @@ class Courses {
                 ];
             }
             
-            error_log('Course update - Course found, checking permissions');
             
             // Check permissions
             if ($userData->role !== 'admin' && $course['instructor_id'] !== $userData->userId) {
-                error_log('Course update - Permission denied');
                 ob_end_clean();
                 return [
                     'success' => false,
@@ -846,16 +834,11 @@ class Courses {
                 ];
             }
             
-            error_log('Course update - Permissions OK, getting POST vars');
             
             // Debug request info
-            error_log('Course update - Request method: ' . $_SERVER['REQUEST_METHOD']);
-            error_log('Course update - Content type: ' . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
-            error_log('Course update - Raw FILES: ' . print_r($_FILES, true));
             
             // Get POST vars
             $postVars = $request->getPostVars();
-            error_log('Course update - PostVars from request: ' . print_r($postVars, true));
             
             // Validate required fields if provided
             $validationErrors = [];
@@ -891,15 +874,11 @@ class Courses {
             }
             
             // Debug: Log received data
-            error_log('Course update - POST vars: ' . print_r($postVars, true));
-            error_log('Course update - FILES: ' . print_r($_FILES, true));
             
-            error_log('Course update - Beginning transaction');
             
             // Begin transaction
             $pdo->beginTransaction();
             
-            error_log('Course update - Transaction started successfully');
             
             // Handle image upload if present
             $newThumbnailUrl = null;
@@ -907,20 +886,17 @@ class Courses {
             
             // Check for image data in FILES array (for POST requests)
             if (isset($_FILES['thumbnail']) && $_FILES['thumbnail']['error'] === UPLOAD_ERR_OK) {
-                error_log('Course update - Processing image upload from FILES');
                 
                 // Delete old thumbnail file if it exists
                 if ($course['thumbnail_file_path']) {
                     $oldFilePath = __DIR__ . '/../../' . $course['thumbnail_file_path'];
                     if (file_exists($oldFilePath)) {
                         unlink($oldFilePath);
-                        error_log('Course update - Deleted old thumbnail: ' . $oldFilePath);
                     }
                 }
                 
                 $uploadResult = self::validateAndProcessImage($_FILES['thumbnail'], $userData->userId, $course['slug']);
                 if (!$uploadResult['success']) {
-                    error_log('Course update - Image upload failed: ' . $uploadResult['message']);
                     $pdo->rollBack();
                     ob_end_clean();
                     return $uploadResult;
@@ -928,18 +904,15 @@ class Courses {
                 
                 $newThumbnailUrl = $uploadResult['url_path'];
                 $newThumbnailFilePath = $uploadResult['relative_path'];
-                error_log('Course update - Image uploaded successfully to: ' . $newThumbnailUrl);
             }
             // Check for image data in POST vars (for PUT requests with FormData)
             elseif (isset($postVars['thumbnail']) && !empty($postVars['thumbnail'])) {
-                error_log('Course update - Processing image upload from POST vars (FormData)');
                 
                 // Delete old thumbnail file if it exists
                 if ($course['thumbnail_file_path']) {
                     $oldFilePath = __DIR__ . '/../../' . $course['thumbnail_file_path'];
                     if (file_exists($oldFilePath)) {
                         unlink($oldFilePath);
-                        error_log('Course update - Deleted old thumbnail: ' . $oldFilePath);
                     }
                 }
                 
@@ -961,7 +934,6 @@ class Courses {
                 unlink($tempFile);
                 
                 if (!$uploadResult['success']) {
-                    error_log('Course update - Image upload failed: ' . $uploadResult['message']);
                     $pdo->rollBack();
                     ob_end_clean();
                     return $uploadResult;
@@ -969,7 +941,6 @@ class Courses {
                 
                 $newThumbnailUrl = $uploadResult['url_path'];
                 $newThumbnailFilePath = $uploadResult['relative_path'];
-                error_log('Course update - Image uploaded successfully to: ' . $newThumbnailUrl);
             }
             
             // Build update fields dynamically
@@ -1032,16 +1003,11 @@ class Courses {
                 $updateFields[] = "thumbnail_file_path = :thumbnail_file_path";
                 $params['thumbnail_url'] = $newThumbnailUrl;
                 $params['thumbnail_file_path'] = $newThumbnailFilePath;
-                error_log('Course update - Added thumbnail_url to update fields: ' . $newThumbnailUrl);
             }
             
             // Debug: Log update status
-            error_log('Course update - updateFields: ' . print_r($updateFields, true));
-            error_log('Course update - newThumbnailUrl exists: ' . ($newThumbnailUrl ? 'yes' : 'no'));
-            error_log('Course update - params: ' . print_r($params, true));
             
             if (empty($updateFields) && !$newThumbnailUrl) {
-                error_log('Course update - No fields to update, rolling back');
                 $pdo->rollBack();
                 return [
                     'success' => false,
@@ -1064,18 +1030,14 @@ class Courses {
             }
             
             $updateSql = "UPDATE courses SET " . implode(', ', $updateFields) . " WHERE id = :id";
-            error_log('Course update - SQL: ' . $updateSql);
-            error_log('Course update - About to execute update');
             
             $updateStmt = $pdo->prepare($updateSql);
             $updateStmt->execute($params);
             
-            error_log('Course update - Update executed successfully, committing transaction');
             
             // Commit transaction
             $pdo->commit();
             
-            error_log('Course update - Transaction committed successfully');
             
             // Clean any output buffer
             ob_end_clean();
@@ -1093,19 +1055,15 @@ class Courses {
             ];
             
         } catch (Exception $e) {
-            error_log('Course update - Exception caught: ' . $e->getMessage());
-            error_log('Course update - Exception trace: ' . $e->getTraceAsString());
             
             // Check if transaction is still active before rolling back
             try {
                 if ($pdo && $pdo->inTransaction()) {
-                    error_log('Course update - Rolling back active transaction');
                     $pdo->rollBack();
                 } else {
-                    error_log('Course update - No active transaction to roll back');
                 }
             } catch (Exception $rollbackError) {
-                error_log('Course update - Error during rollback: ' . $rollbackError->getMessage());
+                error_log('Update course rollback error: ' . $rollbackError->getMessage());
             }
             
             error_log('Update course error: ' . $e->getMessage());

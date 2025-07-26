@@ -100,7 +100,6 @@ export default function CheckoutPage() {
   };
 
   const handlePaymentSuccess = (paymentIntent: any) => {
-    console.log('Payment successful:', paymentIntent);
     // In a real app, you would redirect to a success page or dashboard
     navigate('/dashboard');
   };

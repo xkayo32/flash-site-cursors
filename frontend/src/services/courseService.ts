@@ -294,7 +294,6 @@ class CourseService {
       });
 
       const responseText = await response.text();
-      console.log('Raw create response:', responseText);
       
       try {
         const data = JSON.parse(responseText);
@@ -343,7 +342,6 @@ class CourseService {
       });
 
       const responseText = await response.text();
-      console.log('Raw response:', responseText);
       
       try {
         const data = JSON.parse(responseText);
