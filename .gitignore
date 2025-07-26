@@ -520,3 +520,14 @@ Thumbs.db
 # Claude settings (keep)
 !.claude/
 CLAUDE.md
+
+# Images and media
+*.png
+*.jpg
+*.gif
+*.svg
+*.ico
+*.bmp
+*.jpeg
+*.tiff
+*.webm
