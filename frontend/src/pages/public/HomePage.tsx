@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Logo } from '@/components/ui/Logo';
 import { useTheme } from '@/contexts/ThemeContext';
+import { getDefaultCourseThumbnail } from '@/utils/defaultImages';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -114,28 +115,28 @@ export default function HomePage() {
       positions: ['Agente', 'Escrivão', 'Papiloscopista'],
       students: 1247,
       questions: 8500,
-      image: '/api/placeholder/300/200'
+      image: getDefaultCourseThumbnail('Polícia Federal')
     },
     {
       name: 'Receita Federal',
       positions: ['Auditor Fiscal', 'Analista Tributário'],
       students: 2134,
       questions: 12300,
-      image: '/api/placeholder/300/200'
+      image: getDefaultCourseThumbnail('Receita Federal')
     },
     {
       name: 'Tribunal de Contas',
       positions: ['Auditor', 'Analista', 'Técnico'],
       students: 987,
       questions: 6700,
-      image: '/api/placeholder/300/200'
+      image: getDefaultCourseThumbnail('Tribunal de Contas')
     },
     {
       name: 'Magistratura',
       positions: ['Juiz Federal', 'Juiz Estadual'],
       students: 543,
       questions: 15200,
-      image: '/api/placeholder/300/200'
+      image: getDefaultCourseThumbnail('Magistratura')
     }
   ];
 

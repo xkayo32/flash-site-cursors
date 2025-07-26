@@ -21,6 +21,8 @@ export const API_ENDPOINTS = {
     create: `${API_BASE_URL}/api/v1/courses`,
     update: (id: string) => `${API_BASE_URL}/api/v1/courses/${id}`,
     delete: (id: string) => `${API_BASE_URL}/api/v1/courses/${id}`,
+    thumbnail: (id: string) => `${API_BASE_URL}/api/v1/courses/${id}/thumbnail`,
+    uploadImage: (id: string) => `${API_BASE_URL}/api/v1/courses/${id}/image`,
     modules: {
       list: (courseId: string) => `${API_BASE_URL}/api/v1/courses/${courseId}/modules`,
       get: (courseId: string, id: string) => `${API_BASE_URL}/api/v1/courses/${courseId}/modules/${id}`,

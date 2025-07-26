@@ -27,7 +27,9 @@ $obRouter->post('/api/v1/courses', [
 // UPDATE COURSE - PUT /api/v1/courses/{id}
 $obRouter->put('/api/v1/courses/{id}', [
     function($request, $id) {
-        return new Response(200, Api\Courses::update($request, $id), 'application/json');
+        $result = Api\Courses::update($request, $id);
+        $statusCode = $result['success'] ? 200 : 500;
+        return new Response($statusCode, $result, 'application/json');
     }
 ]);
 
@@ -35,6 +37,71 @@ $obRouter->put('/api/v1/courses/{id}', [
 $obRouter->delete('/api/v1/courses/{id}', [
     function($request, $id) {
         return new Response(200, Api\Courses::delete($request, $id), 'application/json');
+    }
+]);
+
+// UPLOAD COURSE IMAGE - POST /api/v1/courses/{id}/upload-image
+$obRouter->post('/api/v1/courses/{id}/upload-image', [
+    'middlewares' => ['api'],
+    function($request, $id) {
+        return new Response(200, Api\Courses::uploadImage($request, $id), 'application/json');
+    }
+]);
+
+// SERVE COURSE IMAGE WITH FALLBACK - GET /uploads/img/.../thumbnail_...
+$obRouter->get('/uploads/img/{userId}/courses/{courseSlug}/{filename}', [
+    function($request, $userId, $courseSlug, $filename) {
+        return Api\Courses::serveImage($request, $userId, $courseSlug, $filename);
+    }
+]);
+
+// SERVE UPLOADED COURSE IMAGES - GET /uploads/course-images/{filename}
+$obRouter->get('/uploads/course-images/{filename}', [
+    function($request, $filename) {
+        $imagePath = __DIR__ . '/../../../uploads/course-images/' . $filename;
+        
+        if (!file_exists($imagePath)) {
+            http_response_code(404);
+            echo json_encode(['status' => 'error', 'message' => 'Image not found']);
+            return;
+        }
+        
+        $imageData = file_get_contents($imagePath);
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $imagePath);
+        finfo_close($finfo);
+        
+        header('Content-Type: ' . $mimeType);
+        header('Content-Length: ' . strlen($imageData));
+        header('Cache-Control: public, max-age=86400');
+        
+        echo $imageData;
+        exit;
+    }
+]);
+
+// SERVE SIMPLE UPLOADED IMAGES - GET /images/{filename}
+$obRouter->get('/images/{filename}', [
+    function($request, $filename) {
+        $imagePath = __DIR__ . '/../../../images/' . $filename;
+        
+        if (!file_exists($imagePath)) {
+            http_response_code(404);
+            echo json_encode(['status' => 'error', 'message' => 'Image not found']);
+            return;
+        }
+        
+        $imageData = file_get_contents($imagePath);
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $imagePath);
+        finfo_close($finfo);
+        
+        header('Content-Type: ' . $mimeType);
+        header('Content-Length: ' . strlen($imageData));
+        header('Cache-Control: public, max-age=86400');
+        
+        echo $imageData;
+        exit;
     }
 ]);
 

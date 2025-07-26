@@ -39,5 +39,5 @@ WORKDIR /var/www/html
 # Expor porta
 EXPOSE 8000
 
-# Comando para iniciar o servidor PHP built-in
-CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
+# Comando para iniciar o servidor PHP built-in com roteamento
+CMD ["php", "-S", "0.0.0.0:8000", "-t", "public", "public/index.php"]

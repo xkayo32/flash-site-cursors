@@ -11,11 +11,11 @@ class Auth {
      */
     private static function getConnection() {
         // PostgreSQL connection
-        $host = '173.208.151.106';
-        $port = '5532';
-        $dbname = 'estudos_db';
-        $user = 'estudos_user';
-        $pass = 'estudos_pass';
+        $host = getenv('DB_HOST') ?: 'postgres';
+        $port = getenv('DB_PORT') ?: '5432';
+        $dbname = getenv('DB_DATABASE') ?: 'estudos_db';
+        $user = getenv('DB_USERNAME') ?: 'estudos_user';
+        $pass = getenv('DB_PASSWORD') ?: 'estudos_pass';
         
         try {
             $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";

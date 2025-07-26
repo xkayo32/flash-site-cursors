@@ -12,7 +12,6 @@ services:
       - DB_PASSWORD=estudos_pass
     depends_on:
       - postgres
-      - redis
 
   # Desabilitar MySQL e phpMyAdmin quando usar PostgreSQL
   db:

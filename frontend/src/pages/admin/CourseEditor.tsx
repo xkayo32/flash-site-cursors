@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -34,118 +34,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-
-// Mock data
-const courses = [
-  {
-    id: 1,
-    title: 'Polícia Federal - Agente',
-    slug: 'policia-federal-agente',
-    category: 'Polícia',
-    instructor: 'Prof. Dr. Carlos Lima',
-    status: 'published',
-    visibility: 'public',
-    price: 199.90,
-    duration: '6 meses',
-    totalHours: 320,
-    enrollments: 1234,
-    rating: 4.8,
-    createdAt: '2024-01-10',
-    updatedAt: '2024-01-15',
-    modules: 12,
-    lessons: 148,
-    resources: {
-      videos: 148,
-      questions: 3500,
-      flashcards: 1200,
-      summaries: 45,
-      laws: 23
-    },
-    description: 'Curso completo para o concurso da Polícia Federal - Agente',
-    thumbnail: 'https://via.placeholder.com/300x200'
-  },
-  {
-    id: 2,
-    title: 'Receita Federal - Auditor',
-    slug: 'receita-federal-auditor',
-    category: 'Receita',
-    instructor: 'Prof. Ana Santos',
-    status: 'draft',
-    visibility: 'private',
-    price: 299.90,
-    duration: '8 meses',
-    totalHours: 450,
-    enrollments: 0,
-    rating: 0,
-    createdAt: '2024-01-12',
-    updatedAt: '2024-01-14',
-    modules: 18,
-    lessons: 220,
-    resources: {
-      videos: 220,
-      questions: 5000,
-      flashcards: 1800,
-      summaries: 60,
-      laws: 35
-    },
-    description: 'Preparação completa para Auditor da Receita Federal',
-    thumbnail: 'https://via.placeholder.com/300x200'
-  },
-  {
-    id: 3,
-    title: 'TRT/TRF - Analista Judiciário',
-    slug: 'trt-trf-analista',
-    category: 'Tribunais',
-    instructor: 'Prof. Maria Oliveira',
-    status: 'published',
-    visibility: 'public',
-    price: 149.90,
-    duration: '4 meses',
-    totalHours: 180,
-    enrollments: 856,
-    rating: 4.6,
-    createdAt: '2024-01-08',
-    updatedAt: '2024-01-13',
-    modules: 8,
-    lessons: 96,
-    resources: {
-      videos: 96,
-      questions: 2000,
-      flashcards: 800,
-      summaries: 30,
-      laws: 15
-    },
-    description: 'Curso focado em concursos para Tribunais',
-    thumbnail: 'https://via.placeholder.com/300x200'
-  }
-];
+import { getDefaultCourseThumbnail } from '@/utils/defaultImages';
+import { courseService } from '@/services/courseService';
+import toast from 'react-hot-toast';
 
 const categories = ['Todos', 'Polícia', 'Receita', 'Tribunais', 'Bancários', 'Educação'];
 const statuses = ['Todos', 'published', 'draft', 'archived'];
-
-// Mock modules for course
-const courseModules = [
-  {
-    id: 1,
-    title: 'Módulo 1 - Direito Constitucional',
-    order: 1,
-    lessons: [
-      { id: 1, title: 'Introdução ao Direito Constitucional', duration: '45:00', type: 'video' },
-      { id: 2, title: 'Princípios Fundamentais', duration: '60:00', type: 'video' },
-      { id: 3, title: 'Questões - Princípios', duration: '30:00', type: 'questions' }
-    ]
-  },
-  {
-    id: 2,
-    title: 'Módulo 2 - Direito Administrativo',
-    order: 2,
-    lessons: [
-      { id: 4, title: 'Conceitos Básicos', duration: '50:00', type: 'video' },
-      { id: 5, title: 'Atos Administrativos', duration: '55:00', type: 'video' },
-      { id: 6, title: 'Flashcards - Atos', duration: '20:00', type: 'flashcards' }
-    ]
-  }
-];
 
 export default function CourseEditor() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -155,10 +49,53 @@ export default function CourseEditor() {
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
+  
+  // Image upload state
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // API data state
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+
+  // Load courses from API
+  const loadCourses = async () => {
+    try {
+      console.log('loadCourses: Starting to load courses from API');
+      setLoadingCourses(true);
+      const response = await courseService.listCourses();
+      console.log('loadCourses: API response:', response);
+      console.log('loadCourses: Raw response data:', JSON.stringify(response.data, null, 2));
+      if (response.success && response.data) {
+        console.log('loadCourses: Setting courses data:', response.data);
+        // Log first course ID to debug ID format
+        if (response.data.length > 0) {
+          console.log('loadCourses: First course ID:', response.data[0].id, 'Type:', typeof response.data[0].id);
+        }
+        setCourses(response.data);
+      } else {
+        console.error('Failed to load courses:', response.message);
+        toast.error('Erro ao carregar cursos');
+      }
+    } catch (error) {
+      console.error('Error loading courses:', error);
+      toast.error('Erro ao carregar cursos');
+    } finally {
+      setLoadingCourses(false);
+    }
+  };
+
+  // Load courses on component mount
+  useEffect(() => {
+    loadCourses();
+  }, []);
 
   const filteredCourses = courses.filter(course => {
+    const instructorName = course.instructor?.name || '';
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         course.instructor.toLowerCase().includes(searchTerm.toLowerCase());
+                         instructorName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'Todos' || course.category === selectedCategory;
     const matchesStatus = selectedStatus === 'Todos' || course.status === selectedStatus;
     
@@ -185,6 +122,9 @@ export default function CourseEditor() {
     setIsEditing(true);
     setShowCourseModal(true);
     setActiveTab('details');
+    // Reset image state
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   const handleEditCourse = (course: any) => {
@@ -192,6 +132,9 @@ export default function CourseEditor() {
     setIsEditing(true);
     setShowCourseModal(true);
     setActiveTab('details');
+    // Reset image state
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   const handleViewCourse = (course: any) => {
@@ -199,6 +142,261 @@ export default function CourseEditor() {
     setIsEditing(false);
     setShowCourseModal(true);
     setActiveTab('details');
+    // Reset image state
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  // Image upload handlers
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('handleImageSelect called', e.target.files);
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log('File selected:', file.name, file.type, file.size);
+      
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Formato de imagem não permitido. Use: JPEG, PNG, GIF, WebP ou SVG');
+        e.target.value = '';
+        return;
+      }
+      
+      // Validate file size (5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        toast.error('Imagem muito grande. Tamanho máximo: 5MB');
+        e.target.value = '';
+        return;
+      }
+      
+      setImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        console.log('Image preview created');
+      };
+      reader.onerror = () => {
+        toast.error('Erro ao ler arquivo de imagem');
+        console.error('FileReader error');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      console.log('No file selected');
+    }
+  };
+  
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const triggerFileInput = () => {
+    console.log('triggerFileInput called');
+    if (fileInputRef.current) {
+      console.log('fileInputRef exists, clicking...');
+      fileInputRef.current.click();
+    } else {
+      console.log('fileInputRef is null');
+    }
+  };
+
+
+  const handleSaveCourse = async () => {
+    console.log('1. handleSaveCourse called');
+    console.log('2. selectedCourse:', selectedCourse);
+    console.log('3. imageFile:', imageFile);
+    
+    if (!selectedCourse) {
+      console.log('5. Error: No selected course');
+      toast.error('Nenhum curso selecionado');
+      return;
+    }
+
+    // Frontend validation before submission
+    const titleInput = document.querySelector('#course-title') as HTMLInputElement;
+    const categorySelect = document.querySelector('#course-category') as HTMLSelectElement;
+    
+    if (!titleInput?.value?.trim()) {
+      toast.error('O título do curso é obrigatório');
+      return;
+    }
+    
+    if (!categorySelect?.value?.trim()) {
+      toast.error('A categoria do curso é obrigatória');
+      return;
+    }
+
+    console.log('6. Setting loading to true');
+    setIsLoading(true);
+    
+    try {
+      console.log('7. Entered try block');
+      let updateData: any = {};
+      
+      // If this is a new course creation, collect form data
+      if (!selectedCourse.id) {
+        console.log('8. Creating new course (no ID found)');
+        // Get form data from the modal form fields
+        const titleInput = document.querySelector('#course-title') as HTMLInputElement;
+        const categorySelect = document.querySelector('#course-category') as HTMLSelectElement;
+        const instructorInput = document.querySelector('#course-instructor') as HTMLInputElement;
+        const priceInput = document.querySelector('#course-price') as HTMLInputElement;
+        const durationInput = document.querySelector('#course-duration') as HTMLInputElement;
+        const totalHoursInput = document.querySelector('#course-total-hours') as HTMLInputElement;
+        const descriptionTextarea = document.querySelector('#course-description') as HTMLTextAreaElement;
+        
+        updateData = {
+          title: titleInput?.value || '',
+          category: categorySelect?.value || '',
+          instructor: instructorInput?.value || '',
+          price: priceInput?.value ? parseFloat(priceInput.value) : 0,
+          duration: durationInput?.value || '',
+          duration_hours: totalHoursInput?.value ? parseInt(totalHoursInput.value) : 0,
+          description: descriptionTextarea?.value || '',
+        };
+
+        console.log('9. New course data collected:', updateData);
+
+        // For new courses, use createCourse
+        let createData: any;
+        if (imageFile) {
+          console.log('10. Adding image to new course FormData');
+          const formData = new FormData();
+          Object.keys(updateData).forEach(key => {
+            const value = updateData[key];
+            if (value !== undefined && value !== null) {
+              formData.append(key, String(value));
+            }
+          });
+          formData.append('thumbnail', imageFile);
+          createData = formData;
+        } else {
+          console.log('10. No image for new course');
+          createData = updateData;
+        }
+
+        console.log('11. About to call courseService.createCourse');
+        const response = await courseService.createCourse(createData);
+        console.log('12. Create response:', response);
+        
+        if (response.success) {
+          console.log('13. Create success');
+          toast.success('Curso criado com sucesso!');
+          await loadCourses(); // Reload courses from API
+          setShowCourseModal(false);
+          setIsEditing(false);
+          setImageFile(null);
+          setImagePreview(null);
+        } else {
+          console.log('14. Create failed:', response.message);
+          
+          // Show specific validation errors if available
+          if (response.validation_errors && Array.isArray(response.validation_errors)) {
+            response.validation_errors.forEach((error: string) => {
+              toast.error(error);
+            });
+          } else if (response.raw_response) {
+            // Show server error details if JSON parsing failed
+            toast.error('Erro no servidor. Verifique os logs para detalhes.');
+            console.error('Server returned invalid JSON:', response.raw_response);
+          } else {
+            // Show general error message
+            const errorMessage = response.message || 'Erro ao criar curso';
+            toast.error(errorMessage);
+          }
+        }
+      } else {
+        console.log('8. Updating existing course (ID found):', selectedCourse.id);
+        
+        // Step 1: Update course data first
+        const titleInput = document.querySelector('#course-title') as HTMLInputElement;
+        const categorySelect = document.querySelector('#course-category') as HTMLSelectElement;
+        const instructorInput = document.querySelector('#course-instructor') as HTMLInputElement;
+        const priceInput = document.querySelector('#course-price') as HTMLInputElement;
+        const durationInput = document.querySelector('#course-duration') as HTMLInputElement;
+        const totalHoursInput = document.querySelector('#course-total-hours') as HTMLInputElement;
+        const descriptionTextarea = document.querySelector('#course-description') as HTMLTextAreaElement;
+        
+        updateData = {
+          title: titleInput?.value || selectedCourse.title,
+          category: categorySelect?.value || selectedCourse.category,
+          instructor: instructorInput?.value || selectedCourse.instructor?.name || selectedCourse.instructor,
+          price: priceInput?.value ? parseFloat(priceInput.value) : selectedCourse.price,
+          duration: durationInput?.value || (selectedCourse.duration?.months ? `${selectedCourse.duration.months} meses` : selectedCourse.duration),
+          duration_hours: totalHoursInput?.value ? parseInt(totalHoursInput.value) : (selectedCourse.duration?.hours || selectedCourse.totalHours),
+          description: descriptionTextarea?.value || selectedCourse.description,
+        };
+
+        console.log('9. Update data prepared:', updateData);
+
+        // Prepare update data - if there's an image, use FormData
+        let requestData: any;
+        if (imageFile) {
+          console.log('10. Creating FormData with image');
+          const formData = new FormData();
+          
+          // Add all update fields to FormData
+          Object.entries(updateData).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+              formData.append(key, String(value));
+            }
+          });
+          
+          // Add the image file
+          formData.append('thumbnail', imageFile);
+          requestData = formData;
+        } else {
+          console.log('10. No image, using regular data');
+          requestData = updateData;
+        }
+
+        // Update course with data and image in one request
+        console.log('11. Updating course with data and image');
+        const updateResponse = await courseService.updateCourse(selectedCourse.id, requestData);
+        console.log('12. Course update response:', updateResponse);
+        
+        if (!updateResponse.success) {
+          console.log('13. Course update failed:', updateResponse.message);
+          
+          // Show specific validation errors if available
+          if (updateResponse.validation_errors && Array.isArray(updateResponse.validation_errors)) {
+            updateResponse.validation_errors.forEach((error: string) => {
+              toast.error(error);
+            });
+          } else if (updateResponse.raw_response) {
+            toast.error('Erro no servidor. Verifique os logs para detalhes.');
+            console.error('Server returned invalid JSON:', updateResponse.raw_response);
+          } else {
+            const errorMessage = updateResponse.message || 'Erro ao atualizar curso';
+            toast.error(errorMessage);
+          }
+          return; // Exit early if course update fails
+        }
+
+        // Step 3: Success - course updated
+        console.log('17. Course save completed successfully');
+        toast.success('Curso atualizado com sucesso!');
+        await loadCourses(); // Reload courses from API
+        setShowCourseModal(false);
+        setIsEditing(false);
+        setImageFile(null);
+        setImagePreview(null);
+      }
+      
+    } catch (error) {
+      console.log('18. Caught error:', error);
+      console.error('Error saving course:', error);
+      toast.error('Erro ao salvar curso');
+    } finally {
+      console.log('19. Finally block - setting loading to false');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -245,7 +443,7 @@ export default function CourseEditor() {
                   Total de Cursos
                 </p>
                 <p className="text-2xl font-bold text-primary-900 dark:text-white">
-                  {courses.length}
+                  {loadingCourses ? '...' : courses.length}
                 </p>
               </div>
               <BookOpen className="w-8 h-8 text-blue-600" />
@@ -261,7 +459,7 @@ export default function CourseEditor() {
                   Cursos Ativos
                 </p>
                 <p className="text-2xl font-bold text-primary-900 dark:text-white">
-                  {courses.filter(c => c.status === 'published').length}
+                  {loadingCourses ? '...' : courses.filter(c => c.status === 'published').length}
                 </p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-600" />
@@ -277,7 +475,7 @@ export default function CourseEditor() {
                   Total de Alunos
                 </p>
                 <p className="text-2xl font-bold text-primary-900 dark:text-white">
-                  {courses.reduce((acc, course) => acc + course.enrollments, 0)}
+                  {loadingCourses ? '...' : courses.reduce((acc, course) => acc + (course.stats?.enrollments || 0), 0)}
                 </p>
               </div>
               <Users className="w-8 h-8 text-purple-600" />
@@ -293,7 +491,7 @@ export default function CourseEditor() {
                   Receita Total
                 </p>
                 <p className="text-2xl font-bold text-primary-900 dark:text-white">
-                  R$ {(courses.reduce((acc, course) => acc + (course.price * course.enrollments), 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  {loadingCourses ? '...' : `R$ ${(courses.reduce((acc, course) => acc + ((course.price || 0) * (course.stats?.enrollments || 0)), 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
                 </p>
               </div>
               <DollarSign className="w-8 h-8 text-emerald-600" />
@@ -355,11 +553,25 @@ export default function CourseEditor() {
         transition={{ delay: 0.3 }}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
-        {filteredCourses.map((course) => (
+        {loadingCourses ? (
+          <div className="col-span-full flex justify-center items-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
+              <p className="text-primary-600 dark:text-gray-400">Carregando cursos...</p>
+            </div>
+          </div>
+        ) : filteredCourses.length === 0 ? (
+          <div className="col-span-full flex justify-center items-center py-12">
+            <div className="text-center">
+              <p className="text-primary-600 dark:text-gray-400">Nenhum curso encontrado</p>
+            </div>
+          </div>
+        ) : (
+          filteredCourses.map((course) => (
           <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
             <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
               <img
-                src={course.thumbnail}
+                src={course.thumbnail || getDefaultCourseThumbnail(course.title)}
                 alt={course.title}
                 className="w-full h-full object-cover"
               />
@@ -374,7 +586,7 @@ export default function CourseEditor() {
                   {course.title}
                 </h3>
                 <p className="text-sm text-primary-600 dark:text-gray-400">
-                  {course.instructor} • {course.category}
+                  {course.instructor?.name || 'Instrutor não informado'} • {course.category}
                 </p>
               </div>
 
@@ -382,28 +594,28 @@ export default function CourseEditor() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-primary-600 dark:text-gray-400">Duração</span>
                   <span className="font-medium text-primary-900 dark:text-white">
-                    {course.duration} ({course.totalHours}h)
+                    {course.duration?.months || 0} meses ({course.duration?.hours || 0}h)
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-primary-600 dark:text-gray-400">Módulos/Aulas</span>
                   <span className="font-medium text-primary-900 dark:text-white">
-                    {course.modules} / {course.lessons}
+                    {course.stats?.modules || 0} / {course.stats?.lessons || 0}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-primary-600 dark:text-gray-400">Alunos</span>
                   <span className="font-medium text-primary-900 dark:text-white">
-                    {course.enrollments}
+                    {course.stats?.enrollments || 0}
                   </span>
                 </div>
-                {course.rating > 0 && (
+                {(course.stats?.rating || 0) > 0 && (
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-primary-600 dark:text-gray-400">Avaliação</span>
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 text-yellow-500 fill-current" />
                       <span className="font-medium text-primary-900 dark:text-white">
-                        {course.rating}
+                        {course.stats?.rating || 0}
                       </span>
                     </div>
                   </div>
@@ -438,7 +650,8 @@ export default function CourseEditor() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          ))
+        )}
       </motion.div>
 
       {/* Course Modal */}
@@ -502,6 +715,7 @@ export default function CourseEditor() {
                           Título do Curso
                         </label>
                         <input
+                          id="course-title"
                           type="text"
                           defaultValue={selectedCourse?.title}
                           disabled={!isEditing}
@@ -514,6 +728,7 @@ export default function CourseEditor() {
                           Categoria
                         </label>
                         <select
+                          id="course-category"
                           defaultValue={selectedCourse?.category}
                           disabled={!isEditing}
                           className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
@@ -529,8 +744,9 @@ export default function CourseEditor() {
                           Instrutor
                         </label>
                         <input
+                          id="course-instructor"
                           type="text"
-                          defaultValue={selectedCourse?.instructor}
+                          defaultValue={selectedCourse?.instructor?.name || selectedCourse?.instructor || ''}
                           disabled={!isEditing}
                           className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
                         />
@@ -541,6 +757,7 @@ export default function CourseEditor() {
                           Preço (R$)
                         </label>
                         <input
+                          id="course-price"
                           type="number"
                           defaultValue={selectedCourse?.price}
                           disabled={!isEditing}
@@ -553,8 +770,9 @@ export default function CourseEditor() {
                           Duração
                         </label>
                         <input
+                          id="course-duration"
                           type="text"
-                          defaultValue={selectedCourse?.duration}
+                          defaultValue={selectedCourse?.duration?.months ? `${selectedCourse.duration.months} meses` : selectedCourse?.duration || ''}
                           disabled={!isEditing}
                           className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
                         />
@@ -565,8 +783,9 @@ export default function CourseEditor() {
                           Carga Horária Total
                         </label>
                         <input
+                          id="course-total-hours"
                           type="number"
-                          defaultValue={selectedCourse?.totalHours}
+                          defaultValue={selectedCourse?.duration?.hours || selectedCourse?.totalHours || ''}
                           disabled={!isEditing}
                           className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
                         />
@@ -578,6 +797,7 @@ export default function CourseEditor() {
                         Descrição
                       </label>
                       <textarea
+                        id="course-description"
                         rows={4}
                         defaultValue={selectedCourse?.description}
                         disabled={!isEditing}
@@ -589,19 +809,79 @@ export default function CourseEditor() {
                       <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
                         Imagem de Capa
                       </label>
-                      <div className="flex items-center gap-4">
-                        {selectedCourse?.thumbnail && (
+                      
+                      {/* Instructions */}
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                        {!imageFile ? 
+                          "Clique em 'Escolher Imagem' para selecionar um arquivo e depois clique em 'Salvar Alterações'" : 
+                          "✅ Imagem selecionada! Clique em 'Salvar Alterações' para salvar o curso com a nova imagem"
+                        }
+                      </p>
+                      
+                      {/* Hidden file input */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        onChange={handleImageSelect}
+                        style={{ display: 'none' }}
+                      />
+                      
+                      <div className="space-y-4">
+                        {/* Image preview */}
+                        {imagePreview ? (
+                          <div className="relative w-full max-w-md">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="w-full h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                            />
+                            <button
+                              type="button"
+                              onClick={removeImage}
+                              className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : selectedCourse?.thumbnail ? (
                           <img
                             src={selectedCourse.thumbnail}
                             alt="Thumbnail"
                             className="w-32 h-20 object-cover rounded-lg"
                           />
+                        ) : (
+                          <div className="w-32 h-20 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center bg-gray-50 dark:bg-gray-700">
+                            <Upload className="w-4 h-4 text-gray-400" />
+                          </div>
                         )}
+                        
+                        {/* Upload button */}
                         {isEditing && (
-                          <Button variant="outline" size="sm" className="gap-2">
-                            <Upload className="w-4 h-4" />
-                            Escolher Imagem
-                          </Button>
+                          <div className="space-y-3">
+                            <Button 
+                              type="button"
+                              variant="outline" 
+                              size="sm" 
+                              className="gap-2"
+                              onClick={triggerFileInput}
+                            >
+                              <Upload className="w-4 h-4" />
+                              {imageFile ? 'Escolher Outra Imagem' : 'Escolher Imagem'}
+                            </Button>
+                            
+                            {/* Selected file indicator */}
+                            {imageFile && (
+                              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p className="text-sm text-blue-700">
+                                  ✅ Arquivo selecionado: <span className="font-medium">{imageFile.name}</span>
+                                </p>
+                                <p className="text-xs text-blue-600 mt-1">
+                                  A imagem será enviada quando você clicar em "Salvar Alterações"
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -619,7 +899,7 @@ export default function CourseEditor() {
                       </div>
                     )}
 
-                    {courseModules.map((module) => (
+                    {(selectedCourse?.modules || []).map((module) => (
                       <Card key={module.id}>
                         <CardHeader className="cursor-pointer">
                           <div className="flex items-center justify-between">
@@ -631,7 +911,7 @@ export default function CourseEditor() {
                             </div>
                             <div className="flex items-center gap-2">
                               <Badge variant="secondary">
-                                {module.lessons.length} aulas
+                                {module.lessons?.length || 0} aulas
                               </Badge>
                               {isEditing && (
                                 <Button variant="ghost" size="sm">
@@ -643,7 +923,7 @@ export default function CourseEditor() {
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-2">
-                            {module.lessons.map((lesson) => (
+                            {(module.lessons || []).map((lesson) => (
                               <div
                                 key={lesson.id}
                                 className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
@@ -682,7 +962,7 @@ export default function CourseEditor() {
                         <div className="flex items-center justify-between mb-4">
                           <Video className="w-8 h-8 text-blue-600" />
                           <span className="text-2xl font-bold text-primary-900 dark:text-white">
-                            {selectedCourse?.resources.videos || 0}
+                            {selectedCourse?.resources?.videos || 0}
                           </span>
                         </div>
                         <p className="text-sm text-primary-600 dark:text-gray-400">Vídeos</p>
@@ -699,7 +979,7 @@ export default function CourseEditor() {
                         <div className="flex items-center justify-between mb-4">
                           <Brain className="w-8 h-8 text-purple-600" />
                           <span className="text-2xl font-bold text-primary-900 dark:text-white">
-                            {selectedCourse?.resources.questions || 0}
+                            {selectedCourse?.resources?.questions || 0}
                           </span>
                         </div>
                         <p className="text-sm text-primary-600 dark:text-gray-400">Questões</p>
@@ -716,7 +996,7 @@ export default function CourseEditor() {
                         <div className="flex items-center justify-between mb-4">
                           <Star className="w-8 h-8 text-yellow-600" />
                           <span className="text-2xl font-bold text-primary-900 dark:text-white">
-                            {selectedCourse?.resources.flashcards || 0}
+                            {selectedCourse?.resources?.flashcards || 0}
                           </span>
                         </div>
                         <p className="text-sm text-primary-600 dark:text-gray-400">Flashcards</p>
@@ -733,7 +1013,7 @@ export default function CourseEditor() {
                         <div className="flex items-center justify-between mb-4">
                           <FileText className="w-8 h-8 text-green-600" />
                           <span className="text-2xl font-bold text-primary-900 dark:text-white">
-                            {selectedCourse?.resources.summaries || 0}
+                            {selectedCourse?.resources?.summaries || 0}
                           </span>
                         </div>
                         <p className="text-sm text-primary-600 dark:text-gray-400">Resumos</p>
@@ -750,7 +1030,7 @@ export default function CourseEditor() {
                         <div className="flex items-center justify-between mb-4">
                           <FileText className="w-8 h-8 text-red-600" />
                           <span className="text-2xl font-bold text-primary-900 dark:text-white">
-                            {selectedCourse?.resources.laws || 0}
+                            {selectedCourse?.resources?.laws || 0}
                           </span>
                         </div>
                         <p className="text-sm text-primary-600 dark:text-gray-400">Legislação</p>
@@ -826,9 +1106,18 @@ export default function CourseEditor() {
                   Cancelar
                 </Button>
                 {isEditing ? (
-                  <Button className="gap-2">
+                  <Button 
+                    className="gap-2"
+                    onClick={(e) => {
+                      console.log('Save button clicked, event:', e);
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSaveCourse();
+                    }}
+                    disabled={isLoading}
+                  >
                     <Save className="w-4 h-4" />
-                    Salvar Alterações
+                    {isLoading ? 'Salvando...' : 'Salvar Alterações'}
                   </Button>
                 ) : (
                   <Button

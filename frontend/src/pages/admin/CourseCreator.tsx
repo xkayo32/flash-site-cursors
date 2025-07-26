@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Save,
@@ -69,6 +69,9 @@ export default function CourseCreator() {
     requirements: [],
     objectives: []
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<CourseModule[]>([]);
@@ -99,6 +102,65 @@ export default function CourseCreator() {
   const [newRequirement, setNewRequirement] = useState('');
   const [newObjective, setNewObjective] = useState('');
 
+  // Handle image selection
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('handleImageSelect called', e.target.files);
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log('File selected:', file.name, file.type, file.size);
+      
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Formato de imagem não permitido. Use: JPEG, PNG, GIF, WebP ou SVG');
+        e.target.value = ''; // Reset input
+        return;
+      }
+      
+      // Validate file size (5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        toast.error('Imagem muito grande. Tamanho máximo: 5MB');
+        e.target.value = ''; // Reset input
+        return;
+      }
+      
+      setImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        console.log('Image preview created');
+      };
+      reader.onerror = () => {
+        toast.error('Erro ao ler arquivo de imagem');
+        console.error('FileReader error');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      console.log('No file selected');
+    }
+  };
+  
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const triggerFileInput = () => {
+    console.log('triggerFileInput called');
+    if (fileInputRef.current) {
+      console.log('fileInputRef exists, clicking...');
+      fileInputRef.current.click();
+    } else {
+      console.log('fileInputRef is null');
+    }
+  };
+
   // Step 1: Basic Course Info
   const handleCourseSubmit = async () => {
     if (!courseData.title || !courseData.category) {
@@ -108,7 +170,25 @@ export default function CourseCreator() {
 
     setIsLoading(true);
     try {
-      const response = await courseService.createCourse(courseData);
+      // Create FormData if image is selected
+      let createData: any;
+      if (imageFile) {
+        const formData = new FormData();
+        Object.keys(courseData).forEach(key => {
+          const value = courseData[key as keyof CreateCourseData];
+          if (Array.isArray(value)) {
+            formData.append(key, JSON.stringify(value));
+          } else if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
+          }
+        });
+        formData.append('thumbnail', imageFile);
+        createData = formData;
+      } else {
+        createData = courseData;
+      }
+      
+      const response = await courseService.createCourse(createData);
       if (response.success && response.data) {
         setCourse(response.data as Course);
         setStep(2);
@@ -507,6 +587,57 @@ export default function CourseCreator() {
                     onChange={(e) => setCourseData({ ...courseData, target_audience: e.target.value })}
                     placeholder="Ex: Estudantes para concursos públicos"
                   />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Imagem do Curso
+                  </label>
+                  
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                    onChange={handleImageSelect}
+                    style={{ display: 'none' }}
+                  />
+                  
+                  <div className="space-y-4">
+                    {/* Image preview */}
+                    {imagePreview ? (
+                      <div className="relative w-full max-w-md">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-32 h-20 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center bg-gray-50 dark:bg-gray-700">
+                        <Upload className="w-4 h-4 text-gray-400" />
+                      </div>
+                    )}
+                    
+                    {/* Upload button */}
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-2"
+                      onClick={triggerFileInput}
+                    >
+                      <Upload className="w-4 h-4" />
+                      Escolher Imagem
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="md:col-span-2">

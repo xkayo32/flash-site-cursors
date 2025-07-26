@@ -1,8 +1,9 @@
 <?php
-// Set display_errors to true for development
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
+// Configure error handling for API responses (prevent JSON corruption)
+ini_set('display_errors', '0');           // Don't output errors to STDOUT
+ini_set('display_startup_errors', '0');
+ini_set('log_errors', '1');               // Log errors to PHP error log
+error_reporting(E_ALL);                   // Report all errors to log
 
 require __DIR__.'/includes/config.php';
 use \App\Http\Router;

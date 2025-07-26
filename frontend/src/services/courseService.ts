@@ -206,12 +206,18 @@ interface CreateResourceData {
 }
 
 class CourseService {
-  private getAuthHeaders() {
+  private getAuthHeaders(isMultipart: boolean = false) {
     const token = useAuthStore.getState().token;
-    return {
+    const headers: Record<string, string> = {
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
     };
+    
+    // Don't set Content-Type for multipart/form-data - let browser set it with boundary
+    if (!isMultipart) {
+      headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    }
+    
+    return headers;
   }
 
   // =================== COURSES ===================
@@ -259,54 +265,98 @@ class CourseService {
     }
   }
 
-  async createCourse(courseData: CreateCourseData): Promise<CourseResponse> {
+  async createCourse(courseData: CreateCourseData | FormData): Promise<CourseResponse> {
     try {
-      const params = new URLSearchParams();
-      Object.entries(courseData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          if (Array.isArray(value)) {
-            params.append(key, JSON.stringify(value));
-          } else {
-            params.append(key, value.toString());
+      let body: FormData | string;
+      let isMultipart = false;
+      
+      if (courseData instanceof FormData) {
+        body = courseData;
+        isMultipart = true;
+      } else {
+        const params = new URLSearchParams();
+        Object.entries(courseData).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) {
+              params.append(key, JSON.stringify(value));
+            } else {
+              params.append(key, value.toString());
+            }
           }
-        }
-      });
+        });
+        body = params.toString();
+      }
 
       const response = await fetch(API_ENDPOINTS.courses.create, {
         method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: params.toString(),
+        headers: this.getAuthHeaders(isMultipart),
+        body: body,
       });
 
-      const data = await response.json();
-      return data;
+      const responseText = await response.text();
+      console.log('Raw create response:', responseText);
+      
+      try {
+        const data = JSON.parse(responseText);
+        return data;
+      } catch (parseError) {
+        console.error('JSON parse error in create:', parseError);
+        console.error('Response text:', responseText);
+        return { 
+          success: false, 
+          message: 'Erro no servidor: resposta inválida',
+          raw_response: responseText
+        };
+      }
     } catch (error) {
       console.error('Error creating course:', error);
       return { success: false, message: 'Erro ao criar curso' };
     }
   }
 
-  async updateCourse(id: string, courseData: UpdateCourseData): Promise<CourseResponse> {
+  async updateCourse(id: string, courseData: UpdateCourseData | FormData): Promise<CourseResponse> {
     try {
-      const params = new URLSearchParams();
-      Object.entries(courseData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          if (Array.isArray(value)) {
-            params.append(key, JSON.stringify(value));
-          } else {
-            params.append(key, value.toString());
+      let body: FormData | string;
+      let isMultipart = false;
+      
+      if (courseData instanceof FormData) {
+        body = courseData;
+        isMultipart = true;
+      } else {
+        const params = new URLSearchParams();
+        Object.entries(courseData).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) {
+              params.append(key, JSON.stringify(value));
+            } else {
+              params.append(key, value.toString());
+            }
           }
-        }
-      });
+        });
+        body = params.toString();
+      }
 
       const response = await fetch(API_ENDPOINTS.courses.update(id), {
         method: 'PUT',
-        headers: this.getAuthHeaders(),
-        body: params.toString(),
+        headers: this.getAuthHeaders(isMultipart),
+        body: body,
       });
 
-      const data = await response.json();
-      return data;
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      
+      try {
+        const data = JSON.parse(responseText);
+        return data;
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        console.error('Response text:', responseText);
+        return { 
+          success: false, 
+          message: 'Erro no servidor: resposta inválida',
+          raw_response: responseText
+        };
+      }
     } catch (error) {
       console.error('Error updating course:', error);
       return { success: false, message: 'Erro ao atualizar curso' };
@@ -325,6 +375,38 @@ class CourseService {
     } catch (error) {
       console.error('Error deleting course:', error);
       return { success: false, message: 'Erro ao excluir curso' };
+    }
+  }
+
+  async uploadCourseImage(id: string, formData: FormData): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(API_ENDPOINTS.courses.uploadImage(id), {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        return {
+          success: true,
+          data: data.data,
+          message: data.message
+        };
+      } else {
+        return {
+          success: false,
+          message: data.message || 'Erro ao enviar imagem'
+        };
+      }
+    } catch (error) {
+      console.error('Error uploading course image:', error);
+      return { success: false, message: 'Erro ao enviar imagem do curso' };
     }
   }
 

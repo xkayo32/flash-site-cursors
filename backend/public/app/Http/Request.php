@@ -65,12 +65,53 @@ class Request
       $input = file_get_contents('php://input');
       if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
         parse_str($input, $this->postVars);
+      } elseif (strpos($contentType, 'multipart/form-data') !== false) {
+        // For multipart data in PUT requests, parse php://input manually
+        $this->postVars = $this->parseMultipartInput($input);
       } else {
         $this->postVars = [];
       }
     } else {
       $this->postVars = $_POST ?? [];
     }
+  }
+  
+  /**
+   * Parse multipart/form-data from php://input for PUT requests
+   */
+  private function parseMultipartInput($input) {
+    $contentType = $this->headers['Content-Type'] ?? '';
+    
+    // Extract boundary from Content-Type header
+    if (!preg_match('/boundary=(.+)$/', $contentType, $matches)) {
+      return [];
+    }
+    
+    $boundary = '--' . $matches[1];
+    $parts = explode($boundary, $input);
+    $data = [];
+    
+    foreach ($parts as $part) {
+      if (trim($part) === '' || trim($part) === '--') {
+        continue;
+      }
+      
+      $sections = explode("\r\n\r\n", $part, 2);
+      if (count($sections) !== 2) {
+        continue;
+      }
+      
+      $headers = $sections[0];
+      $content = rtrim($sections[1], "\r\n");
+      
+      // Parse Content-Disposition header
+      if (preg_match('/name="([^"]*)"/', $headers, $nameMatch)) {
+        $name = $nameMatch[1];
+        $data[$name] = $content;
+      }
+    }
+    
+    return $data;
   }
 
   /**
