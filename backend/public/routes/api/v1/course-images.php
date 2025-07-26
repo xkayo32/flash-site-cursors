@@ -5,7 +5,20 @@ use \App\Utils\JWT;
 use PDO;
 use Exception;
 
-// Upload course image with organized directory structure
+/**
+ * Course Image Management Routes
+ * 
+ * Upload endpoints:
+ * - POST /api/v1/courses/{id}/image - Upload image for specific course
+ * 
+ * Serve endpoints:
+ * - GET /images/courses/{filename} - Serve images from images/courses directory
+ * - GET /uploads/course-images/{filename} - Serve images from uploads/course-images directory
+ */
+
+// ===========================================
+// UPLOAD COURSE IMAGE
+// ===========================================
 $obRouter->post('/api/v1/courses/{courseId}/image', [
     function($request, $courseId) {
         
@@ -106,11 +119,13 @@ $obRouter->post('/api/v1/courses/{courseId}/image', [
             ];
             $extension = $extensionMap[$mimeType];
 
-            // Create unique filename
-            $filename = 'course_' . $sanitizedCourseSlug . '_' . time() . '_' . uniqid() . '.' . $extension;
+            // Create unique filename with timestamp and unique ID
+            $timestamp = date('Y-m-d_H-i-s');
+            $uniqueId = uniqid();
+            $filename = "course_{$courseId}_{$uniqueId}_{$timestamp}.{$extension}";
 
-            // Simple directory structure: images/courses/
-            $relativePath = "images/courses";
+            // Use uploads/course-images directory (already exists and working)
+            $relativePath = "uploads/course-images";
             $fullPath = __DIR__ . "/../../../{$relativePath}";
 
             // Create directory if it doesn't exist
@@ -133,9 +148,9 @@ $obRouter->post('/api/v1/courses/{courseId}/image', [
                 ], 'application/json');
             }
 
-            // Update database
-            $thumbnailUrl = '/' . $relativePath . '/' . $filename;
-            $thumbnailFilePath = $relativePath . '/' . $filename;
+            // Update database with both URL and file path
+            $thumbnailUrl = "http://localhost:8180/{$relativePath}/{$filename}";
+            $thumbnailFilePath = "{$relativePath}/{$filename}";
 
             $updateStmt = $pdo->prepare("
                 UPDATE courses 
@@ -149,11 +164,8 @@ $obRouter->post('/api/v1/courses/{courseId}/image', [
             return new Response(200, [
                 'success' => true,
                 'message' => 'Imagem enviada com sucesso',
-                'data' => [
-                    'image_url' => $thumbnailUrl,
-                    'file_path' => $thumbnailFilePath,
-                    'filename' => $filename
-                ]
+                'image_url' => "/{$relativePath}/{$filename}",
+                'filename' => $filename
             ], 'application/json');
 
         } catch (Exception $e) {
@@ -164,5 +176,100 @@ $obRouter->post('/api/v1/courses/{courseId}/image', [
                 'error' => $e->getMessage()
             ], 'application/json');
         }
+    }
+]);
+
+// ===========================================
+// SERVE IMAGES FROM UPLOADS/COURSE-IMAGES
+// ===========================================
+$obRouter->get('/uploads/course-images/{filename}', [
+    function($request, $filename) {
+        // Sanitize filename to prevent directory traversal
+        $filename = basename($filename);
+        $imagePath = __DIR__ . '/../../../uploads/course-images/' . $filename;
+        
+        if (!file_exists($imagePath)) {
+            return new Response(404, [
+                'status' => 'error',
+                'message' => 'Image not found'
+            ], 'application/json');
+        }
+        
+        // Get MIME type
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $imagePath);
+        finfo_close($finfo);
+        
+        // Read and return image
+        $imageData = file_get_contents($imagePath);
+        
+        // Set proper headers
+        header('Content-Type: ' . $mimeType);
+        header('Content-Length: ' . strlen($imageData));
+        header('Cache-Control: public, max-age=86400'); // Cache for 24 hours
+        
+        echo $imageData;
+        exit;
+    }
+]);
+
+// ===========================================
+// SERVE IMAGES FROM IMAGES/COURSES (LEGACY)
+// ===========================================
+$obRouter->get('/images/courses/{filename}', [
+    function($request, $filename) {
+        // Sanitize filename to prevent directory traversal
+        $filename = basename($filename);
+        $imagePath = __DIR__ . '/../../../images/courses/' . $filename;
+        
+        if (!file_exists($imagePath)) {
+            // Return default course image SVG
+            $svg = '<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="300" fill="#f3f4f6"/>
+  
+  <!-- Gradient -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Book Icon -->
+  <g transform="translate(200, 150)">
+    <path d="M -40 -30 L -40 30 L 0 40 L 40 30 L 40 -30 L 0 -20 Z" fill="url(#grad1)" opacity="0.9"/>
+    <path d="M 0 -20 L 0 40" stroke="white" stroke-width="2" fill="none"/>
+    <path d="M -40 -30 L 0 -20 L 40 -30" stroke="white" stroke-width="2" fill="none"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="200" y="230" font-family="Arial, sans-serif" font-size="16" fill="#6b7280" text-anchor="middle">
+    Imagem do Curso
+  </text>
+</svg>';
+            
+            header('Content-Type: image/svg+xml');
+            header('Cache-Control: public, max-age=86400');
+            echo $svg;
+            exit;
+        }
+        
+        // Get MIME type
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $imagePath);
+        finfo_close($finfo);
+        
+        // Read and return image
+        $imageData = file_get_contents($imagePath);
+        
+        // Set proper headers
+        header('Content-Type: ' . $mimeType);
+        header('Content-Length: ' . strlen($imageData));
+        header('Cache-Control: public, max-age=86400'); // Cache for 24 hours
+        
+        echo $imageData;
+        exit;
     }
 ]);

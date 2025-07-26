@@ -35,6 +35,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { getDefaultCourseThumbnail } from '@/utils/defaultImages';
+import { CourseImage } from '@/components/ui/CourseImage';
 import { courseService } from '@/services/courseService';
 import toast from 'react-hot-toast';
 
@@ -356,9 +357,9 @@ export default function CourseEditor() {
           requestData = updateData;
         }
 
-        // Update course with data and image in one request
-        console.log('11. Updating course with data and image');
-        const updateResponse = await courseService.updateCourse(selectedCourse.id, requestData);
+        // Update course data first
+        console.log('11. Updating course data');
+        const updateResponse = await courseService.updateCourse(selectedCourse.id, updateData);
         console.log('12. Course update response:', updateResponse);
         
         if (!updateResponse.success) {
@@ -379,7 +380,21 @@ export default function CourseEditor() {
           return; // Exit early if course update fails
         }
 
-        // Step 3: Success - course updated
+        // Step 3: Upload image if selected
+        if (imageFile && updateResponse.success) {
+          console.log('13. Uploading image separately');
+          const imageFormData = new FormData();
+          imageFormData.append('thumbnail', imageFile);
+          
+          const imageUploadResponse = await courseService.uploadCourseImage(selectedCourse.id, imageFormData);
+          console.log('14. Image upload response:', imageUploadResponse);
+          
+          if (!imageUploadResponse.success) {
+            toast.error('Curso atualizado, mas erro ao enviar imagem');
+          }
+        }
+        
+        // Step 4: Success - course updated
         console.log('17. Course save completed successfully');
         toast.success('Curso atualizado com sucesso!');
         await loadCourses(); // Reload courses from API
@@ -570,10 +585,11 @@ export default function CourseEditor() {
           filteredCourses.map((course) => (
           <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
             <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
-              <img
-                src={course.thumbnail || getDefaultCourseThumbnail(course.title)}
+              <CourseImage
+                src={course.thumbnail}
                 alt={course.title}
                 className="w-full h-full object-cover"
+                fallbackCategory={course.category}
               />
               <div className="absolute top-2 right-2">
                 {getStatusBadge(course.status)}
@@ -845,10 +861,11 @@ export default function CourseEditor() {
                             </button>
                           </div>
                         ) : selectedCourse?.thumbnail ? (
-                          <img
+                          <CourseImage
                             src={selectedCourse.thumbnail}
-                            alt="Thumbnail"
+                            alt={selectedCourse.title}
                             className="w-32 h-20 object-cover rounded-lg"
+                            fallbackCategory={selectedCourse.category}
                           />
                         ) : (
                           <div className="w-32 h-20 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center bg-gray-50 dark:bg-gray-700">

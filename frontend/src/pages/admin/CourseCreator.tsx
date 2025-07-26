@@ -170,27 +170,32 @@ export default function CourseCreator() {
 
     setIsLoading(true);
     try {
-      // Create FormData if image is selected
-      let createData: any;
-      if (imageFile) {
-        const formData = new FormData();
-        Object.keys(courseData).forEach(key => {
-          const value = courseData[key as keyof CreateCourseData];
-          if (Array.isArray(value)) {
-            formData.append(key, JSON.stringify(value));
-          } else if (value !== undefined && value !== null) {
-            formData.append(key, String(value));
-          }
-        });
-        formData.append('thumbnail', imageFile);
-        createData = formData;
-      } else {
-        createData = courseData;
-      }
-      
-      const response = await courseService.createCourse(createData);
+      // Step 1: Create course without image
+      const response = await courseService.createCourse(courseData);
       if (response.success && response.data) {
-        setCourse(response.data as Course);
+        const createdCourse = response.data as Course;
+        
+        // Step 2: Upload image if selected
+        if (imageFile && createdCourse.id) {
+          const formData = new FormData();
+          formData.append('thumbnail', imageFile);
+          
+          const uploadResponse = await courseService.uploadCourseImage(createdCourse.id, formData);
+          if (uploadResponse.success) {
+            // Update course object with new image URL
+            if (uploadResponse.data?.image_url) {
+              // Construct full URL if needed
+              const imageUrl = uploadResponse.data.image_url.startsWith('http') 
+                ? uploadResponse.data.image_url 
+                : `${import.meta.env.VITE_API_URL || 'http://localhost:8180'}${uploadResponse.data.image_url}`;
+              createdCourse.thumbnail = imageUrl;
+            }
+          } else {
+            toast.error('Curso criado, mas erro ao enviar imagem');
+          }
+        }
+        
+        setCourse(createdCourse);
         setStep(2);
         toast.success('Curso criado com sucesso! Agora adicione seções e aulas.');
       } else {
