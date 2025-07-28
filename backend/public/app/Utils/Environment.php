@@ -17,7 +17,17 @@ class Environment{
     //DEFINE AS VARIÁVEIS DE AMBIENTE
     $lines = file($dir.'/.env');
     foreach($lines as $line){
-      putenv(trim($line));
+      $line = trim($line);
+      
+      // Skip empty lines and comments
+      if(empty($line) || strpos($line, '#') === 0) {
+        continue;
+      }
+      
+      // Only process valid key=value pairs
+      if(strpos($line, '=') !== false) {
+        putenv($line);
+      }
     }
   }
 

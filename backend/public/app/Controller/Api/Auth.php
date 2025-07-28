@@ -61,7 +61,7 @@ class Auth {
         try {
             // Get user by email
             $stmt = $pdo->prepare("
-                SELECT u.id, u.email, u.password_hash, u.role, u.status, u.email_verified,
+                SELECT u.id, u.email, u.password, u.role, u.status, u.email_verified_at,
                        p.name, p.avatar_url
                 FROM users u
                 LEFT JOIN user_profiles p ON u.id = p.user_id
@@ -78,6 +78,7 @@ class Auth {
                 ];
             }
             
+            
             // Check user status
             if ($user['status'] !== 'active') {
                 http_response_code(401);
@@ -88,7 +89,7 @@ class Auth {
             }
             
             // Verify password
-            if (!password_verify($password, $user['password_hash'])) {
+            if (!password_verify($password, $user['password'])) {
                 http_response_code(401);
                 return [
                     'success' => false,
@@ -97,20 +98,25 @@ class Auth {
             }
             
             // Update last login
-            $updateStmt = $pdo->prepare("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = :id");
+            $updateStmt = $pdo->prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = :id");
             $updateStmt->execute(['id' => $user['id']]);
             
-            // Get subscription info
-            $subStmt = $pdo->prepare("
-                SELECT s.status, s.current_period_end, sp.name as plan_name
-                FROM subscriptions s
-                JOIN subscription_plans sp ON s.plan_id = sp.id
-                WHERE s.user_id = :user_id
-                ORDER BY s.created_at DESC
-                LIMIT 1
-            ");
-            $subStmt->execute(['user_id' => $user['id']]);
-            $subscription = $subStmt->fetch();
+            // Get subscription info (opcional por enquanto)
+            $subscription = null;
+            try {
+                $subStmt = $pdo->prepare("
+                    SELECT s.status, s.expires_at, sp.name as plan_name
+                    FROM subscriptions s
+                    JOIN subscription_plans sp ON s.plan_id = sp.id
+                    WHERE s.user_id = :user_id
+                    ORDER BY s.created_at DESC
+                    LIMIT 1
+                ");
+                $subStmt->execute(['user_id' => $user['id']]);
+                $subscription = $subStmt->fetch();
+            } catch (Exception $e) {
+                // Ignore subscription errors for now
+            }
             
             // Generate JWT token
             $token = JWT::generateToken($user['id'], $user['email'], $user['role']);
@@ -128,7 +134,7 @@ class Auth {
                     'subscription' => $subscription ? [
                         'plan' => $subscription['plan_name'],
                         'status' => $subscription['status'],
-                        'expiresAt' => $subscription['current_period_end']
+                        'expiresAt' => $subscription['expires_at']
                     ] : null
                 ]
             ];

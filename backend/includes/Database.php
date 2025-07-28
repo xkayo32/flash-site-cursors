@@ -7,7 +7,15 @@ class Database {
         $config = require __DIR__ . '/../config/database.php';
         
         try {
-            $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset={$config['charset']}";
+            // Determinar o tipo de banco baseado na variável de ambiente
+            $dbType = $_ENV['DB_TYPE'] ?? 'mysql';
+            
+            if ($dbType === 'pgsql') {
+                $dsn = "pgsql:host={$config['host']};port={$config['port']};dbname={$config['database']}";
+            } else {
+                $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset={$config['charset']}";
+            }
+            
             $this->connection = new PDO($dsn, $config['username'], $config['password'], $config['options']);
         } catch (PDOException $e) {
             die("Erro de conexão: " . $e->getMessage());
