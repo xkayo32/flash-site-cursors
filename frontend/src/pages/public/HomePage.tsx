@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
+import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import '../../styles/police-fonts.css';
 
 const fadeInUp = {
@@ -296,12 +297,7 @@ export default function HomePage() {
               whileHover={{ scale: 1.05 }}
               className="cursor-pointer"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white rounded flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-black font-bold" />
-                </div>
-                <span className="text-2xl font-police-title text-white">STUDYPRO</span>
-              </div>
+              <StudyProLogo variant="full" size="md" className="text-white" />
             </motion.div>
             
             <nav className="hidden lg:flex items-center gap-8">
@@ -760,11 +756,8 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
             {/* Company Info */}
             <div className="lg:col-span-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-white rounded-md flex items-center justify-center">
-                  <Shield className="w-7 h-7 text-black" />
-                </div>
-                <span className="text-3xl font-police-title">STUDYPRO</span>
+              <div className="mb-6">
+                <StudyProLogo variant="full" size="lg" className="text-white" />
               </div>
               <p className="text-gray-400 font-police-body mb-6 leading-relaxed">
                 PLATAFORMA OFICIAL DOS APROVADOS EM CONCURSOS PÚBLICOS. METODOLOGIA COMPROVADA COM MAIS DE 15.000 APROVAÇÕES.

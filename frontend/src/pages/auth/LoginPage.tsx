@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/store/authStore';
+import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import toast from 'react-hot-toast';
 import { API_ENDPOINTS } from '@/config/api';
 import '../../styles/police-fonts.css';
@@ -147,9 +148,7 @@ export default function LoginPage() {
           {/* Logo and Title */}
           <motion.div variants={fadeInUp} className="text-center mb-8">
             <div className="flex justify-center mb-6">
-              <div className="w-20 h-20 bg-white rounded flex items-center justify-center">
-                <Shield className="w-12 h-12 text-black" />
-              </div>
+              <StudyProLogo variant="icon" size="xl" className="text-white" />
             </div>
             <h1 className="text-4xl font-police-title text-white mb-2 tracking-widest">
               ACESSO RESTRITO
@@ -306,6 +305,41 @@ export default function LoginPage() {
           <motion.div variants={fadeInUp} className="mt-8 text-center text-xs text-gray-500 font-police-body">
             ACESSO PROTEGIDO • DADOS CRIPTOGRAFADOS • SSL 256-BIT
           </motion.div>
+
+          {/* Quick Fill Buttons - Development Only */}
+          {process.env.NODE_ENV === 'development' && (
+            <motion.div 
+              variants={fadeInUp} 
+              className="mt-6 flex gap-3 justify-center"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({
+                    email: 'admin@studypro.com',
+                    password: 'Admin@123',
+                    rememberMe: true
+                  });
+                }}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-police-body rounded border border-gray-700 transition-all duration-300"
+              >
+                PREENCHER ADMIN
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({
+                    email: 'aluno@example.com',
+                    password: 'aluno123',
+                    rememberMe: false
+                  });
+                }}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-police-body rounded border border-gray-700 transition-all duration-300"
+              >
+                PREENCHER ALUNO
+              </button>
+            </motion.div>
+          )}
         </motion.div>
       </div>
 
