@@ -7,21 +7,17 @@ import {
   Mail,
   Lock,
   ArrowRight,
-  Zap,
-  CheckCircle,
+  Shield,
   AlertCircle,
-  Users,
-  Sun,
-  Moon,
-  Monitor
+  Facebook,
+  Chrome,
+  Linkedin
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
-import { Logo } from '@/components/ui/Logo';
-import { useTheme } from '@/contexts/ThemeContext';
 import { API_ENDPOINTS } from '@/config/api';
+import '../../styles/police-fonts.css';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -32,7 +28,6 @@ const fadeInUp = {
 export default function LoginPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
-  const { theme, setTheme, resolvedTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -69,7 +64,6 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Call API endpoint with form-encoded data
       const params = new URLSearchParams();
       params.append('email', formData.email);
       params.append('password', formData.password);
@@ -85,7 +79,6 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (data.success) {
-        // Save JWT token and user data
         setAuth(
           {
             id: data.user.id,
@@ -104,7 +97,6 @@ export default function LoginPage() {
 
         toast.success('Login realizado com sucesso!');
         
-        // Redirect based on role
         if (data.user.role === 'admin') {
           navigate('/admin/dashboard');
         } else {
@@ -122,86 +114,65 @@ export default function LoginPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex">
-      {/* Theme Selector */}
-      <div className="absolute top-4 right-4 z-10">
-        <div className="flex items-center gap-2 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg">
-          <button
-            onClick={() => setTheme('light')}
-            className={`p-2 rounded-md transition-colors ${
-              theme === 'light' 
-                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-            }`}
-            title="Tema Claro"
-          >
-            <Sun className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setTheme('dark')}
-            className={`p-2 rounded-md transition-colors ${
-              theme === 'dark' 
-                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-            }`}
-            title="Tema Escuro"
-          >
-            <Moon className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setTheme('system')}
-            className={`p-2 rounded-md transition-colors ${
-              theme === 'system' 
-                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-            }`}
-            title="Seguir Sistema"
-          >
-            <Monitor className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+  const handleSocialLogin = (provider: string) => {
+    toast.error(`Login com ${provider} em desenvolvimento`);
+  };
 
+  return (
+    <div className="min-h-screen flex font-police-primary">
       {/* Left Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-gray-900">
+      <div className="flex-1 flex items-center justify-center p-8 bg-black relative">
+        {/* Background Pattern */}
+        <div 
+          className="absolute inset-0 opacity-5"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 35px,
+              rgba(255,255,255,.05) 35px,
+              rgba(255,255,255,.05) 70px
+            )`
+          }}
+        />
+        
         <motion.div
           initial="initial"
           animate="animate"
           variants={{
             animate: { transition: { staggerChildren: 0.1 } }
           }}
-          className="w-full max-w-md"
+          className="w-full max-w-md relative z-10"
         >
           {/* Logo and Title */}
           <motion.div variants={fadeInUp} className="text-center mb-8">
             <div className="flex justify-center mb-6">
-              <Logo variant="icon" size="lg" animated={true} />
+              <div className="w-20 h-20 bg-white rounded flex items-center justify-center">
+                <Shield className="w-12 h-12 text-black" />
+              </div>
             </div>
-            <h1 className="text-2xl font-bold text-primary-900 dark:text-white mb-2">
-              Bem-vindo de volta!
+            <h1 className="text-4xl font-police-title text-white mb-2 tracking-widest">
+              ACESSO RESTRITO
             </h1>
-            <p className="text-primary-600 dark:text-gray-300">
-              Faça login para continuar seus estudos
+            <p className="text-gray-400 font-police-body tracking-wider">
+              IDENTIFIQUE-SE PARA CONTINUAR
             </p>
           </motion.div>
 
-
-
           {/* Login Form */}
-          <motion.form variants={fadeInUp} onSubmit={handleSubmit} className="space-y-4">
+          <motion.form variants={fadeInUp} onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                Email
+              <label className="block text-sm font-police-subtitle text-gray-300 mb-2 tracking-widest">
+                IDENTIFICAÇÃO
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
                   type="email"
                   required
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition dark:bg-gray-800 dark:border-gray-600 dark:text-white ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-4 py-4 bg-gray-900 border text-white rounded focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition font-police-body ${
+                    errors.email ? 'border-red-500' : 'border-gray-700'
                   }`}
                   placeholder="seu@email.com"
                   value={formData.email}
@@ -212,7 +183,7 @@ export default function LoginPage() {
                 />
               </div>
               {errors.email && (
-                <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
                   <AlertCircle className="w-4 h-4" />
                   {errors.email}
                 </div>
@@ -221,16 +192,16 @@ export default function LoginPage() {
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                Senha
+              <label className="block text-sm font-police-subtitle text-gray-300 mb-2 tracking-widest">
+                SENHA DE ACESSO
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition dark:bg-gray-800 dark:border-gray-600 dark:text-white ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-12 py-4 bg-gray-900 border text-white rounded focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition font-police-body ${
+                    errors.password ? 'border-red-500' : 'border-gray-700'
                   }`}
                   placeholder="••••••••"
                   value={formData.password}
@@ -242,13 +213,13 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
               {errors.password && (
-                <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
                   <AlertCircle className="w-4 h-4" />
                   {errors.password}
                 </div>
@@ -262,162 +233,175 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={formData.rememberMe}
                   onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                  className="w-4 h-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 dark:bg-gray-800"
+                  className="w-4 h-4 text-white bg-gray-900 border-gray-700 rounded focus:ring-white"
                 />
-                <span className="text-sm text-primary-700 dark:text-gray-300">Lembrar de mim</span>
+                <span className="text-sm text-gray-400 font-police-body">Manter conectado</span>
               </label>
               <Link
                 to="/forgot-password"
-                className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:underline"
+                className="text-sm text-gray-400 hover:text-white transition font-police-body"
               >
-                Esqueceu a senha?
+                Recuperar acesso
               </Link>
             </div>
 
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-12 text-base font-medium"
+              className="w-full h-14 text-lg font-police-title bg-white hover:bg-gray-200 text-black tracking-widest"
               isLoading={isLoading}
             >
-              {isLoading ? 'Entrando...' : 'Entrar'}
+              {isLoading ? 'VALIDANDO...' : 'ACESSAR SISTEMA'}
               {!isLoading && <ArrowRight className="ml-2 w-5 h-5" />}
             </Button>
+
+            {/* Divider */}
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-800"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-black px-4 text-gray-500 font-police-body">OU ACESSE COM</span>
+              </div>
+            </div>
+
+            {/* Social Login Buttons */}
+            <div className="grid grid-cols-3 gap-3">
+              <button
+                type="button"
+                onClick={() => handleSocialLogin('Facebook')}
+                className="flex items-center justify-center gap-2 p-3 bg-gray-900 hover:bg-gray-800 text-white rounded border border-gray-700 transition-all duration-300"
+              >
+                <Facebook className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSocialLogin('Google')}
+                className="flex items-center justify-center gap-2 p-3 bg-gray-900 hover:bg-gray-800 text-white rounded border border-gray-700 transition-all duration-300"
+              >
+                <Chrome className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSocialLogin('LinkedIn')}
+                className="flex items-center justify-center gap-2 p-3 bg-gray-900 hover:bg-gray-800 text-white rounded border border-gray-700 transition-all duration-300"
+              >
+                <Linkedin className="w-5 h-5" />
+              </button>
+            </div>
           </motion.form>
 
           {/* Sign Up Link */}
-          <motion.div variants={fadeInUp} className="mt-6 text-center">
-            <span className="text-primary-600">Não tem uma conta? </span>
+          <motion.div variants={fadeInUp} className="mt-8 text-center">
+            <span className="text-gray-400 font-police-body">PRIMEIRO ACESSO? </span>
             <Link
               to="/register"
-              className="text-primary-600 dark:text-primary-400 font-medium hover:text-primary-700 dark:hover:text-primary-300 hover:underline"
+              className="text-white font-police-subtitle hover:underline tracking-wider"
             >
-              Cadastre-se gratuitamente
+              CRIAR CONTA
             </Link>
           </motion.div>
 
           {/* Footer */}
-          <motion.div variants={fadeInUp} className="mt-8 text-center text-xs text-gray-500">
-            Ao continuar, você concorda com nossos{' '}
-            <a href="#" className="hover:underline">Termos de Uso</a> e{' '}
-            <a href="#" className="hover:underline">Política de Privacidade</a>
+          <motion.div variants={fadeInUp} className="mt-8 text-center text-xs text-gray-500 font-police-body">
+            ACESSO PROTEGIDO • DADOS CRIPTOGRAFADOS • SSL 256-BIT
           </motion.div>
         </motion.div>
       </div>
 
-      {/* Right Side - New Courses */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full filter blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-60 h-60 bg-accent-500 rounded-full filter blur-3xl"></div>
+      {/* Right Side - Hero Image */}
+      <div className="hidden lg:flex flex-1 relative overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1633265486064-086b219458ec?q=80&w=2070')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
+          {/* Dark overlay */}
+          <div className="absolute inset-0 bg-black/70"></div>
+          
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent"></div>
+          
+          {/* Scan lines effect */}
+          <div 
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: `repeating-linear-gradient(
+                0deg,
+                rgba(255, 255, 255, 0) 0px,
+                rgba(255, 255, 255, 0.03) 1px,
+                rgba(255, 255, 255, 0) 2px,
+                rgba(255, 255, 255, 0) 3px
+              )`
+            }}
+          />
         </div>
         
         <div className="relative z-10 flex items-center justify-center w-full p-12">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="max-w-xl w-full"
+            className="max-w-xl w-full text-white"
           >
-            {/* Header */}
+            {/* Stats */}
             <motion.div 
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-center mb-10"
+              className="mb-12"
             >
-              <h2 className="text-4xl font-bold mb-4">
-                🎯 Novos Cursos Disponíveis
+              <h2 className="text-5xl font-police-title mb-6 tracking-ultra-wide">
+                PLATAFORMA ELITE
               </h2>
-              <p className="text-xl text-primary-100">
-                Materiais atualizados para os concursos mais aguardados
+              <p className="text-xl text-gray-300 font-police-body mb-8 leading-relaxed">
+                METODOLOGIA EXCLUSIVA PARA CONCURSOS DE ALTA PERFORMANCE
               </p>
+              
+              <div className="grid grid-cols-2 gap-6">
+                {[
+                  { number: '89%', label: 'TAXA DE APROVAÇÃO' },
+                  { number: '15.847', label: 'APROVADOS EM 2024' },
+                  { number: '50K+', label: 'QUESTÕES COMENTADAS' },
+                  { number: '24/7', label: 'SUPORTE DEDICADO' }
+                ].map((stat, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                    className="bg-white/10 backdrop-blur-sm rounded p-6 border border-white/20"
+                  >
+                    <div className="text-3xl font-police-numbers mb-2">{stat.number}</div>
+                    <div className="text-xs font-police-subtitle tracking-widest text-gray-300">{stat.label}</div>
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
 
-            {/* Course Cards */}
-            <div className="space-y-4">
-              {[
-                {
-                  title: 'Polícia Federal 2024',
-                  badge: 'NOVO',
-                  badgeColor: 'bg-green-500',
-                  students: '2.341',
-                  modules: '18 módulos',
-                  questions: '8.500+ questões',
-                  icon: '👮‍♂️'
-                },
-                {
-                  title: 'Receita Federal - Auditor',
-                  badge: 'ATUALIZADO',
-                  badgeColor: 'bg-blue-500',
-                  students: '1.856',
-                  modules: '22 módulos',
-                  questions: '12.300+ questões',
-                  icon: '💼'
-                },
-                {
-                  title: 'Tribunais - TRT/TRF',
-                  badge: 'EM ALTA',
-                  badgeColor: 'bg-orange-500',
-                  students: '987',
-                  modules: '15 módulos',
-                  questions: '6.700+ questões',
-                  icon: '⚖️'
-                }
-              ].map((course, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-                  className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 hover:bg-white/15 transition-all duration-300 transform hover:scale-105"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{course.icon}</span>
-                      <div>
-                        <h3 className="font-bold text-lg">{course.title}</h3>
-                        <div className="flex items-center gap-4 text-sm text-primary-200 mt-1">
-                          <span className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            {course.students} alunos
-                          </span>
-                          <span>{course.modules}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <span className={`${course.badgeColor} text-white text-xs px-2 py-1 rounded-full font-bold`}>
-                      {course.badge}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-primary-300">{course.questions}</span>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="text-accent-400 hover:text-accent-300 transition-colors"
-                    >
-                      <ArrowRight className="w-5 h-5" />
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Bottom Stats */}
+            {/* Features */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.9 }}
-              className="mt-8 text-center"
+              className="space-y-3"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent-500/20 rounded-full">
-                <Zap className="w-5 h-5 text-accent-400" />
-                <span className="text-accent-300 font-medium">
-                  +12 novos cursos este mês
-                </span>
-              </div>
+              {[
+                'SIMULADOS COM CORREÇÃO TRI',
+                'INTELIGÊNCIA ARTIFICIAL ADAPTATIVA',
+                'MENTORIA COM APROVADOS',
+                'MATERIAL ATUALIZADO DIARIAMENTE'
+              ].map((feature, index) => (
+                <div key={index} className="flex items-center gap-3 text-gray-300 font-police-body">
+                  <div className="w-2 h-2 bg-white rounded-full" />
+                  <span className="tracking-wider">{feature}</span>
+                </div>
+              ))}
             </motion.div>
           </motion.div>
         </div>
