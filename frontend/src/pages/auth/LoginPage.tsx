@@ -11,7 +11,8 @@ import {
   AlertCircle,
   Facebook,
   Chrome,
-  Linkedin
+  Linkedin,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/store/authStore';
@@ -145,6 +146,17 @@ export default function LoginPage() {
           }}
           className="w-full max-w-md relative z-10"
         >
+          {/* Back to Home Button */}
+          <motion.div variants={fadeInUp} className="mb-8">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 font-police-body group"
+            >
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              <span className="tracking-wider">VOLTAR AO INÍCIO</span>
+            </Link>
+          </motion.div>
+          
           {/* Logo and Title */}
           <motion.div variants={fadeInUp} className="text-center mb-8">
             <div className="flex justify-center mb-6">
