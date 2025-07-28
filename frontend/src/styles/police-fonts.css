@@ -1,0 +1,57 @@
+/* Fontes Police/Military Theme */
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;800;900&family=Exo+2:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Fonte principal - Rajdhani (muito usada em contextos policiais/militares) */
+.font-police-primary {
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* Fonte para títulos - Orbitron (futurística, tecnológica) */
+.font-police-title {
+  font-family: 'Orbitron', 'Inter', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Fonte para subtítulos - Exo 2 (clean, profissional) */
+.font-police-subtitle {
+  font-family: 'Exo 2', 'Inter', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Fonte para corpo de texto */
+.font-police-body {
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Estilo para números/badges */
+.font-police-numbers {
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* Classes de peso customizadas */
+.font-weight-900 {
+  font-weight: 900;
+}
+
+.font-weight-800 {
+  font-weight: 800;
+}
+
+/* Tracking/letter-spacing customizado */
+.tracking-widest-plus {
+  letter-spacing: 0.15em;
+}
+
+.tracking-ultra-wide {
+  letter-spacing: 0.2em;
+}
