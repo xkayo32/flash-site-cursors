@@ -377,7 +377,7 @@ export default function CheckoutPage() {
                   <Button
                     onClick={() => handlePlanSelect(plan)}
                     className={`
-                      w-full py-4 text-lg font-police-title tracking-widest transition-all duration-300
+                      w-full py-4 text-lg font-police-title tracking-widest transition-all duration-300 btn-gradient-overlay
                       ${plan.popular
                         ? 'bg-yellow-400 hover:bg-yellow-300 text-black shadow-lg shadow-yellow-400/30'
                         : plan.color === 'white'
