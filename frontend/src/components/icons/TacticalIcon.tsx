@@ -1,22 +1,30 @@
 import React from 'react';
-
-// Import all tactical SVGs
-import UsersTactical from '@/assets/icons/tactical/users-tactical.svg?react';
-import BookTactical from '@/assets/icons/tactical/book-tactical.svg?react';
-import BrainTactical from '@/assets/icons/tactical/brain-tactical.svg?react';
-import TrophyTactical from '@/assets/icons/tactical/trophy-tactical.svg?react';
-import DollarTactical from '@/assets/icons/tactical/dollar-tactical.svg?react';
-import TrendingTactical from '@/assets/icons/tactical/trending-tactical.svg?react';
-import ActivityTactical from '@/assets/icons/tactical/activity-tactical.svg?react';
+import { 
+  Users,
+  BookOpen,
+  Brain,
+  Trophy,
+  DollarSign,
+  TrendingUp,
+  Activity,
+  Shield,
+  Target,
+  Award,
+  Zap
+} from 'lucide-react';
 
 const iconMap = {
-  users: UsersTactical,
-  book: BookTactical,
-  brain: BrainTactical,
-  trophy: TrophyTactical,
-  dollar: DollarTactical,
-  trending: TrendingTactical,
-  activity: ActivityTactical,
+  users: Users,
+  book: BookOpen,
+  brain: Brain,
+  trophy: Trophy,
+  dollar: DollarSign,
+  trending: TrendingUp,
+  activity: Activity,
+  shield: Shield,
+  target: Target,
+  award: Award,
+  zap: Zap,
 };
 
 export type TacticalIconName = keyof typeof iconMap;
