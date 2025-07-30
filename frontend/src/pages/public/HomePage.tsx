@@ -356,7 +356,7 @@ export default function HomePage() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="hidden md:flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-accent-650 text-white dark:text-black hover:text-white dark:hover:text-white font-police-subtitle rounded transition-all duration-300 text-xs md:text-sm tracking-widest-plus shadow-lg hover:shadow-xl"
+                  className="hidden md:flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white font-police-subtitle rounded transition-all duration-300 text-xs md:text-sm tracking-widest-plus shadow-lg hover:shadow-xl"
                 >
                   <Trophy className="w-4 h-4" />
                   GARANTIR APROVAÇÃO
@@ -415,7 +415,7 @@ export default function HomePage() {
                   </button>
                 </Link>
                 <Link to="/checkout?plan=price_monthly_premium" onClick={() => setMobileMenuOpen(false)}>
-                  <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-accent-650 text-white dark:text-black hover:text-white dark:hover:text-white font-police-subtitle rounded transition-all duration-300 text-sm tracking-widest-plus shadow-lg hover:shadow-xl">
+                  <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white font-police-subtitle rounded transition-all duration-300 text-sm tracking-widest-plus shadow-lg hover:shadow-xl">
                     <Trophy className="w-4 h-4" />
                     GARANTIR APROVAÇÃO
                   </button>
@@ -505,7 +505,7 @@ export default function HomePage() {
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: "0 20px 50px rgba(255, 255, 255, 0.3)" }}
                   whileTap={{ scale: 0.95 }}
-                  className="group flex items-center gap-2 md:gap-3 bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-accent-650 text-white dark:text-black hover:text-white dark:hover:text-white text-lg md:text-xl font-police-title px-8 md:px-10 py-4 md:py-5 rounded-md shadow-2xl transition-all duration-300 tracking-widest md:tracking-widest-plus justify-center min-h-[56px] touch-manipulation"
+                  className="group flex items-center gap-2 md:gap-3 bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white text-lg md:text-xl font-police-title px-8 md:px-10 py-4 md:py-5 rounded-md shadow-2xl transition-all duration-300 tracking-widest md:tracking-widest-plus justify-center min-h-[56px] touch-manipulation"
                 >
                   <Shield className="w-6 h-6 group-hover:rotate-12 transition-transform" />
                   GARANTIR APROVAÇÃO
@@ -962,7 +962,7 @@ export default function HomePage() {
                       className={`w-full py-4 text-lg font-police-title tracking-widest-plus shadow-lg hover:shadow-xl ${
                         plan.popular 
                           ? 'bg-military-base hover:bg-military-dark text-white' 
-                          : 'bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-accent-650 text-white dark:text-black hover:text-white dark:hover:text-white'
+                          : 'bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white'
                       }`}
                     >
                       {plan.cta}
@@ -1167,7 +1167,7 @@ export default function HomePage() {
             </motion.h2>
             <motion.div variants={fadeInUp}>
               <Link to="/checkout?plan=price_monthly_premium">
-                <Button className="bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-accent-650 text-white dark:text-black hover:text-white dark:hover:text-white text-lg md:text-xl font-police-title px-10 md:px-12 py-5 md:py-6 rounded-md tracking-widest md:tracking-widest-plus min-h-[60px] touch-manipulation shadow-lg hover:shadow-xl">
+                <Button className="bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white text-lg md:text-xl font-police-title px-10 md:px-12 py-5 md:py-6 rounded-md tracking-widest md:tracking-widest-plus min-h-[60px] touch-manipulation shadow-lg hover:shadow-xl">
                   GARANTIR APROVAÇÃO
                   <ArrowRight className="ml-2 md:ml-3 w-5 md:w-6 h-5 md:h-6" />
                 </Button>
@@ -1328,7 +1328,7 @@ export default function HomePage() {
         href="https://wa.me/5511999999999?text=Olá! Preciso de ajuda com os cursos do StudyPro"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-4 md:bottom-6 right-4 md:right-6 z-50 bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-accent-650 text-white dark:text-black hover:text-white dark:hover:text-white p-4 md:p-5 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 touch-manipulation"
+        className="fixed bottom-4 md:bottom-6 right-4 md:right-6 z-50 bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white p-4 md:p-5 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 touch-manipulation"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 1, type: "spring", stiffness: 200 }}
