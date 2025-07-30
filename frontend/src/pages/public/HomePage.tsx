@@ -284,10 +284,10 @@ export default function HomePage() {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'EXTREMO': return 'bg-red-600 text-white';
-      case 'ALTO': return 'bg-orange-600 text-white';
-      case 'MÉDIO': return 'bg-accent-500 text-black dark:text-white hover:text-black dark:hover:text-black';
-      default: return 'bg-green-600 text-white';
+      case 'EXTREMO': return 'bg-gray-900 dark:bg-gray-100 text-white dark:text-black';
+      case 'ALTO': return 'bg-gray-800 dark:bg-gray-200 text-white dark:text-black';
+      case 'MÉDIO': return 'bg-gray-700 dark:bg-gray-300 text-white dark:text-black';
+      default: return 'bg-gray-600 dark:bg-gray-400 text-white dark:text-black';
     }
   };
 
