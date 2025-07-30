@@ -286,7 +286,7 @@ export default function HomePage() {
     switch (difficulty) {
       case 'EXTREMO': return 'bg-red-600 text-white';
       case 'ALTO': return 'bg-orange-600 text-white';
-      case 'MÉDIO': return 'bg-yellow-600 text-black';
+      case 'MÉDIO': return 'bg-accent-500 text-black dark:text-white hover:text-black dark:hover:text-black';
       default: return 'bg-green-600 text-white';
     }
   };
@@ -932,7 +932,7 @@ export default function HomePage() {
           >
             {plans.map((plan, index) => (
               <motion.div key={index} variants={fadeInUp}>
-                <Card className={`relative h-full ${plan.popular ? 'ring-2 ring-accent-500 shadow-2xl scale-105 bg-accent-500 text-black' : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-military-base dark:text-white'}`}>
+                <Card className={`relative h-full ${plan.popular ? 'ring-2 ring-accent-500 shadow-2xl scale-105 bg-accent-500 text-black dark:text-white hover:text-black dark:hover:text-black' : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-military-base dark:text-white'}`}>
                   {plan.popular && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                       <span className="bg-military-base text-white px-6 py-2 rounded-md text-sm font-police-title tracking-widest">
