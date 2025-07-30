@@ -532,7 +532,7 @@ export default function HomePage() {
               {features.map((feature, index) => {
                 const Icon = feature.icon;
                 return (
-                  <div key={index} className="text-center bg-white/90 dark:bg-gray-800 backdrop-blur-sm rounded-lg p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+                  <div key={index} className="text-center bg-gray-900/20 dark:bg-white/10 backdrop-blur-sm rounded-lg p-4 md:p-6 border border-gray-700/30 dark:border-white/20">
                     <Icon className="w-6 md:w-8 h-6 md:h-8 text-military-base dark:text-white mx-auto mb-2 md:mb-3" />
                     <div className="text-xl md:text-2xl font-police-numbers text-military-base dark:text-white mb-1 md:mb-2">
                       {feature.number}
@@ -548,7 +548,7 @@ export default function HomePage() {
             {/* Stats */}
             <motion.div
               variants={fadeInUp}
-              className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 bg-white/90 dark:bg-gray-800 backdrop-blur-sm rounded-lg p-6 md:p-8 border border-gray-200 dark:border-gray-700 mx-4"
+              className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 bg-gray-900/20 dark:bg-white/10 backdrop-blur-sm rounded-lg p-6 md:p-8 border border-gray-700/30 dark:border-white/20 mx-4"
             >
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
@@ -626,7 +626,7 @@ export default function HomePage() {
               >
                 {category.courses.map((course, index) => (
                   <motion.div key={index} variants={fadeInUp}>
-                    <Card className="h-full hover:shadow-2xl transition-all duration-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 group hover:-translate-y-1 md:hover:-translate-y-2 rounded-lg overflow-hidden">
+                    <Card className="h-full hover:shadow-2xl transition-all duration-300 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 group hover:-translate-y-1 md:hover:-translate-y-2 rounded-lg overflow-hidden">
                       <div className="h-36 md:h-40 bg-gradient-to-br from-gray-200 dark:from-gray-700 to-white dark:to-gray-800 flex flex-col items-center justify-center text-military-base dark:text-white p-4 md:p-6">
                         <Award className="w-8 md:w-12 h-8 md:h-12 text-military-base dark:text-white mb-2 md:mb-3" />
                         <div className="text-center">
@@ -737,7 +737,7 @@ export default function HomePage() {
               const Icon = feature.icon;
               return (
                 <motion.div key={index} variants={fadeInUp}>
-                  <Card className="h-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 rounded-lg">
+                  <Card className="h-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 rounded-lg">
                     <CardContent className="p-6 md:p-8 text-center">
                       <div className="w-16 md:w-20 h-16 md:h-20 bg-accent-500/10 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
                         <Icon className="w-8 md:w-10 h-8 md:h-10 text-accent-500" />
@@ -787,7 +787,7 @@ export default function HomePage() {
           >
             {testimonials.map((testimonial, index) => (
               <motion.div key={index} variants={fadeInUp}>
-                <Card className="h-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg">
+                <Card className="h-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg">
                   <CardContent className="p-8 text-center">
                     <div className="flex items-center justify-center gap-1 mb-4">
                       {[...Array(5)].map((_, i) => (
@@ -867,7 +867,7 @@ export default function HomePage() {
               }
             ].map((screenshot, index) => (
               <motion.div key={index} variants={fadeInUp}>
-                <Card className="overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <Card className="overflow-hidden bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
                   <div className="relative h-64 md:h-80 overflow-hidden">
                     <img 
                       src={screenshot.image} 
@@ -932,7 +932,7 @@ export default function HomePage() {
           >
             {plans.map((plan, index) => (
               <motion.div key={index} variants={fadeInUp}>
-                <Card className={`relative h-full ${plan.popular ? 'ring-2 ring-accent-500 shadow-2xl scale-105 bg-accent-500 text-black' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-military-base dark:text-white'}`}>
+                <Card className={`relative h-full ${plan.popular ? 'ring-2 ring-accent-500 shadow-2xl scale-105 bg-accent-500 text-black' : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-military-base dark:text-white'}`}>
                   {plan.popular && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                       <span className="bg-military-base text-white px-6 py-2 rounded-md text-sm font-police-title tracking-widest">
@@ -1033,7 +1033,7 @@ export default function HomePage() {
               }
             ].map((testimonial, index) => (
               <motion.div key={index} variants={fadeInUp}>
-                <Card className="h-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <Card className="h-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
@@ -1127,7 +1127,7 @@ export default function HomePage() {
               }
             ].map((faq, index) => (
               <motion.div key={index} variants={fadeInUp}>
-                <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <div className="w-10 h-10 bg-accent-500/10 rounded-full flex items-center justify-center flex-shrink-0">
