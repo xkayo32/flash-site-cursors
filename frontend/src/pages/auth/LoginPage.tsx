@@ -132,21 +132,6 @@ export default function LoginPage() {
     <div className="min-h-screen flex font-police-primary bg-gray-50 dark:bg-gray-950">
       {/* Left Side - Login Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-black relative">
-        {/* Theme Toggle Button */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          className="absolute top-4 right-4 z-20"
-        >
-          <button
-            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-accent-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
-            aria-label="Toggle theme"
-          >
-            {resolvedTheme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
-        </motion.div>
 
         {/* Background Pattern */}
         <div 
@@ -178,8 +163,8 @@ export default function LoginPage() {
           }}
           className="w-full max-w-md relative z-10"
         >
-          {/* Back to Home Button */}
-          <motion.div variants={fadeInUp} className="mb-8">
+          {/* Back to Home Button and Theme Toggle */}
+          <motion.div variants={fadeInUp} className="mb-8 flex items-center justify-between">
             <Link
               to="/"
               className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all duration-300 font-police-body group"
@@ -187,6 +172,15 @@ export default function LoginPage() {
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               <span className="tracking-wider">VOLTAR AO INÍCIO</span>
             </Link>
+            
+            {/* Theme Toggle Button */}
+            <button
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-accent-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+              aria-label="Toggle theme"
+            >
+              {resolvedTheme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
           </motion.div>
           
           {/* Logo and Title */}
@@ -282,16 +276,16 @@ export default function LoginPage() {
               </label>
               <Link
                 to="/forgot-password"
-                className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition font-police-body"
+                className="text-sm text-gray-900 dark:text-white font-police-subtitle hover:underline tracking-wider transition"
               >
-                Recuperar acesso
+                RECUPERAR ACESSO
               </Link>
             </div>
 
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-14 text-lg font-police-title bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black tracking-widest shadow-lg hover:shadow-xl transition-all"
+              className="w-full h-14 text-lg font-police-title bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-white tracking-widest shadow-lg hover:shadow-xl transition-all"
               isLoading={isLoading}
             >
               {isLoading ? 'VALIDANDO...' : 'ACESSAR SISTEMA'}
