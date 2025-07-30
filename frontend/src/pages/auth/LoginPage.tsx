@@ -285,7 +285,7 @@ export default function LoginPage() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-14 text-lg font-police-title bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-white tracking-widest shadow-lg hover:shadow-xl transition-all"
+              className="w-full h-14 text-lg font-police-title bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black hover:text-black dark:hover:text-black tracking-widest shadow-lg hover:shadow-xl transition-all"
               isLoading={isLoading}
             >
               {isLoading ? 'VALIDANDO...' : 'ACESSAR SISTEMA'}
