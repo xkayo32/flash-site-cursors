@@ -44,7 +44,8 @@ const materias = {
   'CONHECIMENTOS GERAIS': {
     'Português': ['Gramática', 'Interpretação de Texto', 'Redação'],
     'Matemática': ['Raciocínio Lógico', 'Estatística', 'Matemática Básica'],
-    'Informática': ['Hardware', 'Software', 'Segurança da Informação']
+    'Informática': ['Hardware', 'Software', 'Segurança da Informação'],
+    'História': ['História do Brasil', 'História Geral', 'Atualidades']
   }
 };
 
@@ -55,6 +56,9 @@ const contentItems: ContentItem[] = [
     title: 'Direito Constitucional - Princípios Fundamentais',
     type: 'course',
     category: 'Direito',
+    materia: 'DIREITO',
+    submateria: 'Direito Constitucional',
+    topico: 'Princípios Fundamentais',
     author: 'Prof. Dr. Carlos Lima',
     status: 'published',
     visibility: 'public',
@@ -71,6 +75,9 @@ const contentItems: ContentItem[] = [
     title: 'Matemática Básica - Álgebra Linear',
     type: 'course',
     category: 'Matemática',
+    materia: 'CONHECIMENTOS GERAIS',
+    submateria: 'Matemática',
+    topico: 'Matemática Básica',
     author: 'Prof. Ana Santos',
     status: 'draft',
     visibility: 'private',
@@ -87,6 +94,9 @@ const contentItems: ContentItem[] = [
     title: 'Português - Gramática Avançada',
     type: 'course',
     category: 'Português',
+    materia: 'CONHECIMENTOS GERAIS',
+    submateria: 'Português',
+    topico: 'Gramática',
     author: 'Prof. Maria Oliveira',
     status: 'published',
     visibility: 'public',
@@ -103,6 +113,9 @@ const contentItems: ContentItem[] = [
     title: 'Flashcards - Vocabulário Jurídico',
     type: 'flashcards',
     category: 'Direito',
+    materia: 'DIREITO',
+    submateria: 'Direito Penal',
+    topico: 'Teoria do Crime',
     author: 'Sistema',
     status: 'published',
     visibility: 'public',
@@ -119,6 +132,9 @@ const contentItems: ContentItem[] = [
     title: 'Questões ENEM 2023 - Matemática',
     type: 'questions',
     category: 'Matemática',
+    materia: 'CONHECIMENTOS GERAIS',
+    submateria: 'Matemática',
+    topico: 'Raciocínio Lógico',
     author: 'Prof. João Costa',
     status: 'published',
     visibility: 'public',
@@ -135,6 +151,9 @@ const contentItems: ContentItem[] = [
     title: 'Resumo Interativo - História do Brasil',
     type: 'summary',
     category: 'História',
+    materia: 'CONHECIMENTOS GERAIS',
+    submateria: 'História',
+    topico: 'História do Brasil',
     author: 'Prof. Patricia Lima',
     status: 'review',
     visibility: 'private',
@@ -145,6 +164,44 @@ const contentItems: ContentItem[] = [
     rating: 4.5,
     pages: 45,
     interactions: 78
+  },
+  {
+    id: 7,
+    title: 'Técnicas de Abordagem - Táticas Operacionais',
+    type: 'course',
+    category: 'Segurança',
+    materia: 'SEGURANÇA PÚBLICA',
+    submateria: 'Táticas Operacionais',
+    topico: 'Abordagem',
+    author: 'Instrutor Silva',
+    status: 'published',
+    visibility: 'public',
+    createdAt: '2024-01-09',
+    updatedAt: '2024-01-09',
+    views: 1567,
+    enrollments: 234,
+    rating: 4.9,
+    lessons: 18,
+    duration: '10h 15m'
+  },
+  {
+    id: 8,
+    title: 'Direito Administrativo - Licitações e Contratos',
+    type: 'course',
+    category: 'Direito',
+    materia: 'DIREITO',
+    submateria: 'Direito Administrativo',
+    topico: 'Licitações',
+    author: 'Prof. Dr. Carlos Lima',
+    status: 'published',
+    visibility: 'public',
+    createdAt: '2024-01-08',
+    updatedAt: '2024-01-08',
+    views: 892,
+    enrollments: 156,
+    rating: 4.7,
+    lessons: 28,
+    duration: '14h 45m'
   }
 ];
 
@@ -161,6 +218,9 @@ interface ContentItem {
   title: string;
   type: 'course' | 'flashcards' | 'questions' | 'summary';
   category: string;
+  materia: string;
+  submateria: string;
+  topico: string;
   author: string;
   status: 'published' | 'draft' | 'review' | 'archived';
   visibility: 'public' | 'private';
@@ -191,6 +251,10 @@ export default function ContentManager() {
   const [selectedMateria, setSelectedMateria] = useState('');
   const [selectedSubmateria, setSelectedSubmateria] = useState('');
   const [selectedTopico, setSelectedTopico] = useState('');
+  // Filtros da listagem
+  const [filterMateria, setFilterMateria] = useState('TODOS');
+  const [filterSubmateria, setFilterSubmateria] = useState('TODOS');
+  const [filterTopico, setFilterTopico] = useState('TODOS');
 
   const filteredContent = contentItems.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -198,8 +262,12 @@ export default function ContentManager() {
     const matchesCategory = selectedCategory === 'Todos' || item.category === selectedCategory;
     const matchesType = selectedType === 'Todos' || item.type === selectedType;
     const matchesStatus = selectedStatus === 'Todos' || item.status === selectedStatus;
+    const matchesMateria = filterMateria === 'TODOS' || item.materia === filterMateria;
+    const matchesSubmateria = filterSubmateria === 'TODOS' || item.submateria === filterSubmateria;
+    const matchesTopico = filterTopico === 'TODOS' || item.topico === filterTopico;
     
-    return matchesSearch && matchesCategory && matchesType && matchesStatus;
+    return matchesSearch && matchesCategory && matchesType && matchesStatus && 
+           matchesMateria && matchesSubmateria && matchesTopico;
   });
 
   const getTypeIcon = (type: string) => {
@@ -319,7 +387,9 @@ export default function ContentManager() {
             : 'bg-white border-military-base/20 shadow-military-base/10'
         )}>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="space-y-4">
+              {/* Primeira linha de filtros */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -332,14 +402,19 @@ export default function ContentManager() {
                 />
               </div>
 
-              {/* Category Filter */}
+              {/* Materia Filter */}
               <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                value={filterMateria}
+                onChange={(e) => {
+                  setFilterMateria(e.target.value);
+                  setFilterSubmateria('TODOS');
+                  setFilterTopico('TODOS');
+                }}
                 className="px-4 py-2 border-2 rounded-lg transition-all duration-300 font-police-body font-medium uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
               >
-                {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                <option value="TODOS">TODAS AS MATÉRIAS</option>
+                {Object.keys(materias).map(materia => (
+                  <option key={materia} value={materia}>{materia}</option>
                 ))}
               </select>
 
@@ -403,6 +478,96 @@ export default function ContentManager() {
                   </Badge>
                 )}
               </div>
+              </div>
+              
+              {/* Segunda linha de filtros - Submatéria e Tópico */}
+              <AnimatePresence>
+                {filterMateria !== 'TODOS' && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-4"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="h-0.5 bg-gradient-to-r from-transparent via-accent-500 to-transparent flex-1" />
+                      <span className="text-xs font-police-subtitle uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                        FILTROS AVANÇADOS DA MATÉRIA
+                      </span>
+                      <div className="h-0.5 bg-gradient-to-r from-transparent via-accent-500 to-transparent flex-1" />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/* Submateria Filter */}
+                      <div>
+                        <label className="block text-xs font-police-subtitle uppercase tracking-wider mb-1 text-gray-600 dark:text-gray-400">
+                          SUBMATÉRIA
+                        </label>
+                        <select
+                          value={filterSubmateria}
+                          onChange={(e) => {
+                            setFilterSubmateria(e.target.value);
+                            setFilterTopico('TODOS');
+                          }}
+                          className="w-full px-4 py-2 border-2 rounded-lg transition-all duration-300 font-police-body font-medium uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
+                        >
+                          <option value="TODOS">TODAS AS SUBMATÉRIAS</option>
+                          {Object.keys(materias[filterMateria as keyof typeof materias] || {}).map(submateria => (
+                            <option key={submateria} value={submateria}>{submateria}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      {/* Topico Filter */}
+                      {filterSubmateria !== 'TODOS' && (
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <label className="block text-xs font-police-subtitle uppercase tracking-wider mb-1 text-gray-600 dark:text-gray-400">
+                            TÓPICO ESPECÍFICO
+                          </label>
+                          <select
+                            value={filterTopico}
+                            onChange={(e) => setFilterTopico(e.target.value)}
+                            className="w-full px-4 py-2 border-2 rounded-lg transition-all duration-300 font-police-body font-medium uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
+                          >
+                            <option value="TODOS">TODOS OS TÓPICOS</option>
+                            {(materias[filterMateria as keyof typeof materias]?.[filterSubmateria as keyof typeof materias[keyof typeof materias]] || []).map((topico: string) => (
+                              <option key={topico} value={topico}>{topico}</option>
+                            ))}
+                          </select>
+                        </motion.div>
+                      )}
+                      
+                      {/* Clear Filters Button */}
+                      {(filterSubmateria !== 'TODOS' || filterTopico !== 'TODOS') && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3 }}
+                          className="flex items-end"
+                        >
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setFilterMateria('TODOS');
+                              setFilterSubmateria('TODOS');
+                              setFilterTopico('TODOS');
+                            }}
+                            className="w-full gap-2 font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-2 border-gray-300 dark:border-gray-700 hover:border-accent-500 hover:text-accent-500 dark:hover:border-accent-500"
+                          >
+                            <X className="w-4 h-4" />
+                            LIMPAR FILTROS
+                          </Button>
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Bulk Actions Bar */}
@@ -552,7 +717,13 @@ export default function ContentManager() {
                                 "text-sm font-police-body",
                                 resolvedTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
                               )}>
-                                {item.category}
+                                <span className="inline-flex items-center gap-1">
+                                  <span className="text-accent-500">{item.materia}</span>
+                                  <span className="text-gray-400">›</span>
+                                  <span>{item.submateria}</span>
+                                  <span className="text-gray-400">›</span>
+                                  <span className="text-gray-500">{item.topico}</span>
+                                </span>
                               </p>
                               <div className="flex items-center gap-2 mt-1">
                                 {getVisibilityIcon(item.visibility)}
