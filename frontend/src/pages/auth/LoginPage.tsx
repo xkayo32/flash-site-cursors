@@ -400,7 +400,7 @@ export default function LoginPage() {
           }}
         >
           {/* Dark overlay */}
-          <div className="absolute inset-0 bg-black/60 dark:bg-black/70"></div>
+          <div className="absolute inset-0 bg-white/60 dark:bg-black/70"></div>
           
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-white dark:from-black via-white/50 dark:via-black/50 to-transparent"></div>
@@ -425,7 +425,7 @@ export default function LoginPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="max-w-xl w-full text-white"
+            className="max-w-xl w-full text-gray-900 dark:text-white"
           >
             {/* Stats */}
             <motion.div 
@@ -437,7 +437,7 @@ export default function LoginPage() {
               <h2 className="text-5xl font-police-title mb-6 tracking-ultra-wide">
                 PLATAFORMA ELITE
               </h2>
-              <p className="text-xl text-gray-300 font-police-body mb-8 leading-relaxed">
+              <p className="text-xl text-gray-700 dark:text-gray-300 font-police-body mb-8 leading-relaxed">
                 METODOLOGIA EXCLUSIVA PARA CONCURSOS DE ALTA PERFORMANCE
               </p>
               
@@ -453,10 +453,10 @@ export default function LoginPage() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-                    className="bg-white/20 dark:bg-white/10 backdrop-blur-sm rounded p-6 border border-white/30 dark:border-white/20"
+                    className="bg-gray-900/20 dark:bg-white/10 backdrop-blur-sm rounded p-6 border border-gray-700/30 dark:border-white/20"
                   >
-                    <div className="text-3xl font-police-numbers mb-2 text-white">{stat.number}</div>
-                    <div className="text-xs font-police-subtitle tracking-widest text-gray-100 dark:text-gray-300">{stat.label}</div>
+                    <div className="text-3xl font-police-numbers mb-2 text-gray-900 dark:text-white">{stat.number}</div>
+                    <div className="text-xs font-police-subtitle tracking-widest text-gray-700 dark:text-gray-300">{stat.label}</div>
                   </motion.div>
                 ))}
               </div>
@@ -475,8 +475,8 @@ export default function LoginPage() {
                 'MENTORIA COM APROVADOS',
                 'MATERIAL ATUALIZADO DIARIAMENTE'
               ].map((feature, index) => (
-                <div key={index} className="flex items-center gap-3 text-gray-300 font-police-body">
-                  <div className="w-2 h-2 bg-white rounded-full" />
+                <div key={index} className="flex items-center gap-3 text-gray-700 dark:text-gray-300 font-police-body">
+                  <div className="w-2 h-2 bg-gray-900 dark:bg-white rounded-full" />
                   <span className="tracking-wider">{feature}</span>
                 </div>
               ))}
