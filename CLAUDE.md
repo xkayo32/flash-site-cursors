@@ -307,3 +307,9 @@ docker compose logs -f postgres
 - Icons: Lucide React with custom tactical SVG icons
 - Form validation: Built-in HTML5 validation (no external library)
 - HTTP client: Axios 1.10 with centralized configuration
+
+### Recent Updates
+- **2025-07-30**: Standardized button colors across platform
+  - All yellow buttons now use accent color palette (accent-500/600/650)
+  - Dark theme hover color: #d06e0f (accent-650)
+  - Pattern: bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650
