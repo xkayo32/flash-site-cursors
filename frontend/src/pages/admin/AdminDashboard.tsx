@@ -69,7 +69,7 @@ const recentUsers = [
     name: 'João Silva',
     email: 'joao@email.com',
     plan: 'Premium',
-    status: 'active',
+    status: 'active' as const,
     joinDate: '2024-01-15',
     lastActivity: '2 horas atrás'
   },
@@ -78,7 +78,7 @@ const recentUsers = [
     name: 'Maria Santos',
     email: 'maria@email.com',
     plan: 'Básico',
-    status: 'active',
+    status: 'active' as const,
     joinDate: '2024-01-14',
     lastActivity: '1 dia atrás'
   },
@@ -87,7 +87,7 @@ const recentUsers = [
     name: 'Pedro Costa',
     email: 'pedro@email.com',
     plan: 'VIP',
-    status: 'inactive',
+    status: 'inactive' as const,
     joinDate: '2024-01-13',
     lastActivity: '3 dias atrás'
   },
@@ -96,7 +96,7 @@ const recentUsers = [
     name: 'Ana Oliveira',
     email: 'ana@email.com',
     plan: 'Premium',
-    status: 'active',
+    status: 'active' as const,
     joinDate: '2024-01-12',
     lastActivity: '5 horas atrás'
   }
@@ -106,27 +106,27 @@ const recentContent = [
   {
     id: 1,
     title: 'Direito Constitucional - Teoria Geral',
-    type: 'course',
+    type: 'course' as const,
     author: 'Prof. Dr. Carlos Lima',
-    status: 'published',
+    status: 'published' as const,
     updatedAt: '2024-01-15',
     views: 234
   },
   {
     id: 2,
     title: 'Questões de Matemática - ENEM 2023',
-    type: 'questions',
+    type: 'questions' as const,
     author: 'Sistema',
-    status: 'draft',
+    status: 'draft' as const,
     updatedAt: '2024-01-14',
     views: 0
   },
   {
     id: 3,
     title: 'Flashcards - Português Básico',
-    type: 'flashcards',
+    type: 'flashcards' as const,
     author: 'Prof. Ana Maria',
-    status: 'published',
+    status: 'published' as const,
     updatedAt: '2024-01-13',
     views: 189
   }
@@ -135,19 +135,19 @@ const recentContent = [
 const systemAlerts = [
   {
     id: 1,
-    type: 'warning',
+    type: 'warning' as const,
     message: 'Servidor de backup offline há 2 horas',
     timestamp: '2024-01-15 14:30'
   },
   {
     id: 2,
-    type: 'info',
+    type: 'info' as const,
     message: 'Nova versão do sistema disponível',
     timestamp: '2024-01-15 12:00'
   },
   {
     id: 3,
-    type: 'success',
+    type: 'success' as const,
     message: 'Backup automático concluído com sucesso',
     timestamp: '2024-01-15 10:00'
   }
@@ -156,7 +156,9 @@ const systemAlerts = [
 export default function AdminDashboard() {
   const [dateRange, setDateRange] = useState('7d');
 
-  const getStatusBadge = (status: string) => {
+  type StatusType = 'active' | 'inactive' | 'published' | 'draft';
+  
+  const getStatusBadge = (status: StatusType) => {
     const statusConfig = {
       active: { label: 'Ativo', variant: 'default' as const },
       inactive: { label: 'Inativo', variant: 'secondary' as const },
@@ -164,41 +166,45 @@ export default function AdminDashboard() {
       draft: { label: 'Rascunho', variant: 'secondary' as const }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig];
+    const config = statusConfig[status];
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const getTypeIcon = (type: string) => {
+  type ContentType = 'course' | 'questions' | 'flashcards';
+  
+  const getTypeIcon = (type: ContentType) => {
     const icons = {
       course: BookOpen,
       questions: Brain,
       flashcards: Star
     };
-    const Icon = icons[type as keyof typeof icons] || FileText;
+    const Icon = icons[type] || FileText;
     return <Icon className="w-4 h-4" />;
   };
 
-  const getAlertIcon = (type: string) => {
+  type AlertType = 'warning' | 'info' | 'success';
+  
+  const getAlertIcon = (type: AlertType) => {
     const icons = {
       warning: AlertCircle,
       info: Activity,
       success: CheckCircle
     };
-    const Icon = icons[type as keyof typeof icons] || Activity;
+    const Icon = icons[type] || Activity;
     return Icon;
   };
 
-  const getAlertColor = (type: string) => {
+  const getAlertColor = (type: AlertType) => {
     const colors = {
       warning: 'text-yellow-600 dark:text-yellow-400',
       info: 'text-blue-600 dark:text-blue-400',
       success: 'text-green-600 dark:text-green-400'
     };
-    return colors[type as keyof typeof colors] || 'text-gray-600';
+    return colors[type] || 'text-gray-600';
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-full">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -206,10 +212,10 @@ export default function AdminDashboard() {
         className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
             Painel Administrativo
           </h1>
-          <p className="text-primary-600 dark:text-gray-300">
+          <p className="text-gray-600 dark:text-gray-300 font-police-body">
             Visão geral da plataforma StudyPro
           </p>
         </div>
@@ -218,7 +224,7 @@ export default function AdminDashboard() {
           <select 
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
+            className="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
           >
             <option value="7d">Últimos 7 dias</option>
             <option value="30d">Últimos 30 dias</option>
@@ -249,10 +255,10 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wide">
                       {stat.title}
                     </p>
-                    <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                       {stat.value}
                     </p>
                     <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
@@ -290,17 +296,17 @@ export default function AdminDashboard() {
                 {recentUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-4 border border-primary-100 dark:border-gray-700 rounded-lg hover:bg-primary-50 dark:hover:bg-gray-800 transition-colors"
+                    className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      <div className="w-10 h-10 bg-military-base rounded-full flex items-center justify-center text-white font-semibold font-police-title">
                         {user.name.charAt(0)}
                       </div>
                       <div>
-                        <p className="font-medium text-primary-900 dark:text-white">
+                        <p className="font-medium text-gray-900 dark:text-white font-police-body">
                           {user.name}
                         </p>
-                        <p className="text-sm text-primary-600 dark:text-gray-400">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
                           {user.email}
                         </p>
                       </div>
@@ -308,10 +314,10 @@ export default function AdminDashboard() {
                     
                     <div className="flex items-center gap-3">
                       <div className="text-right">
-                        <p className="text-sm font-medium text-primary-900 dark:text-white">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wide">
                           {user.plan}
                         </p>
-                        <p className="text-xs text-primary-600 dark:text-gray-400">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">
                           {user.lastActivity}
                         </p>
                       </div>
@@ -344,14 +350,14 @@ export default function AdminDashboard() {
                   return (
                     <div
                       key={alert.id}
-                      className="flex items-start gap-3 p-3 border border-primary-100 dark:border-gray-700 rounded-lg"
+                      className="flex items-start gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
                     >
                       <Icon className={`w-5 h-5 mt-0.5 ${getAlertColor(alert.type)}`} />
                       <div className="flex-1">
-                        <p className="text-sm text-primary-900 dark:text-white">
+                        <p className="text-sm text-gray-900 dark:text-white font-police-body">
                           {alert.message}
                         </p>
-                        <p className="text-xs text-primary-600 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-police-body">
                           {alert.timestamp}
                         </p>
                       </div>
@@ -388,23 +394,23 @@ export default function AdminDashboard() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-primary-200 dark:border-gray-700">
-                    <th className="text-left py-3 px-4 font-semibold text-primary-900 dark:text-white">
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wide">
                       Título
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-primary-900 dark:text-white">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wide">
                       Tipo
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-primary-900 dark:text-white">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wide">
                       Autor
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-primary-900 dark:text-white">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wide">
                       Status
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-primary-900 dark:text-white">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wide">
                       Visualizações
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-primary-900 dark:text-white">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wide">
                       Ações
                     </th>
                   </tr>
@@ -413,23 +419,23 @@ export default function AdminDashboard() {
                   {recentContent.map((content) => (
                     <tr
                       key={content.id}
-                      className="border-b border-primary-100 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-gray-800"
+                      className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
                     >
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           {getTypeIcon(content.type)}
-                          <span className="text-primary-900 dark:text-white font-medium">
+                          <span className="text-gray-900 dark:text-white font-medium font-police-body">
                             {content.title}
                           </span>
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-primary-600 dark:text-gray-400 capitalize">
+                        <span className="text-gray-600 dark:text-gray-400 capitalize font-police-body">
                           {content.type}
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-primary-600 dark:text-gray-400">
+                        <span className="text-gray-600 dark:text-gray-400 font-police-body">
                           {content.author}
                         </span>
                       </td>
@@ -437,7 +443,7 @@ export default function AdminDashboard() {
                         {getStatusBadge(content.status)}
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-primary-600 dark:text-gray-400">
+                        <span className="text-gray-600 dark:text-gray-400 font-police-numbers">
                           {content.views}
                         </span>
                       </td>
