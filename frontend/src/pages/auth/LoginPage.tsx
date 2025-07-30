@@ -141,7 +141,7 @@ export default function LoginPage() {
         >
           <button
             onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-yellow-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+            className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-accent-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
             aria-label="Toggle theme"
           >
             {resolvedTheme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -291,7 +291,7 @@ export default function LoginPage() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-14 text-lg font-police-title bg-yellow-500 hover:bg-yellow-600 text-black tracking-widest shadow-lg hover:shadow-xl transition-all"
+              className="w-full h-14 text-lg font-police-title bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black tracking-widest shadow-lg hover:shadow-xl transition-all"
               isLoading={isLoading}
             >
               {isLoading ? 'VALIDANDO...' : 'ACESSAR SISTEMA'}

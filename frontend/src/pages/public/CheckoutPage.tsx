@@ -258,7 +258,7 @@ export default function CheckoutPage() {
                 { icon: Award, value: '#1', label: 'MELHOR CURSO' }
               ].map((stat, index) => (
                 <div key={index} className="bg-gray-900/50 backdrop-blur-sm rounded p-4 border border-gray-800">
-                  <stat.icon className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
+                  <stat.icon className="w-6 h-6 text-accent-500 mx-auto mb-2" />
                   <div className="text-2xl font-police-numbers text-white">{stat.value}</div>
                   <div className="text-xs font-police-subtitle text-gray-500 tracking-widest">{stat.label}</div>
                 </div>
@@ -281,7 +281,7 @@ export default function CheckoutPage() {
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-400 text-black px-6 py-2 rounded-full flex items-center gap-2 font-police-subtitle tracking-wider">
+                  <div className="bg-accent-500 text-black px-6 py-2 rounded-full flex items-center gap-2 font-police-subtitle tracking-wider">
                     <Star className="w-4 h-4" />
                     <span className="text-sm font-bold">MAIS ESCOLHIDO</span>
                   </div>
@@ -314,7 +314,7 @@ export default function CheckoutPage() {
                   <div className="text-center mb-8">
                     <div className={`
                       w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center
-                      ${plan.color === 'yellow' ? 'bg-yellow-400' : plan.color === 'white' ? 'bg-white' : 'bg-gray-700'}
+                      ${plan.color === 'yellow' ? 'bg-accent-500' : plan.color === 'white' ? 'bg-white' : 'bg-gray-700'}
                     `}>
                       {plan.name === 'RECRUTA' && <Briefcase className={`w-8 h-8 ${plan.color === 'gray' ? 'text-gray-400' : 'text-black'}`} />}
                       {plan.name === 'ELITE' && <Shield className="w-8 h-8 text-black" />}
@@ -377,11 +377,11 @@ export default function CheckoutPage() {
                   <Button
                     onClick={() => handlePlanSelect(plan)}
                     className={`
-                      w-full py-4 text-lg font-police-title tracking-widest transition-all duration-300 btn-gradient-overlay
+                      w-full py-4 text-lg font-police-title tracking-widest transition-all duration-300
                       ${plan.popular
-                        ? 'bg-yellow-400 hover:bg-yellow-300 text-black shadow-lg shadow-yellow-400/30'
+                        ? 'bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black shadow-lg shadow-accent-500/30'
                         : plan.color === 'white'
-                        ? 'bg-white hover:bg-gray-200 text-black'
+                        ? 'bg-white hover:bg-gray-200 dark:hover:bg-gray-700 text-black dark:text-white'
                         : 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-700'
                       }
                     `}
@@ -416,7 +416,7 @@ export default function CheckoutPage() {
               >
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                    <Star key={i} className="w-4 h-4 text-accent-500 fill-current" />
                   ))}
                 </div>
                 <p className="text-gray-300 font-police-body mb-4 italic">
@@ -455,7 +455,7 @@ export default function CheckoutPage() {
             ].map((item, index) => (
               <div key={index} className="text-center">
                 <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <item.icon className="w-6 h-6 text-yellow-400" />
+                  <item.icon className="w-6 h-6 text-accent-500" />
                 </div>
                 <h4 className="font-police-subtitle text-white mb-2 tracking-wider">
                   {item.title}

@@ -515,7 +515,7 @@ export default function RegisterPage() {
                     transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
                     className="flex items-center gap-3"
                   >
-                    <CheckCircle className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-accent-500 flex-shrink-0" />
                     <span className="text-gray-300 font-police-body tracking-wider">{benefit}</span>
                   </motion.div>
                 ))}

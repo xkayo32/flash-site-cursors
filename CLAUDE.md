@@ -192,6 +192,10 @@ When working with Claude Code agents for better code quality:
 - File uploads for course images use multipart/form-data to `/api/v1/courses/{id}/image`
 - The project uses integer IDs (migration from UUIDs completed)
 - Backend routes must be manually registered in `routes/api/v1/`
+- Frontend uses Zustand with persist middleware - auth state key: `auth-storage`
+- Backend uses Firebase JWT library (not Laravel Sanctum as mentioned in README)
+- Custom PHP framework with PDO - not Laravel/Symfony
+- PostgreSQL port 5532 is custom to avoid conflicts with default 5432
 
 ### UI/UX Design System
 The project uses a military/police themed design system:
@@ -294,3 +298,12 @@ docker compose logs -f postgres
   - COMANDO (Annual): R$ 1,497/year with 37% discount
 - Payment form styled with military theme
 - Ready for Stripe activation with environment variables
+
+### Project Structure Notes
+- Frontend dependencies: React 19, Vite 4, TypeScript 5.8, Tailwind CSS 3.4
+- Backend: PHP 8.2+ with custom framework, Firebase JWT 6.11
+- State management: Zustand 5 with persist, React Query 5 (TanStack Query)
+- UI Components: Custom components with CVA (class-variance-authority)
+- Icons: Lucide React with custom tactical SVG icons
+- Form validation: Built-in HTML5 validation (no external library)
+- HTTP client: Axios 1.10 with centralized configuration

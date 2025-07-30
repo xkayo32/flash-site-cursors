@@ -214,7 +214,7 @@ export default function AdminLayout() {
                     className={cn(
                       "mt-3 flex items-center gap-2 p-2 rounded-md border border-dashed",
                       resolvedTheme === 'dark' 
-                        ? 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5' 
+                        ? 'text-gray-400 border-gray-600 bg-gray-800/50' 
                         : 'text-military-base border-military-base/30 bg-military-base/5'
                     )}
                   >
@@ -289,10 +289,10 @@ export default function AdminLayout() {
                             'flex items-center rounded-lg transition-all duration-300 border border-transparent font-police-body font-medium',
                             isCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-4 py-3',
                             // Active state with tactical styling
-                            isActive && resolvedTheme === 'dark' && 'bg-gradient-to-r from-gray-800 to-gray-700 text-yellow-400 shadow-lg border-yellow-400/30 shadow-yellow-400/20',
+                            isActive && resolvedTheme === 'dark' && 'bg-gradient-to-r from-gray-800 to-gray-700 text-white shadow-lg border-gray-600 shadow-gray-700/20',
                             isActive && resolvedTheme === 'light' && 'bg-gradient-to-r from-military-base to-military-base/90 text-white shadow-lg border-military-base/50 shadow-military-base/30',
                             // Inactive state - dark theme with tactical hover
-                            !isActive && resolvedTheme === 'dark' && 'text-gray-300 hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:text-yellow-300 hover:border-gray-600',
+                            !isActive && resolvedTheme === 'dark' && 'text-gray-300 hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:text-white hover:border-gray-600',
                             // Inactive state - light theme with tactical hover
                             !isActive && resolvedTheme === 'light' && 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 hover:text-military-base hover:border-military-base/20'
                           )}
@@ -350,7 +350,7 @@ export default function AdminLayout() {
                     'w-full flex items-center rounded-lg transition-all duration-300 font-police-body font-medium border border-transparent',
                     isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-start gap-3 px-3 py-2.5',
                     resolvedTheme === 'dark' 
-                      ? 'text-gray-300 hover:text-yellow-300 hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:border-gray-600' 
+                      ? 'text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:border-gray-600' 
                       : 'text-gray-600 hover:text-military-base hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 hover:border-military-base/20'
                   )}
                   onClick={handleBackToStudent}
@@ -393,7 +393,7 @@ export default function AdminLayout() {
                     'w-full flex items-center rounded-lg transition-all duration-300 font-police-body font-medium border border-transparent',
                     isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-start gap-3 px-3 py-2.5',
                     resolvedTheme === 'dark' 
-                      ? 'text-gray-300 hover:text-yellow-300 hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:border-gray-600' 
+                      ? 'text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:border-gray-600' 
                       : 'text-gray-600 hover:text-military-base hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 hover:border-military-base/20'
                   )}
                   onClick={() => navigate('/admin/settings')}

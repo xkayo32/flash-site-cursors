@@ -28,6 +28,7 @@ export default {
           400: '#fbbf24',
           500: '#facc15', // Yellow accent
           600: '#d97706',
+          650: '#d06e0f', // Dark theme hover color
           700: '#b45309',
           800: '#92400e',
           900: '#78350f',

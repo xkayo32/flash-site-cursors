@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Users,
-  BookOpen,
-  Brain,
-  Trophy,
-  DollarSign,
-  TrendingUp,
-  Activity,
   Calendar,
   FileText,
   User,
@@ -25,6 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { TacticalIcon, TacticalIconName } from '@/components/icons/TacticalIcon';
 
 // TypeScript interfaces
 interface DashboardStat {
@@ -32,8 +26,7 @@ interface DashboardStat {
   value: string;
   change: string;
   trend: 'up' | 'down';
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
+  icon: TacticalIconName;
 }
 
 interface RecentUser {
@@ -70,32 +63,28 @@ const dashboardStats: DashboardStat[] = [
     value: '2,543',
     change: '+12%',
     trend: 'up',
-    icon: Users,
-    color: 'bg-blue-500'
+    icon: 'users'
   },
   {
     title: 'Cursos Ativos',
     value: '42',
     change: '+3',
     trend: 'up',
-    icon: BookOpen,
-    color: 'bg-green-500'
+    icon: 'book'
   },
   {
     title: 'Questões no Banco',
     value: '15,890',
     change: '+245',
     trend: 'up',
-    icon: Brain,
-    color: 'bg-purple-500'
+    icon: 'brain'
   },
   {
     title: 'Receita Mensal',
     value: 'R$ 89,432',
     change: '+8.2%',
     trend: 'up',
-    icon: DollarSign,
-    color: 'bg-emerald-500'
+    icon: 'dollar'
   }
 ];
 
