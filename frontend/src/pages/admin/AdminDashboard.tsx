@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Users,
@@ -15,7 +15,6 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  Download,
   Filter,
   Search,
   MoreVertical,
@@ -27,8 +26,45 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 
+// TypeScript interfaces
+interface DashboardStat {
+  title: string;
+  value: string;
+  change: string;
+  trend: 'up' | 'down';
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+}
+
+interface RecentUser {
+  id: number;
+  name: string;
+  email: string;
+  plan: string;
+  status: 'active' | 'inactive';
+  joinDate: string;
+  lastActivity: string;
+}
+
+interface RecentContentItem {
+  id: number;
+  title: string;
+  type: 'course' | 'questions' | 'flashcards';
+  author: string;
+  status: 'published' | 'draft';
+  updatedAt: string;
+  views: number;
+}
+
+interface SystemAlert {
+  id: number;
+  type: 'warning' | 'info' | 'success';
+  message: string;
+  timestamp: string;
+}
+
 // Mock data
-const dashboardStats = [
+const dashboardStats: DashboardStat[] = [
   {
     title: 'Total de Usuários',
     value: '2,543',
@@ -63,7 +99,7 @@ const dashboardStats = [
   }
 ];
 
-const recentUsers = [
+const recentUsers: RecentUser[] = [
   {
     id: 1,
     name: 'João Silva',
@@ -102,7 +138,7 @@ const recentUsers = [
   }
 ];
 
-const recentContent = [
+const recentContent: RecentContentItem[] = [
   {
     id: 1,
     title: 'Direito Constitucional - Teoria Geral',
@@ -132,7 +168,7 @@ const recentContent = [
   }
 ];
 
-const systemAlerts = [
+const systemAlerts: SystemAlert[] = [
   {
     id: 1,
     type: 'warning' as const,
@@ -230,10 +266,6 @@ export default function AdminDashboard() {
             <option value="30d">Últimos 30 dias</option>
             <option value="90d">Últimos 90 dias</option>
           </select>
-          <Button variant="outline" className="gap-2">
-            <Download className="w-4 h-4" />
-            Exportar
-          </Button>
         </div>
       </motion.div>
 

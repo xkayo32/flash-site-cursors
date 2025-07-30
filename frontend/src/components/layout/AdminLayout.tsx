@@ -91,9 +91,15 @@ export default function AdminLayout() {
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
-  const MIN_WIDTH = 200;
-  const MAX_WIDTH = 430; // 280px + 150px
-  const COLLAPSED_WIDTH = 80;
+  // Sidebar configuration constants
+  const SIDEBAR_CONFIG = {
+    MIN_WIDTH: 200,
+    MAX_WIDTH: 430, // 280px + 150px
+    COLLAPSED_WIDTH: 80,
+    DEFAULT_WIDTH: 280,
+    RESIZE_DELAY: 200,
+    ANIMATION_DURATION: 300
+  };
 
   useEffect(() => {
     // Load saved width from localStorage
@@ -108,7 +114,7 @@ export default function AdminLayout() {
       if (!isResizing) return;
       
       const newWidth = e.clientX;
-      if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
+      if (newWidth >= SIDEBAR_CONFIG.MIN_WIDTH && newWidth <= SIDEBAR_CONFIG.MAX_WIDTH) {
         setSidebarWidth(newWidth);
       }
     };
@@ -172,26 +178,26 @@ export default function AdminLayout() {
           initial={{ x: -250 }}
           animate={{ 
             x: 0,
-            width: isCollapsed ? COLLAPSED_WIDTH : sidebarWidth 
+            width: isCollapsed ? SIDEBAR_CONFIG.COLLAPSED_WIDTH : sidebarWidth 
           }}
           className={cn(
-            'fixed lg:relative z-20 h-full transition-transform duration-300 shadow-xl',
+            'fixed lg:relative z-20 h-full transition-transform duration-300 shadow-2xl',
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
             'lg:translate-x-0',
-            // Theme-aware background
+            // Military/police theme background with tactical elements
             resolvedTheme === 'dark' 
-              ? 'bg-gray-900 border-r border-gray-800' 
-              : 'bg-white border-r border-gray-200'
+              ? 'bg-gradient-to-b from-gray-900 via-gray-900 to-gray-800 border-r-2 border-gray-700 shadow-gray-900/50' 
+              : 'bg-gradient-to-b from-white via-gray-50 to-gray-100 border-r-2 border-military-base/20 shadow-military-base/10'
           )}
           style={{ overflow: 'hidden', position: 'relative' }}
         >
           <div className="flex flex-col h-full">
             {/* Logo */}
             <div className={cn(
-              "p-6 border-b hidden lg:block",
+              "p-6 border-b-2 hidden lg:block relative",
               resolvedTheme === 'dark' 
-                ? 'border-gray-700' 
-                : 'border-gray-200'
+                ? 'border-gray-700 bg-gray-800/50' 
+                : 'border-military-base/30 bg-military-base/5'
             )}>
               <div className={isCollapsed ? "flex justify-center" : "flex flex-col"}>
                 <Logo 
@@ -206,14 +212,14 @@ export default function AdminLayout() {
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2, delay: 0.1 }}
                     className={cn(
-                      "mt-3 flex items-center gap-2",
+                      "mt-3 flex items-center gap-2 p-2 rounded-md border border-dashed",
                       resolvedTheme === 'dark' 
-                        ? 'text-gray-400' 
-                        : 'text-gray-600'
+                        ? 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5' 
+                        : 'text-military-base border-military-base/30 bg-military-base/5'
                     )}
                   >
                     <Shield className="w-4 h-4" />
-                    <span className="text-sm font-medium">Painel Administrativo</span>
+                    <span className="text-sm font-semibold font-police-subtitle uppercase tracking-wider">COMANDO CENTRAL</span>
                   </motion.div>
                 )}
               </div>
@@ -221,10 +227,10 @@ export default function AdminLayout() {
 
             {/* User Info */}
             <div className={cn(
-              "p-4 border-b",
+              "p-4 border-b-2 relative",
               resolvedTheme === 'dark' 
-                ? 'border-gray-700' 
-                : 'border-gray-200'
+                ? 'border-gray-700 bg-gray-800/30' 
+                : 'border-military-base/20 bg-military-base/5'
             )}>
               <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
                 <img
@@ -241,7 +247,7 @@ export default function AdminLayout() {
                     className="flex-1 min-w-0"
                   >
                     <p className={cn(
-                      "text-sm font-medium truncate",
+                      "text-sm font-semibold truncate font-police-body",
                       resolvedTheme === 'dark' 
                         ? 'text-white' 
                         : 'text-gray-900'
@@ -249,12 +255,12 @@ export default function AdminLayout() {
                       {user?.name}
                     </p>
                     <p className={cn(
-                      "text-xs truncate",
+                      "text-xs truncate font-police-subtitle uppercase tracking-wider",
                       resolvedTheme === 'dark' 
-                        ? 'text-gray-400' 
-                        : 'text-gray-600'
+                        ? 'text-yellow-400' 
+                        : 'text-military-base'
                     )}>
-                      Administrador
+                      ADMINISTRADOR
                     </p>
                   </motion.div>
                 )}
@@ -262,7 +268,14 @@ export default function AdminLayout() {
             </div>
 
             {/* Navigation */}
-            <nav className={`flex-1 ${isCollapsed ? 'px-2 py-4 overflow-hidden' : 'p-4 overflow-y-auto'}`}>
+            <nav className={cn(
+              "flex-1 relative",
+              isCollapsed ? 'px-2 py-4 overflow-hidden' : 'p-4 overflow-y-auto',
+              // Add tactical pattern overlay
+              resolvedTheme === 'dark' 
+                ? 'bg-gradient-to-b from-transparent to-gray-900/20' 
+                : 'bg-gradient-to-b from-transparent to-military-base/5'
+            )}>
               <ul className="space-y-2">
                 {adminNavItems.map((item) => {
                   const isActive = location.pathname === item.path;
@@ -273,15 +286,15 @@ export default function AdminLayout() {
                           to={item.path}
                           onClick={() => setIsSidebarOpen(false)}
                           className={cn(
-                            'flex items-center rounded-lg transition-all',
+                            'flex items-center rounded-lg transition-all duration-300 border border-transparent font-police-body font-medium',
                             isCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-4 py-3',
-                            // Active state
-                            isActive && resolvedTheme === 'dark' && 'bg-gray-800 text-white shadow-lg',
-                            isActive && resolvedTheme === 'light' && 'bg-military-base text-white shadow-lg',
-                            // Inactive state - dark theme
-                            !isActive && resolvedTheme === 'dark' && 'text-gray-300 hover:bg-gray-800 hover:text-white',
-                            // Inactive state - light theme  
-                            !isActive && resolvedTheme === 'light' && 'text-gray-600 hover:bg-gray-100 hover:text-military-base'
+                            // Active state with tactical styling
+                            isActive && resolvedTheme === 'dark' && 'bg-gradient-to-r from-gray-800 to-gray-700 text-yellow-400 shadow-lg border-yellow-400/30 shadow-yellow-400/20',
+                            isActive && resolvedTheme === 'light' && 'bg-gradient-to-r from-military-base to-military-base/90 text-white shadow-lg border-military-base/50 shadow-military-base/30',
+                            // Inactive state - dark theme with tactical hover
+                            !isActive && resolvedTheme === 'dark' && 'text-gray-300 hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:text-yellow-300 hover:border-gray-600',
+                            // Inactive state - light theme with tactical hover
+                            !isActive && resolvedTheme === 'light' && 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 hover:text-military-base hover:border-military-base/20'
                           )}
                         >
                           <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -291,7 +304,7 @@ export default function AdminLayout() {
                               animate={{ opacity: 1, width: "auto" }}
                               exit={{ opacity: 0, width: 0 }}
                               transition={{ duration: 0.2 }}
-                              className="font-medium whitespace-nowrap overflow-hidden"
+                              className="font-semibold whitespace-nowrap overflow-hidden tracking-wide"
                             >
                               {item.title}
                             </motion.span>
@@ -324,21 +337,21 @@ export default function AdminLayout() {
 
             {/* Footer Actions */}
             <div className={cn(
-              "border-t space-y-1",
+              "border-t-2 space-y-1 relative",
               isCollapsed ? 'px-2 py-4' : 'p-4',
               resolvedTheme === 'dark' 
-                ? 'border-gray-700' 
-                : 'border-gray-200'
+                ? 'border-gray-700 bg-gradient-to-t from-gray-900 to-transparent' 
+                : 'border-military-base/30 bg-gradient-to-t from-military-base/5 to-transparent'
             )}>
               <div className="relative group">
                 <Button
                   variant="ghost"
                   className={cn(
-                    'w-full flex items-center rounded-lg transition-all',
+                    'w-full flex items-center rounded-lg transition-all duration-300 font-police-body font-medium border border-transparent',
                     isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-start gap-3 px-3 py-2.5',
                     resolvedTheme === 'dark' 
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-800' 
-                      : 'text-gray-600 hover:text-military-base hover:bg-gray-100'
+                      ? 'text-gray-300 hover:text-yellow-300 hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:border-gray-600' 
+                      : 'text-gray-600 hover:text-military-base hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 hover:border-military-base/20'
                   )}
                   onClick={handleBackToStudent}
                 >
@@ -349,7 +362,7 @@ export default function AdminLayout() {
                       animate={{ opacity: 1, width: "auto" }}
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="font-medium whitespace-nowrap overflow-hidden"
+                      className="font-semibold whitespace-nowrap overflow-hidden tracking-wide"
                     >
                       Voltar ao Portal
                     </motion.span>
@@ -377,11 +390,11 @@ export default function AdminLayout() {
                 <Button
                   variant="ghost"
                   className={cn(
-                    'w-full flex items-center rounded-lg transition-all',
+                    'w-full flex items-center rounded-lg transition-all duration-300 font-police-body font-medium border border-transparent',
                     isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-start gap-3 px-3 py-2.5',
                     resolvedTheme === 'dark' 
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-800' 
-                      : 'text-gray-600 hover:text-military-base hover:bg-gray-100'
+                      ? 'text-gray-300 hover:text-yellow-300 hover:bg-gradient-to-r hover:from-gray-800 hover:to-gray-700 hover:border-gray-600' 
+                      : 'text-gray-600 hover:text-military-base hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 hover:border-military-base/20'
                   )}
                   onClick={() => navigate('/admin/settings')}
                 >
@@ -392,7 +405,7 @@ export default function AdminLayout() {
                       animate={{ opacity: 1, width: "auto" }}
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="font-medium whitespace-nowrap overflow-hidden"
+                      className="font-semibold whitespace-nowrap overflow-hidden tracking-wide"
                     >
                       Configurações
                     </motion.span>
@@ -420,7 +433,8 @@ export default function AdminLayout() {
                 <Button
                   variant="ghost"
                   className={cn(
-                    'w-full flex items-center rounded-lg transition-all text-red-400 hover:text-red-300 hover:bg-red-600',
+                    'w-full flex items-center rounded-lg transition-all duration-300 font-police-body font-medium border border-transparent',
+                    'text-red-400 hover:text-red-300 hover:bg-gradient-to-r hover:from-red-600 hover:to-red-700 hover:border-red-500/50 hover:shadow-lg hover:shadow-red-600/20',
                     isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-start gap-3 px-3 py-2.5'
                   )}
                   onClick={handleLogout}
@@ -432,7 +446,7 @@ export default function AdminLayout() {
                       animate={{ opacity: 1, width: "auto" }}
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="font-medium whitespace-nowrap overflow-hidden"
+                      className="font-semibold whitespace-nowrap overflow-hidden tracking-wide"
                     >
                       Sair
                     </motion.span>
@@ -462,6 +476,10 @@ export default function AdminLayout() {
                 e.preventDefault();
                 setIsResizing(true);
               }}
+              role="separator"
+              aria-orientation="vertical"
+              aria-label="Redimensionar barra lateral"
+              tabIndex={0}
             >
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <GripVertical className="w-4 h-4 text-white/80" />
