@@ -197,14 +197,21 @@ export default function AdminDashboard() {
   
   const getStatusBadge = (status: StatusType) => {
     const statusConfig = {
-      active: { label: 'Ativo', variant: 'default' as const },
-      inactive: { label: 'Inativo', variant: 'secondary' as const },
-      published: { label: 'Publicado', variant: 'default' as const },
-      draft: { label: 'Rascunho', variant: 'secondary' as const }
+      active: { label: 'ATIVO', variant: 'default' as const },
+      inactive: { label: 'INATIVO', variant: 'secondary' as const },
+      published: { label: 'PUBLICADO', variant: 'default' as const },
+      draft: { label: 'RASCUNHO', variant: 'secondary' as const }
     };
     
     const config = statusConfig[status];
-    return <Badge variant={config.variant}>{config.label}</Badge>;
+    return (
+      <Badge 
+        variant={config.variant} 
+        className="font-police-subtitle tracking-wider border-2 border-current"
+      >
+        {config.label}
+      </Badge>
+    );
   };
 
   type ContentType = 'course' | 'questions' | 'flashcards';
@@ -233,9 +240,9 @@ export default function AdminDashboard() {
 
   const getAlertColor = (type: AlertType) => {
     const colors = {
-      warning: 'text-amber-600 dark:text-amber-400',
-      info: 'text-blue-600 dark:text-blue-400',
-      success: 'text-green-600 dark:text-green-400'
+      warning: 'text-gray-700 dark:text-gray-300',
+      info: 'text-gray-600 dark:text-gray-400',
+      success: 'text-gray-700 dark:text-gray-300'
     };
     return colors[type] || 'text-gray-600';
   };
@@ -312,12 +319,12 @@ export default function AdminDashboard() {
                     </p>
                     <div className="flex items-center gap-2">
                       {stat.trend === 'up' ? (
-                        <div className="flex items-center gap-1 text-green-500">
+                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                           <ChevronUp className="w-4 h-4" />
                           <span className="text-sm font-police-numbers font-bold">{stat.change}</span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1 text-red-500">
+                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                           <ChevronDown className="w-4 h-4" />
                           <span className="text-sm font-police-numbers font-bold">{stat.change}</span>
                         </div>
@@ -325,10 +332,10 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="relative">
-                    <div className="w-16 h-16 bg-gradient-to-br from-accent-500/20 to-accent-600/20 dark:from-accent-500/30 dark:to-accent-600/30 rounded-full flex items-center justify-center backdrop-blur-sm">
-                      <TacticalIcon name={stat.icon} className="w-8 h-8 text-accent-500" />
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
+                      <TacticalIcon name={stat.icon} className="w-8 h-8 text-gray-700 dark:text-accent-500" />
                     </div>
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-500 rounded-full animate-pulse" />
                   </div>
                 </div>
               </CardContent>
@@ -345,10 +352,10 @@ export default function AdminDashboard() {
         className="grid grid-cols-2 md:grid-cols-4 gap-4"
       >
         {[
-          { icon: UsersIcon, label: 'NOVO RECRUTA', color: 'bg-green-500' },
-          { icon: BookOpen, label: 'NOVA MISSÃO', color: 'bg-blue-500' },
-          { icon: Brain, label: 'NOVO ARSENAL', color: 'bg-purple-500' },
-          { icon: Shield, label: 'RELATÓRIO TÁTICO', color: 'bg-red-500' }
+          { icon: UsersIcon, label: 'NOVO RECRUTA' },
+          { icon: BookOpen, label: 'NOVA MISSÃO' },
+          { icon: Brain, label: 'NOVO ARSENAL' },
+          { icon: Shield, label: 'RELATÓRIO TÁTICO' }
         ].map((action, index) => {
           const Icon = action.icon;
           return (
@@ -359,8 +366,8 @@ export default function AdminDashboard() {
               className="p-4 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-lg hover:border-accent-500/50 transition-all duration-300 group"
             >
               <div className="flex flex-col items-center gap-3">
-                <div className={`w-12 h-12 ${action.color} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                  <Icon className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center group-hover:bg-accent-500 group-hover:scale-110 transition-all duration-300">
+                  <Icon className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-black" />
                 </div>
                 <span className="text-xs font-police-subtitle uppercase tracking-wider text-gray-600 dark:text-gray-400 group-hover:text-accent-500">
                   {action.label}
