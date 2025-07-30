@@ -306,7 +306,7 @@ export default function HomePage() {
               whileHover={{ scale: 1.05 }}
               className="cursor-pointer"
             >
-              <StudyProLogo variant="full" size="sm" className="text-military-base dark:text-accent-500" />
+              <StudyProLogo variant="full" size="sm" className="text-military-base dark:text-gray-300" />
             </motion.div>
             
             <nav className="hidden lg:flex items-center gap-8">
@@ -321,7 +321,7 @@ export default function HomePage() {
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-accent-500 transition-all duration-300 font-police-subtitle text-xs md:text-sm tracking-widest-plus"
+                  className="text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-white transition-all duration-300 font-police-subtitle text-xs md:text-sm tracking-widest-plus"
                 >
                   {item.label}
                 </motion.a>
@@ -333,7 +333,7 @@ export default function HomePage() {
                 onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-accent-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+                className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
                 aria-label="Toggle theme"
               >
                 {resolvedTheme === 'dark' ? (
@@ -346,7 +346,7 @@ export default function HomePage() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="hidden sm:flex items-center gap-2 px-3 md:px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-accent-500 font-police-body transition-all duration-300 text-xs md:text-sm tracking-wider"
+                  className="hidden sm:flex items-center gap-2 px-3 md:px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-white font-police-body transition-all duration-300 text-xs md:text-sm tracking-wider"
                 >
                   <LogIn className="w-4 h-4" />
                   ENTRAR
@@ -356,7 +356,7 @@ export default function HomePage() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="hidden md:flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-white hover:text-black dark:hover:text-black font-police-subtitle rounded transition-all duration-300 text-xs md:text-sm tracking-widest-plus shadow-lg hover:shadow-xl"
+                  className="hidden md:flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-black font-police-subtitle rounded transition-all duration-300 text-xs md:text-sm tracking-widest-plus shadow-lg hover:shadow-xl"
                 >
                   <Trophy className="w-4 h-4" />
                   GARANTIR APROVAÇÃO
@@ -364,7 +364,7 @@ export default function HomePage() {
               </Link>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-accent-500"
+                className="lg:hidden text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-white"
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -389,7 +389,7 @@ export default function HomePage() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-accent-500 transition-all duration-300 font-police-subtitle text-sm tracking-widest py-2"
+                  className="text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-white transition-all duration-300 font-police-subtitle text-sm tracking-widest py-2"
                 >
                   {item.label}
                 </a>
@@ -398,7 +398,7 @@ export default function HomePage() {
                 <div className="flex justify-center mb-2">
                   <button
                     onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-                    className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-accent-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+                    className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
                     aria-label="Toggle theme"
                   >
                     {resolvedTheme === 'dark' ? (
@@ -409,13 +409,13 @@ export default function HomePage() {
                   </button>
                 </div>
                 <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                  <button className="w-full flex items-center justify-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-accent-500 font-police-body transition-all duration-300 text-sm tracking-wider border border-gray-300 dark:border-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+                  <button className="w-full flex items-center justify-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-white font-police-body transition-all duration-300 text-sm tracking-wider border border-gray-300 dark:border-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
                     <LogIn className="w-4 h-4" />
                     ENTRAR
                   </button>
                 </Link>
                 <Link to="/checkout?plan=price_monthly_premium" onClick={() => setMobileMenuOpen(false)}>
-                  <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-white hover:text-black dark:hover:text-black font-police-subtitle rounded transition-all duration-300 text-sm tracking-widest-plus shadow-lg hover:shadow-xl">
+                  <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-black font-police-subtitle rounded transition-all duration-300 text-sm tracking-widest-plus shadow-lg hover:shadow-xl">
                     <Trophy className="w-4 h-4" />
                     GARANTIR APROVAÇÃO
                   </button>
@@ -470,7 +470,7 @@ export default function HomePage() {
               variants={fadeInUp}
               className="inline-flex items-center gap-2 bg-white/10 dark:bg-white/5 border border-gray-300/30 dark:border-gray-700/50 rounded-md px-4 py-2 mb-8"
             >
-              <Trophy className="w-4 h-4 text-military-base dark:text-accent-500" />
+              <Trophy className="w-4 h-4 text-military-base dark:text-gray-300" />
               <span className="text-military-base dark:text-gray-300 font-police-body text-sm tracking-widest">
                 PLATAFORMA OFICIAL DOS APROVADOS
               </span>
@@ -505,7 +505,7 @@ export default function HomePage() {
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: "0 20px 50px rgba(255, 255, 255, 0.3)" }}
                   whileTap={{ scale: 0.95 }}
-                  className="group flex items-center gap-2 md:gap-3 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-white hover:text-black dark:hover:text-black text-lg md:text-xl font-police-title px-8 md:px-10 py-4 md:py-5 rounded-md shadow-2xl transition-all duration-300 tracking-widest md:tracking-widest-plus justify-center min-h-[56px] touch-manipulation"
+                  className="group flex items-center gap-2 md:gap-3 bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-black text-lg md:text-xl font-police-title px-8 md:px-10 py-4 md:py-5 rounded-md shadow-2xl transition-all duration-300 tracking-widest md:tracking-widest-plus justify-center min-h-[56px] touch-manipulation"
                 >
                   <Shield className="w-6 h-6 group-hover:rotate-12 transition-transform" />
                   GARANTIR APROVAÇÃO
@@ -515,9 +515,9 @@ export default function HomePage() {
               <motion.button
                 whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.1)" }}
                 whileTap={{ scale: 0.95 }}
-                className="group flex items-center gap-2 md:gap-3 border-2 border-gray-300 dark:border-gray-600 hover:border-military-base dark:hover:border-accent-500 text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-white text-lg md:text-xl font-police-title px-8 md:px-10 py-4 md:py-5 rounded-md transition-all duration-300 tracking-widest md:tracking-widest-plus justify-center min-h-[56px] touch-manipulation hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="group flex items-center gap-2 md:gap-3 border-2 border-gray-300 dark:border-gray-600 hover:border-military-base dark:hover:border-gray-400 text-gray-700 dark:text-gray-300 hover:text-military-base dark:hover:text-white text-lg md:text-xl font-police-title px-8 md:px-10 py-4 md:py-5 rounded-md transition-all duration-300 tracking-widest md:tracking-widest-plus justify-center min-h-[56px] touch-manipulation hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                <div className="w-12 h-12 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-military-base dark:group-hover:border-accent-500 flex items-center justify-center group-hover:bg-military-base/10 dark:group-hover:bg-accent-500/10 transition-all">
+                <div className="w-12 h-12 rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-military-base dark:group-hover:border-gray-400 flex items-center justify-center group-hover:bg-military-base/10 dark:group-hover:bg-gray-400/10 transition-all">
                   <Play className="w-6 h-6 ml-1" />
                 </div>
                 VER METODOLOGIA
@@ -739,8 +739,8 @@ export default function HomePage() {
                 <motion.div key={index} variants={fadeInUp}>
                   <Card className="h-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 rounded-lg">
                     <CardContent className="p-6 md:p-8 text-center">
-                      <div className="w-16 md:w-20 h-16 md:h-20 bg-accent-500/10 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
-                        <Icon className="w-8 md:w-10 h-8 md:h-10 text-accent-500" />
+                      <div className="w-16 md:w-20 h-16 md:h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+                        <Icon className="w-8 md:w-10 h-8 md:h-10 text-gray-700 dark:text-gray-300" />
                       </div>
                       <h3 className="text-lg md:text-xl font-police-title text-military-base dark:text-white mb-3 md:mb-4 tracking-widest">
                         {feature.title}
@@ -748,7 +748,7 @@ export default function HomePage() {
                       <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 font-police-body mb-3 md:mb-4 leading-relaxed">
                         {feature.description}
                       </p>
-                      <div className="text-accent-500 font-police-numbers text-base md:text-lg font-bold">
+                      <div className="text-gray-700 dark:text-gray-300 font-police-numbers text-base md:text-lg font-bold">
                         {feature.stats}
                       </div>
                     </CardContent>
@@ -791,7 +791,7 @@ export default function HomePage() {
                   <CardContent className="p-8 text-center">
                     <div className="flex items-center justify-center gap-1 mb-4">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 fill-accent-500 text-accent-500" />
+                        <Star key={i} className="w-5 h-5 fill-gray-700 dark:fill-gray-300 text-gray-700 dark:text-gray-300" />
                       ))}
                     </div>
                     
@@ -877,8 +877,8 @@ export default function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                     <div className="absolute bottom-0 left-0 right-0 p-6">
                       <div className="flex items-center gap-2 mb-2">
-                        <Monitor className="w-5 h-5 text-accent-500" />
-                        <Smartphone className="w-4 h-4 text-accent-500" />
+                        <Monitor className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                        <Smartphone className="w-4 h-4 text-gray-700 dark:text-gray-300" />
                       </div>
                       <h3 className="text-xl font-police-title text-white tracking-widest">
                         {screenshot.title}
@@ -892,7 +892,7 @@ export default function HomePage() {
                     <ul className="space-y-2">
                       {screenshot.features.map((feature, idx) => (
                         <li key={idx} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-police-body">
-                          <CheckCircle className="w-4 h-4 text-accent-500 flex-shrink-0" />
+                          <CheckCircle className="w-4 h-4 text-gray-700 dark:text-gray-300 flex-shrink-0" />
                           {feature}
                         </li>
                       ))}
@@ -932,7 +932,7 @@ export default function HomePage() {
           >
             {plans.map((plan, index) => (
               <motion.div key={index} variants={fadeInUp}>
-                <Card className={`relative h-full ${plan.popular ? 'ring-2 ring-accent-500 shadow-2xl scale-105 bg-accent-500 text-black dark:text-white hover:text-black dark:hover:text-black' : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-military-base dark:text-white'}`}>
+                <Card className={`relative h-full ${plan.popular ? 'ring-2 ring-gray-500 shadow-2xl scale-105 bg-gray-900 dark:bg-gray-100 text-white dark:text-black' : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-military-base dark:text-white'}`}>
                   {plan.popular && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                       <span className="bg-military-base text-white px-6 py-2 rounded-md text-sm font-police-title tracking-widest">
@@ -962,7 +962,7 @@ export default function HomePage() {
                       className={`w-full py-4 text-lg font-police-title tracking-widest-plus shadow-lg hover:shadow-xl ${
                         plan.popular 
                           ? 'bg-military-base hover:bg-military-dark text-white' 
-                          : 'bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-white hover:text-black dark:hover:text-black'
+                          : 'bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-black'
                       }`}
                     >
                       {plan.cta}
@@ -1130,8 +1130,8 @@ export default function HomePage() {
                 <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-accent-500/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <ChevronDown className="w-5 h-5 text-accent-500" />
+                      <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
+                        <ChevronDown className="w-5 h-5 text-gray-700 dark:text-gray-300" />
                       </div>
                       <div className="flex-1">
                         <h3 className="text-lg font-police-subtitle text-military-base dark:text-white mb-2 tracking-wider">
@@ -1167,7 +1167,7 @@ export default function HomePage() {
             </motion.h2>
             <motion.div variants={fadeInUp}>
               <Link to="/checkout?plan=price_monthly_premium">
-                <Button className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-white hover:text-black dark:hover:text-black text-lg md:text-xl font-police-title px-10 md:px-12 py-5 md:py-6 rounded-md tracking-widest md:tracking-widest-plus min-h-[60px] touch-manipulation shadow-lg hover:shadow-xl">
+                <Button className="bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-black text-lg md:text-xl font-police-title px-10 md:px-12 py-5 md:py-6 rounded-md tracking-widest md:tracking-widest-plus min-h-[60px] touch-manipulation shadow-lg hover:shadow-xl">
                   GARANTIR APROVAÇÃO
                   <ArrowRight className="ml-2 md:ml-3 w-5 md:w-6 h-5 md:h-6" />
                 </Button>
@@ -1328,7 +1328,7 @@ export default function HomePage() {
         href="https://wa.me/5511999999999?text=Olá! Preciso de ajuda com os cursos do StudyPro"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-4 md:bottom-6 right-4 md:right-6 z-50 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-white hover:text-black dark:hover:text-black p-4 md:p-5 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 touch-manipulation"
+        className="fixed bottom-4 md:bottom-6 right-4 md:right-6 z-50 bg-gray-900 dark:bg-gray-100 hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-black p-4 md:p-5 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 touch-manipulation"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 1, type: "spring", stiffness: 200 }}
