@@ -59,6 +59,8 @@ export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [expandedFaq, setExpandedFaq] = React.useState<number | null>(null);
   const { setTheme, resolvedTheme } = useTheme();
+  
+  console.log('HomePage resolvedTheme:', resolvedTheme); // Debug
   const features = [
     {
       icon: BookOpen,
@@ -355,11 +357,19 @@ export default function HomePage() {
               </Link>
               <Link to="/checkout?plan=price_monthly_premium">
                 <motion.button
-                  className={`hidden md:flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 font-police-subtitle rounded transition-all duration-300 text-xs md:text-sm tracking-widest-plus shadow-lg ${
-                    resolvedTheme === 'dark' 
-                      ? 'bg-gray-200 hover:bg-orange-500 text-black hover:text-white' 
-                      : 'bg-accent-500 hover:bg-accent-600 text-black hover:text-black'
-                  }`}
+                  className="hidden md:flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 font-police-subtitle rounded transition-all duration-300 text-xs md:text-sm tracking-widest-plus shadow-lg"
+                  style={{
+                    backgroundColor: '#374151', // gray-700 - cinza escuro
+                    color: 'black'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#d06e0f'; // laranja
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#374151'; // volta ao gray-700
+                    e.currentTarget.style.color = 'black';
+                  }}
                 >
                   <Trophy className="w-4 h-4" />
                   GARANTIR APROVAÇÃO
@@ -986,15 +996,15 @@ export default function HomePage() {
                         </li>
                       ))}
                     </ul>
-                    <Button
-                      className={`w-full py-4 text-lg font-police-title tracking-widest-plus shadow-lg ${
+                    <button
+                      className={`w-full py-4 text-lg font-police-title tracking-widest-plus shadow-lg rounded-lg transition-all focus:outline-none ${
                         resolvedTheme === 'dark' 
                           ? 'bg-gray-200 hover:bg-orange-500 text-black hover:text-white' 
                           : 'bg-accent-500 hover:bg-accent-600 text-black hover:text-black'
                       }`}
                     >
                       {plan.cta}
-                    </Button>
+                    </button>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -1202,14 +1212,14 @@ export default function HomePage() {
             </motion.h2>
             <motion.div variants={fadeInUp}>
               <Link to="/checkout?plan=price_monthly_premium">
-                <Button className={`text-lg md:text-xl font-police-title px-10 md:px-12 py-5 md:py-6 rounded-md tracking-widest md:tracking-widest-plus min-h-[60px] touch-manipulation shadow-lg ${
+                <button className={`text-lg md:text-xl font-police-title px-10 md:px-12 py-5 md:py-6 rounded-md tracking-widest md:tracking-widest-plus min-h-[60px] touch-manipulation shadow-lg transition-all focus:outline-none flex items-center justify-center gap-2 ${
                   resolvedTheme === 'dark' 
                     ? 'bg-gray-200 hover:bg-orange-500 text-black hover:text-white' 
                     : 'bg-accent-500 hover:bg-accent-600 text-black hover:text-black'
                 }`}>
                   GARANTIR APROVAÇÃO
-                  <ArrowRight className="ml-2 md:ml-3 w-5 md:w-6 h-5 md:h-6" />
-                </Button>
+                  <ArrowRight className="w-5 md:w-6 h-5 md:h-6" />
+                </button>
               </Link>
             </motion.div>
           </motion.div>
