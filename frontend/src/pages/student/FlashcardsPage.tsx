@@ -25,7 +25,8 @@ import {
   BarChart3,
   Target,
   Flame,
-  AlertTriangle
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
@@ -360,7 +361,7 @@ export default function FlashcardsPage() {
     setActiveTab('overview');
   };
 
-  // Algoritmo SRS (Simplified)
+  // Algoritmo SM-2 (SuperMemo 2) - Implementação completa como no Anki
   const calculateNextReview = (quality: number, card: Flashcard) => {
     const { interval, repetitions, easeFactor } = card.srsData;
     
@@ -368,27 +369,76 @@ export default function FlashcardsPage() {
     let newRepetitions = repetitions;
     let newEaseFactor = easeFactor;
 
+    // Quality: 0 = Esqueci completamente, 1 = Esqueci, 2 = Difícil, 3 = Bom, 4 = Fácil, 5 = Muito fácil
+    
     if (quality >= 3) {
-      // Resposta correta
-      if (repetitions === 0) {
-        newInterval = 1;
-      } else if (repetitions === 1) {
-        newInterval = 6;
-      } else {
-        newInterval = Math.round(interval * easeFactor);
+      // Resposta correta (Bom, Fácil ou Muito fácil)
+      
+      // Calcula novo intervalo baseado no algoritmo SM-2
+      switch (repetitions) {
+        case 0:
+          newInterval = 1; // 1 dia
+          break;
+        case 1:
+          newInterval = 6; // 6 dias
+          break;
+        default:
+          // Aplica o fator de facilidade ao intervalo anterior
+          newInterval = Math.round(interval * newEaseFactor);
+          
+          // Adiciona variação aleatória (fuzz factor) como no Anki
+          // Evita que muitos cards apareçam no mesmo dia
+          const fuzzRange = Math.max(1, Math.floor(newInterval * 0.05));
+          const fuzz = Math.floor(Math.random() * (2 * fuzzRange + 1)) - fuzzRange;
+          newInterval = Math.max(1, newInterval + fuzz);
+          break;
       }
+      
+      // Aplica multiplicador baseado na qualidade da resposta
+      if (quality === 5) {
+        // Muito fácil - aumenta intervalo em 30%
+        newInterval = Math.round(newInterval * 1.3);
+      } else if (quality === 4) {
+        // Fácil - aumenta intervalo em 15%
+        newInterval = Math.round(newInterval * 1.15);
+      }
+      // quality === 3 (Bom) mantém o intervalo calculado
+      
       newRepetitions = repetitions + 1;
+      
     } else {
-      // Resposta incorreta - reinicia
+      // Resposta incorreta (Esqueci completamente, Esqueci ou Difícil)
       newRepetitions = 0;
-      newInterval = 1;
+      
+      // Define novo intervalo baseado na dificuldade
+      if (quality === 2) {
+        // Difícil - novo intervalo é 60% do anterior
+        newInterval = Math.max(1, Math.round(interval * 0.6));
+      } else if (quality === 1) {
+        // Esqueci - intervalo de 1 dia
+        newInterval = 1;
+      } else {
+        // Esqueci completamente - mostrar novamente em 10 minutos
+        newInterval = 0.007; // ~10 minutos em dias
+      }
     }
 
-    // Ajusta o fator de facilidade
-    newEaseFactor = Math.max(1.3, easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
+    // Ajusta o fator de facilidade usando a fórmula SM-2
+    // EF' = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
+    const qFactor = 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02);
+    newEaseFactor = Math.max(1.3, easeFactor + qFactor);
+    
+    // Limita o fator de facilidade máximo
+    newEaseFactor = Math.min(2.5, newEaseFactor);
 
+    // Calcula a próxima data de revisão
     const nextReviewDate = new Date();
-    nextReviewDate.setDate(nextReviewDate.getDate() + newInterval);
+    if (newInterval < 1) {
+      // Para intervalos menores que 1 dia, converte para minutos
+      nextReviewDate.setMinutes(nextReviewDate.getMinutes() + Math.round(newInterval * 24 * 60));
+    } else {
+      nextReviewDate.setDate(nextReviewDate.getDate() + newInterval);
+    }
 
     return {
       interval: newInterval,
@@ -626,39 +676,96 @@ export default function FlashcardsPage() {
                 <p className="text-sm text-gray-600 mb-4">
                   Como foi sua resposta?
                 </p>
-                <div className="grid grid-cols-4 gap-3">
-                  <Button
-                    onClick={() => handleAnswer(1)}
-                    variant="outline"
-                    className="flex-col h-auto p-3 border-red-200 hover:border-red-300"
-                  >
-                    <XCircle className="w-6 h-6 text-red-500 mb-1" />
-                    <span className="text-sm">Errei</span>
-                  </Button>
-                  <Button
-                    onClick={() => handleAnswer(2)}
-                    variant="outline"
-                    className="flex-col h-auto p-3 border-orange-200 hover:border-orange-300"
-                  >
-                    <AlertTriangle className="w-6 h-6 text-orange-500 mb-1" />
-                    <span className="text-sm">Difícil</span>
-                  </Button>
-                  <Button
-                    onClick={() => handleAnswer(4)}
-                    variant="outline"
-                    className="flex-col h-auto p-3 border-blue-200 hover:border-blue-300"
-                  >
-                    <CheckCircle className="w-6 h-6 text-blue-500 mb-1" />
-                    <span className="text-sm">Bom</span>
-                  </Button>
-                  <Button
-                    onClick={() => handleAnswer(5)}
-                    variant="outline"
-                    className="flex-col h-auto p-3 border-green-200 hover:border-green-300"
-                  >
-                    <Star className="w-6 h-6 text-green-500 mb-1" />
-                    <span className="text-sm">Fácil</span>
-                  </Button>
+                <div className="space-y-2">
+                  {/* Primeira linha - Respostas incorretas */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      onClick={() => handleAnswer(0)}
+                      variant="outline"
+                      className="flex-col h-auto p-3 border-red-300 hover:border-red-400 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30"
+                    >
+                      <XCircle className="w-5 h-5 text-red-600 mb-1" />
+                      <span className="text-xs font-medium text-red-700 dark:text-red-400">Esqueci</span>
+                      <span className="text-xs text-red-600 dark:text-red-500">Completamente</span>
+                      <span className="text-[10px] text-red-500 mt-1">10 min</span>
+                    </Button>
+                    <Button
+                      onClick={() => handleAnswer(1)}
+                      variant="outline"
+                      className="flex-col h-auto p-3 border-orange-300 hover:border-orange-400 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/30"
+                    >
+                      <AlertCircle className="w-5 h-5 text-orange-600 mb-1" />
+                      <span className="text-xs font-medium text-orange-700 dark:text-orange-400">Errei</span>
+                      <span className="text-xs text-orange-600 dark:text-orange-500">Revisar</span>
+                      <span className="text-[10px] text-orange-500 mt-1">1 dia</span>
+                    </Button>
+                    <Button
+                      onClick={() => handleAnswer(2)}
+                      variant="outline"
+                      className="flex-col h-auto p-3 border-yellow-300 hover:border-yellow-400 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/30"
+                    >
+                      <AlertTriangle className="w-5 h-5 text-yellow-600 mb-1" />
+                      <span className="text-xs font-medium text-yellow-700 dark:text-yellow-400">Difícil</span>
+                      <span className="text-xs text-yellow-600 dark:text-yellow-500">Com esforço</span>
+                      <span className="text-[10px] text-yellow-500 mt-1">{Math.max(1, Math.round(currentCard.srsData.interval * 0.6))} dias</span>
+                    </Button>
+                  </div>
+                  
+                  {/* Segunda linha - Respostas corretas */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      onClick={() => handleAnswer(3)}
+                      variant="outline"
+                      className="flex-col h-auto p-3 border-blue-300 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30"
+                    >
+                      <CheckCircle className="w-5 h-5 text-blue-600 mb-1" />
+                      <span className="text-xs font-medium text-blue-700 dark:text-blue-400">Bom</span>
+                      <span className="text-xs text-blue-600 dark:text-blue-500">Adequado</span>
+                      <span className="text-[10px] text-blue-500 mt-1">
+                        {currentCard.srsData.repetitions === 0 ? '1 dia' : 
+                         currentCard.srsData.repetitions === 1 ? '6 dias' : 
+                         `${Math.round(currentCard.srsData.interval * currentCard.srsData.easeFactor)} dias`}
+                      </span>
+                    </Button>
+                    <Button
+                      onClick={() => handleAnswer(4)}
+                      variant="outline"
+                      className="flex-col h-auto p-3 border-green-300 hover:border-green-400 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30"
+                    >
+                      <Star className="w-5 h-5 text-green-600 mb-1" />
+                      <span className="text-xs font-medium text-green-700 dark:text-green-400">Fácil</span>
+                      <span className="text-xs text-green-600 dark:text-green-500">Sem esforço</span>
+                      <span className="text-[10px] text-green-500 mt-1">
+                        {Math.round((currentCard.srsData.repetitions === 0 ? 1 : 
+                         currentCard.srsData.repetitions === 1 ? 6 : 
+                         currentCard.srsData.interval * currentCard.srsData.easeFactor) * 1.15)} dias
+                      </span>
+                    </Button>
+                    <Button
+                      onClick={() => handleAnswer(5)}
+                      variant="outline"
+                      className="flex-col h-auto p-3 border-emerald-300 hover:border-emerald-400 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30"
+                    >
+                      <Zap className="w-5 h-5 text-emerald-600 mb-1" />
+                      <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">Muito Fácil</span>
+                      <span className="text-xs text-emerald-600 dark:text-emerald-500">Instantâneo</span>
+                      <span className="text-[10px] text-emerald-500 mt-1">
+                        {Math.round((currentCard.srsData.repetitions === 0 ? 1 : 
+                         currentCard.srsData.repetitions === 1 ? 6 : 
+                         currentCard.srsData.interval * currentCard.srsData.easeFactor) * 1.3)} dias
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Informação adicional */}
+                <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
+                    <Info className="w-3 h-3 inline mr-1" />
+                    Intervalo atual: {currentCard.srsData.interval} dias • 
+                    Fator: {currentCard.srsData.easeFactor.toFixed(2)} • 
+                    Repetições: {currentCard.srsData.repetitions}
+                  </p>
                 </div>
               </div>
             )}

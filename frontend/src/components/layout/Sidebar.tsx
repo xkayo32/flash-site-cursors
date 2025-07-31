@@ -21,7 +21,8 @@ import {
   TrendingUp,
   Moon,
   Sun,
-  GripVertical
+  GripVertical,
+  ClipboardList
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/utils/cn';
@@ -38,6 +39,7 @@ const menuItems = [
   { icon: Trophy, label: 'Simulados', path: '/simulations' },
   { icon: Brain, label: 'Flashcards', path: '/flashcards' },
   { icon: FileQuestion, label: 'Questões', path: '/questions' },
+  { icon: ClipboardList, label: 'Provas Anteriores', path: '/previous-exams' },
   { icon: FileText, label: 'Resumos Interativos', path: '/summaries' },
   { icon: Scale, label: 'Legislação', path: '/legislation' },
   { icon: Target, label: 'Painel Tático', path: '/tactical' },

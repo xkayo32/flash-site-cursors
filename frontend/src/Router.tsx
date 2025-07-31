@@ -23,6 +23,7 @@ import QuestionsPage from './pages/student/QuestionsPage';
 import SummariesPage from './pages/student/SummariesPage';
 import LegislationPage from './pages/student/LegislationPage';
 import TacticalPanelPage from './pages/student/TacticalPanelPage';
+import PreviousExamsPage from './pages/student/PreviousExamsPage';
 import SubscriptionPage from './pages/student/SubscriptionPage';
 import SettingsPage from './pages/student/SettingsPage';
 
@@ -120,6 +121,7 @@ function Router() {
         <Route path="/simulations" element={<SimuladosPage />} />
         <Route path="/flashcards" element={<FlashcardsPage />} />
         <Route path="/questions" element={<QuestionsPage />} />
+        <Route path="/previous-exams" element={<PreviousExamsPage />} />
         <Route path="/summaries" element={<SummariesPage />} />
         <Route path="/legislation" element={<LegislationPage />} />
         <Route path="/tactical" element={<TacticalPanelPage />} />

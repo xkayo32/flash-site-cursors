@@ -32,7 +32,12 @@ import {
   RefreshCw,
   Wifi,
   WifiOff,
-  GraduationCap
+  GraduationCap,
+  CalendarDays,
+  UserCheck,
+  BookMarked,
+  ChevronLeft,
+  Info
 } from 'lucide-react';
 import { mockStatistics, mockCourses } from '@/lib/mockData';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -68,6 +73,10 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  
+  // Estados para calendário
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // Simular carregamento inicial
   useEffect(() => {
@@ -230,6 +239,113 @@ export default function DashboardPage() {
     { name: 'Raciocínio Lógico', accuracy: 72, questions: 98 },
     { name: 'Informática', accuracy: 78, questions: 87 },
   ];
+
+  // Dados das turmas
+  const userGroups = [
+    {
+      id: '1',
+      name: 'TURMA ELITE PF 2024',
+      members: 127,
+      role: 'Aluno',
+      badge: '🎯',
+      progress: 78,
+      nextActivity: 'Simulado às 19h',
+      instructor: 'Prof. Carlos Silva',
+      rank: 12
+    },
+    {
+      id: '2',
+      name: 'GRUPO DE ESTUDOS - CONSTITUCIONAL',
+      members: 42,
+      role: 'Moderador',
+      badge: '📚',
+      progress: 85,
+      nextActivity: 'Revisão amanhã',
+      instructor: 'Ana Santos',
+      rank: 3
+    }
+  ];
+
+  // Eventos do calendário
+  const calendarEvents = {
+    [`${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-15`]: [
+      { type: 'exam', title: 'Simulado Nacional', time: '14:00' },
+      { type: 'class', title: 'Aula ao vivo - Dir. Penal', time: '19:00' }
+    ],
+    [`${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-18`]: [
+      { type: 'deadline', title: 'Entrega de Resumos', time: '23:59' }
+    ],
+    [`${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-22`]: [
+      { type: 'class', title: 'Revisão Geral', time: '20:00' }
+    ],
+    [`${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-25`]: [
+      { type: 'exam', title: 'Prova Final - Módulo 3', time: '09:00' }
+    ]
+  };
+
+  // Funções do calendário
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    const days = [];
+    // Dias do mês anterior
+    for (let i = firstDay; i > 0; i--) {
+      days.push({
+        date: new Date(year, month, 1 - i),
+        isCurrentMonth: false
+      });
+    }
+    // Dias do mês atual
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push({
+        date: new Date(year, month, i),
+        isCurrentMonth: true
+      });
+    }
+    // Completar a última semana
+    const remainingDays = 42 - days.length;
+    for (let i = 1; i <= remainingDays; i++) {
+      days.push({
+        date: new Date(year, month + 1, i),
+        isCurrentMonth: false
+      });
+    }
+    
+    return days;
+  };
+
+  const formatDateKey = (date: Date) => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+           date.getMonth() === today.getMonth() &&
+           date.getFullYear() === today.getFullYear();
+  };
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    const newMonth = new Date(currentMonth);
+    if (direction === 'prev') {
+      newMonth.setMonth(newMonth.getMonth() - 1);
+    } else {
+      newMonth.setMonth(newMonth.getMonth() + 1);
+    }
+    setCurrentMonth(newMonth);
+  };
+
+  const getEventTypeColor = (type: string) => {
+    switch (type) {
+      case 'exam': return 'bg-red-500';
+      case 'class': return 'bg-blue-500';
+      case 'deadline': return 'bg-yellow-500';
+      default: return 'bg-gray-500';
+    }
+  };
 
   return (
     <motion.div
@@ -708,6 +824,206 @@ export default function DashboardPage() {
                   </motion.div>
                 );
               })}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Turmas e Calendário */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Minhas Turmas */}
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white font-police-title">
+              <Users className="w-5 h-5" />
+              MINHAS TURMAS
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {userGroups.map((group) => (
+              <motion.div
+                key={group.id}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+                className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:shadow-md transition-all cursor-pointer border border-gray-200 dark:border-gray-600"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{group.badge}</span>
+                    <div>
+                      <h3 className="font-bold text-gray-900 dark:text-white font-police-subtitle">
+                        {group.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                        {group.instructor} • {group.members} membros
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <Badge className="bg-accent-500 text-black font-police-numbers">
+                      #{group.rank}
+                    </Badge>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-police-body">
+                      {group.role}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="text-gray-600 dark:text-gray-400 font-police-body">Progresso do módulo</span>
+                    <span className="font-bold text-gray-900 dark:text-white font-police-numbers">{group.progress}%</span>
+                  </div>
+                  <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-accent-500 to-accent-600 h-2 rounded-full transition-all"
+                      style={{ width: `${group.progress}%` }}
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                    <Clock className="w-4 h-4" />
+                    <span>{group.nextActivity}</span>
+                  </div>
+                  <Button size="sm" variant="outline" className="gap-1 font-police-subtitle">
+                    <ChevronRight className="w-4 h-4" />
+                    ACESSAR
+                  </Button>
+                </div>
+              </motion.div>
+            ))}
+            
+            <Button 
+              variant="outline" 
+              className="w-full gap-2 font-police-subtitle"
+              onClick={() => navigate('/groups')}
+            >
+              <Users className="w-4 h-4" />
+              EXPLORAR MAIS TURMAS
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Calendário */}
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white font-police-title">
+                <CalendarDays className="w-5 h-5" />
+                CALENDÁRIO DE ESTUDOS
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigateMonth('prev')}
+                  className="p-1"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <span className="text-sm font-medium text-gray-900 dark:text-white font-police-subtitle min-w-[120px] text-center">
+                  {currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase()}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigateMonth('next')}
+                  className="p-1"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Dias da semana */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map((day) => (
+                <div key={day} className="text-center text-xs font-bold text-gray-600 dark:text-gray-400 font-police-subtitle p-2">
+                  {day}
+                </div>
+              ))}
+            </div>
+            
+            {/* Dias do mês */}
+            <div className="grid grid-cols-7 gap-1">
+              {getDaysInMonth(currentMonth).map((dayInfo, index) => {
+                const dateKey = formatDateKey(dayInfo.date);
+                const events = calendarEvents[dateKey] || [];
+                const hasEvents = events.length > 0;
+                const isSelected = selectedDate.toDateString() === dayInfo.date.toDateString();
+                
+                return (
+                  <motion.div
+                    key={index}
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={() => setSelectedDate(dayInfo.date)}
+                    className={cn(
+                      "relative p-2 min-h-[60px] rounded-lg cursor-pointer transition-all",
+                      dayInfo.isCurrentMonth ? "bg-gray-50 dark:bg-gray-700/30" : "bg-gray-100/50 dark:bg-gray-800/30",
+                      isToday(dayInfo.date) && "ring-2 ring-accent-500",
+                      isSelected && "bg-accent-100 dark:bg-accent-900/30",
+                      "hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                    )}
+                  >
+                    <span className={cn(
+                      "text-sm font-police-numbers",
+                      dayInfo.isCurrentMonth ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-gray-600",
+                      isToday(dayInfo.date) && "font-bold text-accent-600 dark:text-accent-400"
+                    )}>
+                      {dayInfo.date.getDate()}
+                    </span>
+                    
+                    {hasEvents && (
+                      <div className="absolute bottom-1 left-1 right-1 flex gap-0.5 justify-center">
+                        {events.map((event, idx) => (
+                          <div
+                            key={idx}
+                            className={cn("w-1 h-1 rounded-full", getEventTypeColor(event.type))}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+            
+            {/* Eventos do dia selecionado */}
+            {calendarEvents[formatDateKey(selectedDate)] && (
+              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <h4 className="font-bold text-gray-900 dark:text-white mb-2 font-police-subtitle">
+                  EVENTOS - {selectedDate.toLocaleDateString('pt-BR')}
+                </h4>
+                <div className="space-y-2">
+                  {calendarEvents[formatDateKey(selectedDate)].map((event, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm">
+                      <div className={cn("w-2 h-2 rounded-full", getEventTypeColor(event.type))} />
+                      <span className="font-police-numbers text-gray-600 dark:text-gray-400">{event.time}</span>
+                      <span className="text-gray-900 dark:text-white font-police-body">{event.title}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Legenda */}
+            <div className="mt-4 flex items-center justify-center gap-4 text-xs">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-red-500" />
+                <span className="text-gray-600 dark:text-gray-400 font-police-body">Prova</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                <span className="text-gray-600 dark:text-gray-400 font-police-body">Aula</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                <span className="text-gray-600 dark:text-gray-400 font-police-body">Prazo</span>
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -247,22 +247,22 @@ export default function SummaryEditor() {
         className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
-            Editor de Resumos Interativos
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title">
+            EDITOR DE RESUMOS INTERATIVOS
           </h1>
-          <p className="text-primary-600 dark:text-gray-300">
-            Crie resumos com questões e flashcards incorporados
+          <p className="text-gray-600 dark:text-gray-400 font-police-body">
+            Crie resumos com questões e flashcards incorporados para estudo eficiente
           </p>
         </div>
         
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2 font-police-subtitle">
             <Upload className="w-4 h-4" />
-            Importar
+            IMPORTAR
           </Button>
-          <Button onClick={handleCreateSummary} className="gap-2">
+          <Button onClick={handleCreateSummary} className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-subtitle">
             <Plus className="w-4 h-4" />
-            Novo Resumo
+            NOVO RESUMO
           </Button>
         </div>
       </motion.div>
@@ -274,66 +274,66 @@ export default function SummaryEditor() {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 font-police-body">
                   Total de Resumos
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {summaries.length}
                 </p>
               </div>
-              <FileText className="w-8 h-8 text-blue-600" />
+              <FileText className="w-8 h-8 text-blue-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 font-police-body">
                   Publicados
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {summaries.filter(s => s.status === 'published').length}
                 </p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 font-police-body">
                   Questões Incorporadas
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {summaries.reduce((acc, s) => acc + s.embeds.questions, 0)}
                 </p>
               </div>
-              <Brain className="w-8 h-8 text-purple-600" />
+              <Brain className="w-8 h-8 text-purple-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 font-police-body">
                   Flashcards Incorporados
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {summaries.reduce((acc, s) => acc + s.embeds.flashcards, 0)}
                 </p>
               </div>
-              <Star className="w-8 h-8 text-yellow-600" />
+              <Star className="w-8 h-8 text-yellow-500" />
             </div>
           </CardContent>
         </Card>
