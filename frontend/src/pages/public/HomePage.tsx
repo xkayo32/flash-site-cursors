@@ -360,15 +360,15 @@ export default function HomePage() {
                   className="hidden md:flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 font-police-subtitle rounded transition-all duration-300 text-xs md:text-sm tracking-widest-plus shadow-lg"
                   style={{
                     backgroundColor: '#374151', // gray-700 - cinza escuro
-                    color: 'black'
+                    color: 'white'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#d06e0f'; // laranja
-                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.color = 'black';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = '#374151'; // volta ao gray-700
-                    e.currentTarget.style.color = 'black';
+                    e.currentTarget.style.color = 'white';
                   }}
                 >
                   <Trophy className="w-4 h-4" />
@@ -428,11 +428,20 @@ export default function HomePage() {
                   </button>
                 </Link>
                 <Link to="/checkout?plan=price_monthly_premium" onClick={() => setMobileMenuOpen(false)}>
-                  <button className={`w-full flex items-center justify-center gap-2 px-4 py-3 font-police-subtitle rounded transition-all duration-300 text-sm tracking-widest-plus shadow-lg ${
-                    resolvedTheme === 'dark' 
-                      ? 'bg-gray-200 hover:bg-orange-500 text-black hover:text-white' 
-                      : 'bg-accent-500 hover:bg-accent-600 text-black hover:text-black'
-                  }`}>
+                  <button 
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 font-police-subtitle rounded transition-all duration-300 text-sm tracking-widest-plus shadow-lg"
+                    style={{
+                      backgroundColor: '#374151', // gray-700 - cinza escuro
+                      color: 'black'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#d06e0f'; // laranja
+                      e.currentTarget.style.color = 'white';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#374151'; // volta ao gray-700
+                      e.currentTarget.style.color = 'black';
+                    }}>
                     <Trophy className="w-4 h-4" />
                     GARANTIR APROVAÇÃO
                   </button>
@@ -520,11 +529,19 @@ export default function HomePage() {
             >
               <Link to="/checkout?plan=price_monthly_premium">
                 <motion.button
-                  className={`group flex items-center gap-2 md:gap-3 text-lg md:text-xl font-police-title px-8 md:px-10 py-4 md:py-5 rounded-md shadow-2xl transition-all duration-300 tracking-widest md:tracking-widest-plus justify-center min-h-[56px] touch-manipulation ${
-                    resolvedTheme === 'dark' 
-                      ? 'bg-gray-200 hover:bg-orange-500 text-black hover:text-white' 
-                      : 'bg-accent-500 hover:bg-accent-600 text-black hover:text-black'
-                  }`}
+                  className="group flex items-center gap-2 md:gap-3 text-lg md:text-xl font-police-title px-8 md:px-10 py-4 md:py-5 rounded-md shadow-2xl transition-all duration-300 tracking-widest md:tracking-widest-plus justify-center min-h-[56px] touch-manipulation"
+                  style={{
+                    backgroundColor: '#374151', // gray-700 - cinza escuro
+                    color: 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#d06e0f'; // laranja
+                    e.currentTarget.style.color = 'black';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#374151'; // volta ao gray-700
+                    e.currentTarget.style.color = 'white';
+                  }}
                 >
                   <Shield className="w-6 h-6 group-hover:rotate-12 transition-transform" />
                   GARANTIR APROVAÇÃO
@@ -1212,11 +1229,20 @@ export default function HomePage() {
             </motion.h2>
             <motion.div variants={fadeInUp}>
               <Link to="/checkout?plan=price_monthly_premium">
-                <button className={`text-lg md:text-xl font-police-title px-10 md:px-12 py-5 md:py-6 rounded-md tracking-widest md:tracking-widest-plus min-h-[60px] touch-manipulation shadow-lg transition-all focus:outline-none flex items-center justify-center gap-2 ${
-                  resolvedTheme === 'dark' 
-                    ? 'bg-gray-200 hover:bg-orange-500 text-black hover:text-white' 
-                    : 'bg-accent-500 hover:bg-accent-600 text-black hover:text-black'
-                }`}>
+                <button 
+                  className="text-lg md:text-xl font-police-title px-10 md:px-12 py-5 md:py-6 rounded-md tracking-widest md:tracking-widest-plus min-h-[60px] touch-manipulation shadow-lg transition-all focus:outline-none flex items-center justify-center gap-2"
+                  style={{
+                    backgroundColor: '#374151', // gray-700 - cinza escuro
+                    color: 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#d06e0f'; // laranja
+                    e.currentTarget.style.color = 'black';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#374151'; // volta ao gray-700
+                    e.currentTarget.style.color = 'white';
+                  }}>
                   GARANTIR APROVAÇÃO
                   <ArrowRight className="w-5 md:w-6 h-5 md:h-6" />
                 </button>
@@ -1377,11 +1403,19 @@ export default function HomePage() {
         href="https://wa.me/5511999999999?text=Olá! Preciso de ajuda com os cursos do StudyPro"
         target="_blank"
         rel="noopener noreferrer"
-        className={`fixed bottom-4 md:bottom-6 right-4 md:right-6 z-50 p-4 md:p-5 rounded-full shadow-2xl transition-all duration-300 touch-manipulation ${
-          resolvedTheme === 'dark' 
-            ? 'bg-gray-200 hover:bg-orange-500 text-black hover:text-white' 
-            : 'bg-accent-500 hover:bg-accent-600 text-black hover:text-black'
-        }`}
+        className="fixed bottom-4 md:bottom-6 right-4 md:right-6 z-50 p-4 md:p-5 rounded-full shadow-2xl transition-all duration-300 touch-manipulation"
+        style={{
+          backgroundColor: '#374151', // gray-700 - cinza escuro
+          color: 'white'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = '#d06e0f'; // laranja
+          e.currentTarget.style.color = 'black';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = '#374151'; // volta ao gray-700
+          e.currentTarget.style.color = 'white';
+        }}
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 1, type: "spring", stiffness: 200 }}

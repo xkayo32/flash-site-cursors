@@ -110,7 +110,7 @@ export default function CourseForm() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'basic' | 'content' | 'settings'>('basic');
+  const [activeTab, setActiveTab] = useState<'basic' | 'content' | 'materials' | 'access' | 'settings'>('basic');
   
   // Temporary inputs
   const [newRequirement, setNewRequirement] = useState('');
@@ -380,7 +380,9 @@ export default function CourseForm() {
 
   const tabs = [
     { id: 'basic', label: 'INFORMAÇÕES BÁSICAS', icon: Info },
-    { id: 'content', label: 'CONTEÚDO', icon: BookOpen },
+    { id: 'content', label: 'MÓDULOS & AULAS', icon: BookOpen },
+    { id: 'materials', label: 'MATERIAIS DO CURSO', icon: FileText },
+    { id: 'access', label: 'CONTROLE DE ACESSO', icon: Users },
     { id: 'settings', label: 'CONFIGURAÇÕES', icon: Settings }
   ];
 
@@ -953,6 +955,456 @@ export default function CourseForm() {
           </div>
         )}
         
+        {activeTab === 'materials' && (
+          <div className="space-y-6">
+            {/* Materials Header */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+                MATERIAIS DO CURSO
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 font-police-body">
+                Gerencie flashcards, questões, resumos e legislação específicos do curso
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Flashcards */}
+              <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="font-police-title uppercase tracking-wider flex items-center gap-2">
+                      <BookOpen className="w-5 h-5" />
+                      FLASHCARDS
+                    </CardTitle>
+                    <Button size="sm" className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body">
+                      <Plus className="w-3 h-3 mr-1" />
+                      ADICIONAR
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 dark:text-white font-police-subtitle text-sm">
+                            EXEMPLO: CONSTITUIÇÃO FEDERAL
+                          </h4>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body mt-1">
+                            Artigos fundamentais sobre direitos e garantias individuais
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge className="text-xs bg-accent-500/20 text-accent-700 dark:text-accent-300">
+                              DIREITO CONSTITUCIONAL
+                            </Badge>
+                            <span className="text-xs text-gray-500 font-police-body">12 cards</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button size="sm" variant="outline" className="h-7 w-7 p-0">
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-7 w-7 p-0 text-red-600">
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-police-body text-sm">Nenhum flashcard adicionado</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Questions Bank */}
+              <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="font-police-title uppercase tracking-wider flex items-center gap-2">
+                      <HelpCircle className="w-5 h-5" />
+                      QUESTÕES
+                    </CardTitle>
+                    <Button size="sm" className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body">
+                      <Plus className="w-3 h-3 mr-1" />
+                      ADICIONAR
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 dark:text-white font-police-subtitle text-sm">
+                            EXEMPLO: LEGISLAÇÃO PENAL
+                          </h4>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body mt-1">
+                            Questões sobre crimes contra a administração pública
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge className="text-xs bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
+                              MÚLTIPLA ESCOLHA
+                            </Badge>
+                            <span className="text-xs text-gray-500 font-police-body">25 questões</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button size="sm" variant="outline" className="h-7 w-7 p-0">
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-7 w-7 p-0 text-red-600">
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <HelpCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-police-body text-sm">Nenhuma questão adicionada</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Interactive Summaries */}
+              <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="font-police-title uppercase tracking-wider flex items-center gap-2">
+                      <FileText className="w-5 h-5" />
+                      RESUMOS INTERATIVOS
+                    </CardTitle>
+                    <Button size="sm" className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body">
+                      <Plus className="w-3 h-3 mr-1" />
+                      CRIAR
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 dark:text-white font-police-subtitle text-sm">
+                            EXEMPLO: PROCESSO PENAL
+                          </h4>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body mt-1">
+                            Resumo completo sobre inquérito policial e procedimentos
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                              INTERATIVO
+                            </Badge>
+                            <span className="text-xs text-gray-500 font-police-body">15 páginas</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button size="sm" variant="outline" className="h-7 w-7 p-0">
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-7 w-7 p-0 text-red-600">
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-police-body text-sm">Nenhum resumo criado</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Legislation */}
+              <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="font-police-title uppercase tracking-wider flex items-center gap-2">
+                      <Shield className="w-5 h-5" />
+                      LEGISLAÇÃO
+                    </CardTitle>
+                    <Button size="sm" className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body">
+                      <Plus className="w-3 h-3 mr-1" />
+                      VINCULAR
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 dark:text-white font-police-subtitle text-sm">
+                            EXEMPLO: LEI 12.850/2013
+                          </h4>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body mt-1">
+                            Lei de organizações criminosas - texto atualizado
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                              ATUALIZADA
+                            </Badge>
+                            <span className="text-xs text-gray-500 font-police-body">45 artigos</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button size="sm" variant="outline" className="h-7 w-7 p-0">
+                            <Eye className="w-3 h-3" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-7 w-7 p-0 text-red-600">
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <Shield className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-police-body text-sm">Nenhuma legislação vinculada</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Course Materials Statistics */}
+            <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="font-police-title uppercase tracking-wider">ESTATÍSTICAS DOS MATERIAIS</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <BookOpen className="w-8 h-8 text-accent-500 mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">12</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase">Flashcards</p>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <HelpCircle className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">25</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase">Questões</p>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <FileText className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">8</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase">Resumos</p>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <Shield className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">15</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase">Leis</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'access' && (
+          <div className="space-y-6">
+            {/* Access Control Header */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+                CONTROLE DE ACESSO
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 font-police-body">
+                Gerencie quem pode acessar o curso, prazos e configurações de matrícula
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Access Settings */}
+              <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="font-police-title uppercase tracking-wider flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    CONFIGURAÇÕES DE ACESSO
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase tracking-wider">
+                      Tipo de Acesso
+                    </label>
+                    <select className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body">
+                      <option value="paid">CURSO PAGO</option>
+                      <option value="free">CURSO GRATUITO</option>
+                      <option value="subscription">APENAS ASSINANTES</option>
+                      <option value="invite">CONVITE APENAS</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase tracking-wider">
+                      Limite de Matrículas
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="rounded focus:ring-2 focus:ring-accent-500"
+                        />
+                        <span className="text-sm font-police-body text-gray-700 dark:text-gray-300">Ilimitado</span>
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Máximo de alunos"
+                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase tracking-wider">
+                        Data de Início
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase tracking-wider">
+                        Data de Término
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        className="rounded focus:ring-2 focus:ring-accent-500"
+                      />
+                      <span className="text-sm font-police-body text-gray-700 dark:text-gray-300">
+                        Permitir acesso após vencimento
+                      </span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        className="rounded focus:ring-2 focus:ring-accent-500"
+                      />
+                      <span className="text-sm font-police-body text-gray-700 dark:text-gray-300">
+                        Matrícula automática por convite
+                      </span>
+                    </label>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Enrolled Students */}
+              <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="font-police-title uppercase tracking-wider flex items-center gap-2">
+                      <Users className="w-5 h-5" />
+                      ALUNOS MATRICULADOS
+                    </CardTitle>
+                    <Button size="sm" className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body">
+                      <Plus className="w-3 h-3 mr-1" />
+                      CONVIDAR
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white font-police-body text-sm">
+                            João Silva
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">
+                            Matriculado em 15/07/2025
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                          ATIVO
+                        </Badge>
+                        <Button size="sm" variant="outline" className="h-7 w-7 p-0 text-red-600">
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white font-police-body text-sm">
+                            Maria Santos
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">
+                            Matriculada em 20/07/2025
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
+                          PENDENTE
+                        </Badge>
+                        <Button size="sm" variant="outline" className="h-7 w-7 p-0 text-red-600">
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-police-body text-sm">2 de ∞ vagas ocupadas</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Access Statistics */}
+              <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="font-police-title uppercase tracking-wider">ESTATÍSTICAS DE ACESSO</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <Users className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">125</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase">Matriculados</p>
+                    </div>
+                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <Eye className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">89</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase">Ativos</p>
+                    </div>
+                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <Clock className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">15</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase">Pendentes</p>
+                    </div>
+                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <Calendar className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">21</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase">Vencidos</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'settings' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Requirements */}
