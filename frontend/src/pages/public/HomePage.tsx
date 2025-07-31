@@ -57,6 +57,7 @@ const staggerContainer = {
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [expandedFaq, setExpandedFaq] = React.useState<number | null>(null);
   const { setTheme, resolvedTheme } = useTheme();
   const features = [
     {
@@ -432,7 +433,7 @@ export default function HomePage() {
         <div 
           className="absolute inset-0 z-0"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=2074')`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1633265486064-086b219458ec?q=80&w=2070')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat'
@@ -567,20 +568,19 @@ export default function HomePage() {
 
       {/* Courses - Main Section */}
       <section id="courses" className="relative py-12 md:py-20 bg-gray-100 dark:bg-gray-900">
-        {/* Background Image with Overlay */}
+        {/* Background Pattern */}
         <div 
-          className="absolute inset-0 z-0"
+          className="absolute inset-0 opacity-30 dark:opacity-20 pointer-events-none"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'fixed'
+            backgroundImage: `repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 35px,
+              rgba(20, 36, 47, 0.05) 35px,
+              rgba(20, 36, 47, 0.05) 70px
+            )`
           }}
-        >
-          <div className="absolute inset-0 bg-white/60 dark:bg-black/70"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-white dark:from-black via-white/50 dark:via-black/50 to-transparent"></div>
-        </div>
+        />
         
         <div className="relative container mx-auto px-4 z-10">
           <motion.div
@@ -678,8 +678,28 @@ export default function HomePage() {
       </section>
 
       {/* Features Section - NEW */}
-      <section id="features" className="py-12 md:py-20 bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4">
+      <section id="features" className="relative py-12 md:py-20 bg-gray-50 dark:bg-gray-900 overflow-hidden">
+        {/* Background Image with Pattern */}
+        <div 
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1518186233392-c232efbf2373?q=80&w=2074'), repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 35px,
+              rgba(20, 36, 47, 0.05) 35px,
+              rgba(20, 36, 47, 0.05) 70px
+            )`,
+            backgroundSize: 'cover, auto',
+            backgroundPosition: 'center, center',
+            backgroundRepeat: 'no-repeat, repeat'
+          }}
+        >
+          <div className="absolute inset-0 bg-white/60 dark:bg-black/70"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-white dark:from-black via-white/50 dark:via-black/50 to-transparent"></div>
+        </div>
+        
+        <div className="relative container mx-auto px-4 z-10">
           <motion.div
             initial="initial"
             whileInView="animate"
@@ -932,10 +952,10 @@ export default function HomePage() {
           >
             {plans.map((plan, index) => (
               <motion.div key={index} variants={fadeInUp}>
-                <Card className={`relative h-full ${plan.popular ? 'ring-2 ring-gray-500 shadow-2xl scale-105 bg-gray-900 dark:bg-gray-100 text-white dark:text-black' : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-military-base dark:text-white'}`}>
+                <Card className={`relative h-full ${plan.popular ? 'ring-2 ring-accent-500 shadow-2xl scale-105 bg-white dark:bg-gray-800 text-military-base dark:text-white' : 'bg-white dark:bg-gray-800 backdrop-blur-sm border border-gray-200 dark:border-gray-700 text-military-base dark:text-white'}`}>
                   {plan.popular && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-military-base text-white px-6 py-2 rounded-md text-sm font-police-title tracking-widest">
+                      <span className="bg-accent-500 text-black px-6 py-2 rounded-md text-sm font-police-title tracking-widest">
                         MAIS ESCOLHIDO
                       </span>
                     </div>
@@ -961,7 +981,7 @@ export default function HomePage() {
                     <Button
                       className={`w-full py-4 text-lg font-police-title tracking-widest-plus shadow-lg hover:shadow-xl ${
                         plan.popular 
-                          ? 'bg-military-base hover:bg-military-dark text-white' 
+                          ? 'bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white' 
                           : 'bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white'
                       }`}
                     >
@@ -1074,24 +1094,24 @@ export default function HomePage() {
       </section>
 
       {/* FAQ Section - NEW */}
-      <section className="py-12 md:py-20 bg-white dark:bg-gray-900">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <section className="py-8 md:py-12 bg-white dark:bg-gray-900">
+        <div className="container mx-auto px-4 max-w-3xl">
           <motion.div
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
             variants={staggerContainer}
-            className="text-center mb-16"
+            className="text-center mb-8"
           >
             <motion.h2
               variants={fadeInUp}
-              className="text-3xl md:text-4xl lg:text-6xl font-police-title text-military-base dark:text-white mb-4 tracking-widest md:tracking-ultra-wide px-4"
+              className="text-2xl md:text-3xl lg:text-4xl font-police-title text-military-base dark:text-white mb-3 tracking-widest px-4"
             >
               PERGUNTAS FREQUENTES
             </motion.h2>
             <motion.p
               variants={fadeInUp}
-              className="text-base md:text-xl text-gray-600 dark:text-gray-400 font-police-body tracking-wider px-4"
+              className="text-sm md:text-base text-gray-600 dark:text-gray-400 font-police-body tracking-wider px-4"
             >
               TIRE SUAS DÚVIDAS SOBRE A PLATAFORMA
             </motion.p>
@@ -1127,23 +1147,30 @@ export default function HomePage() {
               }
             ].map((faq, index) => (
               <motion.div key={index} variants={fadeInUp}>
-                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
-                        <ChevronDown className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-police-subtitle text-military-base dark:text-white mb-2 tracking-wider">
-                          {faq.question}
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-400 font-police-body">
-                          {faq.answer}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div 
+                  className="border-b border-gray-200 dark:border-gray-700 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300"
+                  onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-police-subtitle text-military-base dark:text-white tracking-wider flex-1">
+                      {faq.question}
+                    </h3>
+                    <ChevronDown className={`w-3 h-3 text-gray-500 dark:text-gray-400 transition-transform duration-300 ${expandedFaq === index ? 'rotate-180' : ''}`} />
+                  </div>
+                  {expandedFaq === index && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="mt-2"
+                    >
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body pb-2">
+                        {faq.answer}
+                      </p>
+                    </motion.div>
+                  )}
+                </div>
               </motion.div>
             ))}
           </motion.div>
