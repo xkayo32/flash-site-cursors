@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Logo } from '@/components/ui/Logo';
+import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import { useAuthStore } from '@/store/authStore';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -157,7 +157,7 @@ export default function AdminLayout() {
       {/* Mobile Header */}
       <div className="lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center justify-between">
-          <Logo variant="full" size="sm" />
+          <StudyProLogo variant="full" size="sm" />
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Button
@@ -200,7 +200,7 @@ export default function AdminLayout() {
                 : 'border-military-base/30 bg-military-base/5'
             )}>
               <div className={isCollapsed ? "flex justify-center" : "flex flex-col"}>
-                <Logo 
+                <StudyProLogo 
                   variant={isCollapsed ? "icon" : "full"} 
                   size={isCollapsed ? "sm" : "md"}
                   className="flex-shrink-0"

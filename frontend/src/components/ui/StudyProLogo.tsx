@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
-import LogoPreta from '@/assets/Logo_preta.png';
 import LogoColorida from '@/assets/Logo_colorida_2.png';
 
 interface StudyProLogoProps {
@@ -24,8 +23,8 @@ export const StudyProLogo: React.FC<StudyProLogoProps> = ({
 
   const { width, height, iconSize } = sizes[size];
   
-  // Usar logo preta no tema claro e logo colorida (laranja) no tema escuro
-  const logoSrc = resolvedTheme === 'dark' ? LogoColorida : LogoPreta;
+  // Usar logo colorida em ambos os temas
+  const logoSrc = LogoColorida;
 
   if (variant === 'icon') {
     return (

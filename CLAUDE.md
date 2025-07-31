@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Quick Start
+```bash
+# Start all services with PostgreSQL (recommended)
+make up-postgres
+
+# Access points:
+# Frontend:    http://localhost:5273
+# Backend API: http://localhost:8180
+# PostgreSQL:  localhost:5532
+```
+
 ## Common Development Commands
 
 ### Frontend (React + Vite)
@@ -333,3 +344,49 @@ docker compose logs -f postgres
   - All yellow buttons now use accent color palette (accent-500/600/650)
   - Dark theme hover color: #d06e0f (accent-650)
   - Pattern: bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650
+
+## Testing Commands
+```bash
+# Frontend testing (when implemented)
+cd frontend
+npm test                   # Run tests (not currently configured)
+
+# Backend testing
+cd backend
+# No automated tests currently configured
+# Manual API testing: Use Postman collection at StudyPro_API_Postman_Collection.json
+```
+
+## Git Workflow
+```bash
+# Feature development
+git checkout develop
+git pull origin develop
+git checkout -b feature/your-feature-name
+
+# After changes
+git add .
+git commit -m "feat: your feature description"
+git push -u origin feature/your-feature-name
+
+# Create PR to develop branch (not main)
+```
+
+## Environment Variables
+
+### Frontend (.env)
+```env
+VITE_API_URL=http://localhost:8180  # Backend API URL
+```
+
+### Backend (.env)
+```env
+DB_CONNECTION=pgsql
+DB_HOST=localhost
+DB_PORT=5532
+DB_DATABASE=estudos_db
+DB_USERNAME=estudos_user
+DB_PASSWORD=estudos_pass
+
+JWT_SECRET=your-jwt-secret-here
+```
