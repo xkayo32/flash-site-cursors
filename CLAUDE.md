@@ -198,13 +198,22 @@ When working with Claude Code agents for better code quality:
 - PostgreSQL port 5532 is custom to avoid conflicts with default 5432
 
 ### UI/UX Design System
-The project uses a military/police themed design system:
+The project uses a **monochromatic military/police themed design system**:
 
-- **Color Palette**: 
-  - Base color: #14242f (military blue-gray, replacing pure black)
-  - Gray scale: #111, #1f2937, various gray shades
-  - White: #fff
-  - Accent: #facc15 (tactical yellow)
+- **Color Palette (Monochromatic)**:
+  - **Primary Colors**: Black (#000000), White (#FFFFFF)
+  - **Military Base**: #14242f (tactical blue-gray for specific elements)
+  - **Gray Scale**: Complete range from gray-50 to gray-950
+  - **Accent Colors** (Limited use):
+    - accent-500: #facc15 (tactical yellow) - ONLY for login button
+    - accent-600: #e5b91e (yellow hover - light theme)  
+    - accent-650: #d06e0f (orange hover - dark theme)
+- **Button Color System**:
+  - **Login Page**: Yellow buttons (bg-accent-500) with adaptive text
+  - **Landing Page**: Gray/black buttons (bg-gray-900/bg-gray-100) with orange hover in dark theme
+  - **Hover Behavior**: 
+    - Light theme: text always black
+    - Dark theme: text white normally, white on hover (login uses black on hover)
 - **Typography**: 
   - Headings: Orbitron (font-police-title)
   - Subtitles: Rajdhani (font-police-subtitle) 
@@ -213,23 +222,34 @@ The project uses a military/police themed design system:
 - **Theme System**:
   - Dark theme as default
   - Light theme support with proper contrast
-  - Theme toggle with Sun/Moon icons
+  - Theme toggle with Sun/Moon icons positioned near navigation
   - Smooth transitions between themes
   - Theme preference saved in localStorage
+- **Visual Effects**:
+  - **Transparency Effects**: All cards use bg-white/90 dark:bg-gray-800/90 with backdrop-blur-sm
+  - **Image Overlays**: bg-white/60 dark:bg-black/70 with lateral gradients
+  - **Scan Lines**: Subtle repeating linear gradients for tactical feel
 - **Design Patterns**:
+  - **Strictly Monochromatic**: No colorful elements (removed red, green, blue, etc.)
   - All caps text with expanded letter spacing for headings
   - Tactical/military language ("RECRUTA", "ELITE", "COMANDO")
   - Dark backgrounds with subtle patterns
-  - Yellow accents for CTAs and important elements
+  - Consistent spacing and shadow systems
 - **Key Pages Styled**:
-  - Landing page with 14 police/military courses + new sections (Features, Screenshots, Social Testimonials, FAQ)
-  - Login/Register with tactical theme and dark/light mode support
-  - Checkout page with 3 subscription tiers
+  - Landing page: Monochromatic with gray buttons, orange hover effects
+  - Login/Register: Yellow accent buttons with tactical theme
+  - Admin Dashboard: "CENTRAL DE COMANDO" with monochromatic cards
+  - Content Manager: Hierarchical filter system with cascading dropdowns
+- **Content Management Features**:
+  - **Hierarchical Filtering**: Matéria → Submatéria → Tópico cascade system
+  - **Subject Tree Navigation**: Police/military course structure organization
+  - **Filter Categories**: DIREITO, SEGURANÇA PÚBLICA, CONHECIMENTOS GERAIS
 - **Components**:
   - Custom tactical logo (crosshair/target design)
-  - WhatsApp floating button
+  - WhatsApp floating button with monochromatic styling
   - Social media integration
   - Theme toggle button (useTheme hook from ThemeContext)
+  - Animated card transitions with backdrop blur effects
 
 ### Troubleshooting
 
