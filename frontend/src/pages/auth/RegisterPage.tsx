@@ -384,7 +384,7 @@ export default function RegisterPage() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-14 text-lg font-police-title bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-white hover:text-black dark:hover:text-black tracking-widest shadow-lg transition-all"
+              className="w-full h-14 text-lg font-police-title bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white tracking-widest shadow-lg transition-all"
               isLoading={isLoading}
             >
               {isLoading ? 'PROCESSANDO...' : 'INICIAR TREINAMENTO'}
