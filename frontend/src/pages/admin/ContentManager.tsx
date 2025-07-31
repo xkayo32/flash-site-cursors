@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -241,6 +242,8 @@ interface ContentItem {
 
 export default function ContentManager() {
   const { resolvedTheme } = useTheme();
+  const navigate = useNavigate();
+  const importInputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [selectedType, setSelectedType] = useState('Todos');
@@ -251,10 +254,85 @@ export default function ContentManager() {
   const [selectedMateria, setSelectedMateria] = useState('');
   const [selectedSubmateria, setSelectedSubmateria] = useState('');
   const [selectedTopico, setSelectedTopico] = useState('');
+  const [selectedContentType, setSelectedContentType] = useState('');
+  const [contentTitle, setContentTitle] = useState('');
+  const [contentDescription, setContentDescription] = useState('');
   // Filtros da listagem
   const [filterMateria, setFilterMateria] = useState('TODOS');
   const [filterSubmateria, setFilterSubmateria] = useState('TODOS');
   const [filterTopico, setFilterTopico] = useState('TODOS');
+  
+  // Import/Export functionality
+  const handleImport = () => {
+    importInputRef.current?.click();
+  };
+  
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // TODO: Implement actual import logic
+      console.log('Importando arquivo:', file.name);
+      alert(`Importando: ${file.name}\nFuncionalidade em desenvolvimento.`);
+    }
+  };
+  
+  const handleExport = () => {
+    // TODO: Implement actual export logic
+    const data = {
+      content: filteredContent,
+      exportDate: new Date().toISOString(),
+      totalItems: filteredContent.length
+    };
+    
+    const dataStr = JSON.stringify(data, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `conteudo_export_${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+  
+  const handleCreateContent = () => {
+    if (selectedContentType === 'course') {
+      // Redirecionar para tela de cursos
+      navigate('/admin/courses?create=true');
+      setShowCreateModal(false);
+    } else {
+      // TODO: Implement creation logic for other content types
+      const contentData = {
+        type: selectedContentType,
+        title: contentTitle,
+        description: contentDescription,
+        materia: selectedMateria,
+        submateria: selectedSubmateria,
+        topico: selectedTopico,
+        createdAt: new Date().toISOString()
+      };
+      
+      console.log('Criando conteúdo:', contentData);
+      
+      // Show success message with content type specific text
+      const typeLabels = {
+        flashcards: 'Flashcards Táticos',
+        questions: 'Banco de Questões',
+        summary: 'Resumo Operacional'
+      };
+      
+      alert(`✅ ${typeLabels[selectedContentType as keyof typeof typeLabels]} criado com sucesso!\n\n📝 Título: ${contentTitle}\n📁 Matéria: ${selectedMateria}\n\n🚧 Funcionalidade em desenvolvimento.`);
+      
+      // Reset form
+      setShowCreateModal(false);
+      setSelectedContentType('');
+      setContentTitle('');
+      setContentDescription('');
+      setSelectedMateria('');
+      setSelectedSubmateria('');
+      setSelectedTopico('');
+    }
+  };
 
   const filteredContent = contentItems.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -351,11 +429,26 @@ export default function ContentManager() {
         </div>
         
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="gap-2 font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-2 border-gray-300 dark:border-gray-700 hover:border-accent-500 hover:text-accent-500 dark:hover:border-accent-500">
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".json,.csv,.xlsx"
+            onChange={handleFileImport}
+            className="hidden"
+          />
+          <Button 
+            variant="outline" 
+            onClick={handleImport}
+            className="gap-2 font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-2 border-gray-300 dark:border-gray-700 hover:border-accent-500 hover:text-accent-500 dark:hover:border-accent-500"
+          >
             <Upload className="w-4 h-4" />
             IMPORTAR
           </Button>
-          <Button variant="outline" className="gap-2 font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-2 border-gray-300 dark:border-gray-700 hover:border-accent-500 hover:text-accent-500 dark:hover:border-accent-500">
+          <Button 
+            variant="outline" 
+            onClick={handleExport}
+            className="gap-2 font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-2 border-gray-300 dark:border-gray-700 hover:border-accent-500 hover:text-accent-500 dark:hover:border-accent-500"
+          >
             <Download className="w-4 h-4" />
             EXPORTAR
           </Button>
@@ -848,12 +941,22 @@ export default function ContentManager() {
                   <label className="block text-sm font-medium font-police-subtitle uppercase tracking-wide mb-2 text-gray-700 dark:text-gray-300">
                     TIPO DE CONTEÚDO
                   </label>
-                  <select className="w-full px-4 py-2 border-2 rounded-lg font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none">
+                  <select 
+                    value={selectedContentType}
+                    onChange={(e) => setSelectedContentType(e.target.value)}
+                    className="w-full px-4 py-2 border-2 rounded-lg font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
+                  >
+                    <option value="">SELECIONE O TIPO</option>
                     <option value="course">CURSO COMPLETO</option>
                     <option value="flashcards">FLASHCARDS TÁTICOS</option>
                     <option value="questions">BANCO DE QUESTÕES</option>
                     <option value="summary">RESUMO OPERACIONAL</option>
                   </select>
+                  {selectedContentType === 'course' && (
+                    <p className="text-xs mt-1 text-accent-500 font-police-body">
+                      📍 SERÁ REDIRECIONADO PARA TELA DE CURSOS
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -862,8 +965,11 @@ export default function ContentManager() {
                   </label>
                   <input
                     type="text"
+                    value={contentTitle}
+                    onChange={(e) => setContentTitle(e.target.value)}
                     placeholder="TÍTULO DO CONTEÚDO..."
                     className="w-full px-4 py-2 border-2 rounded-lg font-police-body uppercase tracking-wider transition-all duration-300 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
+                    required
                   />
                 </div>
 
@@ -932,6 +1038,8 @@ export default function ContentManager() {
                   </label>
                   <textarea
                     rows={3}
+                    value={contentDescription}
+                    onChange={(e) => setContentDescription(e.target.value)}
                     placeholder="DESCRIÇÃO OPERACIONAL DO CONTEÚDO..."
                     className="w-full px-4 py-2 border-2 rounded-lg font-police-body uppercase tracking-wider transition-all duration-300 resize-none border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
                   />
@@ -951,9 +1059,13 @@ export default function ContentManager() {
                 >
                   CANCELAR
                 </Button>
-                <Button className="gap-2 font-police-body font-semibold transition-all duration-300 uppercase tracking-wider shadow-lg bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black">
+                <Button 
+                  onClick={handleCreateContent}
+                  disabled={!selectedContentType || !contentTitle.trim()}
+                  className="gap-2 font-police-body font-semibold transition-all duration-300 uppercase tracking-wider shadow-lg bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <Save className="w-4 h-4" />
-                  CRIAR CONTEÚDO
+                  {selectedContentType === 'course' ? 'IR PARA CURSOS' : 'CRIAR CONTEÚDO'}
                 </Button>
               </div>
             </motion.div>
