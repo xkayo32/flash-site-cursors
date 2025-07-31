@@ -219,12 +219,16 @@ The project uses a **monochromatic military/police themed design system** consis
     - accent-500: #facc15 (tactical yellow) - Primary action buttons
     - accent-600: #e5b91e (yellow hover - light theme)  
     - accent-650: #d06e0f (orange hover - dark theme)
-- **Button Color System**:
-  - **Login Page**: Yellow buttons (bg-accent-500) with adaptive text
-  - **Landing Page**: Gray/black buttons (bg-gray-900/bg-gray-100) with orange hover in dark theme
-  - **Hover Behavior**: 
-    - Light theme: text always black
-    - Dark theme: text white normally, white on hover (login uses black on hover)
+- **Button Color System (Oficial)**:
+  - **Padrão para CTAs Principais**: 
+    - **Theme Claro**: `bg-accent-500 hover:bg-accent-600 text-black hover:text-black`
+    - **Theme Escuro**: `dark:bg-gray-100 dark:hover:bg-accent-650 dark:text-black dark:hover:text-white`
+  - **Explicação do Esquema**:
+    - Theme claro: Botão amarelo (`#facc15`) → Hover amarelo escuro (`#e5b91e`) 
+    - Theme escuro: Botão cinza claro (`#f3f4f6`) → Hover laranja (`#d06e0f`)
+    - Texto sempre preto no claro, preto normal/branco hover no escuro
+  - **Aplicação**: Login, Landing Page, Admin, todas as páginas principais
+  - **Classes CSS Completas**: `bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white`
 - **Typography**: 
   - Headings: Orbitron (font-police-title)
   - Subtitles: Rajdhani (font-police-subtitle) 
