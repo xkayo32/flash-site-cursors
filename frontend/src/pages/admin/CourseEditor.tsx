@@ -9,7 +9,6 @@ import {
   Eye,
   BookOpen,
   Users,
-  DollarSign,
   Shield,
   Target,
   Award,
@@ -20,7 +19,9 @@ import {
   Calendar,
   Clock,
   Upload,
-  EyeOff
+  EyeOff,
+  Grid3X3,
+  List
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -38,6 +39,7 @@ export default function CourseEditor() {
   const [selectedStatus, setSelectedStatus] = useState('TODOS');
   const [courses, setCourses] = useState<MockCourse[]>(mockCourses);
   const [isLoading, setIsLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const filteredCourses = filterCourses(courses, searchTerm, selectedCategory, selectedStatus);
 
@@ -148,6 +150,95 @@ export default function CourseEditor() {
     toast.success(`Curso duplicado como "${newCourse.title}"!`);
   };
 
+  const renderListView = () => (
+    <div className="space-y-3">
+      {filteredCourses.map((course) => (
+        <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-accent-500/30 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              <div className="relative w-16 h-16 flex-shrink-0">
+                <CourseImage
+                  src={course.thumbnail}
+                  alt={course.title}
+                  className="w-full h-full object-cover rounded-lg"
+                  fallbackCategory={course.category}
+                />
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider truncate">
+                      {course.title}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <img
+                        src={course.instructor.avatar}
+                        alt={course.instructor.name}
+                        className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600"
+                      />
+                      <span className="text-sm text-gray-600 dark:text-gray-400 font-police-body truncate">
+                        {course.instructor.name}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 ml-4">
+                    {getStatusBadge(course.status)}
+                    {getLevelBadge(course.level)}
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-6 mt-2 text-xs text-gray-600 dark:text-gray-400">
+                  <span className="font-police-body">{course.duration.hours}h</span>
+                  <span className="font-police-body">{course.stats.modules} módulos</span>
+                  <span className="font-police-body">{course.stats.enrollments.toLocaleString('pt-BR')} recrutas</span>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-3 h-3 text-accent-500 fill-current" />
+                    <span className="font-police-numbers">
+                      {course.stats.rating > 0 ? course.stats.rating : '--'}
+                    </span>
+                  </div>
+                  <Badge className="bg-gray-900/80 text-white border-0 font-police-numbers">
+                    R$ {course.price.toLocaleString('pt-BR')}
+                  </Badge>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-1 ml-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="font-police-body font-semibold uppercase tracking-wider text-xs h-8"
+                  onClick={() => handleViewCourse(course.id)}
+                >
+                  <Eye className="w-3 h-3 mr-1" />
+                  VER
+                </Button>
+                <Button
+                  size="sm"
+                  className="font-police-body font-semibold uppercase tracking-wider text-xs bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black h-8"
+                  onClick={() => handleEditCourse(course.id)}
+                >
+                  <Edit className="w-3 h-3 mr-1" />
+                  EDITAR
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-gray-600 hover:text-red-600 border-gray-300 hover:border-red-300 h-8 px-2"
+                  onClick={() => handleDeleteCourse(course)}
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+
   return (
     <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-full relative">
       {/* Background Pattern */}
@@ -180,6 +271,24 @@ export default function CourseEditor() {
         </div>
         
         <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 p-1">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className="p-2 font-police-body"
+            >
+              <Grid3X3 className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="p-2 font-police-body"
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
           <Button 
             onClick={handleCreateCourse} 
             className="gap-2 font-police-body font-semibold transition-all duration-300 uppercase tracking-wider shadow-lg bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black"
@@ -195,7 +304,7 @@ export default function CourseEditor() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 md:grid-cols-3 gap-4"
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -203,26 +312,21 @@ export default function CourseEditor() {
           transition={{ delay: 0.1 }}
         >
           <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl">
-            <CardContent className="p-6 relative overflow-hidden">
+            <CardContent className="p-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
               <div className="flex items-center justify-between">
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
-                    MISSÕES ATIVAS
+                    TOTAL DE CURSOS
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                     {courses.length}
                   </p>
-                  <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                    <TrendingUp className="w-4 h-4" />
-                    <span className="text-sm font-police-numbers font-bold">+15%</span>
-                  </div>
                 </div>
                 <div className="relative">
-                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
-                    <BookOpen className="w-8 h-8 text-gray-700 dark:text-accent-500" />
+                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
+                    <BookOpen className="w-6 h-6 text-gray-700 dark:text-accent-500" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-500 rounded-full animate-pulse" />
                 </div>
               </div>
             </CardContent>
@@ -235,24 +339,20 @@ export default function CourseEditor() {
           transition={{ delay: 0.2 }}
         >
           <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl">
-            <CardContent className="p-6 relative overflow-hidden">
+            <CardContent className="p-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-1 h-full bg-gray-600" />
               <div className="flex items-center justify-between">
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
-                    EM OPERAÇÃO
+                    PUBLICADOS
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                     {courses.filter(c => c.status === 'PUBLICADO').length}
                   </p>
-                  <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                    <CheckCircle className="w-4 h-4" />
-                    <span className="text-sm font-police-numbers font-bold">100%</span>
-                  </div>
                 </div>
                 <div className="relative">
-                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
-                    <Shield className="w-8 h-8 text-gray-700 dark:text-gray-400" />
+                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
+                    <Shield className="w-6 h-6 text-gray-700 dark:text-gray-400" />
                   </div>
                 </div>
               </div>
@@ -266,57 +366,21 @@ export default function CourseEditor() {
           transition={{ delay: 0.3 }}
         >
           <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl">
-            <CardContent className="p-6 relative overflow-hidden">
+            <CardContent className="p-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-1 h-full bg-gray-700" />
               <div className="flex items-center justify-between">
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
-                    RECRUTAS
+                    RASCUNHOS
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                    {courses.reduce((acc, course) => acc + (course.stats?.enrollments || 0), 0).toLocaleString('pt-BR')}
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                    {courses.filter(c => c.status === 'RASCUNHO').length}
                   </p>
-                  <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                    <Users className="w-4 h-4" />
-                    <span className="text-sm font-police-numbers font-bold">+235</span>
-                  </div>
                 </div>
                 <div className="relative">
-                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
-                    <Users className="w-8 h-8 text-gray-700 dark:text-gray-400" />
+                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
+                    <Edit className="w-6 h-6 text-gray-700 dark:text-gray-400" />
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl">
-            <CardContent className="p-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
-                    FATURAMENTO
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                    R$ {(courses.reduce((acc, course) => acc + ((course.price || 0) * (course.stats?.enrollments || 0)), 0) / 1000).toFixed(1)}K
-                  </p>
-                  <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                    <TrendingUp className="w-4 h-4" />
-                    <span className="text-sm font-police-numbers font-bold">+18.7%</span>
-                  </div>
-                </div>
-                <div className="relative">
-                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
-                    <DollarSign className="w-8 h-8 text-gray-700 dark:text-accent-500" />
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-500 rounded-full animate-pulse" />
                 </div>
               </div>
             </CardContent>
@@ -331,8 +395,8 @@ export default function CourseEditor() {
         transition={{ delay: 0.2 }}
       >
         <Card>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <CardContent className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="relative lg:col-span-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -340,14 +404,14 @@ export default function CourseEditor() {
                   placeholder="BUSCAR MISSÕES..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:text-gray-500 placeholder:uppercase placeholder:tracking-wider"
+                  className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:text-gray-500 placeholder:uppercase placeholder:tracking-wider"
                 />
               </div>
 
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
               >
                 {courseCategories.map(category => (
                   <option key={category} value={category}>{category}</option>
@@ -357,7 +421,7 @@ export default function CourseEditor() {
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
               >
                 {courseStatuses.map(status => (
                   <option key={status} value={status}>{status}</option>
@@ -368,15 +432,14 @@ export default function CourseEditor() {
         </Card>
       </motion.div>
 
-      {/* Courses Grid */}
+      {/* Courses Content */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         {isLoading ? (
-          <div className="col-span-full flex justify-center items-center py-12">
+          <div className="flex justify-center items-center py-12">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-500 mx-auto mb-4"></div>
               <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
@@ -385,7 +448,7 @@ export default function CourseEditor() {
             </div>
           </div>
         ) : filteredCourses.length === 0 ? (
-          <div className="col-span-full flex justify-center items-center py-12">
+          <div className="flex justify-center items-center py-12">
             <div className="text-center">
               <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 font-police-title uppercase tracking-ultra-wide">
@@ -396,114 +459,118 @@ export default function CourseEditor() {
               </p>
             </div>
           </div>
+        ) : viewMode === 'list' ? (
+          renderListView()
         ) : (
-          filteredCourses.map((course) => (
-          <Card key={course.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-accent-500/30 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-            <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
-              <CourseImage
-                src={course.thumbnail}
-                alt={course.title}
-                className="w-full h-full object-cover"
-                fallbackCategory={course.category}
-              />
-              <div className="absolute top-3 right-3">
-                {getStatusBadge(course.status)}
-              </div>
-              <div className="absolute top-3 left-3">
-                {getLevelBadge(course.level)}
-              </div>
-              <div className="absolute bottom-3 left-3">
-                <Badge className="bg-gray-900/80 text-white border-0 font-police-numbers">
-                  R$ {course.price.toLocaleString('pt-BR')}
-                </Badge>
-              </div>
-            </div>
-            
-            <CardContent className="p-6">
-              <div className="mb-4">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 font-police-subtitle uppercase tracking-wider">
-                  {course.title}
-                </h3>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                      {course.instructor.rank.split(' ')[0]}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 font-police-body">
-                      {course.instructor.name}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 font-police-body">
-                      {course.instructor.rank}
-                    </p>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredCourses.map((course) => (
+            <Card key={course.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-accent-500/30 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+              <div className="relative h-40 bg-gray-200 dark:bg-gray-700">
+                <CourseImage
+                  src={course.thumbnail}
+                  alt={course.title}
+                  className="w-full h-full object-cover"
+                  fallbackCategory={course.category}
+                />
+                <div className="absolute top-2 right-2">
+                  {getStatusBadge(course.status)}
                 </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
-                  {course.category}
-                </p>
+                <div className="absolute top-2 left-2">
+                  {getLevelBadge(course.level)}
+                </div>
+                <div className="absolute bottom-2 left-2">
+                  <Badge className="bg-gray-900/80 text-white border-0 font-police-numbers text-xs">
+                    R$ {course.price.toLocaleString('pt-BR')}
+                  </Badge>
+                </div>
               </div>
+              
+              <CardContent className="p-4">
+                <div className="mb-3">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2 font-police-subtitle uppercase tracking-wider line-clamp-2">
+                    {course.title}
+                  </h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <img
+                      src={course.instructor.avatar}
+                      alt={course.instructor.name}
+                      className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 font-police-body truncate">
+                        {course.instructor.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-police-body truncate">
+                        {course.instructor.rank}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600">
+                    {course.category}
+                  </Badge>
+                </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400 font-police-body">DURAÇÃO</span>
-                  <span className="font-bold text-gray-900 dark:text-white font-police-numbers">
-                    {course.duration.hours}h
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400 font-police-body">MÓDULOS</span>
-                  <span className="font-bold text-gray-900 dark:text-white font-police-numbers">
-                    {course.stats.modules}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400 font-police-body">RECRUTAS</span>
-                  <span className="font-bold text-gray-900 dark:text-white font-police-numbers">
-                    {course.stats.enrollments.toLocaleString('pt-BR')}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400 font-police-body">RATING</span>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-3 h-3 text-accent-500 fill-current" />
+                <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600 dark:text-gray-400 font-police-body">DURAÇÃO</span>
                     <span className="font-bold text-gray-900 dark:text-white font-police-numbers">
-                      {course.stats.rating > 0 ? course.stats.rating : '--'}
+                      {course.duration.hours}h
                     </span>
                   </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600 dark:text-gray-400 font-police-body">MÓDULOS</span>
+                    <span className="font-bold text-gray-900 dark:text-white font-police-numbers">
+                      {course.stats.modules}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600 dark:text-gray-400 font-police-body">RECRUTAS</span>
+                    <span className="font-bold text-gray-900 dark:text-white font-police-numbers">
+                      {course.stats.enrollments.toLocaleString('pt-BR')}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600 dark:text-gray-400 font-police-body">RATING</span>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3 h-3 text-accent-500 fill-current" />
+                      <span className="font-bold text-gray-900 dark:text-white font-police-numbers">
+                        {course.stats.rating > 0 ? course.stats.rating : '--'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 font-police-body font-semibold uppercase tracking-wider text-xs"
-                  onClick={() => handleViewCourse(course.id)}
-                >
-                  <Eye className="w-3 h-3 mr-1" />
-                  VER
-                </Button>
-                <Button
-                  size="sm"
-                  className="flex-1 font-police-body font-semibold uppercase tracking-wider text-xs bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black"
-                  onClick={() => handleEditCourse(course.id)}
-                >
-                  <Edit className="w-3 h-3 mr-1" />
-                  EDITAR
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-gray-600 hover:text-red-600 border-gray-300 hover:border-red-300"
-                  onClick={() => handleDeleteCourse(course)}
-                >
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          ))
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 font-police-body font-semibold uppercase tracking-wider text-xs h-8"
+                    onClick={() => handleViewCourse(course.id)}
+                  >
+                    <Eye className="w-3 h-3 mr-1" />
+                    VER
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1 font-police-body font-semibold uppercase tracking-wider text-xs bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black h-8"
+                    onClick={() => handleEditCourse(course.id)}
+                  >
+                    <Edit className="w-3 h-3 mr-1" />
+                    EDITAR
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-gray-600 hover:text-red-600 border-gray-300 hover:border-red-300 h-8 px-2"
+                    onClick={() => handleDeleteCourse(course)}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            ))}
+          </div>
         )}
       </motion.div>
 
