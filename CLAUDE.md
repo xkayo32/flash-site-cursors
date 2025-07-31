@@ -340,6 +340,10 @@ docker compose logs -f postgres
 - HTTP client: Axios 1.10 with centralized configuration
 
 ### Recent Updates
+- **2025-07-31**: Standardized logo usage across all themes
+  - StudyProLogo component now uses colorful logo (Logo_colorida_2.png) in both light and dark themes
+  - Replaced Logo component with StudyProLogo in AdminLayout for consistency
+  - Logo no longer changes based on theme selection
 - **2025-07-30**: Standardized button colors across platform
   - All yellow buttons now use accent color palette (accent-500/600/650)
   - Dark theme hover color: #d06e0f (accent-650)
