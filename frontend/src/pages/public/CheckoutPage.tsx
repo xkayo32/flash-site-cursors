@@ -379,9 +379,9 @@ export default function CheckoutPage() {
                     className={`
                       w-full py-4 text-lg font-police-title tracking-widest transition-all duration-300
                       ${plan.popular
-                        ? 'bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black shadow-lg shadow-accent-500/30'
+                        ? 'bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-white hover:text-black dark:hover:text-black shadow-lg shadow-accent-500/30'
                         : plan.color === 'white'
-                        ? 'bg-white hover:bg-gray-200 dark:hover:bg-gray-700 text-black dark:text-white'
+                        ? 'bg-white hover:bg-gray-200 dark:hover:bg-gray-700 text-black dark:text-white hover:text-black dark:hover:text-black'
                         : 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-700'
                       }
                     `}
