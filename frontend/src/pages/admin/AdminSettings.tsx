@@ -55,6 +55,7 @@ import '../../styles/police-fonts.css';
 import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import toast from 'react-hot-toast';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
+import { NotificationsSection, BackupSection, AnalyticsSection } from './AdminSettingsExtensions';
 
 // Componente Toggle
 function Toggle({ enabled, onChange }: { enabled: boolean; onChange: () => void }) {
@@ -1401,7 +1402,337 @@ export default function AdminSettings() {
               </motion.div>
             )}
 
-            {/* Outras seções podem ser implementadas aqui */}
+            {/* Seção: Usuários */}
+            {activeSection === 'users' && (
+              <motion.div
+                key="users"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <div className="space-y-6">
+                  {/* Estatísticas de Usuários */}
+                  <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+                    <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                      <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white">ESTATÍSTICAS DE USUÁRIOS</h2>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="p-4 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center">
+                              <Users className="w-6 h-6 text-black" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">1,247</p>
+                              <p className="text-sm font-police-body uppercase tracking-wider text-gray-600 dark:text-gray-400">TOTAL DE USUÁRIOS</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="p-4 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
+                              <Shield className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">3</p>
+                              <p className="text-sm font-police-body uppercase tracking-wider text-gray-600 dark:text-gray-400">ADMINISTRADORES</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
+                              <User className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">1,244</p>
+                              <p className="text-sm font-police-body uppercase tracking-wider text-gray-600 dark:text-gray-400">ESTUDANTES</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-gray-600 rounded-lg flex items-center justify-center">
+                              <div className="w-3 h-3 bg-accent-500 rounded-full animate-pulse"></div>
+                            </div>
+                            <div>
+                              <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">142</p>
+                              <p className="text-sm font-police-body uppercase tracking-wider text-gray-600 dark:text-gray-400">ONLINE AGORA</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Configurações de Usuários */}
+                  <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+                    <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                      <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white">CONFIGURAÇÕES DE USUÁRIOS</h2>
+                    </CardHeader>
+                    <CardContent className="space-y-6 p-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-accent-500 dark:hover:border-accent-500 transition-colors">
+                          <div>
+                            <h4 className="font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">APROVAÇÃO AUTOMÁTICA</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Novos usuários são aprovados automaticamente</p>
+                          </div>
+                          <Toggle enabled={true} onChange={() => {}} />
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-accent-500 dark:hover:border-accent-500 transition-colors">
+                          <div>
+                            <h4 className="font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">LIMITE DE SESSÕES</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Controlar número máximo de sessões simultâneas</p>
+                          </div>
+                          <Toggle enabled={false} onChange={() => {}} />
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-accent-500 dark:hover:border-accent-500 transition-colors">
+                          <div>
+                            <h4 className="font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">VERIFICAÇÃO 2FA</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Exigir autenticação de dois fatores para administradores</p>
+                          </div>
+                          <Toggle enabled={true} onChange={() => {}} />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                            LIMITE DE TENTATIVAS DE LOGIN
+                          </label>
+                          <input
+                            type="number"
+                            defaultValue={5}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all font-police-numbers"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                            TEMPO DE BLOQUEIO (MINUTOS)
+                          </label>
+                          <input
+                            type="number"
+                            defaultValue={15}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all font-police-numbers"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Usuários Recentes */}
+                  <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+                    <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                      <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white">USUÁRIOS RECENTES</h2>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      {[
+                        { name: 'João Silva', email: 'joao@example.com', role: 'Estudante', status: 'online', joined: '2024-01-15' },
+                        { name: 'Maria Santos', email: 'maria@example.com', role: 'Estudante', status: 'offline', joined: '2024-01-14' },
+                        { name: 'Pedro Costa', email: 'pedro@example.com', role: 'Administrador', status: 'online', joined: '2024-01-13' },
+                        { name: 'Ana Lima', email: 'ana@example.com', role: 'Estudante', status: 'offline', joined: '2024-01-12' },
+                      ].map((user, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={`https://ui-avatars.com/api/?name=${user.name}&background=14242f&color=fff`}
+                              alt={user.name}
+                              className="w-10 h-10 rounded-full"
+                            />
+                            <div>
+                              <p className="font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">{user.name}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{user.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-sm font-police-body uppercase tracking-wider text-gray-900 dark:text-white">{user.role}</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400">Desde {user.joined}</p>
+                            </div>
+                            <div className={`w-3 h-3 rounded-full ${user.status === 'online' ? 'bg-accent-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Seção: Segurança */}
+            {activeSection === 'security' && (
+              <motion.div
+                key="security"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <div className="space-y-6">
+                  {/* Status de Segurança */}
+                  <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+                    <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                      <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white">STATUS DE SEGURANÇA</h2>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="p-4 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center">
+                              <Shield className="w-6 h-6 text-black" />
+                            </div>
+                            <div>
+                              <p className="text-lg font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider">SEGURO</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">Sistema protegido</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="p-4 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
+                              <Lock className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">256</p>
+                              <p className="text-sm font-police-body uppercase tracking-wider text-gray-600 dark:text-gray-400">CRIPTOGRAFIA AES</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
+                              <AlertCircle className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">0</p>
+                              <p className="text-sm font-police-body uppercase tracking-wider text-gray-600 dark:text-gray-400">AMEAÇAS DETECTADAS</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Configurações de Segurança */}
+                  <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+                    <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                      <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white">CONFIGURAÇÕES DE SEGURANÇA</h2>
+                    </CardHeader>
+                    <CardContent className="space-y-6 p-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-accent-500 dark:hover:border-accent-500 transition-colors">
+                          <div>
+                            <h4 className="font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">FIREWALL ATIVO</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Proteção contra ataques externos</p>
+                          </div>
+                          <Toggle enabled={true} onChange={() => {}} />
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-accent-500 dark:hover:border-accent-500 transition-colors">
+                          <div>
+                            <h4 className="font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">DETECÇÃO DE INTRUSÃO</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Monitoramento de atividades suspeitas</p>
+                          </div>
+                          <Toggle enabled={true} onChange={() => {}} />
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-accent-500 dark:hover:border-accent-500 transition-colors">
+                          <div>
+                            <h4 className="font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">LOG DE AUDITORIA</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Registro detalhado de todas as ações</p>
+                          </div>
+                          <Toggle enabled={true} onChange={() => {}} />
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-accent-500 dark:hover:border-accent-500 transition-colors">
+                          <div>
+                            <h4 className="font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">HTTPS OBRIGATÓRIO</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Forçar conexões seguras</p>
+                          </div>
+                          <Toggle enabled={true} onChange={() => {}} />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                            TEMPO DE SESSÃO (HORAS)
+                          </label>
+                          <input
+                            type="number"
+                            defaultValue={24}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all font-police-numbers"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                            FORÇA DA SENHA
+                          </label>
+                          <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all">
+                            <option>FORTE (8+ caracteres, símbolos)</option>
+                            <option>MUITO FORTE (12+ caracteres)</option>
+                            <option>MILITAR (16+ caracteres, complexa)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Logs de Segurança */}
+                  <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+                    <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                      <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white">LOGS DE SEGURANÇA</h2>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      {[
+                        { type: 'LOGIN', user: 'admin@studypro.com', action: 'Login bem-sucedido', ip: '192.168.1.100', time: '14:30', status: 'success' },
+                        { type: 'FAILED', user: 'hacker@evil.com', action: 'Tentativa de login falhada', ip: '192.168.1.200', time: '14:25', status: 'warning' },
+                        { type: 'ADMIN', user: 'admin@studypro.com', action: 'Configurações alteradas', ip: '192.168.1.100', time: '14:20', status: 'info' },
+                        { type: 'BLOCKED', user: 'suspicious@test.com', action: 'IP bloqueado por tentativas excessivas', ip: '192.168.1.300', time: '14:15', status: 'danger' },
+                      ].map((log, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                          <div className="flex items-center gap-4">
+                            <div className={`px-2 py-1 rounded text-xs font-police-numbers uppercase tracking-wider ${
+                              log.status === 'success' ? 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300' :
+                              log.status === 'warning' ? 'bg-accent-500/20 text-accent-500' :
+                              log.status === 'info' ? 'bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300' :
+                              'bg-gray-400 text-white dark:bg-gray-500'
+                            }`}>
+                              {log.type}
+                            </div>
+                            <div>
+                              <p className="font-police-body font-medium text-gray-900 dark:text-white">{log.action}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{log.user} • {log.ip}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-police-numbers text-gray-600 dark:text-gray-400">{log.time}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Seção: Notificações */}
+            {activeSection === 'notifications' && <NotificationsSection />}
+
+            {/* Seção: Backup */}
+            {activeSection === 'backup' && <BackupSection />}
+
+            {/* Seção: Analytics */}
+            {activeSection === 'analytics' && <AnalyticsSection />}
             
           </AnimatePresence>
 
