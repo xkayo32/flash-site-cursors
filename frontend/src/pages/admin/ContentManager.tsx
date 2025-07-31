@@ -410,6 +410,50 @@ export default function ContentManager() {
         : filteredContent.map(item => item.id)
     );
   };
+  
+  // Bulk actions
+  const handleBulkPublish = () => {
+    if (selectedItems.length === 0) return;
+    alert(`📢 PUBLICANDO ${selectedItems.length} ITEM(S)\n\n✅ Operação executada com sucesso!\n\n🚧 Funcionalidade em desenvolvimento.`);
+  };
+  
+  const handleBulkArchive = () => {
+    if (selectedItems.length === 0) return;
+    if (confirm(`📦 ARQUIVAR ${selectedItems.length} ITEM(S)?\n\nEsta ação pode ser desfeita posteriormente.`)) {
+      alert(`📦 ${selectedItems.length} item(s) arquivado(s) com sucesso!\n\n🚧 Funcionalidade em desenvolvimento.`);
+      setSelectedItems([]);
+    }
+  };
+  
+  const handleBulkDelete = () => {
+    if (selectedItems.length === 0) return;
+    if (confirm(`🗑️ EXCLUIR ${selectedItems.length} ITEM(S)?\n\n⚠️ ATENÇÃO: Esta ação é IRREVERSÍVEL!`)) {
+      alert(`🗑️ ${selectedItems.length} item(s) excluído(s) permanentemente!\n\n🚧 Funcionalidade em desenvolvimento.`);
+      setSelectedItems([]);
+    }
+  };
+  
+  // Individual item actions
+  const handleViewItem = (item: ContentItem) => {
+    alert(`👁️ VISUALIZANDO: ${item.title}\n\n📋 Tipo: ${item.type}\n📚 Matéria: ${item.materia}\n👤 Autor: ${item.author}\n📊 Status: ${item.status}\n\n🚧 Funcionalidade em desenvolvimento.`);
+  };
+  
+  const handleEditItem = (item: ContentItem) => {
+    alert(`✏️ EDITANDO: ${item.title}\n\n🔧 Abrindo editor para tipo: ${item.type}\n\n🚧 Funcionalidade em desenvolvimento.`);
+  };
+  
+  const handleItemOptions = (item: ContentItem) => {
+    const options = [
+      '📋 Duplicar conteúdo',
+      '📊 Ver estatísticas',
+      '🔄 Alterar status',
+      '👥 Gerenciar permissões',
+      '📤 Exportar individual',
+      '🗑️ Mover para lixeira'
+    ];
+    
+    alert(`⚙️ OPÇÕES PARA: ${item.title}\n\n${options.map((opt, i) => `${i + 1}. ${opt}`).join('\n')}\n\n🚧 Funcionalidade em desenvolvimento.`);
+  };
 
   return (
     <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-full">
@@ -697,13 +741,28 @@ export default function ContentManager() {
                     
                     {selectedItems.length > 0 && (
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" className="font-police-body font-medium transition-all duration-300 border-2 border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-800 hover:text-white hover:border-gray-800">
+                        <Button 
+                          onClick={handleBulkPublish}
+                          variant="outline" 
+                          size="sm" 
+                          className="font-police-body font-medium transition-all duration-300 border-2 border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-800 hover:text-white hover:border-gray-800"
+                        >
                           PUBLICAR
                         </Button>
-                        <Button variant="outline" size="sm" className="font-police-body font-medium transition-all duration-300 border-2 border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-800 hover:text-white hover:border-gray-800">
+                        <Button 
+                          onClick={handleBulkArchive}
+                          variant="outline" 
+                          size="sm" 
+                          className="font-police-body font-medium transition-all duration-300 border-2 border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-800 hover:text-white hover:border-gray-800"
+                        >
                           ARQUIVAR
                         </Button>
-                        <Button variant="outline" size="sm" className="font-police-body font-medium transition-all duration-300 border-2 border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-800 hover:text-white hover:border-gray-800">
+                        <Button 
+                          onClick={handleBulkDelete}
+                          variant="outline" 
+                          size="sm" 
+                          className="font-police-body font-medium transition-all duration-300 border-2 border-red-600 text-red-600 dark:text-red-400 hover:bg-red-800 hover:text-white hover:border-red-800"
+                        >
                           EXCLUIR
                         </Button>
                       </div>
@@ -877,13 +936,31 @@ export default function ContentManager() {
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" title="Visualizar">
+                            <Button 
+                              onClick={() => handleViewItem(item)}
+                              variant="ghost" 
+                              size="sm" 
+                              title="Visualizar"
+                              className="hover:bg-accent-500/20 hover:text-accent-500 transition-colors"
+                            >
                               <Eye className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="sm" title="Editar">
+                            <Button 
+                              onClick={() => handleEditItem(item)}
+                              variant="ghost" 
+                              size="sm" 
+                              title="Editar"
+                              className="hover:bg-accent-500/20 hover:text-accent-500 transition-colors"
+                            >
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="sm" title="Mais opções">
+                            <Button 
+                              onClick={() => handleItemOptions(item)}
+                              variant="ghost" 
+                              size="sm" 
+                              title="Mais opções"
+                              className="hover:bg-accent-500/20 hover:text-accent-500 transition-colors"
+                            >
                               <MoreVertical className="w-4 h-4" />
                             </Button>
                           </div>
