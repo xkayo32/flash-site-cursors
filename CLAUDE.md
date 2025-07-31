@@ -209,14 +209,14 @@ When working with Claude Code agents for better code quality:
 - PostgreSQL port 5532 is custom to avoid conflicts with default 5432
 
 ### UI/UX Design System
-The project uses a **monochromatic military/police themed design system**:
+The project uses a **monochromatic military/police themed design system** consistently across all screens (Dashboard, Login, Landing Page, and Admin):
 
 - **Color Palette (Monochromatic)**:
   - **Primary Colors**: Black (#000000), White (#FFFFFF)
   - **Military Base**: #14242f (tactical blue-gray for specific elements)
   - **Gray Scale**: Complete range from gray-50 to gray-950
   - **Accent Colors** (Limited use):
-    - accent-500: #facc15 (tactical yellow) - ONLY for login button
+    - accent-500: #facc15 (tactical yellow) - Primary action buttons
     - accent-600: #e5b91e (yellow hover - light theme)  
     - accent-650: #d06e0f (orange hover - dark theme)
 - **Button Color System**:
@@ -246,6 +246,10 @@ The project uses a **monochromatic military/police themed design system**:
   - Tactical/military language ("RECRUTA", "ELITE", "COMANDO")
   - Dark backgrounds with subtle patterns
   - Consistent spacing and shadow systems
+  - **Card Styles**: bg-white/90 dark:bg-gray-800/90 with backdrop-blur-sm
+  - **Borders**: border-gray-200 dark:border-gray-700
+  - **Text Colors**: text-gray-900 dark:text-white (primary), text-gray-600 dark:text-gray-400 (secondary)
+  - **Input Fields**: bg-gray-50 dark:bg-gray-800 with border-gray-300 dark:border-gray-600
 - **Key Pages Styled**:
   - Landing page: Monochromatic with gray buttons, orange hover effects
   - Login/Register: Yellow accent buttons with tactical theme

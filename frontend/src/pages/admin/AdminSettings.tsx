@@ -51,6 +51,10 @@ import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store/authStore';
 import { useTheme } from '@/contexts/ThemeContext';
+import '../../styles/police-fonts.css';
+import { StudyProLogo } from '@/components/ui/StudyProLogo';
+import toast from 'react-hot-toast';
+import { useSystemSettings } from '@/hooks/useSystemSettings';
 
 // Componente Toggle
 function Toggle({ enabled, onChange }: { enabled: boolean; onChange: () => void }) {
@@ -59,7 +63,7 @@ function Toggle({ enabled, onChange }: { enabled: boolean; onChange: () => void 
       onClick={onChange}
       className={cn(
         "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-        enabled ? "bg-primary-600" : "bg-gray-200 dark:bg-gray-700"
+        enabled ? "bg-accent-500" : "bg-gray-300 dark:bg-gray-700"
       )}
     >
       <span
@@ -76,8 +80,9 @@ export default function AdminSettings() {
   const [activeSection, setActiveSection] = useState('general');
   const { theme, setTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
-  const [systemName, setSystemName] = useState('Study Pro');
-  const [logoLight, setLogoLight] = useState<string | null>(null);
+  const { systemName, systemLogo, companyInfo, updateSystemName, updateSystemLogo, updateCompanyInfo } = useSystemSettings();
+  const [localSystemName, setLocalSystemName] = useState(systemName);
+  const [logoLight, setLogoLight] = useState<string | null>(systemLogo);
   const [logoDark, setLogoDark] = useState<string | null>(null);
   const [showApiKeys, setShowApiKeys] = useState(false);
   const user = useAuthStore((state) => state.user);
@@ -110,23 +115,8 @@ export default function AdminSettings() {
     backupFrequency: 'daily'
   });
 
-  // Informações da empresa
-  const [companyInfo, setCompanyInfo] = useState({
-    cnpj: '00.000.000/0001-00',
-    razaoSocial: 'Study Pro Educação Ltda',
-    nomeFantasia: 'Study Pro',
-    email: 'contato@studypro.com.br',
-    telefone: '(11) 99999-9999',
-    whatsapp: '(11) 99999-9999',
-    endereco: {
-      cep: '01234-567',
-      logradouro: 'Rua das Flores, 123',
-      bairro: 'Centro',
-      cidade: 'São Paulo',
-      estado: 'SP',
-      complemento: 'Sala 45'
-    }
-  });
+  // Usar informações da empresa do store
+  const [localCompanyInfo, setLocalCompanyInfo] = useState(companyInfo);
 
   // Configurações de SMTP
   const [smtpSettings, setSmtpSettings] = useState({
@@ -216,11 +206,11 @@ export default function AdminSettings() {
     }));
   };
 
-  // Atualizar informações da empresa
-  const updateCompanyInfo = (key: string, value: string) => {
+  // Atualizar informações da empresa localmente
+  const updateLocalCompanyInfo = (key: string, value: string) => {
     if (key.includes('.')) {
       const [parent, child] = key.split('.');
-      setCompanyInfo(prev => ({
+      setLocalCompanyInfo(prev => ({
         ...prev,
         [parent]: {
           ...prev[parent as keyof typeof prev],
@@ -228,7 +218,7 @@ export default function AdminSettings() {
         }
       }));
     } else {
-      setCompanyInfo(prev => ({
+      setLocalCompanyInfo(prev => ({
         ...prev,
         [key]: value
       }));
@@ -254,9 +244,24 @@ export default function AdminSettings() {
   // Salvar configurações
   const saveSettings = async () => {
     setIsLoading(true);
-    // Simular salvamento
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
+    try {
+      // Aqui você faria as chamadas para a API para salvar as configurações
+      // Por enquanto, vamos simular o salvamento
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Atualizar o store global
+      updateSystemName(localSystemName);
+      if (logoLight) {
+        updateSystemLogo(logoLight);
+      }
+      updateCompanyInfo(localCompanyInfo);
+      
+      toast.success('Configurações salvas com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao salvar configurações');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -267,11 +272,11 @@ export default function AdminSettings() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl font-bold text-primary-900 dark:text-white mb-2">
-          Configurações Administrativas
+        <h1 className="text-3xl font-police-title uppercase tracking-widest text-gray-900 dark:text-white mb-2">
+          CONFIGURAÇÕES DO COMANDO
         </h1>
-        <p className="text-primary-600 dark:text-gray-300">
-          Gerencie as configurações globais da plataforma
+        <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
+          Central de controle operacional da plataforma
         </p>
       </motion.div>
 
@@ -282,7 +287,7 @@ export default function AdminSettings() {
           animate={{ opacity: 1, x: 0 }}
           className="lg:col-span-1"
         >
-          <Card>
+          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
             <CardContent className="p-0">
               <nav className="space-y-1 p-2">
                 {sections.map((section) => (
@@ -290,10 +295,10 @@ export default function AdminSettings() {
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all",
+                      "w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all font-police-body uppercase tracking-wider",
                       activeSection === section.id
-                        ? "bg-primary-100 dark:bg-primary-900/30 text-primary-900 dark:text-primary-100"
-                        : "text-primary-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-800"
+                        ? "bg-gray-900 dark:bg-gray-700 text-white shadow-lg"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
                     )}
                   >
                     <section.icon className="w-5 h-5" />
@@ -306,21 +311,24 @@ export default function AdminSettings() {
           </Card>
 
           {/* Info Card */}
-          <Card className="mt-6">
+          <Card className="mt-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
             <CardContent className="p-4">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-gray-700 dark:text-gray-300" />
                 </div>
                 <div>
-                  <p className="font-medium text-primary-900 dark:text-white">{user?.name}</p>
-                  <p className="text-sm text-primary-600 dark:text-gray-400">Administrador</p>
+                  <p className="font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">{user?.name}</p>
+                  <p className="text-sm text-accent-500 font-police-body uppercase tracking-wider">COMANDANTE</p>
                 </div>
               </div>
-              <div className="text-xs space-y-1 text-primary-600 dark:text-gray-400">
-                <p>Versão: 1.0.0</p>
-                <p>Último login: Hoje, 14:30</p>
-                <p>Status: Online</p>
+              <div className="text-xs space-y-1 text-gray-600 dark:text-gray-400 font-police-numbers">
+                <p>VERSÃO: 1.0.0</p>
+                <p>ACESSO: HOJE 14:30</p>
+                <p className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  STATUS: OPERACIONAL
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -341,39 +349,39 @@ export default function AdminSettings() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <Card>
-                  <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Configurações Gerais</h2>
+                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+                  <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white">CONFIGURAÇÕES GERAIS</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                        Nome da Plataforma
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        NOME DA PLATAFORMA
                       </label>
                       <input
                         type="text"
-                        value={systemName}
-                        onChange={(e) => setSystemName(e.target.value)}
-                        className="w-full px-4 py-2 border border-primary-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
+                        value={localSystemName}
+                        onChange={(e) => setLocalSystemName(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                        Descrição da Plataforma
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        DESCRIÇÃO DA PLATAFORMA
                       </label>
                       <textarea
                         rows={3}
                         defaultValue="Plataforma completa para preparação em concursos públicos"
-                        className="w-full px-4 py-2 border border-primary-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                        Fuso Horário
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        FUSO HORÁRIO
                       </label>
-                      <select className="w-full px-4 py-2 border border-primary-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white">
+                      <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all">
                         <option>America/Sao_Paulo (UTC-3)</option>
                         <option>America/New_York (UTC-5)</option>
                         <option>Europe/London (UTC+0)</option>
@@ -381,10 +389,10 @@ export default function AdminSettings() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                        Idioma Padrão
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        IDIOMA PADRÃO
                       </label>
-                      <select className="w-full px-4 py-2 border border-primary-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white">
+                      <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all">
                         <option>Português (Brasil)</option>
                         <option>English (US)</option>
                         <option>Español</option>
@@ -403,29 +411,52 @@ export default function AdminSettings() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <Card>
-                  <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Marca e Logo</h2>
+                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+                  <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white">IDENTIDADE VISUAL</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {/* Logo Tema Claro */}
+                    {/* Aviso sobre logo */}
+                    <div className="p-4 bg-accent-500/10 border border-accent-500/30 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-accent-500 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">CONFIGURAÇÃO ATUAL</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                            O sistema está usando a logo colorida (Logo_colorida_2.png) em ambos os temas.
+                            Para alterar a logo, faça upload de uma nova imagem abaixo.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Logo Principal */}
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                        Logo - Tema Claro
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        LOGO PRINCIPAL
                       </label>
-                      <div className="border-2 border-dashed border-primary-300 dark:border-gray-600 rounded-lg p-6">
+                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 bg-gray-50 dark:bg-gray-800/50 transition-colors hover:border-accent-500 dark:hover:border-accent-500">
                         {logoLight ? (
                           <div className="text-center">
-                            <img src={logoLight} alt="Logo Claro" className="max-h-16 mx-auto mb-3" />
+                            <img src={logoLight} alt="Logo Principal" className="max-h-20 mx-auto mb-3" />
                             <div className="flex gap-2 justify-center">
-                              <Button variant="outline" size="sm" onClick={() => removeLogo('light')} className="gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => removeLogo('light')} 
+                                className="gap-2 border-gray-300 dark:border-gray-600 hover:border-red-500 hover:text-red-500 dark:hover:border-red-500 dark:hover:text-red-500 transition-colors"
+                              >
                                 <Trash2 className="w-4 h-4" />
-                                Remover
+                                REMOVER
                               </Button>
                               <label className="cursor-pointer">
-                                <Button variant="outline" size="sm" className="gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="gap-2 border-gray-300 dark:border-gray-600 hover:border-accent-500 hover:text-accent-500 dark:hover:border-accent-500 dark:hover:text-accent-500 transition-colors"
+                                >
                                   <Upload className="w-4 h-4" />
-                                  Substituir
+                                  SUBSTITUIR
                                 </Button>
                                 <input
                                   type="file"
@@ -438,10 +469,10 @@ export default function AdminSettings() {
                           </div>
                         ) : (
                           <label className="cursor-pointer block text-center">
-                            <div className="text-primary-600 dark:text-gray-400">
-                              <Upload className="w-8 h-8 mx-auto mb-2" />
-                              <p className="text-sm font-medium">Clique para fazer upload</p>
-                              <p className="text-xs">PNG, JPG até 2MB</p>
+                            <div className="text-gray-600 dark:text-gray-400">
+                              <Upload className="w-10 h-10 mx-auto mb-3 text-accent-500" />
+                              <p className="text-sm font-police-body font-medium uppercase tracking-wider">CLIQUE PARA FAZER UPLOAD</p>
+                              <p className="text-xs font-police-numbers mt-1">PNG, JPG ATÉ 2MB</p>
                             </div>
                             <input
                               type="file"
@@ -502,7 +533,7 @@ export default function AdminSettings() {
 
                     {/* Preview */}
                     <div>
-                      <h3 className="font-medium text-primary-900 dark:text-white mb-3">Preview</h3>
+                      <h3 className="font-police-subtitle font-medium text-gray-900 dark:text-white mb-3 uppercase tracking-wider">PRÉ-VISUALIZAÇÃO</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-white border border-gray-200 rounded-lg p-4">
                           <p className="text-xs text-gray-500 mb-2">Tema Claro</p>
@@ -547,21 +578,21 @@ export default function AdminSettings() {
               >
                 <div className="space-y-6">
                   {/* Dados Básicos */}
-                  <Card>
-                    <CardHeader>
-                      <h2 className="text-xl font-bold text-primary-900 dark:text-white">Dados da Empresa</h2>
+                  <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+                    <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                      <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white">DADOS DA EMPRESA</h2>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
+                          <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
                             CNPJ
                           </label>
                           <input
                             type="text"
-                            value={companyInfo.cnpj}
-                            onChange={(e) => updateCompanyInfo('cnpj', e.target.value)}
-                            className="w-full px-4 py-2 border border-primary-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
+                            value={localCompanyInfo.cnpj}
+                            onChange={(e) => updateLocalCompanyInfo('cnpj', e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all font-police-numbers"
                             placeholder="00.000.000/0001-00"
                           />
                         </div>
@@ -635,9 +666,9 @@ export default function AdminSettings() {
                   </Card>
 
                   {/* Endereço */}
-                  <Card>
-                    <CardHeader>
-                      <h2 className="text-xl font-bold text-primary-900 dark:text-white">Endereço</h2>
+                  <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+                    <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+                      <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white">ENDEREÇO OPERACIONAL</h2>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1392,13 +1423,29 @@ export default function AdminSettings() {
             animate={{ opacity: 1, y: 0 }}
             className="mt-6 flex gap-3"
           >
-            <Button onClick={saveSettings} disabled={isLoading} className="gap-2">
-              <Save className="w-4 h-4" />
-              {isLoading ? 'Salvando...' : 'Salvar Configurações'}
+            <Button 
+              onClick={saveSettings} 
+              disabled={isLoading} 
+              className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body uppercase tracking-wider transition-colors"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  SALVANDO...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  SALVAR CONFIGURAÇÕES
+                </>
+              )}
             </Button>
-            <Button variant="outline" className="gap-2">
+            <Button 
+              variant="outline" 
+              className="gap-2 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 font-police-body uppercase tracking-wider transition-colors"
+            >
               <Zap className="w-4 h-4" />
-              Restaurar Padrões
+              RESTAURAR PADRÕES
             </Button>
           </motion.div>
         </motion.div>
