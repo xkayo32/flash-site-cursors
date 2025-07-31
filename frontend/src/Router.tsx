@@ -40,6 +40,7 @@ import LegislationManager from './pages/admin/LegislationManager';
 import ImportManager from './pages/admin/ImportManager';
 import CategoryManager from './pages/admin/CategoryManager';
 import AdminSettings from './pages/admin/AdminSettings';
+import CourseForm from './pages/admin/CourseForm';
 import AdminLayout from './components/layout/AdminLayout';
 
 // Componente para rotas protegidas
@@ -141,7 +142,9 @@ function Router() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/content" element={<ContentManager />} />
         <Route path="/admin/courses" element={<CourseEditor />} />
-        <Route path="/admin/courses/new" element={<CourseCreator />} />
+        <Route path="/admin/courses/new" element={<CourseForm />} />
+        <Route path="/admin/courses/edit/:id" element={<CourseForm />} />
+        <Route path="/admin/courses/:id" element={<CourseForm />} />
         <Route path="/admin/summaries" element={<SummaryEditor />} />
         <Route path="/admin/legislation" element={<LegislationManager />} />
         <Route path="/admin/users" element={<UserManager />} />
