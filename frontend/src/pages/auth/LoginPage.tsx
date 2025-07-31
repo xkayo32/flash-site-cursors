@@ -11,12 +11,17 @@ import {
   AlertCircle,
   Facebook,
   Chrome,
-  Linkedin
+  Linkedin,
+  ArrowLeft,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/store/authStore';
+import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import toast from 'react-hot-toast';
 import { API_ENDPOINTS } from '@/config/api';
+import { useTheme } from '@/contexts/ThemeContext';
 import '../../styles/police-fonts.css';
 
 const fadeInUp = {
@@ -28,6 +33,7 @@ const fadeInUp = {
 export default function LoginPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const { setTheme, resolvedTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -103,11 +109,15 @@ export default function LoginPage() {
           navigate('/dashboard');
         }
       } else {
-        console.error('Login failed:', data);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Login failed:', data);
+        }
         toast.error(data.message || 'Email ou senha inválidos');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Login error:', error);
+      }
       toast.error('Erro ao fazer login. Verifique sua conexão.');
     } finally {
       setIsLoading(false);
@@ -119,20 +129,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex font-police-primary">
+    <div className="min-h-screen flex font-police-primary bg-gray-50 dark:bg-gray-950">
       {/* Left Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-black relative">
+      <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-black relative">
+
         {/* Background Pattern */}
         <div 
-          className="absolute inset-0 opacity-5"
+          className="absolute inset-0 opacity-5 dark:opacity-5"
           style={{
-            backgroundImage: `repeating-linear-gradient(
-              45deg,
-              transparent,
-              transparent 35px,
-              rgba(255,255,255,.05) 35px,
-              rgba(255,255,255,.05) 70px
-            )`
+            backgroundImage: resolvedTheme === 'dark' 
+              ? `repeating-linear-gradient(
+                  45deg,
+                  transparent,
+                  transparent 35px,
+                  rgba(255,255,255,.05) 35px,
+                  rgba(255,255,255,.05) 70px
+                )`
+              : `repeating-linear-gradient(
+                  45deg,
+                  transparent,
+                  transparent 35px,
+                  rgba(0,0,0,.05) 35px,
+                  rgba(0,0,0,.05) 70px
+                )`
           }}
         />
         
@@ -144,17 +163,35 @@ export default function LoginPage() {
           }}
           className="w-full max-w-md relative z-10"
         >
+          {/* Back to Home Button and Theme Toggle */}
+          <motion.div variants={fadeInUp} className="mb-8 flex items-center justify-between">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all duration-300 font-police-body group"
+            >
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              <span className="tracking-wider">VOLTAR AO INÍCIO</span>
+            </Link>
+            
+            {/* Theme Toggle Button */}
+            <button
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-accent-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
+              aria-label="Toggle theme"
+            >
+              {resolvedTheme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+          </motion.div>
+          
           {/* Logo and Title */}
           <motion.div variants={fadeInUp} className="text-center mb-8">
             <div className="flex justify-center mb-6">
-              <div className="w-20 h-20 bg-white rounded flex items-center justify-center">
-                <Shield className="w-12 h-12 text-black" />
-              </div>
+              <StudyProLogo variant="icon" size="xl" className="text-gray-900 dark:text-white" />
             </div>
-            <h1 className="text-4xl font-police-title text-white mb-2 tracking-widest">
+            <h1 className="text-4xl font-police-title text-gray-900 dark:text-white mb-2 tracking-widest">
               ACESSO RESTRITO
             </h1>
-            <p className="text-gray-400 font-police-body tracking-wider">
+            <p className="text-gray-600 dark:text-gray-400 font-police-body tracking-wider">
               IDENTIFIQUE-SE PARA CONTINUAR
             </p>
           </motion.div>
@@ -163,16 +200,16 @@ export default function LoginPage() {
           <motion.form variants={fadeInUp} onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-police-subtitle text-gray-300 mb-2 tracking-widest">
+              <label className="block text-sm font-police-subtitle text-gray-700 dark:text-gray-300 mb-2 tracking-widest">
                 IDENTIFICAÇÃO
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                 <input
                   type="email"
                   required
-                  className={`w-full pl-10 pr-4 py-4 bg-gray-900 border text-white rounded focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition font-police-body ${
-                    errors.email ? 'border-red-500' : 'border-gray-700'
+                  className={`w-full pl-10 pr-4 py-4 bg-gray-100 dark:bg-gray-900 border text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white focus:border-transparent transition font-police-body ${
+                    errors.email ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'
                   }`}
                   placeholder="seu@email.com"
                   value={formData.email}
@@ -192,16 +229,16 @@ export default function LoginPage() {
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-police-subtitle text-gray-300 mb-2 tracking-widest">
+              <label className="block text-sm font-police-subtitle text-gray-700 dark:text-gray-300 mb-2 tracking-widest">
                 SENHA DE ACESSO
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className={`w-full pl-10 pr-12 py-4 bg-gray-900 border text-white rounded focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition font-police-body ${
-                    errors.password ? 'border-red-500' : 'border-gray-700'
+                  className={`w-full pl-10 pr-12 py-4 bg-gray-100 dark:bg-gray-900 border text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white focus:border-transparent transition font-police-body ${
+                    errors.password ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'
                   }`}
                   placeholder="••••••••"
                   value={formData.password}
@@ -213,7 +250,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -233,22 +270,22 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={formData.rememberMe}
                   onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                  className="w-4 h-4 text-white bg-gray-900 border-gray-700 rounded focus:ring-white"
+                  className="w-4 h-4 text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-900 border-gray-300 dark:border-gray-700 rounded focus:ring-gray-900 dark:focus:ring-white"
                 />
-                <span className="text-sm text-gray-400 font-police-body">Manter conectado</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400 font-police-body">Manter conectado</span>
               </label>
               <Link
                 to="/forgot-password"
-                className="text-sm text-gray-400 hover:text-white transition font-police-body"
+                className="text-sm text-gray-900 dark:text-white font-police-subtitle hover:underline tracking-wider transition"
               >
-                Recuperar acesso
+                RECUPERAR ACESSO
               </Link>
             </div>
 
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-14 text-lg font-police-title bg-white hover:bg-gray-200 text-black tracking-widest"
+              className="w-full h-14 text-lg font-police-title bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-white hover:text-black dark:hover:text-black tracking-widest shadow-lg hover:shadow-xl transition-all"
               isLoading={isLoading}
             >
               {isLoading ? 'VALIDANDO...' : 'ACESSAR SISTEMA'}
@@ -258,10 +295,10 @@ export default function LoginPage() {
             {/* Divider */}
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-800"></div>
+                <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-black px-4 text-gray-500 font-police-body">OU ACESSE COM</span>
+                <span className="bg-white dark:bg-black px-4 text-gray-500 font-police-body">OU ACESSE COM</span>
               </div>
             </div>
 
@@ -270,21 +307,21 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => handleSocialLogin('Facebook')}
-                className="flex items-center justify-center gap-2 p-3 bg-gray-900 hover:bg-gray-800 text-white rounded border border-gray-700 transition-all duration-300"
+                className="flex items-center justify-center gap-2 p-3 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-700 dark:text-white rounded border border-gray-300 dark:border-gray-700 transition-all duration-300"
               >
                 <Facebook className="w-5 h-5" />
               </button>
               <button
                 type="button"
                 onClick={() => handleSocialLogin('Google')}
-                className="flex items-center justify-center gap-2 p-3 bg-gray-900 hover:bg-gray-800 text-white rounded border border-gray-700 transition-all duration-300"
+                className="flex items-center justify-center gap-2 p-3 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-700 dark:text-white rounded border border-gray-300 dark:border-gray-700 transition-all duration-300"
               >
                 <Chrome className="w-5 h-5" />
               </button>
               <button
                 type="button"
                 onClick={() => handleSocialLogin('LinkedIn')}
-                className="flex items-center justify-center gap-2 p-3 bg-gray-900 hover:bg-gray-800 text-white rounded border border-gray-700 transition-all duration-300"
+                className="flex items-center justify-center gap-2 p-3 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-700 dark:text-white rounded border border-gray-300 dark:border-gray-700 transition-all duration-300"
               >
                 <Linkedin className="w-5 h-5" />
               </button>
@@ -293,10 +330,10 @@ export default function LoginPage() {
 
           {/* Sign Up Link */}
           <motion.div variants={fadeInUp} className="mt-8 text-center">
-            <span className="text-gray-400 font-police-body">PRIMEIRO ACESSO? </span>
+            <span className="text-gray-600 dark:text-gray-400 font-police-body">PRIMEIRO ACESSO? </span>
             <Link
               to="/register"
-              className="text-white font-police-subtitle hover:underline tracking-wider"
+              className="text-gray-900 dark:text-white font-police-subtitle hover:underline tracking-wider"
             >
               CRIAR CONTA
             </Link>
@@ -306,11 +343,46 @@ export default function LoginPage() {
           <motion.div variants={fadeInUp} className="mt-8 text-center text-xs text-gray-500 font-police-body">
             ACESSO PROTEGIDO • DADOS CRIPTOGRAFADOS • SSL 256-BIT
           </motion.div>
+
+          {/* Quick Fill Buttons - Development Only */}
+          {process.env.NODE_ENV === 'development' && (
+            <motion.div 
+              variants={fadeInUp} 
+              className="mt-6 flex gap-3 justify-center"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({
+                    email: 'admin@studypro.com',
+                    password: 'Admin@123',
+                    rememberMe: true
+                  });
+                }}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-police-body rounded border border-gray-300 dark:border-gray-700 transition-all duration-300"
+              >
+                PREENCHER ADMIN
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({
+                    email: 'aluno@example.com',
+                    password: 'aluno123',
+                    rememberMe: false
+                  });
+                }}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-police-body rounded border border-gray-300 dark:border-gray-700 transition-all duration-300"
+              >
+                PREENCHER ALUNO
+              </button>
+            </motion.div>
+          )}
         </motion.div>
       </div>
 
       {/* Right Side - Hero Image */}
-      <div className="hidden lg:flex flex-1 relative overflow-hidden">
+      <div className="hidden lg:flex flex-1 relative overflow-hidden bg-gray-900 dark:bg-black">
         {/* Background Image */}
         <div 
           className="absolute inset-0 z-0"
@@ -322,10 +394,10 @@ export default function LoginPage() {
           }}
         >
           {/* Dark overlay */}
-          <div className="absolute inset-0 bg-black/70"></div>
+          <div className="absolute inset-0 bg-white/60 dark:bg-black/70"></div>
           
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-white dark:from-black via-white/50 dark:via-black/50 to-transparent"></div>
           
           {/* Scan lines effect */}
           <div 
@@ -347,7 +419,7 @@ export default function LoginPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="max-w-xl w-full text-white"
+            className="max-w-xl w-full text-gray-900 dark:text-white"
           >
             {/* Stats */}
             <motion.div 
@@ -359,7 +431,7 @@ export default function LoginPage() {
               <h2 className="text-5xl font-police-title mb-6 tracking-ultra-wide">
                 PLATAFORMA ELITE
               </h2>
-              <p className="text-xl text-gray-300 font-police-body mb-8 leading-relaxed">
+              <p className="text-xl text-gray-700 dark:text-gray-300 font-police-body mb-8 leading-relaxed">
                 METODOLOGIA EXCLUSIVA PARA CONCURSOS DE ALTA PERFORMANCE
               </p>
               
@@ -375,10 +447,10 @@ export default function LoginPage() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-                    className="bg-white/10 backdrop-blur-sm rounded p-6 border border-white/20"
+                    className="bg-gray-900/20 dark:bg-white/10 backdrop-blur-sm rounded p-6 border border-gray-700/30 dark:border-white/20"
                   >
-                    <div className="text-3xl font-police-numbers mb-2">{stat.number}</div>
-                    <div className="text-xs font-police-subtitle tracking-widest text-gray-300">{stat.label}</div>
+                    <div className="text-3xl font-police-numbers mb-2 text-gray-900 dark:text-white">{stat.number}</div>
+                    <div className="text-xs font-police-subtitle tracking-widest text-gray-700 dark:text-gray-300">{stat.label}</div>
                   </motion.div>
                 ))}
               </div>
@@ -397,8 +469,8 @@ export default function LoginPage() {
                 'MENTORIA COM APROVADOS',
                 'MATERIAL ATUALIZADO DIARIAMENTE'
               ].map((feature, index) => (
-                <div key={index} className="flex items-center gap-3 text-gray-300 font-police-body">
-                  <div className="w-2 h-2 bg-white rounded-full" />
+                <div key={index} className="flex items-center gap-3 text-gray-700 dark:text-gray-300 font-police-body">
+                  <div className="w-2 h-2 bg-gray-900 dark:bg-white rounded-full" />
                   <span className="tracking-wider">{feature}</span>
                 </div>
               ))}

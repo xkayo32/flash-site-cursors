@@ -8,56 +8,20 @@ import {
   Lock,
   User,
   ArrowRight,
-  Zap,
-  CheckCircle,
   AlertCircle,
-  Shield,
-  TrendingUp,
-  Award,
-  Users,
-  Star,
-  Sparkles,
-  Sun,
-  Moon,
-  Monitor
+  Facebook,
+  Chrome,
+  Linkedin,
+  Phone,
+  CheckCircle,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
 import { useAuthStore } from '@/store/authStore';
+import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import toast from 'react-hot-toast';
-import { Logo } from '@/components/ui/Logo';
-import { useTheme } from '@/contexts/ThemeContext';
-
-// Componentes dos ícones das redes sociais (reutilizados do LoginPage)
-const GoogleIcon = () => (
-  <svg viewBox="0 0 24 24" width="20" height="20">
-    <path
-      fill="#4285F4"
-      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-    />
-    <path
-      fill="#34A853"
-      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-    />
-    <path
-      fill="#FBBC05"
-      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-    />
-    <path
-      fill="#EA4335"
-      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-    />
-  </svg>
-);
-
-const MicrosoftIcon = () => (
-  <svg viewBox="0 0 24 24" width="20" height="20">
-    <path fill="#F25022" d="M1 1h10v10H1z" />
-    <path fill="#00A4EF" d="M13 1h10v10H13z" />
-    <path fill="#7FBA00" d="M1 13h10v10H1z" />
-    <path fill="#FFB900" d="M13 13h10v10H13z" />
-  </svg>
-);
+import { API_ENDPOINTS } from '@/config/api';
+import '../../styles/police-fonts.css';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -68,13 +32,13 @@ const fadeInUp = {
 export default function RegisterPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
-  const { theme, setTheme, resolvedTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
     acceptTerms: false
@@ -94,6 +58,12 @@ export default function RegisterPage() {
       newErrors.email = 'Email é obrigatório';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email inválido';
+    }
+
+    if (!formData.phone) {
+      newErrors.phone = 'Telefone é obrigatório';
+    } else if (!/^\d{10,11}$/.test(formData.phone.replace(/\D/g, ''))) {
+      newErrors.phone = 'Telefone inválido';
     }
 
     if (!formData.password) {
@@ -124,151 +94,120 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // Simular chamada de API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock registration - automatically log in user
-      setAuth(
-        {
-          id: '1',
-          name: formData.name,
-          email: formData.email,
-          role: 'student',
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name)}&background=14242f&color=fff`,
-          subscription: {
-            plan: 'Básico',
-            expiresAt: '2024-12-31',
-            status: 'active'
-          }
-        },
-        'fake-token'
-      );
+      const params = new URLSearchParams();
+      params.append('name', formData.name);
+      params.append('email', formData.email);
+      params.append('phone', formData.phone);
+      params.append('password', formData.password);
 
-      toast.success('Conta criada com sucesso! Bem-vindo(a) à StudyPro!');
-      navigate('/dashboard');
+      const response = await fetch(API_ENDPOINTS.auth.register, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params.toString(),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Conta criada com sucesso! Faça login para continuar.');
+        navigate('/login');
+      } else {
+        toast.error(data.message || 'Erro ao criar conta');
+      }
     } catch (error) {
-      toast.error('Erro ao criar conta. Tente novamente.');
+      console.error('Register error:', error);
+      toast.error('Erro ao criar conta. Verifique sua conexão.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialRegister = (provider: 'google' | 'microsoft') => {
-    toast.success(`Registro com ${provider === 'google' ? 'Google' : 'Microsoft'} em desenvolvimento`);
-    // Aqui seria implementada a integração real
+  const handleSocialRegister = (provider: string) => {
+    toast.error(`Cadastro com ${provider} em desenvolvimento`);
+  };
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 11) {
+      if (numbers.length > 6) {
+        return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+      } else if (numbers.length > 2) {
+        return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+      } else if (numbers.length > 0) {
+        return `(${numbers}`;
+      }
+    }
+    return value;
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Theme Selector */}
-      <div className="absolute top-4 right-4 z-10">
-        <div className="flex items-center gap-2 p-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg">
-          <button
-            onClick={() => setTheme('light')}
-            className={`p-2 rounded-md transition-colors ${
-              theme === 'light' 
-                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-            }`}
-            title="Tema Claro"
-          >
-            <Sun className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setTheme('dark')}
-            className={`p-2 rounded-md transition-colors ${
-              theme === 'dark' 
-                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-            }`}
-            title="Tema Escuro"
-          >
-            <Moon className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setTheme('system')}
-            className={`p-2 rounded-md transition-colors ${
-              theme === 'system' 
-                ? 'bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-400' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-            }`}
-            title="Seguir Sistema"
-          >
-            <Monitor className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
+    <div className="min-h-screen flex font-police-primary">
       {/* Left Side - Register Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-gray-900">
+      <div className="flex-1 flex items-center justify-center p-8 bg-black relative">
+        {/* Background Pattern */}
+        <div 
+          className="absolute inset-0 opacity-5"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 35px,
+              rgba(255,255,255,.05) 35px,
+              rgba(255,255,255,.05) 70px
+            )`
+          }}
+        />
+        
         <motion.div
           initial="initial"
           animate="animate"
           variants={{
             animate: { transition: { staggerChildren: 0.1 } }
           }}
-          className="w-full max-w-md"
+          className="w-full max-w-md relative z-10"
         >
+          {/* Back to Home Button */}
+          <motion.div variants={fadeInUp} className="mb-8">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 font-police-body group"
+            >
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              <span className="tracking-wider">VOLTAR AO INÍCIO</span>
+            </Link>
+          </motion.div>
+          
           {/* Logo and Title */}
           <motion.div variants={fadeInUp} className="text-center mb-8">
             <div className="flex justify-center mb-6">
-              <Logo variant="icon" size="lg" animated={true} />
+              <StudyProLogo variant="icon" size="xl" className="text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-primary-900 mb-2">
-              Comece sua jornada
+            <h1 className="text-4xl font-police-title text-white mb-2 tracking-widest">
+              CADASTRO DE RECRUTA
             </h1>
-            <p className="text-primary-600">
-              Crie sua conta e acelere sua aprovação
+            <p className="text-gray-400 font-police-body tracking-wider">
+              INICIE SUA JORNADA RUMO À APROVAÇÃO
             </p>
           </motion.div>
 
-          {/* Social Register Buttons */}
-          <motion.div variants={fadeInUp} className="space-y-3 mb-6">
-            <Button
-              variant="outline"
-              className="w-full h-12 text-left justify-start gap-3 border-gray-300 hover:border-primary-300"
-              onClick={() => handleSocialRegister('google')}
-            >
-              <GoogleIcon />
-              <span>Cadastrar com Google</span>
-            </Button>
-            
-            <Button
-              variant="outline"
-              className="w-full h-12 text-left justify-start gap-3 border-gray-300 hover:border-primary-300"
-              onClick={() => handleSocialRegister('microsoft')}
-            >
-              <MicrosoftIcon />
-              <span>Cadastrar com Microsoft</span>
-            </Button>
-          </motion.div>
-
-          {/* Divider */}
-          <motion.div variants={fadeInUp} className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">ou cadastre-se com email</span>
-            </div>
-          </motion.div>
-
           {/* Register Form */}
-          <motion.form variants={fadeInUp} onSubmit={handleSubmit} className="space-y-4">
+          <motion.form variants={fadeInUp} onSubmit={handleSubmit} className="space-y-5">
             {/* Name Field */}
             <div>
-              <label className="block text-sm font-medium text-primary-700 mb-2">
-                Nome completo
+              <label className="block text-sm font-police-subtitle text-gray-300 mb-2 tracking-widest">
+                NOME COMPLETO
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
                   type="text"
                   required
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-4 py-4 bg-gray-900 border text-white rounded focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition font-police-body ${
+                    errors.name ? 'border-red-500' : 'border-gray-700'
                   }`}
-                  placeholder="Seu nome completo"
+                  placeholder="Digite seu nome completo"
                   value={formData.name}
                   onChange={(e) => {
                     setFormData({ ...formData, name: e.target.value });
@@ -277,7 +216,7 @@ export default function RegisterPage() {
                 />
               </div>
               {errors.name && (
-                <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
                   <AlertCircle className="w-4 h-4" />
                   {errors.name}
                 </div>
@@ -286,16 +225,16 @@ export default function RegisterPage() {
 
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-primary-700 mb-2">
-                Email
+              <label className="block text-sm font-police-subtitle text-gray-300 mb-2 tracking-widest">
+                EMAIL
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
                   type="email"
                   required
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-4 py-4 bg-gray-900 border text-white rounded focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition font-police-body ${
+                    errors.email ? 'border-red-500' : 'border-gray-700'
                   }`}
                   placeholder="seu@email.com"
                   value={formData.email}
@@ -306,25 +245,55 @@ export default function RegisterPage() {
                 />
               </div>
               {errors.email && (
-                <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
                   <AlertCircle className="w-4 h-4" />
                   {errors.email}
                 </div>
               )}
             </div>
 
-            {/* Password Field */}
+            {/* Phone Field */}
             <div>
-              <label className="block text-sm font-medium text-primary-700 mb-2">
-                Senha
+              <label className="block text-sm font-police-subtitle text-gray-300 mb-2 tracking-widest">
+                TELEFONE
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+                <input
+                  type="tel"
+                  required
+                  className={`w-full pl-10 pr-4 py-4 bg-gray-900 border text-white rounded focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition font-police-body ${
+                    errors.phone ? 'border-red-500' : 'border-gray-700'
+                  }`}
+                  placeholder="(11) 99999-9999"
+                  value={formData.phone}
+                  onChange={(e) => {
+                    const formatted = formatPhone(e.target.value);
+                    setFormData({ ...formData, phone: formatted });
+                    if (errors.phone) setErrors({ ...errors, phone: '' });
+                  }}
+                />
+              </div>
+              {errors.phone && (
+                <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.phone}
+                </div>
+              )}
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <label className="block text-sm font-police-subtitle text-gray-300 mb-2 tracking-widest">
+                SENHA
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-12 py-4 bg-gray-900 border text-white rounded focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition font-police-body ${
+                    errors.password ? 'border-red-500' : 'border-gray-700'
                   }`}
                   placeholder="••••••••"
                   value={formData.password}
@@ -336,13 +305,13 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
               {errors.password && (
-                <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
                   <AlertCircle className="w-4 h-4" />
                   {errors.password}
                 </div>
@@ -351,16 +320,16 @@ export default function RegisterPage() {
 
             {/* Confirm Password Field */}
             <div>
-              <label className="block text-sm font-medium text-primary-700 mb-2">
-                Confirmar senha
+              <label className="block text-sm font-police-subtitle text-gray-300 mb-2 tracking-widest">
+                CONFIRMAR SENHA
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   required
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition ${
-                    errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-12 py-4 bg-gray-900 border text-white rounded focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition font-police-body ${
+                    errors.confirmPassword ? 'border-red-500' : 'border-gray-700'
                   }`}
                   placeholder="••••••••"
                   value={formData.confirmPassword}
@@ -372,13 +341,13 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300"
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
                   <AlertCircle className="w-4 h-4" />
                   {errors.confirmPassword}
                 </div>
@@ -395,17 +364,17 @@ export default function RegisterPage() {
                     setFormData({ ...formData, acceptTerms: e.target.checked });
                     if (errors.acceptTerms) setErrors({ ...errors, acceptTerms: '' });
                   }}
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 mt-0.5"
+                  className="w-4 h-4 text-white bg-gray-900 border-gray-700 rounded focus:ring-white mt-0.5"
                 />
-                <span className="text-sm text-primary-700">
+                <span className="text-sm text-gray-400 font-police-body">
                   Aceito os{' '}
-                  <a href="#" className="text-primary-600 hover:underline">Termos de Uso</a>
+                  <a href="#" className="text-white hover:underline">Termos de Uso</a>
                   {' '}e{' '}
-                  <a href="#" className="text-primary-600 hover:underline">Política de Privacidade</a>
+                  <a href="#" className="text-white hover:underline">Política de Privacidade</a>
                 </span>
               </label>
               {errors.acceptTerms && (
-                <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
                   <AlertCircle className="w-4 h-4" />
                   {errors.acceptTerms}
                 </div>
@@ -415,123 +384,165 @@ export default function RegisterPage() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-12 text-base font-medium"
+              className="w-full h-14 text-lg font-police-title bg-white hover:bg-gray-200 text-black tracking-widest btn-gradient-overlay"
               isLoading={isLoading}
             >
-              {isLoading ? 'Criando conta...' : 'Criar conta'}
+              {isLoading ? 'PROCESSANDO...' : 'INICIAR TREINAMENTO'}
               {!isLoading && <ArrowRight className="ml-2 w-5 h-5" />}
             </Button>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-800"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-black px-4 text-gray-500 font-police-body">OU CADASTRE-SE COM</span>
+              </div>
+            </div>
+
+            {/* Social Register Buttons */}
+            <div className="grid grid-cols-3 gap-3">
+              <button
+                type="button"
+                onClick={() => handleSocialRegister('Facebook')}
+                className="flex items-center justify-center gap-2 p-3 bg-gray-900 hover:bg-gray-800 text-white rounded border border-gray-700 transition-all duration-300"
+              >
+                <Facebook className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSocialRegister('Google')}
+                className="flex items-center justify-center gap-2 p-3 bg-gray-900 hover:bg-gray-800 text-white rounded border border-gray-700 transition-all duration-300"
+              >
+                <Chrome className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSocialRegister('LinkedIn')}
+                className="flex items-center justify-center gap-2 p-3 bg-gray-900 hover:bg-gray-800 text-white rounded border border-gray-700 transition-all duration-300"
+              >
+                <Linkedin className="w-5 h-5" />
+              </button>
+            </div>
           </motion.form>
 
           {/* Login Link */}
-          <motion.div variants={fadeInUp} className="mt-6 text-center">
-            <span className="text-primary-600">Já tem uma conta? </span>
+          <motion.div variants={fadeInUp} className="mt-8 text-center">
+            <span className="text-gray-400 font-police-body">JÁ É RECRUTA? </span>
             <Link
               to="/login"
-              className="text-primary-600 font-medium hover:text-primary-700 hover:underline"
+              className="text-white font-police-subtitle hover:underline tracking-wider"
             >
-              Entrar agora
+              FAZER LOGIN
             </Link>
           </motion.div>
 
           {/* Footer */}
-          <motion.div variants={fadeInUp} className="mt-8 text-center text-xs text-gray-500">
-            Ao se cadastrar, você concorda com nossos{' '}
-            <a href="#" className="hover:underline">Termos de Uso</a> e{' '}
-            <a href="#" className="hover:underline">Política de Privacidade</a>
+          <motion.div variants={fadeInUp} className="mt-8 text-center text-xs text-gray-500 font-police-body">
+            CADASTRO SEGURO • DADOS PROTEGIDOS • SSL 256-BIT
           </motion.div>
         </motion.div>
       </div>
 
       {/* Right Side - Benefits */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-accent-500 rounded-full filter blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-60 h-60 bg-white rounded-full filter blur-3xl"></div>
+      <div className="hidden lg:flex flex-1 relative overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1590012314607-cda9d9b699ae?q=80&w=2071')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
+          {/* Dark overlay */}
+          <div className="absolute inset-0 bg-black/70"></div>
+          
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent"></div>
+          
+          {/* Scan lines effect */}
+          <div 
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: `repeating-linear-gradient(
+                0deg,
+                rgba(255, 255, 255, 0) 0px,
+                rgba(255, 255, 255, 0.03) 1px,
+                rgba(255, 255, 255, 0) 2px,
+                rgba(255, 255, 255, 0) 3px
+              )`
+            }}
+          />
         </div>
         
         <div className="relative z-10 flex items-center justify-center w-full p-12">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="max-w-xl w-full"
+            className="max-w-xl w-full text-white"
           >
             {/* Header */}
             <motion.div 
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-center mb-10"
+              className="mb-12"
             >
-              <h2 className="text-4xl font-bold mb-4">
-                ✨ Por que escolher a StudyPro?
+              <h2 className="text-5xl font-police-title mb-6 tracking-ultra-wide">
+                TREINAMENTO ELITE
               </h2>
-              <p className="text-xl text-primary-100">
-                Veja o que nossos alunos conquistaram
+              <p className="text-xl text-gray-300 font-police-body mb-8 leading-relaxed">
+                PREPARE-SE PARA OS CONCURSOS MAIS DISPUTADOS DO PAÍS
               </p>
+              
+              {/* Benefits */}
+              <div className="space-y-4">
+                {[
+                  'METODOLOGIA EXCLUSIVA DOS APROVADOS',
+                  'SIMULADOS IDÊNTICOS ÀS PROVAS REAIS',
+                  'MENTORIA COM ESPECIALISTAS',
+                  'GARANTIA DE SATISFAÇÃO 7 DIAS',
+                  'SUPORTE 24/7 VIA WHATSAPP'
+                ].map((benefit, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                    className="flex items-center gap-3"
+                  >
+                    <CheckCircle className="w-5 h-5 text-accent-500 flex-shrink-0" />
+                    <span className="text-gray-300 font-police-body tracking-wider">{benefit}</span>
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              {[
-                { number: '15.000+', label: 'Alunos ativos', icon: Users },
-                { number: '5.432', label: 'Aprovações em 2024', icon: Award },
-                { number: '98%', label: 'Taxa de satisfação', icon: Star },
-                { number: '50.000+', label: 'Questões no banco', icon: Sparkles }
-              ].map((stat, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-                  className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 text-center hover:bg-white/15 transition-all duration-300"
-                >
-                  <stat.icon className="w-8 h-8 mx-auto mb-2 text-accent-400" />
-                  <div className="text-2xl font-bold mb-1">{stat.number}</div>
-                  <div className="text-sm text-primary-200">{stat.label}</div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Benefits List */}
-            <div className="space-y-3">
-              {[
-                'Cronograma personalizado com IA',
-                'Simulados idênticos às provas',
-                'Flashcards inteligentes',
-                'Suporte direto com professores',
-                'Garantia de 7 dias'
-              ].map((benefit, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
-                  className="flex items-center gap-3"
-                >
-                  <div className="w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <CheckCircle className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-primary-100">{benefit}</span>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Bottom CTA */}
+            {/* Stats Grid */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 1.2 }}
-              className="mt-8 text-center"
+              transition={{ duration: 0.5, delay: 0.9 }}
+              className="grid grid-cols-2 gap-4"
             >
-              <div className="inline-flex items-center gap-2 px-6 py-3 bg-accent-500/20 rounded-full">
-                <Zap className="w-5 h-5 text-accent-400" />
-                <span className="text-accent-300 font-medium">
-                  Comece grátis por 7 dias
-                </span>
-              </div>
+              {[
+                { number: '15.847', label: 'APROVADOS EM 2024' },
+                { number: '89%', label: 'TAXA DE APROVAÇÃO' },
+                { number: '50K+', label: 'QUESTÕES COMENTADAS' },
+                { number: '100%', label: 'SATISFAÇÃO GARANTIDA' }
+              ].map((stat, index) => (
+                <div
+                  key={index}
+                  className="bg-white/10 backdrop-blur-sm rounded p-4 border border-white/20 text-center"
+                >
+                  <div className="text-2xl font-police-numbers mb-1">{stat.number}</div>
+                  <div className="text-xs font-police-subtitle tracking-widest text-gray-300">{stat.label}</div>
+                </div>
+              ))}
             </motion.div>
           </motion.div>
         </div>
