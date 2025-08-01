@@ -260,7 +260,7 @@ export default function LegislationManager() {
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
@@ -276,7 +276,7 @@ export default function LegislationManager() {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
@@ -292,7 +292,7 @@ export default function LegislationManager() {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
@@ -308,7 +308,7 @@ export default function LegislationManager() {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
@@ -331,7 +331,7 @@ export default function LegislationManager() {
         transition={{ delay: 0.2 }}
       >
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="relative lg:col-span-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />

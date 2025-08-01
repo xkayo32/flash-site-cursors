@@ -1416,7 +1416,7 @@ export default function AdminSettings() {
                     <CardHeader className="border-b border-gray-200 dark:border-gray-700">
                       <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white">ESTATÍSTICAS DE USUÁRIOS</h2>
                     </CardHeader>
-                    <CardContent className="p-6">
+                    <CardContent className="p-4">
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="p-4 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg">
                           <div className="flex items-center gap-3">
@@ -1580,7 +1580,7 @@ export default function AdminSettings() {
                     <CardHeader className="border-b border-gray-200 dark:border-gray-700">
                       <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white">STATUS DE SEGURANÇA</h2>
                     </CardHeader>
-                    <CardContent className="p-6">
+                    <CardContent className="p-4">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="p-4 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg">
                           <div className="flex items-center gap-3">

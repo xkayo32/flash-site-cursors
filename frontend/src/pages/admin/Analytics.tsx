@@ -260,13 +260,13 @@ export default function Analytics() {
             transition={{ delay: index * 0.1 }}
           >
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
                       {stat.title}
                     </p>
-                    <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                    <p className="text-xl font-bold text-primary-900 dark:text-white">
                       {stat.value}
                     </p>
                     <div className="flex items-center gap-1 mt-1">
@@ -387,7 +387,7 @@ export default function Analytics() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {userEngagement.map((metric, index) => (
                 <div key={index} className="text-center p-4 border border-primary-100 dark:border-gray-700 rounded-lg">
-                  <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                  <p className="text-xl font-bold text-primary-900 dark:text-white">
                     {metric.value}
                   </p>
                   <p className="text-sm text-primary-600 dark:text-gray-400 mb-2">
@@ -428,7 +428,7 @@ export default function Analytics() {
                     className="flex items-center justify-between p-4 border border-primary-100 dark:border-gray-700 rounded-lg hover:bg-primary-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                      <div className="w-6 h-6 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
                         {index + 1}
                       </div>
                       <div>
@@ -572,8 +572,8 @@ export default function Analytics() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
-                <Zap className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                <Zap className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+                <p className="text-xl font-bold text-blue-900 dark:text-blue-100">
                   94.5%
                 </p>
                 <p className="text-sm text-blue-700 dark:text-blue-300">
@@ -582,8 +582,8 @@ export default function Analytics() {
               </div>
 
               <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg">
-                <Clock className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                <Clock className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                <p className="text-xl font-bold text-green-900 dark:text-green-100">
                   1.2s
                 </p>
                 <p className="text-sm text-green-700 dark:text-green-300">
@@ -592,8 +592,8 @@ export default function Analytics() {
               </div>
 
               <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg">
-                <Target className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                <Target className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+                <p className="text-xl font-bold text-purple-900 dark:text-purple-100">
                   89.2%
                 </p>
                 <p className="text-sm text-purple-700 dark:text-purple-300">
@@ -602,8 +602,8 @@ export default function Analytics() {
               </div>
 
               <div className="text-center p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg">
-                <Award className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">
+                <Award className="w-6 h-6 text-yellow-600 mx-auto mb-2" />
+                <p className="text-xl font-bold text-yellow-900 dark:text-yellow-100">
                   76.8%
                 </p>
                 <p className="text-sm text-yellow-700 dark:text-yellow-300">

@@ -666,7 +666,7 @@ export default function ContentManager() {
             ? 'bg-gray-800 border-gray-700 shadow-gray-900/50' 
             : 'bg-white border-military-base/20 shadow-military-base/10'
         )}>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="space-y-4">
               {/* Primeira linha de filtros */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -678,7 +678,7 @@ export default function ContentManager() {
                   placeholder="BUSCAR CONTEÚDO..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border-2 rounded-lg transition-all duration-300 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
+                  className="w-full pl-10 pr-3 py-2 text-sm border rounded-lg transition-all duration-300 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
                 />
               </div>
 
@@ -690,7 +690,7 @@ export default function ContentManager() {
                   setFilterSubmateria('TODOS');
                   setFilterTopico('TODOS');
                 }}
-                className="px-4 py-2 border-2 rounded-lg transition-all duration-300 font-police-body font-medium uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
+                className="px-3 py-2 text-sm border rounded-lg transition-all duration-300 font-police-body font-medium uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
               >
                 <option value="TODOS">TODAS AS MATÉRIAS</option>
                 {Object.keys(materias).map(materia => (

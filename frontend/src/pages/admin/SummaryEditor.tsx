@@ -294,65 +294,65 @@ export default function SummaryEditor() {
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
                   TOTAL DE BRIEFINGS
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                <p className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {summaries.length}
                 </p>
               </div>
-              <Shield className="w-8 h-8 text-accent-500" />
+              <Shield className="w-6 h-6 text-accent-500" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
                   OPERACIONAIS
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                <p className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {summaries.filter(s => s.status === 'published').length}
                 </p>
               </div>
-              <Target className="w-8 h-8 text-gray-500" />
+              <Target className="w-6 h-6 text-gray-500" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
                   QUESTÕES TÁTICAS
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                <p className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {summaries.reduce((acc, s) => acc + s.embeds.questions, 0)}
                 </p>
               </div>
-              <Brain className="w-8 h-8 text-purple-500" />
+              <Brain className="w-6 h-6 text-purple-500" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
                   FLASHCARDS OPERACIONAIS
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                <p className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {summaries.reduce((acc, s) => acc + s.embeds.flashcards, 0)}
                 </p>
               </div>
-              <Star className="w-8 h-8 text-yellow-500" />
+              <Star className="w-6 h-6 text-yellow-500" />
             </div>
           </CardContent>
         </Card>
@@ -365,7 +365,7 @@ export default function SummaryEditor() {
         transition={{ delay: 0.2 }}
       >
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="space-y-4">
               {/* Primeira linha - Busca, Matéria e Status */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

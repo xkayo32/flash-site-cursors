@@ -316,7 +316,7 @@ export default function UserManager() {
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
@@ -332,7 +332,7 @@ export default function UserManager() {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
@@ -348,7 +348,7 @@ export default function UserManager() {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
@@ -364,7 +364,7 @@ export default function UserManager() {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-primary-600 dark:text-gray-400">

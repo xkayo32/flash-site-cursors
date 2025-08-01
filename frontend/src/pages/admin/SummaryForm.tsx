@@ -553,7 +553,7 @@ export default function SummaryForm() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-4">
                 <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-                  <CardContent className="p-6">
+                  <CardContent className="p-4">
                     <input
                       type="text"
                       placeholder="TÍTULO DO BRIEFING"

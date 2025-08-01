@@ -305,16 +305,16 @@ export default function AdminDashboard() {
             transition={{ delay: index * 0.1 }}
           >
             <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl">
-              <CardContent className="p-6 relative overflow-hidden">
+              <CardContent className="p-4 relative overflow-hidden">
                 {/* Tactical stripe */}
                 <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
                 
                 <div className="flex items-center justify-between">
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
                       {stat.title}
                     </p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                    <p className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
                       {stat.value}
                     </p>
                     <div className="flex items-center gap-2">
@@ -332,8 +332,8 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="relative">
-                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
-                      <TacticalIcon name={stat.icon} className="w-8 h-8 text-gray-700 dark:text-accent-500" />
+                    <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
+                      <TacticalIcon name={stat.icon} className="w-5 h-5 text-gray-700 dark:text-accent-500" />
                     </div>
                     <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-500 rounded-full animate-pulse" />
                   </div>
@@ -363,11 +363,11 @@ export default function AdminDashboard() {
               key={index}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="p-4 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-lg hover:border-accent-500/50 transition-all duration-300 group"
+              className="p-3 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-lg hover:border-accent-500/50 transition-all duration-300 group"
             >
               <div className="flex flex-col items-center gap-3">
-                <div className="w-12 h-12 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center group-hover:bg-accent-500 group-hover:scale-110 transition-all duration-300">
-                  <Icon className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-black" />
+                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center group-hover:bg-accent-500 group-hover:scale-110 transition-all duration-300">
+                  <Icon className="w-5 h-5 text-gray-700 dark:text-gray-300 group-hover:text-black" />
                 </div>
                 <span className="text-xs font-police-subtitle uppercase tracking-wider text-gray-600 dark:text-gray-400 group-hover:text-accent-500">
                   {action.label}
