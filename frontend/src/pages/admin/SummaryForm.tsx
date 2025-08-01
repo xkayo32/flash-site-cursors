@@ -11,7 +11,10 @@ import {
   FileUp,
   Settings,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Brain,
+  Star,
+  Link2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
