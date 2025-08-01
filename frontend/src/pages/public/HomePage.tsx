@@ -364,7 +364,7 @@ export default function HomePage() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#d06e0f'; // laranja
-                    e.currentTarget.style.color = 'black';
+                    e.currentTarget.style.color = 'white';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = '#374151'; // volta ao gray-700
@@ -436,7 +436,7 @@ export default function HomePage() {
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = '#d06e0f'; // laranja
-                      e.currentTarget.style.color = 'black';
+                      e.currentTarget.style.color = 'white';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = '#374151'; // volta ao gray-700
@@ -536,7 +536,7 @@ export default function HomePage() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#d06e0f'; // laranja
-                    e.currentTarget.style.color = 'black';
+                    e.currentTarget.style.color = 'white';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = '#374151'; // volta ao gray-700
@@ -1237,7 +1237,7 @@ export default function HomePage() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#d06e0f'; // laranja
-                    e.currentTarget.style.color = 'black';
+                    e.currentTarget.style.color = 'white';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = '#374151'; // volta ao gray-700
