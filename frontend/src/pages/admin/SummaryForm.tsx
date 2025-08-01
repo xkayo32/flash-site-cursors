@@ -14,7 +14,9 @@ import {
   Minimize2,
   Brain,
   Star,
-  Link2
+  Link2,
+  HelpCircle,
+  Download
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -73,15 +75,79 @@ export default function SummaryForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'editor' | 'settings'>('editor');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showImportHelp, setShowImportHelp] = useState(false);
   
   // Temporary inputs
   const [newTag, setNewTag] = useState('');
 
+  // Download example file
+  const downloadExampleFile = () => {
+    const exampleContent = `# Exemplo de Resumo Tático - Direito Constitucional
+
+## Princípios Fundamentais da Constituição
+
+### 1. Princípio da Dignidade da Pessoa Humana
+
+A dignidade da pessoa humana é o **fundamento** da República Federativa do Brasil, conforme art. 1º, III da CF/88.
+
+**Características:**
+- Valor absoluto e inalienável
+- Base de todos os direitos fundamentais
+- Princípio matriz do sistema constitucional
+
+### 2. Princípio da Supremacia da Constituição
+
+A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia normativa.
+
+**Consequências:**
+- Todas as leis devem estar em conformidade com a CF
+- Controle de constitucionalidade das normas
+- Rigidez constitucional
+
+## Lista de Direitos Fundamentais
+
+* Direitos individuais e coletivos (art. 5º)
+* Direitos sociais (art. 6º)
+* Direitos de nacionalidade (art. 12)
+* Direitos políticos (art. 14 a 16)
+
+## Questões Importantes
+
+1. **Como se manifesta o princípio da dignidade humana?**
+   - Através dos direitos fundamentais
+   - Na proteção dos direitos da personalidade
+   - No respeito à autonomia individual
+
+2. **Qual a importância da supremacia constitucional?**
+   - Garante a estabilidade jurídica
+   - Protege os direitos fundamentais
+   - Limita o poder estatal
+
+---
+
+*Este é um exemplo de conteúdo que pode ser importado. Você pode usar formatação Markdown, HTML ou texto simples.*`;
+
+    const blob = new Blob([exampleContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'exemplo_resumo_tatico.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast.success('Arquivo de exemplo baixado! Use-o como base para seus resumos.');
+  };
 
   // Handle file import
   const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    // Show loading state
+    setIsLoading(true);
+    toast.loading('Importando arquivo...', { id: 'import' });
     
     const allowedTypes = [
       'text/plain',
@@ -92,37 +158,124 @@ export default function SummaryForm() {
       'application/pdf'
     ];
     
-    if (!allowedTypes.includes(file.type)) {
-      toast.error('Formato de arquivo não suportado');
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Arquivo muito grande. Tamanho máximo: 5MB', { id: 'import' });
+      setIsLoading(false);
       return;
     }
     
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const content = event.target?.result as string;
-      
-      // Process different file types
-      let htmlContent = '';
-      if (file.type === 'text/html') {
-        htmlContent = content;
-      } else if (file.type === 'text/plain' || file.type === 'text/markdown') {
-        // Convert plain text to HTML
-        htmlContent = content
-          .split('\n\n')
-          .map(paragraph => `<p>${paragraph}</p>`)
-          .join('');
-      } else {
-        toast.error('Processamento para este tipo de arquivo ainda não implementado');
-        return;
-      }
-      
-      // Update content
-      setEditorContent(htmlContent);
-      toast.success(`Arquivo ${file.name} importado com sucesso!`);
-    };
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(`Formato não suportado: ${file.type}. Use TXT, HTML, MD, DOC, DOCX ou PDF`, { id: 'import' });
+      setIsLoading(false);
+      return;
+    }
     
-    reader.readAsText(file);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const content = event.target?.result as string;
+          
+          // Process different file types
+          let htmlContent = '';
+          if (file.type === 'text/html') {
+            // Clean HTML content
+            htmlContent = content
+              .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove scripts
+              .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '') // Remove styles
+              .replace(/<!--[\s\S]*?-->/g, ''); // Remove comments
+          } else if (file.type === 'text/plain') {
+            // Convert plain text to HTML with better formatting
+            htmlContent = content
+              .trim()
+              .split(/\n\s*\n/) // Split by double line breaks
+              .filter(paragraph => paragraph.trim()) // Remove empty paragraphs
+              .map(paragraph => {
+                // Handle lists
+                if (paragraph.match(/^\s*[-*+]\s/gm)) {
+                  const items = paragraph.split('\n').map(line => line.replace(/^\s*[-*+]\s/, '').trim()).filter(Boolean);
+                  return `<ul>${items.map(item => `<li>${item}</li>`).join('')}</ul>`;
+                }
+                // Handle numbered lists
+                if (paragraph.match(/^\s*\d+\.\s/gm)) {
+                  const items = paragraph.split('\n').map(line => line.replace(/^\s*\d+\.\s/, '').trim()).filter(Boolean);
+                  return `<ol>${items.map(item => `<li>${item}</li>`).join('')}</ol>`;
+                }
+                // Handle headings
+                if (paragraph.startsWith('# ')) {
+                  return `<h1>${paragraph.substring(2)}</h1>`;
+                }
+                if (paragraph.startsWith('## ')) {
+                  return `<h2>${paragraph.substring(3)}</h2>`;
+                }
+                if (paragraph.startsWith('### ')) {
+                  return `<h3>${paragraph.substring(4)}</h3>`;
+                }
+                // Regular paragraph
+                return `<p>${paragraph.replace(/\n/g, '<br>')}</p>`;
+              })
+              .join('');
+          } else if (file.type === 'text/markdown') {
+            // Basic markdown parsing
+            htmlContent = content
+              .trim()
+              // Headers
+              .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+              .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+              .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+              // Bold
+              .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+              .replace(/__(.*?)__/gim, '<strong>$1</strong>')
+              // Italic
+              .replace(/\*(.*)\*/gim, '<em>$1</em>')
+              .replace(/_(.*?)_/gim, '<em>$1</em>')
+              // Links
+              .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2">$1</a>')
+              // Lists
+              .replace(/^\* (.+)/gim, '<li>$1</li>')
+              .replace(/(<li>.*<\/li>)/gims, '<ul>$1</ul>')
+              // Paragraphs
+              .split(/\n\s*\n/)
+              .filter(p => p.trim())
+              .map(p => p.startsWith('<') ? p : `<p>${p.replace(/\n/g, '<br>')}</p>`)
+              .join('');
+          } else {
+            toast.error('Processamento para este tipo de arquivo ainda não implementado', { id: 'import' });
+            setIsLoading(false);
+            return;
+          }
+          
+          // Update content
+          if (htmlContent.trim()) {
+            setEditorContent(htmlContent);
+            toast.success(`✅ ${file.name} importado com sucesso! (${(file.size / 1024).toFixed(1)}KB)`, { id: 'import' });
+          } else {
+            toast.error('Arquivo vazio ou não foi possível processar o conteúdo', { id: 'import' });
+          }
+          
+        } catch (error) {
+          console.error('Error processing file:', error);
+          toast.error('Erro ao processar o arquivo', { id: 'import' });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      reader.onerror = () => {
+        toast.error('Erro ao ler o arquivo', { id: 'import' });
+        setIsLoading(false);
+      };
+      
+      reader.readAsText(file, 'UTF-8');
+      
+    } catch (error) {
+      console.error('Import error:', error);
+      toast.error('Erro ao importar arquivo', { id: 'import' });
+      setIsLoading(false);
+    }
     
+    // Clear file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -244,11 +397,25 @@ export default function SummaryForm() {
             <Button
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading}
               className="gap-2 font-police-body"
               title="Importar arquivo (TXT, HTML, MD, DOC, DOCX, PDF)"
             >
-              <FileUp className="w-4 h-4" />
-              IMPORTAR
+              {isLoading ? (
+                <div className="w-4 h-4 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <FileUp className="w-4 h-4" />
+              )}
+              {isLoading ? 'IMPORTANDO...' : 'IMPORTAR'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowImportHelp(true)}
+              className="p-2"
+              title="Ajuda para importação"
+            >
+              <HelpCircle className="w-4 h-4" />
             </Button>
             <Button
               variant="outline"
@@ -516,6 +683,124 @@ export default function SummaryForm() {
           </div>
         )}
       </motion.div>
+
+      {/* Import Help Modal */}
+      {showImportHelp && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setShowImportHelp(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full border-2 border-gray-200 dark:border-gray-700 max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
+                GUIA DE IMPORTAÇÃO
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowImportHelp(false)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-lg font-semibold font-police-subtitle mb-3 text-gray-900 dark:text-white">
+                  📁 FORMATOS SUPORTADOS
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="font-semibold text-blue-700 dark:text-blue-300">TXT (Texto)</div>
+                    <div className="text-sm text-blue-600 dark:text-blue-400">Texto simples com formatação automática</div>
+                  </div>
+                  <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="font-semibold text-green-700 dark:text-green-300">MD (Markdown)</div>
+                    <div className="text-sm text-green-600 dark:text-green-400">Formatação avançada com # ## ### ** *</div>
+                  </div>
+                  <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="font-semibold text-purple-700 dark:text-purple-300">HTML</div>
+                    <div className="text-sm text-purple-600 dark:text-purple-400">Código HTML será limpo e processado</div>
+                  </div>
+                  <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                    <div className="font-semibold text-yellow-700 dark:text-yellow-300">DOC/DOCX</div>
+                    <div className="text-sm text-yellow-600 dark:text-yellow-400">Em desenvolvimento</div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-semibold font-police-subtitle mb-3 text-gray-900 dark:text-white">
+                  ✨ FORMATAÇÃO AUTOMÁTICA
+                </h4>
+                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg font-mono text-sm">
+                  <div className="space-y-2">
+                    <div><span className="text-blue-600"># Título Principal</span> → <strong>H1</strong></div>
+                    <div><span className="text-blue-600">## Subtítulo</span> → <strong>H2</strong></div>
+                    <div><span className="text-blue-600">**texto**</span> → <strong>Negrito</strong></div>
+                    <div><span className="text-blue-600">*texto*</span> → <em>Itálico</em></div>
+                    <div><span className="text-blue-600">- Item</span> → • Lista</div>
+                    <div><span className="text-blue-600">1. Item</span> → 1. Lista numerada</div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-semibold font-police-subtitle mb-3 text-gray-900 dark:text-white">
+                  🚀 DICAS IMPORTANTES
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                    <div>
+                      <div className="font-semibold text-green-700 dark:text-green-300">Tamanho máximo: 5MB</div>
+                      <div className="text-sm text-green-600 dark:text-green-400">Arquivos maiores serão rejeitados automaticamente</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                    <div>
+                      <div className="font-semibold text-blue-700 dark:text-blue-300">Codificação UTF-8</div>
+                      <div className="text-sm text-blue-600 dark:text-blue-400">Caracteres especiais e acentos são preservados</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                    <div>
+                      <div className="font-semibold text-purple-700 dark:text-purple-300">Conteúdo seguro</div>
+                      <div className="text-sm text-purple-600 dark:text-purple-400">Scripts e estilos são removidos automaticamente</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                <Button
+                  variant="outline"
+                  onClick={downloadExampleFile}
+                  className="gap-2 font-police-body"
+                >
+                  <Download className="w-4 h-4" />
+                  BAIXAR EXEMPLO
+                </Button>
+                <Button
+                  onClick={() => setShowImportHelp(false)}
+                  className="gap-2 font-police-body font-semibold bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black"
+                >
+                  ENTENDI
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }
