@@ -432,15 +432,15 @@ export default function HomePage() {
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 font-police-subtitle rounded transition-all duration-300 text-sm tracking-widest-plus shadow-lg"
                     style={{
                       backgroundColor: '#374151', // gray-700 - cinza escuro
-                      color: 'black'
+                      color: 'white'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = '#d06e0f'; // laranja
-                      e.currentTarget.style.color = 'white';
+                      e.currentTarget.style.color = 'black';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = '#374151'; // volta ao gray-700
-                      e.currentTarget.style.color = 'black';
+                      e.currentTarget.style.color = 'white';
                     }}>
                     <Trophy className="w-4 h-4" />
                     GARANTIR APROVAÇÃO
