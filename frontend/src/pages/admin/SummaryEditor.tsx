@@ -161,6 +161,28 @@ const toolbarGroups = [
   }
 ];
 
+// Estrutura hierárquica de matérias
+const materias = {
+  'DIREITO': {
+    'Direito Constitucional': ['Princípios Fundamentais', 'Direitos e Garantias', 'Organização do Estado'],
+    'Direito Penal': ['Teoria do Crime', 'Crimes em Espécie', 'Lei de Drogas'],
+    'Direito Administrativo': ['Atos Administrativos', 'Licitações', 'Servidores Públicos'],
+    'Direito Processual Penal': ['Inquérito Policial', 'Ação Penal', 'Prisões']
+  },
+  'SEGURANÇA PÚBLICA': {
+    'Inteligência Policial': ['Análise Criminal', 'Operações de Inteligência', 'Contrainteligência'],
+    'Táticas Operacionais': ['Abordagem', 'Uso da Força', 'Gerenciamento de Crise'],
+    'Legislação Especial': ['Lei de Armas', 'Crime Organizado', 'Sistema Prisional'],
+    'Criminologia': ['Teorias Criminológicas', 'Vitimologia', 'Políticas de Segurança']
+  },
+  'CONHECIMENTOS GERAIS': {
+    'Português': ['Gramática', 'Interpretação de Texto', 'Redação Oficial'],
+    'Matemática': ['Raciocínio Lógico', 'Matemática Financeira', 'Estatística'],
+    'História': ['História do Brasil', 'História Geral', 'Atualidades'],
+    'Geografia': ['Geografia do Brasil', 'Geografia Mundial', 'Geopolítica']
+  }
+};
+
 export default function SummaryEditor() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -173,6 +195,11 @@ export default function SummaryEditor() {
   const [showEmbedModal, setShowEmbedModal] = useState(false);
   const [embedType, setEmbedType] = useState<'question' | 'flashcard'>('question');
   const [editorContent, setEditorContent] = useState('');
+  
+  // Filtros hierárquicos
+  const [filterMateria, setFilterMateria] = useState('TODOS');
+  const [filterSubmateria, setFilterSubmateria] = useState('TODOS');
+  const [filterTopico, setFilterTopico] = useState('TODOS');
 
   const filteredSummaries = summaries.filter(summary => {
     const matchesSearch = summary.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -339,48 +366,112 @@ export default function SummaryEditor() {
       >
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="relative lg:col-span-2">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="BUSCAR BRIEFINGS..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:text-gray-500 placeholder:uppercase placeholder:tracking-wider"
-                />
+            <div className="space-y-4">
+              {/* Primeira linha - Busca, Matéria e Status */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="relative lg:col-span-2">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="BUSCAR BRIEFINGS..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:text-gray-500 placeholder:uppercase placeholder:tracking-wider"
+                  />
+                </div>
+
+                <select
+                  value={filterMateria}
+                  onChange={(e) => {
+                    setFilterMateria(e.target.value);
+                    setFilterSubmateria('TODOS');
+                    setFilterTopico('TODOS');
+                  }}
+                  className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider"
+                >
+                  <option value="TODOS">TODAS AS MATÉRIAS</option>
+                  <option value="DIREITO">DIREITO</option>
+                  <option value="SEGURANÇA PÚBLICA">SEGURANÇA PÚBLICA</option>
+                  <option value="CONHECIMENTOS GERAIS">CONHECIMENTOS GERAIS</option>
+                </select>
+
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider lg:col-span-2"
+                >
+                  <option value="Todos">TODOS OS STATUS</option>
+                  <option value="published">OPERACIONAL</option>
+                  <option value="draft">EM PREPARAÇÃO</option>
+                  <option value="review">EM REVISÃO</option>
+                </select>
               </div>
-
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider"
-              >
-                <option value="Todos">TODAS AS MATÉRIAS</option>
-                <option value="DIREITO">DIREITO</option>
-                <option value="SEGURANÇA PÚBLICA">SEGURANÇA PÚBLICA</option>
-                <option value="CONHECIMENTOS GERAIS">CONHECIMENTOS GERAIS</option>
-              </select>
-
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider"
-                disabled={selectedCategory === 'Todos'}
-              >
-                <option value="">SUBMATÉRIA</option>
-              </select>
-
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider"
-              >
-                <option value="Todos">TODOS OS STATUS</option>
-                <option value="published">OPERACIONAL</option>
-                <option value="draft">EM PREPARAÇÃO</option>
-                <option value="review">EM REVISÃO</option>
-              </select>
+              
+              {/* Segunda linha - Submatéria e Tópico (aparece quando matéria é selecionada) */}
+              <AnimatePresence>
+                {filterMateria !== 'TODOS' && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="h-0.5 bg-gradient-to-r from-transparent via-accent-500 to-transparent flex-1" />
+                      <span className="text-xs font-police-subtitle uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                        FILTROS AVANÇADOS DA MATÉRIA
+                      </span>
+                      <div className="h-0.5 bg-gradient-to-r from-transparent via-accent-500 to-transparent flex-1" />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/* Submateria Filter */}
+                      <div>
+                        <label className="block text-xs font-police-subtitle uppercase tracking-wider mb-1 text-gray-600 dark:text-gray-400">
+                          SUBMATÉRIA
+                        </label>
+                        <select
+                          value={filterSubmateria}
+                          onChange={(e) => {
+                            setFilterSubmateria(e.target.value);
+                            setFilterTopico('TODOS');
+                          }}
+                          className="w-full px-4 py-2 border-2 rounded-lg transition-all duration-300 font-police-body font-medium uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
+                        >
+                          <option value="TODOS">TODAS AS SUBMATÉRIAS</option>
+                          {Object.keys(materias[filterMateria as keyof typeof materias] || {}).map(submateria => (
+                            <option key={submateria} value={submateria}>{submateria.toUpperCase()}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      {/* Topico Filter */}
+                      {filterSubmateria !== 'TODOS' && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <label className="block text-xs font-police-subtitle uppercase tracking-wider mb-1 text-gray-600 dark:text-gray-400">
+                            TÓPICO
+                          </label>
+                          <select
+                            value={filterTopico}
+                            onChange={(e) => setFilterTopico(e.target.value)}
+                            className="w-full px-4 py-2 border-2 rounded-lg transition-all duration-300 font-police-body font-medium uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
+                          >
+                            <option value="TODOS">TODOS OS TÓPICOS</option>
+                            {(materias[filterMateria as keyof typeof materias]?.[filterSubmateria as keyof typeof materias[keyof typeof materias]] || []).map(topico => (
+                              <option key={topico} value={topico}>{topico.toUpperCase()}</option>
+                            ))}
+                          </select>
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </CardContent>
         </Card>
