@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -172,6 +172,13 @@ export default function SummaryForm() {
   // Temporary inputs
   const [newTag, setNewTag] = useState('');
 
+  // Set initial content for the editor
+  useEffect(() => {
+    if (editorRef.current && editorContent && !editorRef.current.innerHTML) {
+      editorRef.current.innerHTML = editorContent;
+    }
+  }, []);
+
   // Handle toolbar actions
   const handleToolbarAction = (action: string) => {
     if (!editorRef.current) return;
@@ -273,17 +280,24 @@ export default function SummaryForm() {
       const content = event.target?.result as string;
       
       // Process different file types
+      let htmlContent = '';
       if (file.type === 'text/html') {
-        setEditorContent(content);
+        htmlContent = content;
       } else if (file.type === 'text/plain' || file.type === 'text/markdown') {
         // Convert plain text to HTML
-        const htmlContent = content
+        htmlContent = content
           .split('\n\n')
           .map(paragraph => `<p>${paragraph}</p>`)
           .join('');
-        setEditorContent(htmlContent);
       } else {
         toast.error('Processamento para este tipo de arquivo ainda não implementado');
+        return;
+      }
+      
+      // Update both state and editor
+      setEditorContent(htmlContent);
+      if (editorRef.current) {
+        editorRef.current.innerHTML = htmlContent;
       }
     };
     
@@ -570,13 +584,18 @@ export default function SummaryForm() {
                         'bg-white dark:bg-gray-900 text-gray-900 dark:text-white',
                         'prose prose-lg dark:prose-invert max-w-none',
                         'focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent',
-                        isPreviewMode ? 'border-gray-200 dark:border-gray-700' : 'border-gray-300 dark:border-gray-600'
+                        isPreviewMode ? 'border-gray-200 dark:border-gray-700' : 'border-gray-300 dark:border-gray-600',
+                        '[&:empty]:before:content-["Comece_a_escrever_seu_resumo_aqui..."] [&:empty]:before:text-gray-400'
                       )}
                       style={{ direction: 'ltr', textAlign: 'left' }}
-                      dangerouslySetInnerHTML={{ __html: editorContent }}
-                      onInput={(e) => setEditorContent(e.currentTarget.innerHTML)}
-                      placeholder="Comece a escrever seu resumo aqui..."
-                    />
+                      onInput={(e) => {
+                        const content = e.currentTarget.innerHTML;
+                        setEditorContent(content);
+                      }}
+                      suppressContentEditableWarning={true}
+                    >
+                      {/* Initial content will be set via useEffect */}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
