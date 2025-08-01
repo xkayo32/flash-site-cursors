@@ -315,31 +315,29 @@ export default function SummaryForm() {
               </CardContent>
             </Card>
 
-            {/* Main Editor */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <RichTextEditor
-                  content={editorContent}
-                  onChange={setEditorContent}
-                  onSave={handleSave}
-                  placeholder="Comece a escrever seu briefing tático aqui..."
-                  isFullscreen={isFullscreen}
-                  onToggleFullscreen={toggleFullscreen}
-                />
-              </div>
+            {/* Main Editor - Full Width */}
+            <RichTextEditor
+              content={editorContent}
+              onChange={setEditorContent}
+              onSave={handleSave}
+              placeholder="Comece a escrever seu briefing tático aqui..."
+              isFullscreen={isFullscreen}
+              onToggleFullscreen={toggleFullscreen}
+            />
 
-              {/* Sidebar */}
-              <div className="space-y-4">
-                {/* Course/Subject Selection */}
-                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="font-police-title uppercase tracking-wider text-base">
-                      CLASSIFICAÇÃO DO BRIEFING
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+            {/* Classification and Settings - Horizontal Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Course/Subject Selection */}
+              <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="font-police-title uppercase tracking-wider text-sm">
+                    CLASSIFICAÇÃO DO BRIEFING
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase tracking-wider">
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
                         MATÉRIA *
                       </label>
                       <select
@@ -358,7 +356,7 @@ export default function SummaryForm() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase tracking-wider">
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
                         SUBMATÉRIA *
                       </label>
                       <select
@@ -373,9 +371,11 @@ export default function SummaryForm() {
                         ))}
                       </select>
                     </div>
-                    
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase tracking-wider">
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
                         TÓPICO
                       </label>
                       <input
@@ -388,7 +388,7 @@ export default function SummaryForm() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase tracking-wider">
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
                         CURSO RELACIONADO
                       </label>
                       <select
@@ -403,41 +403,37 @@ export default function SummaryForm() {
                         <option value="pc-delegado">POLÍCIA CIVIL - DELEGADO</option>
                       </select>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </CardContent>
+              </Card>
 
-                {/* Embedded Elements */}
-                <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="font-police-title uppercase tracking-wider text-base">
-                      ELEMENTOS INCORPORADOS
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Brain className="w-4 h-4 text-purple-600" />
-                        <span className="text-sm font-police-body">QUESTÕES</span>
-                      </div>
-                      <span className="text-sm font-bold font-police-numbers">0</span>
+              {/* Embedded Elements Stats */}
+              <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="font-police-title uppercase tracking-wider text-sm">
+                    ELEMENTOS INCORPORADOS
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                      <Brain className="w-6 h-6 text-purple-600 mx-auto mb-1" />
+                      <div className="text-lg font-bold font-police-numbers text-gray-900 dark:text-white">0</div>
+                      <div className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase">QUESTÕES</div>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Star className="w-4 h-4 text-yellow-600" />
-                        <span className="text-sm font-police-body">FLASHCARDS</span>
-                      </div>
-                      <span className="text-sm font-bold font-police-numbers">0</span>
+                    <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                      <Star className="w-6 h-6 text-yellow-600 mx-auto mb-1" />
+                      <div className="text-lg font-bold font-police-numbers text-gray-900 dark:text-white">0</div>
+                      <div className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase">FLASHCARDS</div>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Link2 className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm font-police-body">LINKS</span>
-                      </div>
-                      <span className="text-sm font-bold font-police-numbers">0</span>
+                    <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <Link2 className="w-6 h-6 text-blue-600 mx-auto mb-1" />
+                      <div className="text-lg font-bold font-police-numbers text-gray-900 dark:text-white">0</div>
+                      <div className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase">LINKS</div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         )}
