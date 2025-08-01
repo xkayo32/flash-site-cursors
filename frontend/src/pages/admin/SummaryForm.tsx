@@ -41,7 +41,12 @@ import {
   Info,
   Settings,
   BookOpen,
-  HelpCircle
+  HelpCircle,
+  Maximize2,
+  Minimize2,
+  Heading1,
+  Heading2,
+  Heading3
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -89,9 +94,16 @@ const toolbarGroups = [
     ]
   },
   {
+    name: 'headings',
+    tools: [
+      { icon: Heading1, action: 'h1', title: 'Título 1' },
+      { icon: Heading2, action: 'h2', title: 'Título 2' },
+      { icon: Heading3, action: 'h3', title: 'Título 3' }
+    ]
+  },
+  {
     name: 'format',
     tools: [
-      { icon: Type, action: 'heading', title: 'Título' },
       { icon: List, action: 'list', title: 'Lista' },
       { icon: ListOrdered, action: 'orderedList', title: 'Lista Numerada' },
       { icon: Quote, action: 'quote', title: 'Citação' }
@@ -155,6 +167,7 @@ export default function SummaryForm() {
   const [embedType, setEmbedType] = useState<'question' | 'flashcard'>('question');
   const [highlightColor, setHighlightColor] = useState('#facc15');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   // Temporary inputs
   const [newTag, setNewTag] = useState('');
@@ -178,8 +191,14 @@ export default function SummaryForm() {
       case 'highlight':
         document.execCommand('backColor', false, highlightColor);
         break;
-      case 'heading':
+      case 'h1':
+        document.execCommand('formatBlock', false, '<h1>');
+        break;
+      case 'h2':
         document.execCommand('formatBlock', false, '<h2>');
+        break;
+      case 'h3':
+        document.execCommand('formatBlock', false, '<h3>');
         break;
       case 'list':
         document.execCommand('insertUnorderedList', false);
@@ -326,8 +345,21 @@ export default function SummaryForm() {
     { id: 'settings', label: 'CONFIGURAÇÕES', icon: Settings }
   ];
 
+  // Handle fullscreen
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+    setIsFullscreen(!isFullscreen);
+  };
+
   return (
-    <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div className={cn(
+      "p-6 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-screen",
+      isFullscreen && "fixed inset-0 z-50 overflow-auto"
+    )}>
       {/* Background Pattern */}
       <div 
         className="fixed inset-0 opacity-5 dark:opacity-10 pointer-events-none z-0"
@@ -369,6 +401,14 @@ export default function SummaryForm() {
           </div>
           
           <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={toggleFullscreen}
+              className="gap-2 font-police-body"
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              {isFullscreen ? 'SAIR TELA CHEIA' : 'TELA CHEIA'}
+            </Button>
             <Button
               variant="outline"
               onClick={() => setIsPreviewMode(!isPreviewMode)}
@@ -448,17 +488,39 @@ export default function SummaryForm() {
                     </div>
                   ))}
                   
-                  {/* Color picker for highlight */}
-                  <div className="flex items-center gap-2 ml-auto">
-                    <label className="text-xs font-police-body uppercase text-gray-600 dark:text-gray-400">
-                      COR DO DESTAQUE:
-                    </label>
-                    <input
-                      type="color"
-                      value={highlightColor}
-                      onChange={(e) => setHighlightColor(e.target.value)}
-                      className="w-8 h-8 rounded cursor-pointer"
-                    />
+                  {/* Quick format selector and color picker */}
+                  <div className="flex items-center gap-4 ml-auto">
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value === 'paragraph') {
+                          document.execCommand('formatBlock', false, '<p>');
+                        } else if (e.target.value) {
+                          handleToolbarAction(e.target.value);
+                        }
+                        e.target.value = '';
+                      }}
+                      className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider"
+                      value=""
+                    >
+                      <option value="">FORMATO RÁPIDO</option>
+                      <option value="h1">TÍTULO 1</option>
+                      <option value="h2">TÍTULO 2</option>
+                      <option value="h3">TÍTULO 3</option>
+                      <option value="paragraph">PARÁGRAFO</option>
+                      <option value="quote">CITAÇÃO</option>
+                    </select>
+                    
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-police-body uppercase text-gray-600 dark:text-gray-400">
+                        DESTAQUE:
+                      </label>
+                      <input
+                        type="color"
+                        value={highlightColor}
+                        onChange={(e) => setHighlightColor(e.target.value)}
+                        className="w-8 h-8 rounded cursor-pointer"
+                      />
+                    </div>
                   </div>
                 </div>
                 
@@ -510,6 +572,7 @@ export default function SummaryForm() {
                         'focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent',
                         isPreviewMode ? 'border-gray-200 dark:border-gray-700' : 'border-gray-300 dark:border-gray-600'
                       )}
+                      style={{ direction: 'ltr', textAlign: 'left' }}
                       dangerouslySetInnerHTML={{ __html: editorContent }}
                       onInput={(e) => setEditorContent(e.currentTarget.innerHTML)}
                       placeholder="Comece a escrever seu resumo aqui..."
