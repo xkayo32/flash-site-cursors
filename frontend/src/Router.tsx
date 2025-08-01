@@ -41,6 +41,7 @@ import ImportManager from './pages/admin/ImportManager';
 import CategoryManager from './pages/admin/CategoryManager';
 import AdminSettings from './pages/admin/AdminSettings';
 import CourseForm from './pages/admin/CourseForm';
+import SummaryForm from './pages/admin/SummaryForm';
 import AdminLayout from './components/layout/AdminLayout';
 
 // Componente para rotas protegidas
@@ -146,6 +147,8 @@ function Router() {
         <Route path="/admin/courses/edit/:id" element={<CourseForm />} />
         <Route path="/admin/courses/:id" element={<CourseForm />} />
         <Route path="/admin/summaries" element={<SummaryEditor />} />
+        <Route path="/admin/summaries/new" element={<SummaryForm />} />
+        <Route path="/admin/summaries/edit/:id" element={<SummaryForm />} />
         <Route path="/admin/legislation" element={<LegislationManager />} />
         <Route path="/admin/users" element={<UserManager />} />
         <Route path="/admin/questions" element={<QuestionEditor />} />

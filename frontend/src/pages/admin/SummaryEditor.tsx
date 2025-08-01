@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -35,7 +36,10 @@ import {
   AlignCenter,
   AlignRight,
   Undo,
-  Redo
+  Redo,
+  Shield,
+  Target,
+  Award
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -158,6 +162,7 @@ const toolbarGroups = [
 ];
 
 export default function SummaryEditor() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [selectedStatus, setSelectedStatus] = useState('Todos');
@@ -180,9 +185,9 @@ export default function SummaryEditor() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      published: { label: 'Publicado', color: 'bg-green-100 text-green-800' },
-      draft: { label: 'Rascunho', color: 'bg-gray-100 text-gray-800' },
-      review: { label: 'Em Revisão', color: 'bg-yellow-100 text-yellow-800' }
+      published: { label: 'OPERACIONAL', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600' },
+      draft: { label: 'EM PREPARAÇÃO', color: 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-2 border-dashed border-gray-400 dark:border-gray-700' },
+      review: { label: 'EM REVISÃO', color: 'bg-accent-500/20 text-accent-700 dark:text-accent-300 border-2 border-accent-500/50' }
     };
     
     const config = statusConfig[status as keyof typeof statusConfig];
@@ -194,20 +199,11 @@ export default function SummaryEditor() {
   };
 
   const handleCreateSummary = () => {
-    setSelectedSummary(null);
-    setIsEditing(true);
-    setShowSummaryModal(true);
-    setActiveTab('editor');
-    setEditorContent('');
+    navigate('/admin/summaries/new');
   };
 
   const handleEditSummary = (summary: any) => {
-    setSelectedSummary(summary);
-    setIsEditing(true);
-    setShowSummaryModal(true);
-    setActiveTab('editor');
-    // In real app, load the summary content
-    setEditorContent('<h1>Título do Resumo</h1><p>Conteúdo do resumo aqui...</p>');
+    navigate(`/admin/summaries/edit/${summary.id}`);
   };
 
   const handleViewSummary = (summary: any) => {
@@ -247,22 +243,18 @@ export default function SummaryEditor() {
         className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title">
-            EDITOR DE RESUMOS INTERATIVOS
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">
+            CENTRO DE INTELIGÊNCIA TÁTICA
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 font-police-body">
-            Crie resumos com questões e flashcards incorporados para estudo eficiente
+          <p className="text-gray-600 dark:text-gray-300 font-police-body tracking-wider">
+            CRIAÇÃO DE RESUMOS OPERACIONAIS COM RECURSOS INTERATIVOS
           </p>
         </div>
         
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="gap-2 font-police-subtitle">
-            <Upload className="w-4 h-4" />
-            IMPORTAR
-          </Button>
-          <Button onClick={handleCreateSummary} className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-subtitle">
+          <Button onClick={handleCreateSummary} className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-subtitle font-semibold uppercase tracking-wider shadow-lg">
             <Plus className="w-4 h-4" />
-            NOVO RESUMO
+            CRIAR NOVO BRIEFING
           </Button>
         </div>
       </motion.div>
@@ -278,14 +270,14 @@ export default function SummaryEditor() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 font-police-body">
-                  Total de Resumos
+                <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                  TOTAL DE BRIEFINGS
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {summaries.length}
                 </p>
               </div>
-              <FileText className="w-8 h-8 text-blue-500" />
+              <Shield className="w-8 h-8 text-accent-500" />
             </div>
           </CardContent>
         </Card>
@@ -294,14 +286,14 @@ export default function SummaryEditor() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 font-police-body">
-                  Publicados
+                <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
+                  OPERACIONAIS
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {summaries.filter(s => s.status === 'published').length}
                 </p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-500" />
+              <Target className="w-8 h-8 text-gray-500" />
             </div>
           </CardContent>
         </Card>
@@ -310,8 +302,8 @@ export default function SummaryEditor() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 font-police-body">
-                  Questões Incorporadas
+                <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
+                  QUESTÕES TÁTICAS
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {summaries.reduce((acc, s) => acc + s.embeds.questions, 0)}
@@ -326,8 +318,8 @@ export default function SummaryEditor() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 font-police-body">
-                  Flashcards Incorporados
+                <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
+                  FLASHCARDS OPERACIONAIS
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {summaries.reduce((acc, s) => acc + s.embeds.flashcards, 0)}
@@ -345,40 +337,49 @@ export default function SummaryEditor() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="relative lg:col-span-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Buscar resumos..."
+                  placeholder="BUSCAR BRIEFINGS..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
+                  className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:text-gray-500 placeholder:uppercase placeholder:tracking-wider"
                 />
               </div>
 
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
+                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider"
               >
-                {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
+                <option value="Todos">TODAS AS MATÉRIAS</option>
+                <option value="DIREITO">DIREITO</option>
+                <option value="SEGURANÇA PÚBLICA">SEGURANÇA PÚBLICA</option>
+                <option value="CONHECIMENTOS GERAIS">CONHECIMENTOS GERAIS</option>
+              </select>
+
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider"
+                disabled={selectedCategory === 'Todos'}
+              >
+                <option value="">SUBMATÉRIA</option>
               </select>
 
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
+                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider"
               >
-                {statuses.map(status => (
-                  <option key={status} value={status}>
-                    {status === 'Todos' ? status : status.charAt(0).toUpperCase() + status.slice(1)}
-                  </option>
-                ))}
+                <option value="Todos">TODOS OS STATUS</option>
+                <option value="published">OPERACIONAL</option>
+                <option value="draft">EM PREPARAÇÃO</option>
+                <option value="review">EM REVISÃO</option>
               </select>
             </div>
           </CardContent>
@@ -395,28 +396,28 @@ export default function SummaryEditor() {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-primary-50 dark:bg-gray-800">
+                <thead className="bg-gray-100 dark:bg-gray-800">
                   <tr>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Título
+                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                      BRIEFING
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Curso
+                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                      CURSO
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Autor
+                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                      INSTRUTOR
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Status
+                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                      STATUS
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Incorporações
+                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                      ELEMENTOS
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Métricas
+                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                      MÉTRICAS
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Ações
+                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                      AÇÕES
                     </th>
                   </tr>
                 </thead>
