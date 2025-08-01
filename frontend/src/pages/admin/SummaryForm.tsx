@@ -234,6 +234,22 @@ export default function SummaryForm() {
           </div>
           
           <div className="flex items-center gap-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".txt,.html,.md,.doc,.docx,.pdf"
+              onChange={handleFileImport}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="gap-2 font-police-body"
+              title="Importar arquivo (TXT, HTML, MD, DOC, DOCX, PDF)"
+            >
+              <FileUp className="w-4 h-4" />
+              IMPORTAR
+            </Button>
             <Button
               variant="outline"
               onClick={toggleFullscreen}
@@ -296,33 +312,6 @@ export default function SummaryForm() {
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   className="w-full px-4 py-3 text-2xl font-bold border-0 border-b-2 border-gray-200 dark:border-gray-700 bg-transparent text-gray-900 dark:text-white font-police-title uppercase tracking-wider focus:outline-none focus:border-accent-500 placeholder:text-gray-400"
                 />
-              </CardContent>
-            </Card>
-
-            {/* File Import */}
-            <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-              <CardContent className="p-3">
-                <div className="flex items-center gap-3">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".txt,.html,.md,.doc,.docx,.pdf"
-                    onChange={handleFileImport}
-                    className="hidden"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="gap-2 font-police-body"
-                  >
-                    <FileUp className="w-4 h-4" />
-                    IMPORTAR ARQUIVO
-                  </Button>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 font-police-body">
-                    Suporta: TXT, HTML, MD, DOC, DOCX, PDF
-                  </span>
-                </div>
               </CardContent>
             </Card>
 
