@@ -1121,11 +1121,11 @@ export default function FlashcardEditor() {
                         rows={4}
                         value={newCard.text}
                         onChange={(e) => setNewCard({ ...newCard, text: e.target.value })}
-                        placeholder="USE {{c1::PALAVRA}} PARA CRIAR LACUNAS..."
+                        placeholder="USE {c1::PALAVRA} PARA CRIAR LACUNAS..."
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                       />
                       <p className="mt-1 text-xs text-gray-600 dark:text-gray-400 font-police-body">
-                        EXEMPLO: O crime de {{c1::deserção}} tem pena de {{c2::6 meses a 2 anos}}
+                        EXEMPLO: O crime de {`{{c1::deserção}}`} tem pena de {`{{c2::6 meses a 2 anos}}`}
                       </p>
                     </div>
                   </>
