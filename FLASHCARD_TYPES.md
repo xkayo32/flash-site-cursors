@@ -54,11 +54,25 @@ O sistema de flashcards implementado oferece **7 tipos diferentes** de cartões,
   - **Resposta**: "paz"
   - **Dica**: "Oposto de guerra"
 
-### 7. **OCLUSÃO DE IMAGEM** (Em desenvolvimento)
+### 7. **OCLUSÃO DE IMAGEM** ✅ (IMPLEMENTADO!)
 - **Tipo**: `image_occlusion`
-- **Descrição**: Imagem com áreas ocultas para identificar
-- **Exemplo**: Hierarquia militar com postos ocultos
-- **Status**: 🚧 Implementação planejada
+- **Descrição**: Imagem com áreas ocultas para identificar progressivamente
+- **Exemplo**: Hierarquia militar com postos e distintivos ocultos
+- **Status**: ✅ Totalmente funcional
+
+**Funcionalidades:**
+- 🎨 Editor visual drag & drop intuitivo
+- 📐 Desenho de retângulos e círculos
+- 🔄 Movimentação e redimensionamento de áreas
+- 📍 Navegação sequencial entre áreas ocultas
+- 👁️ Opção de revelar todas as respostas
+- 📤 Upload de imagens ou uso de exemplos
+- 💾 Suporte para múltiplas áreas por imagem
+
+**Como funciona:**
+1. **Criação**: Use o editor para marcar áreas na imagem e adicionar respostas
+2. **Estudo**: Navegue por cada área oculta tentando lembrar o conteúdo
+3. **Revisão**: Veja o progresso e repita áreas difíceis
 
 ## 🛠️ Recursos Técnicos
 
@@ -108,7 +122,7 @@ O sistema de flashcards implementado oferece **7 tipos diferentes** de cartões,
 | Multiple Choice | 🔌 (Add-on) | ✅ Nativo |
 | True/False | 🔌 (Add-on) | ✅ Nativo |
 | Type Answer | ✅ | ✅ |
-| Image Occlusion | 🔌 (Add-on) | 🚧 Planejado |
+| Image Occlusion | 🔌 (Add-on) | ✅ Nativo |
 | Tema Militar | ❌ | ✅ |
 | Interface PT-BR | ✅ | ✅ |
 

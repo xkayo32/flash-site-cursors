@@ -20,12 +20,14 @@ import {
   MoreVertical,
   X,
   Eye,
-  EyeOff
+  EyeOff,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
+import ImageOcclusionEditor from '@/components/ImageOcclusionEditor';
 
 // Mock data para demonstração
 const mockDeck = {
@@ -122,14 +124,16 @@ const mockCards = [
   {
     id: 6,
     type: 'image_occlusion',
-    image: '/images/hierarquia-militar.jpg',
+    image: '/api/placeholder/800/600',
     occlusionAreas: [
-      { x: 100, y: 50, width: 80, height: 30, answer: 'General de Exército' },
-      { x: 100, y: 100, width: 80, height: 30, answer: 'General de Divisão' },
-      { x: 100, y: 150, width: 80, height: 30, answer: 'General de Brigada' }
+      { id: 'area-1', x: 100, y: 50, width: 150, height: 40, answer: 'General de Exército', shape: 'rectangle' },
+      { id: 'area-2', x: 100, y: 120, width: 150, height: 40, answer: 'General de Divisão', shape: 'rectangle' },
+      { id: 'area-3', x: 100, y: 190, width: 150, height: 40, answer: 'General de Brigada', shape: 'rectangle' },
+      { id: 'area-4', x: 350, y: 50, width: 120, height: 120, answer: '4 Estrelas', shape: 'circle' },
+      { id: 'area-5', x: 350, y: 190, width: 120, height: 120, answer: '3 Estrelas', shape: 'circle' }
     ],
     currentOcclusion: 0,
-    extra: 'Hierarquia dos Oficiais Generais do Exército Brasileiro',
+    extra: 'Hierarquia dos Oficiais Generais do Exército Brasileiro - Patentes e Distintivos',
     position: 6,
     difficulty: 'medium',
     tags: ['Hierarquia', 'Oficiais', 'Exército'],
@@ -169,6 +173,7 @@ export default function FlashcardEditor() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   
+  const [showImageOcclusionEditor, setShowImageOcclusionEditor] = useState(false);
   const [newCard, setNewCard] = useState({
     type: 'basic',
     front: '',
@@ -183,7 +188,9 @@ export default function FlashcardEditor() {
     answer: true,
     text: '',
     extra: '',
-    hint: ''
+    hint: '',
+    image: '',
+    occlusionAreas: []
   });
 
   const cardTypes = [
@@ -229,15 +236,56 @@ export default function FlashcardEditor() {
   };
 
   const handleSaveNewCard = () => {
-    if (!newCard.front.trim() || !newCard.back.trim()) {
-      toast.error('Preencha frente e verso do cartão', { icon: '⚠️' });
-      return;
+    // Validação baseada no tipo de cartão
+    if (newCard.type === 'basic' || newCard.type === 'basic_reversed') {
+      if (!newCard.front.trim() || !newCard.back.trim()) {
+        toast.error('Preencha frente e verso do cartão', { icon: '⚠️' });
+        return;
+      }
+    } else if (newCard.type === 'cloze') {
+      if (!newCard.text.trim()) {
+        toast.error('Preencha o texto com lacunas', { icon: '⚠️' });
+        return;
+      }
+    } else if (newCard.type === 'multiple_choice') {
+      if (!newCard.question.trim() || newCard.options.some(o => !o.trim())) {
+        toast.error('Preencha a pergunta e todas as alternativas', { icon: '⚠️' });
+        return;
+      }
+    } else if (newCard.type === 'true_false') {
+      if (!newCard.statement.trim()) {
+        toast.error('Preencha a afirmação', { icon: '⚠️' });
+        return;
+      }
+    } else if (newCard.type === 'type_answer') {
+      if (!newCard.question.trim() || !newCard.answer.toString().trim()) {
+        toast.error('Preencha a pergunta e a resposta', { icon: '⚠️' });
+        return;
+      }
+    } else if (newCard.type === 'image_occlusion') {
+      if (!newCard.image || newCard.occlusionAreas.length === 0) {
+        toast.error('Configure a imagem e as áreas de oclusão', { icon: '⚠️' });
+        return;
+      }
     }
 
     const card = {
       id: Math.max(...cards.map(c => c.id)) + 1,
+      type: newCard.type,
       front: newCard.front,
       back: newCard.back,
+      question: newCard.question,
+      options: newCard.options,
+      correct: newCard.correct,
+      explanation: newCard.explanation,
+      statement: newCard.statement,
+      answer: newCard.answer,
+      text: newCard.text,
+      extra: newCard.extra,
+      hint: newCard.hint,
+      image: newCard.image,
+      occlusionAreas: newCard.occlusionAreas,
+      currentOcclusion: 0,
       position: cards.length + 1,
       difficulty: newCard.difficulty,
       tags: newCard.tags.split(',').map(t => t.trim()).filter(t => t),
@@ -248,7 +296,24 @@ export default function FlashcardEditor() {
     };
 
     setCards([...cards, card]);
-    setNewCard({ front: '', back: '', difficulty: 'medium', tags: '' });
+    setNewCard({
+      type: 'basic',
+      front: '',
+      back: '',
+      difficulty: 'medium',
+      tags: '',
+      question: '',
+      options: ['', '', '', ''],
+      correct: 0,
+      explanation: '',
+      statement: '',
+      answer: true,
+      text: '',
+      extra: '',
+      hint: '',
+      image: '',
+      occlusionAreas: []
+    });
     setShowNewCardForm(false);
     
     toast.success('Cartão criado com sucesso', {
@@ -530,23 +595,88 @@ export default function FlashcardEditor() {
         );
 
       case 'image_occlusion':
+        const currentOcclusionIndex = card.currentOcclusion || 0;
+        const occlusionArea = card.occlusionAreas?.[currentOcclusionIndex];
+        
         return (
           <div className="text-center">
             <h3 className="text-lg font-police-subtitle font-bold text-gray-900 dark:text-white mb-4">
-              OCLUSÃO DE IMAGEM
+              OCLUSÃO DE IMAGEM - ÁREA {currentOcclusionIndex + 1} DE {card.occlusionAreas?.length || 0}
             </h3>
-            <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg p-8 mb-4">
-              <div className="text-gray-500 dark:text-gray-400 text-sm font-police-body">
-                📷 IMAGEM: {card.image}
-                <br />
-                {showAnswer 
-                  ? `RESPOSTA: ${card.occlusionAreas[card.currentOcclusion]?.answer}`
-                  : 'ÁREA OCULTA - CLIQUE EM "MOSTRAR RESPOSTA"'
-                }
-              </div>
+            <div className="relative inline-block">
+              {card.image ? (
+                <>
+                  <img 
+                    src={card.image} 
+                    alt="Flashcard image" 
+                    className="max-w-full h-auto rounded-lg"
+                  />
+                  {card.occlusionAreas?.map((area: any, index: number) => {
+                    const isCurrentArea = index === currentOcclusionIndex;
+                    const shouldShowAnswer = showAnswer && isCurrentArea;
+                    
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          position: 'absolute',
+                          left: `${(area.x / 800) * 100}%`,
+                          top: `${(area.y / 600) * 100}%`,
+                          width: `${(area.width / 800) * 100}%`,
+                          height: `${(area.height / 600) * 100}%`
+                        }}
+                        className={`${isCurrentArea ? 'ring-2 ring-accent-500 ring-offset-2' : ''}`}
+                      >
+                        {area.shape === 'rectangle' ? (
+                          <div
+                            className={`w-full h-full ${
+                              shouldShowAnswer
+                                ? 'bg-transparent border-2 border-accent-500'
+                                : isCurrentArea
+                                ? 'bg-gray-800 dark:bg-gray-900'
+                                : 'bg-gray-600 dark:bg-gray-700 opacity-50'
+                            }`}
+                          />
+                        ) : (
+                          <div
+                            className={`w-full h-full rounded-full ${
+                              shouldShowAnswer
+                                ? 'bg-transparent border-2 border-accent-500'
+                                : isCurrentArea
+                                ? 'bg-gray-800 dark:bg-gray-900'
+                                : 'bg-gray-600 dark:bg-gray-700 opacity-50'
+                            }`}
+                          />
+                        )}
+                        
+                        {shouldShowAnswer && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="bg-accent-500 text-black px-2 py-1 rounded font-police-body font-semibold text-sm uppercase">
+                              {area.answer}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {!showAnswer && !isCurrentArea && (
+                          <div className="absolute top-1 left-1 bg-gray-900/80 text-white px-1.5 py-0.5 rounded text-xs font-police-numbers">
+                            {index + 1}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </>
+              ) : (
+                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-8">
+                  <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-500 dark:text-gray-400 font-police-body">
+                    IMAGEM NÃO ENCONTRADA
+                  </p>
+                </div>
+              )}
             </div>
             {showAnswer && card.extra && (
-              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
                 <p className="text-sm font-police-body text-gray-700 dark:text-gray-300">
                   {card.extra}
                 </p>
@@ -935,6 +1065,7 @@ export default function FlashcardEditor() {
                              card.type === 'true_false' ? card.statement :
                              card.type === 'type_answer' ? card.question :
                              card.type === 'cloze' ? card.text.replace(/{{c\d+::(.*?)}}/g, '[$1]') :
+                             card.type === 'image_occlusion' ? `Imagem com ${card.occlusionAreas?.length || 0} áreas de oclusão` :
                              'CARTÃO NÃO DEFINIDO'}
                           </h4>
                           <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body whitespace-pre-line">
@@ -943,6 +1074,7 @@ export default function FlashcardEditor() {
                              card.type === 'true_false' ? `Resposta: ${card.answer ? 'VERDADEIRO' : 'FALSO'}` :
                              card.type === 'type_answer' ? `Resposta: ${card.answer}` :
                              card.type === 'cloze' ? card.extra || 'Exercício de lacunas' :
+                             card.type === 'image_occlusion' ? card.extra || 'Exercício de oclusão de imagem' :
                              ''}
                           </p>
                           <div className="flex items-center gap-4 mt-3">
@@ -1289,13 +1421,41 @@ export default function FlashcardEditor() {
                   </>
                 )}
 
-                {/* Image Occlusion Placeholder */}
+                {/* Image Occlusion Fields */}
                 {newCard.type === 'image_occlusion' && (
-                  <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                    <p className="text-yellow-800 dark:text-yellow-200 font-police-body text-sm">
-                      🚧 OCLUSÃO DE IMAGEM - Em desenvolvimento. Use outros tipos por enquanto.
-                    </p>
-                  </div>
+                  <>
+                    <div>
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        CONFIGURAR OCLUSÃO DE IMAGEM
+                      </label>
+                      <Button
+                        type="button"
+                        onClick={() => setShowImageOcclusionEditor(true)}
+                        className="w-full gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
+                      >
+                        <ImageIcon className="w-4 h-4" />
+                        {newCard.image ? 'EDITAR' : 'CRIAR'} OCLUSÃO DE IMAGEM
+                      </Button>
+                      {newCard.image && newCard.occlusionAreas.length > 0 && (
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                          ✅ {newCard.occlusionAreas.length} ÁREAS DE OCLUSÃO CONFIGURADAS
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        INFORMAÇÃO EXTRA (OPCIONAL)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={newCard.extra}
+                        onChange={(e) => setNewCard({ ...newCard, extra: e.target.value })}
+                        placeholder="CONTEXTO OU EXPLICAÇÃO ADICIONAL..."
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </>
                 )}
 
                 {/* Common Fields */}
@@ -1365,6 +1525,22 @@ export default function FlashcardEditor() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Image Occlusion Editor Modal */}
+      <AnimatePresence>
+        {showImageOcclusionEditor && (
+          <ImageOcclusionEditor
+            imageUrl={newCard.image}
+            occlusionAreas={newCard.occlusionAreas}
+            onSave={(imageUrl, areas) => {
+              setNewCard({ ...newCard, image: imageUrl, occlusionAreas: areas });
+              setShowImageOcclusionEditor(false);
+              toast.success('Oclusão de imagem configurada', { icon: '🖼️' });
+            }}
+            onCancel={() => setShowImageOcclusionEditor(false)}
+          />
         )}
       </AnimatePresence>
     </div>

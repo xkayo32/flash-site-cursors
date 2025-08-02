@@ -17,7 +17,8 @@ import {
   Upload,
   Tag,
   PanelLeft,
-  GripVertical
+  GripVertical,
+  Layers
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -62,6 +63,11 @@ const adminNavItems = [
     title: 'Banco de Questões',
     icon: Brain,
     path: '/admin/questions'
+  },
+  {
+    title: 'Flashcards',
+    icon: Layers,
+    path: '/admin/flashcards'
   },
   {
     title: 'Analytics',

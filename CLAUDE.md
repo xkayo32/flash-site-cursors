@@ -26,9 +26,6 @@ npm run dev                # Start development server on port 5173
 npm run build              # Build for production (includes TypeScript check via tsc -b)
 npm run lint               # Run ESLint with typescript-eslint
 npm run preview            # Preview production build
-
-# Testing (when implemented)
-npm test                   # Run tests (not currently configured)
 ```
 
 ### Backend (PHP)
@@ -51,10 +48,7 @@ psql -h localhost -p 5532 -U estudos_user -d estudos_db -f sample_data.sql
 ### Docker Development
 ```bash
 # Start all services
-make up                    # Start with MySQL
 make up-postgres           # Start with PostgreSQL (recommended)
-
-# Service management
 make down                  # Stop all services
 make restart               # Restart services
 make logs                  # View logs
@@ -69,10 +63,9 @@ make shell-frontend        # Access frontend container
 # Frontend:    http://localhost:5273
 # Backend API: http://localhost:8180
 # PostgreSQL:  localhost:5532
-# phpMyAdmin:  http://localhost:8280 (MySQL only)
 ```
 
-### Database
+### Database Commands
 ```bash
 # PostgreSQL is the primary database
 # Connection: postgres://estudos_user:estudos_pass@localhost:5532/estudos_db
@@ -83,13 +76,6 @@ psql -h localhost -p 5532 -U estudos_user -d estudos_db -f sample_data.sql
 
 # Common fixes
 psql -h localhost -p 5532 -U estudos_user -d estudos_db -f complete_fix.sql
-
-# Database schema includes comprehensive tables for:
-# - Users, profiles, preferences
-# - Courses, modules, lessons
-# - Questions, flashcards, mock exams
-# - Subscriptions, payments
-# - Study tracking and analytics
 ```
 
 ## Architecture Overview
@@ -144,7 +130,7 @@ Core tables:
 - `payments`: Payment history tracking
 
 Advanced features:
-- UUID primary keys for security
+- Integer primary keys (migrated from UUIDs)
 - Trigger-based updated_at timestamps
 - Comprehensive indexes for performance
 - Foreign key constraints for data integrity
@@ -183,19 +169,6 @@ Advanced features:
    - Frontend: `VITE_API_URL` (default: http://localhost:8180)
    - Backend: DB credentials in `.env` file
 
-### Code Quality Standards
-- **Frontend**: TypeScript strict mode, ESLint with typescript-eslint
-- **Backend**: PSR-4 autoloading, namespaced classes
-- **Git**: Feature branch workflow (`feature/`, `fix/`, `docs/`)
-- **Commits**: Conventional commits recommended
-
-### Development with AI Agents
-When working with Claude Code agents for better code quality:
-- **Frontend Development**: Use `frontend-specialist` agent for UI/UX implementations
-- **Code Review**: Always use `production-code-reviewer` agent after significant changes
-- **Best Practice**: Agent builds → Agent reviews → Fix issues → Commit
-- **Docker Environment**: Always test frontend changes using Docker (`make up-postgres`)
-
 ### Important Notes
 - Always run `npm run build` (includes TypeScript check) before committing frontend changes
 - API base URL is configured via `VITE_API_URL` environment variable
@@ -209,66 +182,30 @@ When working with Claude Code agents for better code quality:
 - PostgreSQL port 5532 is custom to avoid conflicts with default 5432
 
 ### UI/UX Design System
-The project uses a **monochromatic military/police themed design system** consistently across all screens (Dashboard, Login, Landing Page, and Admin):
+The project uses a **monochromatic military/police themed design system**:
 
-- **Color Palette (Monochromatic)**:
-  - **Primary Colors**: Black (#000000), White (#FFFFFF)
-  - **Military Base**: #14242f (tactical blue-gray for specific elements)
-  - **Gray Scale**: Complete range from gray-50 to gray-950
-  - **Accent Colors** (Limited use):
-    - accent-500: #facc15 (tactical yellow) - Primary action buttons
+- **Color Palette**:
+  - Primary: Black (#000000), White (#FFFFFF)
+  - Military Base: #14242f (tactical blue-gray)
+  - Gray Scale: gray-50 to gray-950
+  - Accent Colors:
+    - accent-500: #facc15 (tactical yellow)
     - accent-600: #e5b91e (yellow hover - light theme)  
     - accent-650: #d06e0f (orange hover - dark theme)
-- **Button Color System (Oficial)**:
-  - **Padrão para CTAs Principais**: 
-    - **Theme Claro**: `bg-accent-500 hover:bg-accent-600 text-black hover:text-black`
-    - **Theme Escuro**: `dark:bg-gray-100 dark:hover:bg-accent-650 dark:text-black dark:hover:text-white`
-  - **Explicação do Esquema**:
-    - Theme claro: Botão amarelo (`#facc15`) → Hover amarelo escuro (`#e5b91e`) 
-    - Theme escuro: Botão cinza claro (`#f3f4f6`) → Hover laranja (`#d06e0f`)
-    - Texto sempre preto no claro, preto normal/branco hover no escuro
-  - **Aplicação**: Login, Landing Page, Admin, todas as páginas principais
-  - **Classes CSS Completas**: `bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white`
+- **Button Color System**:
+  - Light Theme: `bg-accent-500 hover:bg-accent-600 text-black`
+  - Dark Theme: `dark:bg-gray-100 dark:hover:bg-accent-650 dark:text-black dark:hover:text-white`
 - **Typography**: 
   - Headings: Orbitron (font-police-title)
   - Subtitles: Rajdhani (font-police-subtitle) 
   - Body: Rajdhani (font-police-body)
   - Numbers: Exo 2 (font-police-numbers)
-- **Theme System**:
-  - Dark theme as default
-  - Light theme support with proper contrast
-  - Theme toggle with Sun/Moon icons positioned near navigation
-  - Smooth transitions between themes
-  - Theme preference saved in localStorage
 - **Visual Effects**:
-  - **Transparency Effects**: All cards use bg-white/90 dark:bg-gray-800/90 with backdrop-blur-sm
-  - **Image Overlays**: bg-white/60 dark:bg-black/70 with lateral gradients
-  - **Scan Lines**: Subtle repeating linear gradients for tactical feel
-- **Design Patterns**:
-  - **Strictly Monochromatic**: No colorful elements (removed red, green, blue, etc.)
-  - All caps text with expanded letter spacing for headings
-  - Tactical/military language ("RECRUTA", "ELITE", "COMANDO")
-  - Dark backgrounds with subtle patterns
-  - Consistent spacing and shadow systems
-  - **Card Styles**: bg-white/90 dark:bg-gray-800/90 with backdrop-blur-sm
-  - **Borders**: border-gray-200 dark:border-gray-700
-  - **Text Colors**: text-gray-900 dark:text-white (primary), text-gray-600 dark:text-gray-400 (secondary)
-  - **Input Fields**: bg-gray-50 dark:bg-gray-800 with border-gray-300 dark:border-gray-600
-- **Key Pages Styled**:
-  - Landing page: Monochromatic with gray buttons, orange hover effects
-  - Login/Register: Yellow accent buttons with tactical theme
-  - Admin Dashboard: "CENTRAL DE COMANDO" with monochromatic cards
-  - Content Manager: Hierarchical filter system with cascading dropdowns
-- **Content Management Features**:
-  - **Hierarchical Filtering**: Matéria → Submatéria → Tópico cascade system
-  - **Subject Tree Navigation**: Police/military course structure organization
-  - **Filter Categories**: DIREITO, SEGURANÇA PÚBLICA, CONHECIMENTOS GERAIS
-- **Components**:
-  - Custom tactical logo (crosshair/target design)
-  - WhatsApp floating button with monochromatic styling
-  - Social media integration
-  - Theme toggle button (useTheme hook from ThemeContext)
-  - Animated card transitions with backdrop blur effects
+  - Cards: bg-white/90 dark:bg-gray-800/90 with backdrop-blur-sm
+  - Image Overlays: bg-white/60 dark:bg-black/70
+  - Borders: border-gray-200 dark:border-gray-700
+  - Text: text-gray-900 dark:text-white (primary), text-gray-600 dark:text-gray-400 (secondary)
+  - Inputs: bg-gray-50 dark:bg-gray-800 with border-gray-300 dark:border-gray-600
 
 ### Troubleshooting
 
@@ -327,82 +264,6 @@ make up-postgres
 docker compose logs -f backend
 docker compose logs -f frontend
 docker compose logs -f postgres
-```
-
-### Payment Integration
-- Stripe integration prepared but currently in mock mode
-- Checkout page at `/checkout` with 3 subscription plans:
-  - RECRUTA (Basic): R$ 97/month
-  - ELITE (Premium): R$ 197/month - highlighted as most popular
-  - COMANDO (Annual): R$ 1,497/year with 37% discount
-- Payment form styled with military theme
-- Ready for Stripe activation with environment variables
-
-### Project Structure Notes
-- Frontend dependencies: React 19, Vite 4, TypeScript 5.8, Tailwind CSS 3.4
-- Backend: PHP 8.2+ with custom framework, Firebase JWT 6.11
-- State management: Zustand 5 with persist, React Query 5 (TanStack Query)
-- UI Components: Custom components with CVA (class-variance-authority)
-- Icons: Lucide React with custom tactical SVG icons
-- Form validation: Built-in HTML5 validation (no external library)
-- HTTP client: Axios 1.10 with centralized configuration
-
-### Recent Updates
-- **2025-07-31**: 
-  - **Admin Settings Page**: Applied military/police theme with monochromatic design
-    - Created `useSystemSettings` hook for global configuration management
-    - Implemented all admin configuration sections (General, Security, Users, Notifications, Backup, Analytics)
-    - Created `AdminSettingsExtensions.tsx` for modular settings management
-  - **Content Manager Improvements**: Enhanced content management system
-    - **Real Functionality for Client Presentation**: All buttons now fully functional
-    - **Professional Interface**: No alerts - uses toast notifications and modals
-    - **CRUD Operations**: Complete Create, Read, Update, Delete functionality
-    - **Bulk Actions**: Functional publish, archive, and delete operations  
-    - **Import/Export**: Real file import with data simulation and JSON export
-    - **View/Edit Modals**: Professional modal interfaces for content management
-    - **Loading States**: Animated spinners for better UX during operations
-    - **State Management**: Real-time data updates with React state
-    - **Duplication System**: One-click content duplication with proper naming
-    - **Status Management**: Dynamic status changes with visual feedback
-    - Applied consistent military/police theme throughout interface
-    - Added hierarchical filtering system for content organization
-    - Implemented logo upload functionality that reflects across the entire system
-    - StudyProLogo now supports custom logos from settings
-    - Added functional General, Company, and Branding settings sections
-  - **Logo Standardization**: 
-    - StudyProLogo component now uses colorful logo (Logo_colorida_2.png) in both themes
-    - Replaced Logo component with StudyProLogo in AdminLayout
-    - Changed favicon to use the colorful logo (logo.png)
-- **2025-07-30**: Standardized button colors across platform
-  - All yellow buttons now use accent color palette (accent-500/600/650)
-  - Dark theme hover color: #d06e0f (accent-650)
-  - Pattern: bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650
-
-## Testing Commands
-```bash
-# Frontend testing (when implemented)
-cd frontend
-npm test                   # Run tests (not currently configured)
-
-# Backend testing
-cd backend
-# No automated tests currently configured
-# Manual API testing: Use Postman collection at StudyPro_API_Postman_Collection.json
-```
-
-## Git Workflow
-```bash
-# Feature development
-git checkout develop
-git pull origin develop
-git checkout -b feature/your-feature-name
-
-# After changes
-git add .
-git commit -m "feat: your feature description"
-git push -u origin feature/your-feature-name
-
-# Create PR to develop branch (not main)
 ```
 
 ## Environment Variables

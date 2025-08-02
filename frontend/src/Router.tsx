@@ -48,6 +48,8 @@ import SummaryForm from './pages/admin/SummaryForm';
 import FlashcardManager from './pages/admin/FlashcardManager';
 import NewFlashcardDeck from './pages/admin/NewFlashcardDeck';
 import FlashcardEditor from './pages/admin/FlashcardEditor';
+import IndividualFlashcards from './pages/admin/IndividualFlashcards';
+import NewFlashcard from './pages/admin/NewFlashcard';
 import AdminLayout from './components/layout/AdminLayout';
 
 // Componente para rotas protegidas
@@ -165,6 +167,9 @@ function Router() {
         <Route path="/admin/flashcards/new" element={<NewFlashcardDeck />} />
         <Route path="/admin/flashcards/:deckId/edit" element={<FlashcardEditor />} />
         <Route path="/admin/flashcards/:deckId/cards" element={<FlashcardEditor />} />
+        <Route path="/admin/flashcards/cards" element={<IndividualFlashcards />} />
+        <Route path="/admin/flashcards/cards/new" element={<NewFlashcard />} />
+        <Route path="/admin/flashcards/cards/:cardId/edit" element={<FlashcardEditor />} />
         <Route path="/admin/analytics" element={<Analytics />} />
         <Route path="/admin/import" element={<ImportManager />} />
         <Route path="/admin/categories" element={<CategoryManager />} />
