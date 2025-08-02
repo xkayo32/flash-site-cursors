@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -40,6 +41,7 @@ const roles = ['Todos', 'student', 'instructor', 'admin'];
 const statuses = ['Todos', 'active', 'suspended', 'pending', 'inactive'];
 
 export default function UserManager() {
+  const navigate = useNavigate();
   const { user: currentUser } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlan, setSelectedPlan] = useState('Todos');
@@ -195,16 +197,16 @@ export default function UserManager() {
 
   const getRoleBadge = (role: string) => {
     const roleConfig = {
-      admin: { label: 'Admin', variant: 'default' as const, icon: Shield, color: 'bg-red-100 text-red-800' },
-      instructor: { label: 'Instrutor', variant: 'secondary' as const, icon: Crown, color: 'bg-purple-100 text-purple-800' },
-      student: { label: 'Aluno', variant: 'secondary' as const, icon: User, color: 'bg-blue-100 text-blue-800' }
+      admin: { label: 'ADMIN', variant: 'default' as const, icon: Shield, color: 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-800' },
+      instructor: { label: 'INSTRUTOR', variant: 'secondary' as const, icon: Crown, color: 'bg-gray-600 text-white dark:bg-gray-400 dark:text-gray-800' },
+      student: { label: 'ALUNO', variant: 'secondary' as const, icon: User, color: 'bg-gray-400 text-white dark:bg-gray-600 dark:text-white' }
     };
     
     const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.student;
     const Icon = config.icon;
     
     return (
-      <Badge variant={config.variant} className={`${config.color} flex items-center gap-1`}>
+      <Badge variant={config.variant} className={`${config.color} flex items-center gap-1 font-police-body font-semibold uppercase tracking-wider`}>
         <Icon className="w-3 h-3" />
         {config.label}
       </Badge>
@@ -213,15 +215,15 @@ export default function UserManager() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      active: { label: 'Ativo', color: 'bg-green-100 text-green-800' },
-      suspended: { label: 'Suspenso', color: 'bg-red-100 text-red-800' },
-      pending: { label: 'Pendente', color: 'bg-yellow-100 text-yellow-800' },
-      inactive: { label: 'Inativo', color: 'bg-gray-100 text-gray-800' }
+      active: { label: 'ATIVO', color: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
+      suspended: { label: 'SUSPENSO', color: 'bg-gray-400 text-white dark:bg-gray-600 dark:text-gray-200' },
+      pending: { label: 'PENDENTE', color: 'bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300' },
+      inactive: { label: 'INATIVO', color: 'bg-gray-500 text-white dark:bg-gray-700 dark:text-gray-400' }
     };
     
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
     return (
-      <Badge className={config.color}>
+      <Badge className={`${config.color} font-police-body font-semibold uppercase tracking-wider`}>
         {config.label}
       </Badge>
     );
@@ -229,18 +231,18 @@ export default function UserManager() {
 
   const getSubscriptionBadge = (status: string) => {
     const statusConfig = {
-      active: { label: 'Ativa', color: 'bg-green-100 text-green-800', icon: CheckCircle },
-      inactive: { label: 'Inativa', color: 'bg-gray-100 text-gray-800', icon: X },
-      expired: { label: 'Expirada', color: 'bg-red-100 text-red-800', icon: AlertCircle },
-      cancelled: { label: 'Cancelada', color: 'bg-gray-100 text-gray-800', icon: X },
-      trial: { label: 'Trial', color: 'bg-blue-100 text-blue-800', icon: Clock }
+      active: { label: 'ATIVA', color: 'bg-accent-500 text-black dark:bg-accent-600 dark:text-black', icon: CheckCircle },
+      inactive: { label: 'INATIVA', color: 'bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300', icon: X },
+      expired: { label: 'EXPIRADA', color: 'bg-gray-500 text-white dark:bg-gray-700 dark:text-gray-300', icon: AlertCircle },
+      cancelled: { label: 'CANCELADA', color: 'bg-gray-400 text-white dark:bg-gray-600 dark:text-gray-300', icon: X },
+      trial: { label: 'TRIAL', color: 'bg-gray-600 text-white dark:bg-gray-400 dark:text-gray-800', icon: Clock }
     };
     
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.inactive;
     const Icon = config.icon;
     
     return (
-      <Badge className={`${config.color} flex items-center gap-1`}>
+      <Badge className={`${config.color} flex items-center gap-1 font-police-body font-semibold uppercase tracking-wider`}>
         <Icon className="w-3 h-3" />
         {config.label}
       </Badge>
@@ -284,26 +286,27 @@ export default function UserManager() {
         className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
-            Gestão de Usuários
+          <h1 className="text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
+            CENTRAL DE COMANDO - USUÁRIOS
           </h1>
-          <p className="text-primary-600 dark:text-gray-300">
-            Gerencie usuários, assinaturas e permissões
+          <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
+            SISTEMA INTEGRADO DE GESTÃO DE PESSOAL
           </p>
         </div>
         
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="gap-2">
-            <Upload className="w-4 h-4" />
-            Importar
-          </Button>
-          <Button variant="outline" className="gap-2">
-            <Download className="w-4 h-4" />
-            Exportar
-          </Button>
-          <Button className="gap-2" onClick={() => setShowCreateModal(true)}>
+          <Button 
+            onClick={() => {
+              navigate('/admin/users/new');
+              toast.success('Redirecionando para novo usuário', {
+                duration: 2000,
+                icon: '📋'
+              });
+            }}
+            className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
+          >
             <Plus className="w-4 h-4" />
-            Novo Usuário
+            NOVO USUÁRIO
           </Button>
         </div>
       </motion.div>
@@ -315,66 +318,74 @@ export default function UserManager() {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Total de Usuários
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  TOTAL DE USUÁRIOS
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {totalUsers}
                 </p>
               </div>
-              <User className="w-8 h-8 text-blue-600" />
+              <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Assinaturas Ativas
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  ASSINATURAS ATIVAS
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {users.filter(u => u.subscription?.status === 'active').length}
                 </p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <div className="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-black" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Novos este Mês
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  NOVOS ESTE MÊS
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   12
                 </p>
               </div>
-              <Activity className="w-8 h-8 text-purple-600" />
+              <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
+                <Activity className="w-6 h-6 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Taxa de Churn
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  TAXA DE CHURN
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   2.3%
                 </p>
               </div>
-              <DollarSign className="w-8 h-8 text-yellow-600" />
+              <div className="w-12 h-12 bg-gray-600 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -385,15 +396,15 @@ export default function UserManager() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
+        className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg p-6"
       >
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar por nome ou email..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              placeholder="BUSCAR POR NOME OU EMAIL..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -401,33 +412,33 @@ export default function UserManager() {
           
           <div className="flex gap-2">
             <select
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
             >
               {roles.map(role => (
-                <option key={role} value={role}>{role}</option>
+                <option key={role} value={role}>{role === 'Todos' ? role.toUpperCase() : role.toUpperCase()}</option>
               ))}
             </select>
             
             <select
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
             >
               {statuses.map(status => (
-                <option key={status} value={status}>{status}</option>
+                <option key={status} value={status}>{status.toUpperCase()}</option>
               ))}
             </select>
             
-            <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm">
+            <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-sm">
               <input
                 type="checkbox"
                 checked={includeInactive}
                 onChange={(e) => setIncludeInactive(e.target.checked)}
-                className="rounded focus:ring-2 focus:ring-primary-500"
+                className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
               />
-              <span className="text-gray-700 dark:text-gray-300">Incluir inativos</span>
+              <span className="text-gray-700 dark:text-gray-300 font-police-body uppercase tracking-wider">INCLUIR INATIVOS</span>
             </label>
           </div>
         </div>
@@ -438,29 +449,29 @@ export default function UserManager() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+        className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
       >
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+            <thead className="bg-gray-100 dark:bg-gray-800/80">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Usuário
+                <th className="px-6 py-3 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                  USUÁRIO
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Função
+                <th className="px-6 py-3 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                  FUNÇÃO
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Status
+                <th className="px-6 py-3 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                  STATUS
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Assinatura
+                <th className="px-6 py-3 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                  ASSINATURA
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Último Acesso
+                <th className="px-6 py-3 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                  ÚLTIMO ACESSO
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Ações
+                <th className="px-6 py-3 text-right text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                  AÇÕES
                 </th>
               </tr>
             </thead>
@@ -480,7 +491,7 @@ export default function UserManager() {
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-b border-gray-200 dark:border-gray-700">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <img
@@ -489,10 +500,10 @@ export default function UserManager() {
                           alt={user.name}
                         />
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div className="text-sm font-police-subtitle font-medium text-gray-900 dark:text-white">
                             {user.name}
                           </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                          <div className="text-sm text-gray-500 dark:text-gray-400 font-police-body">
                             {user.email}
                           </div>
                         </div>
@@ -506,27 +517,27 @@ export default function UserManager() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          {user.subscription?.plan || 'Sem plano'}
+                        <p className="text-sm font-police-body font-medium text-gray-900 dark:text-white uppercase tracking-wider">
+                          {user.subscription?.plan || 'SEM PLANO'}
                         </p>
                         {getSubscriptionBadge(user.subscription?.status || 'inactive')}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {user.lastLogin ? new Date(user.lastLogin).toLocaleString('pt-BR') : 'Nunca'}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-police-numbers">
+                      {user.lastLogin ? new Date(user.lastLogin).toLocaleString('pt-BR') : 'NUNCA'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleViewUser(user)}
-                          className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
+                          className="text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
                           title="Visualizar"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleEditUser(user)}
-                          className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
+                          className="text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
                           title="Editar"
                         >
                           <Edit className="w-4 h-4" />
@@ -534,9 +545,9 @@ export default function UserManager() {
                         <button
                           onClick={() => handleDeleteUser(user.id)}
                           disabled={!canDeleteUser(user)}
-                          className={`${
+                          className={`transition-colors ${
                             canDeleteUser(user)
-                              ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
+                              ? 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
                               : 'text-gray-400 cursor-not-allowed'
                           }`}
                           title={canDeleteUser(user) ? "Desativar" : "Não é possível desativar este usuário"}
@@ -594,12 +605,12 @@ export default function UserManager() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full"
+              className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg p-6 max-w-md w-full"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-primary-900 dark:text-white">
-                  Novo Usuário
+                <h2 className="text-2xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
+                  NOVO USUÁRIO
                 </h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
@@ -611,92 +622,99 @@ export default function UserManager() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Nome *
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                    NOME *
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Email *
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                    EMAIL *
                   </label>
                   <input
                     type="email"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Senha *
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                    SENHA *
                   </label>
                   <input
                     type="password"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Telefone
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                    TELEFONE
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Função
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                    FUNÇÃO
                   </label>
                   <select
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   >
-                    <option value="student">Aluno</option>
-                    <option value="instructor">Instrutor</option>
-                    <option value="admin">Admin</option>
+                    <option value="student">ALUNO</option>
+                    <option value="instructor">INSTRUTOR</option>
+                    <option value="admin">ADMINISTRADOR</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Status
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                    STATUS
                   </label>
                   <select
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   >
-                    <option value="active">Ativo</option>
-                    <option value="suspended">Suspenso</option>
-                    <option value="pending">Pendente</option>
-                    <option value="inactive">Inativo</option>
+                    <option value="active">ATIVO</option>
+                    <option value="suspended">SUSPENSO</option>
+                    <option value="pending">PENDENTE</option>
+                    <option value="inactive">INATIVO</option>
                   </select>
                 </div>
               </div>
 
               <div className="flex justify-end gap-3 mt-6">
-                <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-                  Cancelar
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowCreateModal(false)}
+                  className="font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                >
+                  CANCELAR
                 </Button>
-                <Button onClick={handleCreateUser} className="gap-2">
+                <Button 
+                  onClick={handleCreateUser} 
+                  className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
+                >
                   <Save className="w-4 h-4" />
-                  Criar Usuário
+                  CRIAR USUÁRIO
                 </Button>
               </div>
             </motion.div>
@@ -718,12 +736,12 @@ export default function UserManager() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full"
+              className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg p-6 max-w-md w-full"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-primary-900 dark:text-white">
-                  Editar Usuário
+                <h2 className="text-2xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
+                  EDITAR USUÁRIO
                 </h2>
                 <button
                   onClick={() => setShowEditModal(false)}
@@ -747,96 +765,103 @@ export default function UserManager() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Nome
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                    NOME
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Email
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                    EMAIL
                   </label>
                   <input
                     type="email"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Nova Senha (deixe em branco para manter a atual)
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                    NOVA SENHA (DEIXE EM BRANCO PARA MANTER A ATUAL)
                   </label>
                   <input
                     type="password"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Telefone
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                    TELEFONE
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Função
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                    FUNÇÃO
                   </label>
                   <select
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   >
-                    <option value="student">Aluno</option>
-                    <option value="instructor">Instrutor</option>
-                    <option value="admin">Admin</option>
+                    <option value="student">ALUNO</option>
+                    <option value="instructor">INSTRUTOR</option>
+                    <option value="admin">ADMINISTRADOR</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Status
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">
+                    STATUS
                     {selectedUser && !canModifyUserStatus(selectedUser) && (
-                      <span className="text-xs text-gray-500 ml-2">(não editável)</span>
+                      <span className="text-xs text-gray-500 ml-2 font-police-body">(NÃO EDITÁVEL)</span>
                     )}
                   </label>
                   <select
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                     disabled={selectedUser && !canModifyUserStatus(selectedUser)}
                   >
-                    <option value="active">Ativo</option>
-                    <option value="suspended">Suspenso</option>
-                    <option value="pending">Pendente</option>
-                    <option value="inactive">Inativo</option>
+                    <option value="active">ATIVO</option>
+                    <option value="suspended">SUSPENSO</option>
+                    <option value="pending">PENDENTE</option>
+                    <option value="inactive">INATIVO</option>
                   </select>
                 </div>
               </div>
 
               <div className="flex justify-end gap-3 mt-6">
-                <Button variant="outline" onClick={() => setShowEditModal(false)}>
-                  Cancelar
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowEditModal(false)}
+                  className="font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                >
+                  CANCELAR
                 </Button>
-                <Button onClick={handleUpdateUser} className="gap-2">
+                <Button 
+                  onClick={handleUpdateUser} 
+                  className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
+                >
                   <Save className="w-4 h-4" />
-                  Salvar Alterações
+                  SALVAR ALTERAÇÕES
                 </Button>
               </div>
             </motion.div>
@@ -858,12 +883,12 @@ export default function UserManager() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-primary-900 dark:text-white">
-                  Detalhes do Usuário
+                <h2 className="text-2xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
+                  DETALHES DO USUÁRIO
                 </h2>
                 <button
                   onClick={() => setShowUserModal(false)}
@@ -882,10 +907,10 @@ export default function UserManager() {
                     className="w-24 h-24 rounded-full"
                   />
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-primary-900 dark:text-white">
+                    <h3 className="text-xl font-police-subtitle font-bold uppercase tracking-wider text-gray-900 dark:text-white">
                       {selectedUser.name}
                     </h3>
-                    <p className="text-primary-600 dark:text-gray-300">{selectedUser.email}</p>
+                    <p className="text-gray-600 dark:text-gray-300 font-police-body">{selectedUser.email}</p>
                     <div className="flex items-center gap-4 mt-2">
                       {getRoleBadge(selectedUser.role)}
                       {getStatusBadge(selectedUser.status)}
@@ -898,8 +923,8 @@ export default function UserManager() {
                   <div className="flex items-center gap-3">
                     <Mail className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     <div>
-                      <p className="text-sm text-primary-600 dark:text-gray-400">Email</p>
-                      <p className="font-medium text-primary-900 dark:text-white">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body font-medium uppercase tracking-wider">EMAIL</p>
+                      <p className="font-police-body font-semibold text-gray-900 dark:text-white">
                         {selectedUser.email}
                       </p>
                     </div>
@@ -907,17 +932,17 @@ export default function UserManager() {
                   <div className="flex items-center gap-3">
                     <Phone className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     <div>
-                      <p className="text-sm text-primary-600 dark:text-gray-400">Telefone</p>
-                      <p className="font-medium text-primary-900 dark:text-white">
-                        {selectedUser.phone || 'Não informado'}
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body font-medium uppercase tracking-wider">TELEFONE</p>
+                      <p className="font-police-numbers font-semibold text-gray-900 dark:text-white">
+                        {selectedUser.phone || 'NÃO INFORMADO'}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Calendar className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     <div>
-                      <p className="text-sm text-primary-600 dark:text-gray-400">Cadastro</p>
-                      <p className="font-medium text-primary-900 dark:text-white">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body font-medium uppercase tracking-wider">CADASTRO</p>
+                      <p className="font-police-numbers font-semibold text-gray-900 dark:text-white">
                         {new Date(selectedUser.createdAt).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
@@ -925,9 +950,9 @@ export default function UserManager() {
                   <div className="flex items-center gap-3">
                     <Activity className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                     <div>
-                      <p className="text-sm text-primary-600 dark:text-gray-400">Último Acesso</p>
-                      <p className="font-medium text-primary-900 dark:text-white">
-                        {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString('pt-BR') : 'Nunca'}
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body font-medium uppercase tracking-wider">ÚLTIMO ACESSO</p>
+                      <p className="font-police-numbers font-semibold text-gray-900 dark:text-white">
+                        {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString('pt-BR') : 'NUNCA'}
                       </p>
                     </div>
                   </div>
@@ -935,18 +960,18 @@ export default function UserManager() {
 
                 {/* Subscription Info */}
                 <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <h4 className="font-bold text-primary-900 dark:text-white mb-3">
-                    Informações da Assinatura
+                  <h4 className="font-police-subtitle font-bold uppercase tracking-wider text-gray-900 dark:text-white mb-3">
+                    INFORMAÇÕES DA ASSINATURA
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <p className="text-sm text-primary-600 dark:text-gray-400">Plano</p>
-                      <p className="font-medium text-primary-900 dark:text-white">
-                        {selectedUser.subscription?.plan || 'Sem plano'}
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body font-medium uppercase tracking-wider">PLANO</p>
+                      <p className="font-police-body font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                        {selectedUser.subscription?.plan || 'SEM PLANO'}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-primary-600 dark:text-gray-400">Status</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body font-medium uppercase tracking-wider">STATUS</p>
                       {getSubscriptionBadge(selectedUser.subscription?.status || 'inactive')}
                     </div>
                   </div>
@@ -954,24 +979,27 @@ export default function UserManager() {
 
                 {/* Actions */}
                 <div className="flex justify-end gap-3">
-                  <Button variant="outline" className="gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                  >
                     <Mail className="w-4 h-4" />
-                    Enviar Email
+                    ENVIAR EMAIL
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="gap-2"
+                    className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
                     onClick={() => {
                       handleEditUser(selectedUser);
                       setShowUserModal(false);
                     }}
                   >
                     <Edit className="w-4 h-4" />
-                    Editar
+                    EDITAR
                   </Button>
-                  <Button className="gap-2">
+                  <Button className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors">
                     <CreditCard className="w-4 h-4" />
-                    Gerenciar Assinatura
+                    GERENCIAR ASSINATURA
                   </Button>
                 </div>
               </div>

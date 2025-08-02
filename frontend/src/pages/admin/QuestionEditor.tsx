@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -22,7 +23,9 @@ import {
   Tag,
   Calendar,
   User,
-  BarChart3
+  BarChart3,
+  Target,
+  Crosshair
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -132,14 +135,23 @@ const questions = [
   }
 ];
 
-const subjects = ['Todos', 'Direito Constitucional', 'Matemática', 'Português', 'História', 'Geografia'];
+// Matérias e submatérias organizadas hierarquicamente
+const materias: { [key: string]: string[] } = {
+  'DIREITO': ['Todas', 'Constitucional', 'Administrativo', 'Penal', 'Civil', 'Trabalhista', 'Tributário'],
+  'SEGURANÇA PÚBLICA': ['Todas', 'Legislação Policial', 'Direitos Humanos', 'Criminologia', 'Investigação Criminal', 'Uso da Força'],
+  'CONHECIMENTOS GERAIS': ['Todas', 'História do Brasil', 'Geografia', 'Atualidades', 'Informática', 'Raciocínio Lógico']
+};
+
+const subjects = ['Todos', ...Object.keys(materias)];
 const difficulties = ['Todos', 'easy', 'medium', 'hard'];
 const statuses = ['Todos', 'published', 'draft', 'review', 'archived'];
 const examBoards = ['Todos', 'CESPE', 'ENEM', 'FCC', 'VUNESP', 'FGV'];
 
 export default function QuestionEditor() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('Todos');
+  const [selectedMateria, setSelectedMateria] = useState('Todos');
+  const [selectedSubmateria, setSelectedSubmateria] = useState('Todas');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Todos');
   const [selectedStatus, setSelectedStatus] = useState('Todos');
   const [selectedExamBoard, setSelectedExamBoard] = useState('Todos');
@@ -149,28 +161,43 @@ export default function QuestionEditor() {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
 
+  // Função para lidar com mudança de matéria
+  const handleMateriaChange = (materia: string) => {
+    setSelectedMateria(materia);
+    setSelectedSubmateria('Todas'); // Reset submatéria
+  };
+
   const filteredQuestions = questions.filter(question => {
     const matchesSearch = question.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          question.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          question.topic.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSubject = selectedSubject === 'Todos' || question.subject === selectedSubject;
+    const matchesMateria = selectedMateria === 'Todos' || question.subject === selectedMateria;
     const matchesDifficulty = selectedDifficulty === 'Todos' || question.difficulty === selectedDifficulty;
     const matchesStatus = selectedStatus === 'Todos' || question.status === selectedStatus;
     const matchesExamBoard = selectedExamBoard === 'Todos' || question.examBoard === selectedExamBoard;
     
-    return matchesSearch && matchesSubject && matchesDifficulty && matchesStatus && matchesExamBoard;
+    return matchesSearch && matchesMateria && matchesDifficulty && matchesStatus && matchesExamBoard;
   });
+
+  const getDifficultyLabel = (difficulty: string) => {
+    const labels = {
+      easy: 'FÁCIL',
+      medium: 'MÉDIO',
+      hard: 'DIFÍCIL'
+    };
+    return labels[difficulty as keyof typeof labels] || difficulty.toUpperCase();
+  };
 
   const getDifficultyBadge = (difficulty: string) => {
     const difficultyConfig = {
-      easy: { label: 'Fácil', color: 'bg-green-100 text-green-800' },
-      medium: { label: 'Médio', color: 'bg-yellow-100 text-yellow-800' },
-      hard: { label: 'Difícil', color: 'bg-red-100 text-red-800' }
+      easy: { label: 'FÁCIL', color: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
+      medium: { label: 'MÉDIO', color: 'bg-gray-300 text-gray-900 dark:bg-gray-600 dark:text-gray-200' },
+      hard: { label: 'DIFÍCIL', color: 'bg-gray-500 text-white dark:bg-gray-400 dark:text-gray-900' }
     };
     
     const config = difficultyConfig[difficulty as keyof typeof difficultyConfig];
     return (
-      <Badge className={config.color}>
+      <Badge className={`${config.color} font-police-body font-semibold uppercase tracking-wider`}>
         {config.label}
       </Badge>
     );
@@ -178,17 +205,17 @@ export default function QuestionEditor() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      published: { label: 'Publicada', color: 'bg-green-100 text-green-800', icon: CheckCircle },
-      draft: { label: 'Rascunho', color: 'bg-gray-100 text-gray-800', icon: Edit },
-      review: { label: 'Em Revisão', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-      archived: { label: 'Arquivada', color: 'bg-red-100 text-red-800', icon: XCircle }
+      published: { label: 'PUBLICADA', color: 'bg-accent-500 text-black dark:bg-accent-600 dark:text-black', icon: CheckCircle },
+      draft: { label: 'RASCUNHO', color: 'bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-300', icon: Edit },
+      review: { label: 'EM REVISÃO', color: 'bg-gray-400 text-white dark:bg-gray-500 dark:text-gray-200', icon: Clock },
+      archived: { label: 'ARQUIVADA', color: 'bg-gray-600 text-white dark:bg-gray-700 dark:text-gray-300', icon: XCircle }
     };
     
     const config = statusConfig[status as keyof typeof statusConfig];
     const Icon = config.icon;
     
     return (
-      <Badge className={`${config.color} flex items-center gap-1`}>
+      <Badge className={`${config.color} flex items-center gap-1 font-police-body font-semibold uppercase tracking-wider`}>
         <Icon className="w-3 h-3" />
         {config.label}
       </Badge>
@@ -224,9 +251,7 @@ export default function QuestionEditor() {
   };
 
   const handleCreateQuestion = () => {
-    setSelectedQuestion(null);
-    setIsEditing(true);
-    setShowQuestionModal(true);
+    navigate('/admin/questions/new');
   };
 
   return (
@@ -238,26 +263,35 @@ export default function QuestionEditor() {
         className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
-            Editor de Questões
+          <h1 className="text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
+            CENTRAL DE OPERAÇÕES - BANCO DE QUESTÕES
           </h1>
-          <p className="text-primary-600 dark:text-gray-300">
-            Gerencie o banco de questões da plataforma
+          <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
+            SISTEMA INTEGRADO DE GESTÃO TÁTICA DE QUESTÕES
           </p>
         </div>
         
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+          >
             <Upload className="w-4 h-4" />
-            Importar
+            IMPORTAR
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+          >
             <Download className="w-4 h-4" />
-            Exportar
+            EXPORTAR
           </Button>
-          <Button onClick={handleCreateQuestion} className="gap-2">
-            <Plus className="w-4 h-4" />
-            Nova Questão
+          <Button 
+            onClick={handleCreateQuestion} 
+            className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
+          >
+            <Target className="w-4 h-4" />
+            NOVA QUESTÃO
           </Button>
         </div>
       </motion.div>
@@ -269,66 +303,74 @@ export default function QuestionEditor() {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Total de Questões
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  TOTAL DE QUESTÕES
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {questions.length}
                 </p>
               </div>
-              <Brain className="w-8 h-8 text-blue-600" />
+              <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
+                <Brain className="w-6 h-6 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Publicadas
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  OPERACIONAIS
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {questions.filter(q => q.status === 'published').length}
                 </p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <div className="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-black" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Taxa de Acerto Média
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  EFETIVIDADE MÉDIA
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {(questions.reduce((acc, q) => acc + q.correctRate, 0) / questions.length).toFixed(1)}%
                 </p>
               </div>
-              <BarChart3 className="w-8 h-8 text-emerald-600" />
+              <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Respostas Totais
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  ENGAJAMENTO TOTAL
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {questions.reduce((acc, q) => acc + q.timesAnswered, 0).toLocaleString()}
                 </p>
               </div>
-              <User className="w-8 h-8 text-purple-600" />
+              <div className="w-12 h-12 bg-gray-600 rounded-lg flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -340,67 +382,87 @@ export default function QuestionEditor() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Card>
-          <CardContent className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {/* Search */}
-              <div className="relative md:col-span-2">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar questões..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
-                />
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {/* First Row - Search and Actions */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="relative md:col-span-2">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="BUSCAR QUESTÕES TÁTICAS..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                  />
+                </div>
+                
+                <Button
+                  variant="outline"
+                  onClick={() => setShowBulkActions(!showBulkActions)}
+                  className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                >
+                  <Filter className="w-4 h-4" />
+                  AÇÕES EM LOTE
+                </Button>
               </div>
 
-              {/* Subject Filter */}
-              <select
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                className="px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
-              >
-                {subjects.map(subject => (
-                  <option key={subject} value={subject}>{subject}</option>
-                ))}
-              </select>
+              {/* Second Row - Filters */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Matéria Filter */}
+                <select
+                  value={selectedMateria}
+                  onChange={(e) => handleMateriaChange(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                >
+                  {subjects.map(subject => (
+                    <option key={subject} value={subject}>{subject}</option>
+                  ))}
+                </select>
 
-              {/* Difficulty Filter */}
-              <select
-                value={selectedDifficulty}
-                onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
-              >
-                {difficulties.map(difficulty => (
-                  <option key={difficulty} value={difficulty}>
-                    {difficulty === 'Todos' ? difficulty : difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-                  </option>
-                ))}
-              </select>
+                {/* Submatéria Filter */}
+                <select
+                  value={selectedSubmateria}
+                  onChange={(e) => setSelectedSubmateria(e.target.value)}
+                  disabled={selectedMateria === 'Todos'}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {selectedMateria === 'Todos' ? (
+                    <option>SELECIONE MATÉRIA</option>
+                  ) : (
+                    materias[selectedMateria]?.map(submateria => (
+                      <option key={submateria} value={submateria}>{submateria.toUpperCase()}</option>
+                    ))
+                  )}
+                </select>
 
-              {/* Status Filter */}
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
-              >
-                {statuses.map(status => (
-                  <option key={status} value={status}>
-                    {status === 'Todos' ? status : status.charAt(0).toUpperCase() + status.slice(1)}
-                  </option>
-                ))}
-              </select>
+                {/* Difficulty Filter */}
+                <select
+                  value={selectedDifficulty}
+                  onChange={(e) => setSelectedDifficulty(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                >
+                  {difficulties.map(difficulty => (
+                    <option key={difficulty} value={difficulty}>
+                      {difficulty === 'Todos' ? 'TODOS' : getDifficultyLabel(difficulty) || difficulty.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
 
-              {/* Bulk Actions */}
-              <Button
-                variant="outline"
-                onClick={() => setShowBulkActions(!showBulkActions)}
-                className="gap-2"
-              >
-                <Filter className="w-4 h-4" />
-                Ações em Lote
-              </Button>
+                {/* Status Filter */}
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                >
+                  {statuses.map(status => (
+                    <option key={status} value={status}>
+                      {status === 'Todos' ? 'TODOS' : status.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Bulk Actions Bar */}
@@ -410,7 +472,7 @@ export default function QuestionEditor() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="mt-4 p-4 bg-primary-50 dark:bg-gray-800 rounded-lg border border-primary-200 dark:border-gray-700"
+                  className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -419,27 +481,39 @@ export default function QuestionEditor() {
                           type="checkbox"
                           checked={selectedQuestions.length === filteredQuestions.length}
                           onChange={handleSelectAll}
-                          className="rounded border-primary-300"
+                          className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
                         />
-                        <span className="text-sm text-primary-900 dark:text-white">
-                          Selecionar todas ({selectedQuestions.length})
+                        <span className="text-sm text-gray-900 dark:text-white font-police-body font-medium uppercase tracking-wider">
+                          SELECIONAR TODAS ({selectedQuestions.length})
                         </span>
                       </label>
                     </div>
                     
                     {selectedQuestions.length > 0 && (
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" className="gap-1">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                        >
                           <CheckCircle className="w-3 h-3" />
-                          Publicar
+                          PUBLICAR
                         </Button>
-                        <Button variant="outline" size="sm" className="gap-1">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                        >
                           <Copy className="w-3 h-3" />
-                          Duplicar
+                          DUPLICAR
                         </Button>
-                        <Button variant="outline" size="sm" className="gap-1 text-red-600">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-gray-600 dark:hover:border-gray-500 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                        >
                           <Trash2 className="w-3 h-3" />
-                          Excluir
+                          ARQUIVAR
                         </Button>
                       </div>
                     )}
@@ -457,11 +531,11 @@ export default function QuestionEditor() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-primary-50 dark:bg-gray-800">
+                <thead className="bg-gray-100 dark:bg-gray-800/80">
                   <tr>
                     {showBulkActions && (
                       <th className="text-left py-4 px-6">
@@ -469,35 +543,35 @@ export default function QuestionEditor() {
                           type="checkbox"
                           checked={selectedQuestions.length === filteredQuestions.length}
                           onChange={handleSelectAll}
-                          className="rounded border-primary-300"
+                          className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
                         />
                       </th>
                     )}
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Questão
+                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                      QUESTÃO
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Matéria
+                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                      MATÉRIA
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Dificuldade
+                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                      DIFICULDADE
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Status
+                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                      STATUS
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Métricas
+                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                      MÉTRICAS
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Ações
+                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                      AÇÕES
                     </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredQuestions.map((question) => (
                     <tr
                       key={question.id}
-                      className="border-b border-primary-100 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-gray-800"
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-b border-gray-200 dark:border-gray-700"
                     >
                       {showBulkActions && (
                         <td className="py-4 px-6">
@@ -505,30 +579,30 @@ export default function QuestionEditor() {
                             type="checkbox"
                             checked={selectedQuestions.includes(question.id)}
                             onChange={() => handleSelectQuestion(question.id)}
-                            className="rounded border-primary-300"
+                            className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
                           />
                         </td>
                       )}
                       <td className="py-4 px-6">
                         <div className="max-w-md">
-                          <p className="font-medium text-primary-900 dark:text-white line-clamp-2">
+                          <p className="font-police-subtitle font-medium text-gray-900 dark:text-white line-clamp-2">
                             {question.title}
                           </p>
-                          <p className="text-sm text-primary-600 dark:text-gray-400 mt-1">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 font-police-body">
                             {question.topic}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant="secondary" className="text-xs font-police-body font-semibold uppercase tracking-wider bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
                               {question.examBoard} {question.examYear}
                             </Badge>
-                            <span className="text-xs text-primary-500 dark:text-gray-500">
+                            <span className="text-xs text-gray-500 dark:text-gray-500 font-police-body">
                               {question.author}
                             </span>
                           </div>
                         </div>
                       </td>
                       <td className="py-4 px-6">
-                        <span className="text-primary-600 dark:text-gray-400">
+                        <span className="text-gray-600 dark:text-gray-400 font-police-body font-medium uppercase tracking-wider">
                           {question.subject}
                         </span>
                       </td>
@@ -541,47 +615,51 @@ export default function QuestionEditor() {
                       <td className="py-4 px-6">
                         <div className="space-y-1">
                           <div className="flex items-center gap-4 text-sm">
-                            <span className="text-primary-600 dark:text-gray-400">
-                              {question.timesAnswered} respostas
+                            <span className="text-gray-600 dark:text-gray-400 font-police-body font-medium uppercase tracking-wider">
+                              {question.timesAnswered} RESPOSTAS
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                               <div 
-                                className="bg-green-500 h-2 rounded-full" 
+                                className="bg-accent-500 h-2 rounded-full" 
                                 style={{ width: `${question.correctRate}%` }}
                               />
                             </div>
-                            <span className="text-xs text-primary-600 dark:text-gray-400">
-                              {question.correctRate}% acertos
+                            <span className="text-xs text-gray-600 dark:text-gray-400 font-police-numbers font-semibold">
+                              {question.correctRate}% ACERTOS
                             </span>
                           </div>
                         </div>
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            title="Visualizar"
+                          <button
                             onClick={() => handleViewQuestion(question)}
+                            className="text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
+                            title="Visualizar"
                           >
                             <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            title="Editar"
+                          </button>
+                          <button
                             onClick={() => handleEditQuestion(question)}
+                            className="text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
+                            title="Editar"
                           >
                             <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" title="Duplicar">
+                          </button>
+                          <button
+                            className="text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
+                            title="Duplicar"
+                          >
                             <Copy className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" title="Mais opções">
+                          </button>
+                          <button
+                            className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                            title="Mais opções"
+                          >
                             <MoreVertical className="w-4 h-4" />
-                          </Button>
+                          </button>
                         </div>
                       </td>
                     </tr>

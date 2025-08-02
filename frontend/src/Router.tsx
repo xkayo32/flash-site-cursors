@@ -31,17 +31,23 @@ import SettingsPage from './pages/student/SettingsPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ContentManager from './pages/admin/ContentManager';
 import UserManager from './pages/admin/UserManager';
+import NewUser from './pages/admin/NewUser';
 import QuestionEditor from './pages/admin/QuestionEditor';
+import NewQuestion from './pages/admin/NewQuestion';
 import Analytics from './pages/admin/Analytics';
 import CourseEditor from './pages/admin/CourseEditor';
 import CourseCreator from './pages/admin/CourseCreator';
 import SummaryEditor from './pages/admin/SummaryEditor';
 import LegislationManager from './pages/admin/LegislationManager';
+import NewLegislation from './pages/admin/NewLegislation';
 import ImportManager from './pages/admin/ImportManager';
 import CategoryManager from './pages/admin/CategoryManager';
 import AdminSettings from './pages/admin/AdminSettings';
 import CourseForm from './pages/admin/CourseForm';
 import SummaryForm from './pages/admin/SummaryForm';
+import FlashcardManager from './pages/admin/FlashcardManager';
+import NewFlashcardDeck from './pages/admin/NewFlashcardDeck';
+import FlashcardEditor from './pages/admin/FlashcardEditor';
 import AdminLayout from './components/layout/AdminLayout';
 
 // Componente para rotas protegidas
@@ -150,8 +156,15 @@ function Router() {
         <Route path="/admin/summaries/new" element={<SummaryForm />} />
         <Route path="/admin/summaries/edit/:id" element={<SummaryForm />} />
         <Route path="/admin/legislation" element={<LegislationManager />} />
+        <Route path="/admin/legislation/new" element={<NewLegislation />} />
         <Route path="/admin/users" element={<UserManager />} />
+        <Route path="/admin/users/new" element={<NewUser />} />
         <Route path="/admin/questions" element={<QuestionEditor />} />
+        <Route path="/admin/questions/new" element={<NewQuestion />} />
+        <Route path="/admin/flashcards" element={<FlashcardManager />} />
+        <Route path="/admin/flashcards/new" element={<NewFlashcardDeck />} />
+        <Route path="/admin/flashcards/:deckId/edit" element={<FlashcardEditor />} />
+        <Route path="/admin/flashcards/:deckId/cards" element={<FlashcardEditor />} />
         <Route path="/admin/analytics" element={<Analytics />} />
         <Route path="/admin/import" element={<ImportManager />} />
         <Route path="/admin/categories" element={<CategoryManager />} />

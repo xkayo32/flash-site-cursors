@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -26,11 +27,17 @@ import {
   FileCheck,
   History,
   Users,
-  Building
+  Building,
+  Shield,
+  Target,
+  Crosshair,
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import toast from 'react-hot-toast';
 
 // Mock data for legislation
 const legislations = [
@@ -40,6 +47,7 @@ const legislations = [
     type: 'constituicao',
     number: 'CF/1988',
     category: 'Constitucional',
+    subMateria: 'Direitos Fundamentais',
     status: 'vigente',
     publishDate: '1988-10-05',
     lastUpdate: '2024-01-15',
@@ -56,6 +64,7 @@ const legislations = [
     type: 'lei',
     number: 'Decreto-Lei nº 2.848/1940',
     category: 'Penal',
+    subMateria: 'Crimes Contra a Pessoa',
     status: 'vigente',
     publishDate: '1940-12-07',
     lastUpdate: '2023-12-20',
@@ -72,6 +81,7 @@ const legislations = [
     type: 'lei',
     number: 'Lei nº 14.133/2021',
     category: 'Administrativo',
+    subMateria: 'Licitações e Contratos',
     status: 'vigente',
     publishDate: '2021-04-01',
     lastUpdate: '2023-11-10',
@@ -88,6 +98,7 @@ const legislations = [
     type: 'lei',
     number: 'Lei nº 5.172/1966',
     category: 'Tributário',
+    subMateria: 'Impostos Federais',
     status: 'vigente',
     publishDate: '1966-10-25',
     lastUpdate: '2023-09-15',
@@ -104,6 +115,7 @@ const legislations = [
     type: 'lei',
     number: 'Lei nº 11.340/2006',
     category: 'Penal',
+    subMateria: 'Violência Doméstica',
     status: 'vigente',
     publishDate: '2006-08-07',
     lastUpdate: '2023-06-22',
@@ -120,6 +132,16 @@ const categories = ['Todos', 'Constitucional', 'Administrativo', 'Penal', 'Tribu
 const types = ['Todos', 'constituicao', 'lei', 'decreto', 'medida_provisoria', 'sumula'];
 const statuses = ['Todos', 'vigente', 'revogada', 'alterada'];
 
+// Submatérias por categoria
+const subMaterias: { [key: string]: string[] } = {
+  'Constitucional': ['Todas', 'Direitos Fundamentais', 'Organização do Estado', 'Organização dos Poderes', 'Defesa do Estado', 'Tributação', 'Ordem Econômica', 'Ordem Social'],
+  'Administrativo': ['Todas', 'Licitações e Contratos', 'Servidores Públicos', 'Processo Administrativo', 'Responsabilidade Civil', 'Improbidade', 'Controle Interno', 'Transparência'],
+  'Penal': ['Todas', 'Crimes Contra a Pessoa', 'Crimes Contra o Patrimônio', 'Crimes Contra a Administração', 'Violência Doméstica', 'Drogas', 'Lavagem de Dinheiro', 'Crimes Digitais'],
+  'Tributário': ['Todas', 'Impostos Federais', 'Impostos Estaduais', 'Impostos Municipais', 'Contribuições', 'Processo Tributário', 'Execução Fiscal', 'Planejamento Tributário'],
+  'Civil': ['Todas', 'Direito das Obrigações', 'Direito dos Contratos', 'Direito de Família', 'Direito das Sucessões', 'Direito Imobiliário', 'Responsabilidade Civil', 'Direito do Consumidor'],
+  'Trabalhista': ['Todas', 'Direito Individual', 'Direito Coletivo', 'Processo Trabalhista', 'Segurança do Trabalho', 'Previdência Social', 'Terceirização', 'Sindical']
+};
+
 // Mock data for courses to link
 const availableCourses = [
   'Polícia Federal - Agente',
@@ -133,37 +155,89 @@ const availableCourses = [
 ];
 
 export default function LegislationManager() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [selectedSubMateria, setSelectedSubMateria] = useState('Todas');
   const [selectedType, setSelectedType] = useState('Todos');
   const [selectedStatus, setSelectedStatus] = useState('Todos');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [dateFilter, setDateFilter] = useState('');
+  const [sortBy, setSortBy] = useState('title');
+  const [sortOrder, setSortOrder] = useState('asc');
   const [showLegislationModal, setShowLegislationModal] = useState(false);
   const [selectedLegislation, setSelectedLegislation] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const [selectedLinkedCourses, setSelectedLinkedCourses] = useState<string[]>([]);
 
-  const filteredLegislations = legislations.filter(legislation => {
-    const matchesSearch = legislation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         legislation.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         legislation.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = selectedCategory === 'Todos' || legislation.category === selectedCategory;
-    const matchesType = selectedType === 'Todos' || legislation.type === selectedType;
-    const matchesStatus = selectedStatus === 'Todos' || legislation.status === selectedStatus;
-    
-    return matchesSearch && matchesCategory && matchesType && matchesStatus;
-  });
+  const filteredLegislations = legislations
+    .filter(legislation => {
+      const matchesSearch = legislation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           legislation.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           legislation.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesCategory = selectedCategory === 'Todos' || legislation.category === selectedCategory;
+      const matchesSubMateria = selectedSubMateria === 'Todas' || 
+                               (legislation.subMateria && legislation.subMateria === selectedSubMateria);
+      const matchesType = selectedType === 'Todos' || legislation.type === selectedType;
+      const matchesStatus = selectedStatus === 'Todos' || legislation.status === selectedStatus;
+      
+      let matchesDate = true;
+      if (dateFilter) {
+        const legislationYear = new Date(legislation.publishDate).getFullYear();
+        const currentYear = new Date().getFullYear();
+        
+        switch (dateFilter) {
+          case 'thisYear':
+            matchesDate = legislationYear === currentYear;
+            break;
+          case 'lastYear':
+            matchesDate = legislationYear === currentYear - 1;
+            break;
+          case 'last5Years':
+            matchesDate = legislationYear >= currentYear - 5;
+            break;
+          case 'older':
+            matchesDate = legislationYear < currentYear - 5;
+            break;
+        }
+      }
+      
+      return matchesSearch && matchesCategory && matchesSubMateria && matchesType && matchesStatus && matchesDate;
+    })
+    .sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'title':
+          comparison = a.title.localeCompare(b.title);
+          break;
+        case 'date':
+          comparison = new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime();
+          break;
+        case 'views':
+          comparison = a.views - b.views;
+          break;
+        case 'articles':
+          comparison = a.articles - b.articles;
+          break;
+        default:
+          comparison = 0;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      vigente: { label: 'Vigente', color: 'bg-green-100 text-green-800' },
-      revogada: { label: 'Revogada', color: 'bg-red-100 text-red-800' },
-      alterada: { label: 'Alterada', color: 'bg-yellow-100 text-yellow-800' }
+      vigente: { label: 'VIGENTE', color: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
+      revogada: { label: 'REVOGADA', color: 'bg-gray-400 text-white dark:bg-gray-600 dark:text-gray-200' },
+      alterada: { label: 'ALTERADA', color: 'bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300' }
     };
     
     const config = statusConfig[status as keyof typeof statusConfig];
     return (
-      <Badge className={config.color}>
+      <Badge className={`${config.color} font-police-body font-semibold uppercase tracking-wider`}>
         {config.label}
       </Badge>
     );
@@ -192,11 +266,11 @@ export default function LegislationManager() {
   };
 
   const handleCreateLegislation = () => {
-    setSelectedLegislation(null);
-    setIsEditing(true);
-    setShowLegislationModal(true);
-    setActiveTab('details');
-    setSelectedLinkedCourses([]);
+    navigate('/admin/legislation/new');
+    toast.success('Redirecionando para nova legislação', {
+      duration: 2000,
+      icon: '📋'
+    });
   };
 
   const handleEditLegislation = (legislation: any) => {
@@ -205,6 +279,10 @@ export default function LegislationManager() {
     setShowLegislationModal(true);
     setActiveTab('details');
     setSelectedLinkedCourses(legislation.linkedCourses || []);
+    toast.success(`Editando: ${legislation.title}`, {
+      duration: 2000,
+      icon: '✏️'
+    });
   };
 
   const handleViewLegislation = (legislation: any) => {
@@ -213,14 +291,29 @@ export default function LegislationManager() {
     setShowLegislationModal(true);
     setActiveTab('details');
     setSelectedLinkedCourses(legislation.linkedCourses || []);
+    toast.success(`Visualizando: ${legislation.title}`, {
+      duration: 2000,
+      icon: '👁️'
+    });
   };
 
   const toggleCourseLink = (course: string) => {
-    setSelectedLinkedCourses(prev =>
-      prev.includes(course)
+    setSelectedLinkedCourses(prev => {
+      const isRemoving = prev.includes(course);
+      const newList = isRemoving
         ? prev.filter(c => c !== course)
-        : [...prev, course]
-    );
+        : [...prev, course];
+      
+      toast.success(
+        isRemoving ? `Curso ${course} desvinculado` : `Curso ${course} vinculado`,
+        {
+          duration: 2000,
+          icon: isRemoving ? '🔗❌' : '🔗✅'
+        }
+      );
+      
+      return newList;
+    });
   };
 
   return (
@@ -232,22 +325,34 @@ export default function LegislationManager() {
         className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
-            Gestão de Legislação
+          <h1 className="text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
+            CENTRAL DE LEGISLAÇÃO
           </h1>
-          <p className="text-primary-600 dark:text-gray-300">
-            Gerencie textos de leis e documentos legais
+          <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
+            SISTEMA INTEGRADO DE GESTÃO LEGAL
           </p>
         </div>
         
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              toast.success('Funcionalidade de importação ativada', {
+                duration: 3000,
+                icon: '📁'
+              });
+            }}
+            className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+          >
             <Upload className="w-4 h-4" />
-            Importar
+            IMPORTAR
           </Button>
-          <Button onClick={handleCreateLegislation} className="gap-2">
+          <Button 
+            onClick={handleCreateLegislation} 
+            className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
+          >
             <Plus className="w-4 h-4" />
-            Nova Legislação
+            NOVA LEGISLAÇÃO
           </Button>
         </div>
       </motion.div>
@@ -259,66 +364,74 @@ export default function LegislationManager() {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Total de Leis
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  TOTAL DE LEIS
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {legislations.length}
                 </p>
               </div>
-              <Scale className="w-8 h-8 text-blue-600" />
+              <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
+                <Scale className="w-6 h-6 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Vigentes
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  VIGENTES
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {legislations.filter(l => l.status === 'vigente').length}
                 </p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <div className="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-black" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Total de Artigos
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  TOTAL DE ARTIGOS
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {legislations.reduce((acc, l) => acc + l.articles, 0)}
                 </p>
               </div>
-              <FileText className="w-8 h-8 text-purple-600" />
+              <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
+                <FileText className="w-6 h-6 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Visualizações
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  VISUALIZAÇÕES
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {legislations.reduce((acc, l) => acc + l.views, 0).toLocaleString()}
                 </p>
               </div>
-              <Eye className="w-8 h-8 text-orange-600" />
+              <div className="w-12 h-12 bg-gray-600 rounded-lg flex items-center justify-center">
+                <Eye className="w-6 h-6 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -330,38 +443,54 @@ export default function LegislationManager() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="space-y-4">
+              {/* Filtros Principais */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
               <div className="relative lg:col-span-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Buscar legislação..."
+                  placeholder="BUSCAR LEGISLAÇÃO..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                 />
               </div>
 
               <select
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
+                onChange={(e) => {
+                  setSelectedCategory(e.target.value);
+                  setSelectedSubMateria('Todas'); // Reset submatéria when category changes
+                }}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
               >
                 {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                  <option key={category} value={category}>{category.toUpperCase()}</option>
+                ))}
+              </select>
+
+              <select
+                value={selectedSubMateria}
+                onChange={(e) => setSelectedSubMateria(e.target.value)}
+                disabled={selectedCategory === 'Todos'}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {(selectedCategory !== 'Todos' ? subMaterias[selectedCategory] || ['Todas'] : ['Todas']).map(subMateria => (
+                  <option key={subMateria} value={subMateria}>{subMateria.toUpperCase()}</option>
                 ))}
               </select>
 
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
               >
                 {types.map(type => (
                   <option key={type} value={type}>
-                    {type === 'Todos' ? type : getTypeLabel(type)}
+                    {type === 'Todos' ? type.toUpperCase() : getTypeLabel(type).toUpperCase()}
                   </option>
                 ))}
               </select>
@@ -369,14 +498,121 @@ export default function LegislationManager() {
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
               >
                 {statuses.map(status => (
                   <option key={status} value={status}>
-                    {status === 'Todos' ? status : status.charAt(0).toUpperCase() + status.slice(1)}
+                    {status === 'Todos' ? status.toUpperCase() : status.toUpperCase()}
                   </option>
                 ))}
               </select>
+              </div>
+              
+              {/* Botão Filtros Avançados */}
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                >
+                  <Filter className="w-4 h-4" />
+                  {showAdvancedFilters ? 'OCULTAR FILTROS' : 'FILTROS AVANÇADOS'}
+                </Button>
+                
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                  <span className="uppercase tracking-wider">RESULTADOS:</span>
+                  <span className="font-police-numbers font-bold text-accent-500">
+                    {filteredLegislations.length}
+                  </span>
+                  <span className="uppercase tracking-wider">DE</span>
+                  <span className="font-police-numbers font-bold">
+                    {legislations.length}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Filtros Avançados */}
+              {showAdvancedFilters && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        FILTRO POR DATA
+                      </label>
+                      <select
+                        value={dateFilter}
+                        onChange={(e) => setDateFilter(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                      >
+                        <option value="">TODAS AS DATAS</option>
+                        <option value="thisYear">ESTE ANO</option>
+                        <option value="lastYear">ANO PASSADO</option>
+                        <option value="last5Years">ÚLTIMOS 5 ANOS</option>
+                        <option value="older">MAIS DE 5 ANOS</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        ORDENAR POR
+                      </label>
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                      >
+                        <option value="title">TÍTULO</option>
+                        <option value="date">DATA DE PUBLICAÇÃO</option>
+                        <option value="views">VISUALIZAÇÕES</option>
+                        <option value="articles">NÚMERO DE ARTIGOS</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        ORDEM
+                      </label>
+                      <select
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                      >
+                        <option value="asc">CRESCENTE</option>
+                        <option value="desc">DECRESCENTE</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end mt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setSelectedCategory('Todos');
+                        setSelectedSubMateria('Todas');
+                        setSelectedType('Todos');
+                        setSelectedStatus('Todos');
+                        setDateFilter('');
+                        setSortBy('title');
+                        setSortOrder('asc');
+                        toast.success('Filtros limpos', {
+                          duration: 2000,
+                          icon: '🧹'
+                        });
+                      }}
+                      className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                      LIMPAR FILTROS
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -388,29 +624,29 @@ export default function LegislationManager() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-primary-50 dark:bg-gray-800">
+                <thead className="bg-gray-100 dark:bg-gray-800/80">
                   <tr>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Legislação
+                    <th className="text-left py-4 px-6 font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                      LEGISLAÇÃO
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Tipo/Número
+                    <th className="text-left py-4 px-6 font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                      TIPO/NÚMERO
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Categoria
+                    <th className="text-left py-4 px-6 font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                      CATEGORIA
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Status
+                    <th className="text-left py-4 px-6 font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                      STATUS
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Métricas
+                    <th className="text-left py-4 px-6 font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                      MÉTRICAS
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Ações
+                    <th className="text-left py-4 px-6 font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                      AÇÕES
                     </th>
                   </tr>
                 </thead>
@@ -420,29 +656,29 @@ export default function LegislationManager() {
                     return (
                       <tr
                         key={legislation.id}
-                        className="border-b border-primary-100 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-gray-800"
+                        className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
                         <td className="py-4 px-6">
                           <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <TypeIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                            <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-gray-300 dark:border-gray-700">
+                              <TypeIcon className="w-5 h-5 text-gray-700 dark:text-accent-500" />
                             </div>
                             <div>
-                              <p className="font-medium text-primary-900 dark:text-white">
+                              <p className="font-police-subtitle font-medium text-gray-900 dark:text-white">
                                 {legislation.title}
                               </p>
-                              <p className="text-sm text-primary-600 dark:text-gray-400 mt-1">
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 font-police-body">
                                 {legislation.description}
                               </p>
                               <div className="flex items-center gap-2 mt-2">
                                 {legislation.tags.slice(0, 3).map((tag, index) => (
-                                  <Badge key={index} variant="secondary" className="text-xs">
-                                    {tag}
+                                  <Badge key={index} variant="secondary" className="text-xs font-police-body uppercase tracking-wider">
+                                    {tag.toUpperCase()}
                                   </Badge>
                                 ))}
                                 {legislation.tags.length > 3 && (
-                                  <span className="text-xs text-primary-500 dark:text-gray-500">
-                                    +{legislation.tags.length - 3} mais
+                                  <span className="text-xs text-gray-500 dark:text-gray-500 font-police-numbers">
+                                    +{legislation.tags.length - 3} MAIS
                                   </span>
                                 )}
                               </div>
@@ -451,17 +687,17 @@ export default function LegislationManager() {
                         </td>
                         <td className="py-4 px-6">
                           <div>
-                            <p className="text-sm font-medium text-primary-900 dark:text-white">
+                            <p className="text-sm font-police-body font-medium text-gray-900 dark:text-white uppercase tracking-wider">
                               {getTypeLabel(legislation.type)}
                             </p>
-                            <p className="text-sm text-primary-600 dark:text-gray-400">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 font-police-numbers">
                               {legislation.number}
                             </p>
                           </div>
                         </td>
                         <td className="py-4 px-6">
-                          <Badge variant="outline">
-                            {legislation.category}
+                          <Badge variant="outline" className="border-gray-300 dark:border-gray-600 font-police-body font-semibold uppercase tracking-wider">
+                            {legislation.category.toUpperCase()}
                           </Badge>
                         </td>
                         <td className="py-4 px-6">
@@ -469,17 +705,20 @@ export default function LegislationManager() {
                         </td>
                         <td className="py-4 px-6">
                           <div className="space-y-1 text-sm">
-                            <div className="flex items-center gap-2 text-primary-600 dark:text-gray-400">
+                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                               <Eye className="w-3 h-3" />
-                              {legislation.views.toLocaleString()} views
+                              <span className="font-police-numbers">{legislation.views.toLocaleString()}</span>
+                              <span className="font-police-body uppercase tracking-wider">VIEWS</span>
                             </div>
-                            <div className="flex items-center gap-2 text-primary-600 dark:text-gray-400">
+                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                               <FileText className="w-3 h-3" />
-                              {legislation.articles} artigos
+                              <span className="font-police-numbers">{legislation.articles}</span>
+                              <span className="font-police-body uppercase tracking-wider">ARTIGOS</span>
                             </div>
-                            <div className="flex items-center gap-2 text-primary-600 dark:text-gray-400">
+                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                               <Building className="w-3 h-3" />
-                              {legislation.linkedCourses.length} cursos
+                              <span className="font-police-numbers">{legislation.linkedCourses.length}</span>
+                              <span className="font-police-body uppercase tracking-wider">CURSOS</span>
                             </div>
                           </div>
                         </td>
@@ -542,8 +781,8 @@ export default function LegislationManager() {
             >
               {/* Modal Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-xl font-bold text-primary-900 dark:text-white">
-                  {isEditing ? (selectedLegislation ? 'Editar Legislação' : 'Nova Legislação') : 'Detalhes da Legislação'}
+                <h3 className="text-xl font-police-title font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                  {isEditing ? (selectedLegislation ? 'EDITAR LEGISLAÇÃO' : 'NOVA LEGISLAÇÃO') : 'DETALHES DA LEGISLAÇÃO'}
                 </h3>
                 <Button
                   variant="ghost"
@@ -560,16 +799,16 @@ export default function LegislationManager() {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`px-6 py-3 font-medium transition-colors ${
+                    className={`px-6 py-3 font-police-body font-medium uppercase tracking-wider transition-colors ${
                       activeTab === tab
-                        ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400'
+                        ? 'text-accent-500 border-b-2 border-accent-500'
                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                     }`}
                   >
-                    {tab === 'details' && 'Detalhes'}
-                    {tab === 'content' && 'Conteúdo'}
-                    {tab === 'courses' && 'Cursos Vinculados'}
-                    {tab === 'history' && 'Histórico'}
+                    {tab === 'details' && 'DETALHES'}
+                    {tab === 'content' && 'CONTEÚDO'}
+                    {tab === 'courses' && 'CURSOS VINCULADOS'}
+                    {tab === 'history' && 'HISTÓRICO'}
                   </button>
                 ))}
               </div>
@@ -580,113 +819,113 @@ export default function LegislationManager() {
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                          Título da Legislação
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          TÍTULO DA LEGISLAÇÃO
                         </label>
                         <input
                           type="text"
                           defaultValue={selectedLegislation?.title}
                           disabled={!isEditing}
-                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                          Número/Identificação
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          NÚMERO/IDENTIFICAÇÃO
                         </label>
                         <input
                           type="text"
                           defaultValue={selectedLegislation?.number}
                           disabled={!isEditing}
-                          placeholder="Ex: Lei nº 12.345/2024"
-                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
+                          placeholder="EX: LEI Nº 12.345/2024"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                          Tipo
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          TIPO
                         </label>
                         <select
                           defaultValue={selectedLegislation?.type || 'lei'}
                           disabled={!isEditing}
-                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
                         >
-                          <option value="constituicao">Constituição</option>
-                          <option value="lei">Lei</option>
-                          <option value="decreto">Decreto</option>
-                          <option value="medida_provisoria">Medida Provisória</option>
-                          <option value="sumula">Súmula</option>
+                          <option value="constituicao">CONSTITUIÇÃO</option>
+                          <option value="lei">LEI</option>
+                          <option value="decreto">DECRETO</option>
+                          <option value="medida_provisoria">MEDIDA PROVISÓRIA</option>
+                          <option value="sumula">SÚMULA</option>
                         </select>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                          Categoria
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          CATEGORIA
                         </label>
                         <select
                           defaultValue={selectedLegislation?.category || 'Administrativo'}
                           disabled={!isEditing}
-                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
                         >
                           {categories.filter(c => c !== 'Todos').map(category => (
-                            <option key={category} value={category}>{category}</option>
+                            <option key={category} value={category}>{category.toUpperCase()}</option>
                           ))}
                         </select>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                          Data de Publicação
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          DATA DE PUBLICAÇÃO
                         </label>
                         <input
                           type="date"
                           defaultValue={selectedLegislation?.publishDate}
                           disabled={!isEditing}
-                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                          Status
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          STATUS
                         </label>
                         <select
                           defaultValue={selectedLegislation?.status || 'vigente'}
                           disabled={!isEditing}
-                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
                         >
-                          <option value="vigente">Vigente</option>
-                          <option value="alterada">Alterada</option>
-                          <option value="revogada">Revogada</option>
+                          <option value="vigente">VIGENTE</option>
+                          <option value="alterada">ALTERADA</option>
+                          <option value="revogada">REVOGADA</option>
                         </select>
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                        Descrição
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        DESCRIÇÃO
                       </label>
                       <textarea
                         rows={3}
                         defaultValue={selectedLegislation?.description}
                         disabled={!isEditing}
-                        className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                        URL Oficial (Planalto)
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        URL OFICIAL (PLANALTO)
                       </label>
                       <div className="flex items-center gap-2">
                         <input
                           type="url"
                           defaultValue={selectedLegislation?.url}
                           disabled={!isEditing}
-                          placeholder="http://www.planalto.gov.br/..."
-                          className="flex-1 px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
+                          placeholder="HTTP://WWW.PLANALTO.GOV.BR/..."
+                          className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
                         />
                         {selectedLegislation?.url && (
                           <a
@@ -704,15 +943,15 @@ export default function LegislationManager() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                        Tags
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        TAGS
                       </label>
                       <input
                         type="text"
                         defaultValue={selectedLegislation?.tags.join(', ')}
                         disabled={!isEditing}
-                        placeholder="Digite as tags separadas por vírgula"
-                        className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white disabled:opacity-50"
+                        placeholder="DIGITE AS TAGS SEPARADAS POR VÍRGULA"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
                       />
                     </div>
                   </div>
@@ -724,9 +963,9 @@ export default function LegislationManager() {
                       <div className="flex items-start gap-3">
                         <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
                         <div>
-                          <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                            O conteúdo completo da legislação pode ser importado de arquivos PDF ou DOC, 
-                            ou copiado diretamente do site oficial do Planalto.
+                          <p className="text-sm text-yellow-800 dark:text-yellow-200 font-police-body">
+                            O CONTEÚDO COMPLETO DA LEGISLAÇÃO PODE SER IMPORTADO DE ARQUIVOS PDF OU DOC, 
+                            OU COPIADO DIRETAMENTE DO SITE OFICIAL DO PLANALTO.
                           </p>
                         </div>
                       </div>
@@ -734,26 +973,44 @@ export default function LegislationManager() {
 
                     {isEditing && (
                       <div className="flex items-center gap-3">
-                        <Button variant="outline" className="gap-2">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            toast.success('Seletor de arquivos PDF ativado', {
+                              duration: 3000,
+                              icon: '📝'
+                            });
+                          }}
+                          className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                        >
                           <Upload className="w-4 h-4" />
-                          Importar PDF
+                          IMPORTAR PDF
                         </Button>
-                        <Button variant="outline" className="gap-2">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            toast.success('Importação por URL ativada', {
+                              duration: 3000,
+                              icon: '🔗'
+                            });
+                          }}
+                          className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                        >
                           <Link2 className="w-4 h-4" />
-                          Importar da URL
+                          IMPORTAR DA URL
                         </Button>
                       </div>
                     )}
 
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                        Conteúdo da Legislação
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        CONTEÚDO DA LEGISLAÇÃO
                       </label>
                       <textarea
                         rows={20}
                         disabled={!isEditing}
-                        placeholder="Cole ou digite o conteúdo da legislação aqui..."
-                        className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white font-mono text-sm disabled:opacity-50"
+                        placeholder="COLE OU DIGITE O CONTEÚDO DA LEGISLAÇÃO AQUI..."
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
                       />
                     </div>
                   </div>
@@ -761,8 +1018,8 @@ export default function LegislationManager() {
 
                 {activeTab === 'courses' && (
                   <div>
-                    <p className="text-sm text-primary-600 dark:text-gray-400 mb-4">
-                      Vincule esta legislação aos cursos relevantes para que os alunos possam acessá-la facilmente.
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 font-police-body">
+                      VINCULE ESTA LEGISLAÇÃO AOS CURSOS RELEVANTES PARA QUE OS ALUNOS POSSAM ACESSÁ-LA FACILMENTE.
                     </p>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -782,8 +1039,8 @@ export default function LegislationManager() {
                             disabled={!isEditing}
                             className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                           />
-                          <span className="text-sm font-medium text-primary-900 dark:text-white">
-                            {course}
+                          <span className="text-sm font-police-body font-medium text-gray-900 dark:text-white uppercase tracking-wider">
+                            {course.toUpperCase()}
                           </span>
                         </label>
                       ))}
@@ -793,9 +1050,9 @@ export default function LegislationManager() {
 
                 {activeTab === 'history' && (
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-sm text-primary-600 dark:text-gray-400">
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <History className="w-4 h-4" />
-                      <span>Histórico de alterações da legislação</span>
+                      <span className="font-police-body uppercase tracking-wider">HISTÓRICO DE ALTERAÇÕES DA LEGISLAÇÃO</span>
                     </div>
 
                     <div className="space-y-3">
@@ -808,21 +1065,21 @@ export default function LegislationManager() {
                           key={index}
                           className="flex items-start gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
                         >
-                          <div className="w-2 h-2 bg-primary-600 rounded-full mt-2" />
+                          <div className="w-2 h-2 bg-accent-500 rounded-full mt-2" />
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
-                              <p className="font-medium text-primary-900 dark:text-white">
-                                {item.action}
+                              <p className="font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">
+                                {item.action.toUpperCase()}
                               </p>
-                              <span className="text-sm text-primary-600 dark:text-gray-400">
+                              <span className="text-sm text-gray-600 dark:text-gray-400 font-police-numbers">
                                 {item.date}
                               </span>
                             </div>
-                            <p className="text-sm text-primary-600 dark:text-gray-400 mt-1">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 font-police-body">
                               {item.description}
                             </p>
-                            <p className="text-xs text-primary-500 dark:text-gray-500 mt-1">
-                              Por: {item.user}
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 font-police-body uppercase tracking-wider">
+                              POR: {item.user.toUpperCase()}
                             </p>
                           </div>
                         </div>
@@ -837,21 +1094,37 @@ export default function LegislationManager() {
                 <Button
                   variant="outline"
                   onClick={() => setShowLegislationModal(false)}
+                  className="font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
                 >
-                  Cancelar
+                  CANCELAR
                 </Button>
                 {isEditing ? (
-                  <Button className="gap-2">
+                  <Button 
+                    onClick={() => {
+                      setIsEditing(false);
+                      toast.success('Alterações salvas com sucesso!', {
+                        duration: 3000,
+                        icon: '✅'
+                      });
+                    }}
+                    className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
+                  >
                     <Save className="w-4 h-4" />
-                    Salvar Alterações
+                    SALVAR ALTERAÇÕES
                   </Button>
                 ) : (
                   <Button
-                    onClick={() => setIsEditing(true)}
-                    className="gap-2"
+                    onClick={() => {
+                      setIsEditing(true);
+                      toast.success('Modo de edição ativado', {
+                        duration: 2000,
+                        icon: '✏️'
+                      });
+                    }}
+                    className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
                   >
                     <Edit className="w-4 h-4" />
-                    Editar Legislação
+                    EDITAR LEGISLAÇÃO
                   </Button>
                 )}
               </div>
