@@ -22,7 +22,19 @@ import {
   Moon,
   Sun,
   GripVertical,
-  ClipboardList
+  ClipboardList,
+  Command,
+  Shield,
+  Crosshair,
+  Activity,
+  Binoculars,
+  Flame,
+  FileCheck,
+  Archive,
+  Gavel,
+  Radar,
+  Wallet,
+  Cog
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/utils/cn';
@@ -32,22 +44,22 @@ import { Logo } from '@/components/ui/Logo';
 import { useTheme } from '@/contexts/ThemeContext';
 
 const menuItems = [
-  { icon: Home, label: 'Dashboard', path: '/dashboard' },
-  { icon: BookOpen, label: 'Meus Cursos', path: '/my-courses' },
-  { icon: GraduationCap, label: 'Explorar Cursos', path: '/courses' },
-  { icon: Calendar, label: 'Cronograma', path: '/schedule' },
-  { icon: Trophy, label: 'Simulados', path: '/simulations' },
-  { icon: Brain, label: 'Flashcards', path: '/flashcards' },
-  { icon: FileQuestion, label: 'Questões', path: '/questions' },
-  { icon: ClipboardList, label: 'Provas Anteriores', path: '/previous-exams' },
-  { icon: FileText, label: 'Resumos Interativos', path: '/summaries' },
-  { icon: Scale, label: 'Legislação', path: '/legislation' },
-  { icon: Target, label: 'Painel Tático', path: '/tactical' },
+  { icon: Command, label: 'COMANDO CENTRAL', path: '/dashboard' },
+  { icon: Activity, label: 'MINHAS OPERAÇÕES', path: '/my-courses' },
+  { icon: Binoculars, label: 'OPERAÇÕES DISPONÍVEIS', path: '/courses' },
+  { icon: Calendar, label: 'CRONOGRAMA TÁTICO', path: '/schedule' },
+  { icon: Target, label: 'SIMULAÇÕES TÁTICAS', path: '/simulations' },
+  { icon: Flame, label: 'CARTÕES TÁTICOS', path: '/flashcards' },
+  { icon: Crosshair, label: 'EXERCÍCIOS TÁTICOS', path: '/questions' },
+  { icon: Archive, label: 'ARQUIVO DE PROVAS', path: '/previous-exams' },
+  { icon: FileCheck, label: 'BRIEFINGS INTERATIVOS', path: '/summaries' },
+  { icon: Gavel, label: 'LEGISLAÇÃO', path: '/legislation' },
+  { icon: Radar, label: 'PAINEL TÁTICO', path: '/tactical' },
 ];
 
 const bottomItems = [
-  { icon: CreditCard, label: 'Assinatura', path: '/subscription' },
-  { icon: Settings, label: 'Configurações', path: '/settings' },
+  { icon: Wallet, label: 'PLANO OPERACIONAL', path: '/subscription' },
+  { icon: Cog, label: 'CONFIGURAÇÕES', path: '/settings' },
 ];
 
 export function Sidebar() {
@@ -114,7 +126,7 @@ export function Sidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={toggleMobileSidebar}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-primary-600 text-white"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors"
       >
         {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -140,15 +152,15 @@ export function Sidebar() {
           width: isOpen ? sidebarWidth : COLLAPSED_WIDTH,
         }}
         className={cn(
-          'lg:relative top-0 left-0 h-screen bg-primary-600 dark:bg-gray-800 text-white z-40',
-          'flex flex-col transition-all duration-300 ease-in-out shadow-xl',
+          'lg:relative top-0 left-0 h-screen bg-gray-900 dark:bg-gray-950 text-white z-40',
+          'flex flex-col transition-all duration-300 ease-in-out shadow-xl border-r border-gray-700 dark:border-gray-800',
           'fixed lg:translate-x-0',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
         style={{ overflow: 'hidden' }}
       >
         {/* Header */}
-        <div className="p-4 border-b border-primary-500 dark:border-gray-700">
+        <div className="p-4 border-b border-gray-700 dark:border-gray-800">
           <div className={cn(
             "flex items-center",
             isOpen ? "justify-between" : "justify-center"
@@ -184,7 +196,7 @@ export function Sidebar() {
 
         {/* User Info */}
         {user && (
-          <div className="p-4 border-b border-primary-500 dark:border-gray-700">
+          <div className="p-4 border-b border-gray-700 dark:border-gray-800">
             <div className={cn(
               "flex items-center",
               isOpen ? "gap-3" : "justify-center"
@@ -202,8 +214,8 @@ export function Sidebar() {
                   transition={{ duration: 0.2 }}
                   className="flex-1 min-w-0"
                 >
-                  <p className="font-medium truncate">{user.name}</p>
-                  <p className="text-xs text-primary-200 truncate">{user.subscription?.plan}</p>
+                  <p className="font-medium truncate font-police-body uppercase tracking-wider">{user.name}</p>
+                  <p className="text-xs text-gray-400 truncate font-police-body uppercase tracking-wider">{user.subscription?.plan}</p>
                 </motion.div>
               )}
             </div>
@@ -225,8 +237,8 @@ export function Sidebar() {
                   to={item.path}
                   className={cn(
                     'flex items-center rounded-lg transition-all relative',
-                    'hover:bg-primary-500',
-                    isActive && 'bg-primary-700 shadow-lg',
+                    'hover:bg-gray-800 dark:hover:bg-gray-800',
+                    isActive && 'bg-gray-800 dark:bg-gray-800 shadow-lg border-l-2 border-white',
                     isOpen ? 'gap-3 px-3 py-2.5' : 'justify-center px-2 py-2.5'
                   )}
                 >
@@ -237,7 +249,7 @@ export function Sidebar() {
                       animate={{ opacity: 1, width: "auto" }}
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="font-medium whitespace-nowrap overflow-hidden"
+                      className="font-medium whitespace-nowrap overflow-hidden font-police-body uppercase tracking-wider text-sm"
                     >
                       {item.label}
                     </motion.span>
@@ -280,7 +292,7 @@ export function Sidebar() {
                       animate={{ opacity: 1, width: "auto" }}
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="font-medium whitespace-nowrap overflow-hidden"
+                      className="font-medium whitespace-nowrap overflow-hidden font-police-body uppercase tracking-wider text-sm"
                     >
                       {item.label}
                     </motion.span>
@@ -303,7 +315,7 @@ export function Sidebar() {
               onClick={logout}
               className={cn(
                 'w-full flex items-center rounded-lg transition-all text-left',
-                'hover:bg-red-600',
+                'hover:bg-gray-700 dark:hover:bg-gray-800',
                 isOpen ? 'gap-3 px-3 py-2.5' : 'justify-center px-2 py-2.5'
               )}
             >
@@ -358,7 +370,7 @@ export function Sidebar() {
                   transition={{ duration: 0.2 }}
                   className="font-medium whitespace-nowrap overflow-hidden"
                 >
-                  {theme === 'light' ? 'Tema Claro' : theme === 'dark' ? 'Tema Escuro' : 'Sistema'}
+                  {theme === 'light' ? 'MODO CLARO' : theme === 'dark' ? 'MODO ESCURO' : 'SISTEMA'}
                 </motion.span>
               )}
             </button>

@@ -43,8 +43,8 @@ import toast from 'react-hot-toast';
 // Mock de dados do curso
 const mockCourseDetails = {
   id: '1',
-  title: 'Polícia Federal 2024 - Agente',
-  subtitle: 'Preparação completa e atualizada para o concurso da PF',
+  title: 'OPERAÇÃO PF 2024 - AGENTE TÁTICO',
+  subtitle: 'PREPARAÇÃO MILITAR COMPLETA PARA CONCURSO DA POLÍCIA FEDERAL',
   description: `
     Este é o curso mais completo para quem deseja se preparar para o concurso de Agente da Polícia Federal. 
     Com uma abordagem prática e objetiva, nosso curso cobre todo o conteúdo programático do edital, 
@@ -55,17 +55,17 @@ const mockCourseDetails = {
     e acompanhamento personalizado do seu progresso.
   `,
   instructor: {
-    name: 'Prof. Carlos Mendez',
+    name: 'COMANDANTE CARLOS MENDEZ',
     avatar: 'https://ui-avatars.com/api/?name=Carlos+Mendez&background=14242f&color=fff',
-    bio: 'Delegado aposentado da PF com 25 anos de experiência. Autor de 5 livros sobre segurança pública.',
+    bio: 'DELEGADO APOSENTADO DA PF COM 25 ANOS DE OPERAÇÕES. AUTOR DE 5 LIVROS SOBRE SEGURANÇA PÚBLICA.',
     students: 15420,
     rating: 4.9,
     courses: 12
   },
-  category: 'Polícia',
-  subcategory: 'Federal',
-  level: 'Intermediário',
-  language: 'Português',
+  category: 'SEGURANÇA',
+  subcategory: 'FEDERAL',
+  level: 'INTERMEDIÁRIO',
+  language: 'PORTUGUÊS TÁTICO',
   lastUpdated: '2024-01-15',
   duration: '180 horas',
   students: 2341,
@@ -85,7 +85,7 @@ const mockCourseDetails = {
   modules: [
     {
       id: '1',
-      title: 'Língua Portuguesa',
+      title: 'COMUNICAÇÃO TÁTICA - PORTUGUÊS',
       duration: '25h',
       lessons: 45,
       completed: false,
@@ -101,7 +101,7 @@ const mockCourseDetails = {
     },
     {
       id: '2',
-      title: 'Direito Constitucional',
+      title: 'DIREITO CONSTITUCIONAL OPERACIONAL',
       duration: '30h',
       lessons: 52,
       completed: false,
@@ -116,7 +116,7 @@ const mockCourseDetails = {
     },
     {
       id: '3',
-      title: 'Direito Administrativo',
+      title: 'DIREITO ADMINISTRATIVO TÁTICO',
       duration: '28h',
       lessons: 48,
       completed: false,
@@ -131,7 +131,7 @@ const mockCourseDetails = {
     },
     {
       id: '4',
-      title: 'Direito Penal',
+      title: 'DIREITO PENAL APLICADO',
       duration: '35h',
       lessons: 60,
       completed: false,
@@ -146,7 +146,7 @@ const mockCourseDetails = {
     },
     {
       id: '5',
-      title: 'Informática',
+      title: 'INTELIGÊNCIA DIGITAL',
       duration: '20h',
       lessons: 35,
       completed: false,
@@ -197,18 +197,18 @@ const mockCourseDetails = {
   
   // Requisitos
   requirements: [
-    'Ensino médio completo',
-    'Conhecimentos básicos de informática',
-    'Dedicação mínima de 2 horas por dia',
-    'Acesso à internet para assistir as aulas'
+    'FORMAÇÃO MÉDIA COMPLETA',
+    'CONHECIMENTOS BÁSICOS DE INFORMÁTICA',
+    'DEDICAÇÃO MÍNIMA DE 2 HORAS DIÁRIAS',
+    'ACESSO À INTERNET PARA BRIEFINGS'
   ],
   
   // Para quem é este curso
   targetAudience: [
-    'Candidatos ao concurso de Agente da Polícia Federal',
-    'Profissionais que desejam migrar para a área policial',
-    'Estudantes que buscam estabilidade no serviço público',
-    'Pessoas interessadas em segurança pública'
+    'CANDIDATOS À OPERAÇÃO PF - AGENTE TÁTICO',
+    'PROFISSIONAIS EM TRANSIÇÃO PARA SEGURANÇA',
+    'OPERADORES EM BUSCA DE ESTABILIDADE',
+    'INTERESSADOS EM SEGURANÇA PÚBLICA'
   ],
   
   // Avaliações
@@ -295,14 +295,17 @@ export default function CourseDetailsPage() {
 
   const handleEnroll = () => {
     // Aqui seria a lógica de matrícula/pagamento
-    toast.success('Redirecionando para o pagamento...');
+    toast.success('INICIANDO MISSÃO - REDIRECIONANDO PARA PAGAMENTO...', {
+      icon: '🎯',
+      description: 'Preparando arsenal tático'
+    });
     // navigate('/checkout');
   };
 
   const displayedModules = showAllModules ? course.modules : course.modules.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header com navegação */}
       <header className="bg-primary-900 text-white sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-6">
@@ -319,7 +322,7 @@ export default function CourseDetailsPage() {
                   className="flex items-center gap-2 hover:text-primary-200 transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Voltar aos cursos
+VOLTAR ÀS OPERAÇÕES
                 </Link>
               </nav>
             </div>
@@ -331,7 +334,7 @@ export default function CourseDetailsPage() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary-400" />
                   <input
                     type="text"
-                    placeholder="Buscar cursos..."
+                    placeholder="BUSCAR OPERAÇÕES..."
                     className="w-64 pl-10 pr-4 py-2 bg-primary-800 border border-primary-700 rounded-lg text-white placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                   />
                 </div>
@@ -346,7 +349,7 @@ export default function CourseDetailsPage() {
               
               <Link to="/dashboard">
                 <Button variant="secondary" size="sm">
-                  Meu Dashboard
+COMANDO CENTRAL
                 </Button>
               </Link>
             </div>
@@ -380,8 +383,8 @@ export default function CourseDetailsPage() {
                 </Badge>
               </div>
               
-              <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
-              <p className="text-xl text-primary-100 mb-6">{course.subtitle}</p>
+              <h1 className="text-4xl font-bold mb-4 font-police-title uppercase tracking-wider">{course.title}</h1>
+              <p className="text-xl text-primary-100 mb-6 font-police-subtitle uppercase tracking-wider">{course.subtitle}</p>
               
               <div className="flex items-center gap-6 mb-6">
                 <div className="flex items-center gap-2">
@@ -402,8 +405,8 @@ export default function CourseDetailsPage() {
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
-                  <p className="font-medium">Criado por</p>
-                  <p className="text-primary-100">{course.instructor.name}</p>
+                  <p className="font-medium font-police-body uppercase tracking-wider">COMANDANTE</p>
+                  <p className="text-primary-100 font-police-subtitle">{course.instructor.name}</p>
                 </div>
               </div>
 
@@ -412,24 +415,24 @@ export default function CourseDetailsPage() {
                 <div className="text-center">
                   <Clock className="w-8 h-8 mx-auto mb-2 text-accent-400" />
                   <div className="text-2xl font-bold">{course.duration}</div>
-                  <p className="text-sm text-primary-200">de conteúdo</p>
+                  <p className="text-sm text-primary-200 font-police-body uppercase tracking-wider">HORAS TÁTICAS</p>
                 </div>
                 <div className="text-center">
                   <Video className="w-8 h-8 mx-auto mb-2 text-accent-400" />
                   <div className="text-2xl font-bold">
                     {course.modules.reduce((acc, mod) => acc + mod.lessons, 0)}
                   </div>
-                  <p className="text-sm text-primary-200">videoaulas</p>
+                  <p className="text-sm text-primary-200 font-police-body uppercase tracking-wider">BRIEFINGS</p>
                 </div>
                 <div className="text-center">
                   <FileText className="w-8 h-8 mx-auto mb-2 text-accent-400" />
                   <div className="text-2xl font-bold">{course.questions.toLocaleString()}</div>
-                  <p className="text-sm text-primary-200">questões</p>
+                  <p className="text-sm text-primary-200 font-police-body uppercase tracking-wider">ALVOS</p>
                 </div>
                 <div className="text-center">
                   <Calendar className="w-8 h-8 mx-auto mb-2 text-accent-400" />
                   <div className="text-2xl font-bold">12</div>
-                  <p className="text-sm text-primary-200">meses de acesso</p>
+                  <p className="text-sm text-primary-200 font-police-body uppercase tracking-wider">MESES OPERACIONAIS</p>
                 </div>
               </div>
 
@@ -493,14 +496,14 @@ export default function CourseDetailsPage() {
                       onClick={handleEnroll}
                     >
                       <ShoppingCart className="w-5 h-5 mr-2" />
-                      Comprar agora
+INICIAR MISSÃO
                     </Button>
                     <Button
                       size="lg"
                       variant="outline"
                       className="w-full"
                     >
-                      Adicionar ao carrinho
+ADICIONAR AO ARSENAL
                     </Button>
                   </div>
 
@@ -514,7 +517,7 @@ export default function CourseDetailsPage() {
 
                   {/* O que está incluído */}
                   <div className="mt-6 space-y-3">
-                    <h4 className="font-medium text-primary-900">Este curso inclui:</h4>
+                    <h4 className="font-medium text-primary-900 font-police-body uppercase tracking-wider">ARSENAL INCLUÍDO:</h4>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="w-4 h-4 text-primary-400" />
@@ -522,15 +525,15 @@ export default function CourseDetailsPage() {
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Video className="w-4 h-4 text-primary-400" />
-                        <span>Acesso vitalício</span>
+                        <span>ACESSO PERMANENTE</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Smartphone className="w-4 h-4 text-primary-400" />
-                        <span>Acesso mobile e TV</span>
+                        <span>ACESSO MÓVEL E TV</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Award className="w-4 h-4 text-primary-400" />
-                        <span>Certificado de conclusão</span>
+                        <span>CONDECORAÇÃO FINAL</span>
                       </div>
                     </div>
                   </div>
@@ -549,10 +552,10 @@ export default function CourseDetailsPage() {
             <div className="border-b mb-8">
               <nav className="flex gap-8">
                 {[
-                  { id: 'overview', label: 'Visão geral' },
-                  { id: 'curriculum', label: 'Conteúdo' },
-                  { id: 'instructor', label: 'Instrutor' },
-                  { id: 'reviews', label: 'Avaliações' }
+                  { id: 'overview', label: 'VISÃO TÁTICA' },
+                  { id: 'curriculum', label: 'ARSENAL' },
+                  { id: 'instructor', label: 'COMANDANTE' },
+                  { id: 'reviews', label: 'RELATÓRIOS' }
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -587,17 +590,17 @@ export default function CourseDetailsPage() {
                 {/* O que você aprenderá */}
                 <Card>
                   <CardHeader>
-                    <h2 className="text-2xl font-bold">O que você aprenderá</h2>
+                    <h2 className="text-2xl font-bold font-police-title uppercase tracking-wider">HABILIDADES TÁTICAS</h2>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[
-                        'Dominar todas as disciplinas do edital',
-                        'Técnicas de resolução de questões CESPE',
-                        'Gestão eficiente do tempo de estudo',
-                        'Estratégias para o dia da prova',
-                        'Interpretação de textos complexos',
-                        'Raciocínio lógico aplicado'
+                        'DOMINAR TODAS AS DISCIPLINAS TÁTICAS',
+                        'TÉCNICAS DE RESOLUÇÃO CESPE AVANÇADAS',
+                        'GESTÃO MILITAR DO TEMPO DE ESTUDO',
+                        'ESTRATÉGIAS PARA O DIA DA OPERAÇÃO',
+                        'INTERPRETAÇÃO DE TEXTOS COMPLEXOS',
+                        'RACIOCÍNIO LÓGICO OPERACIONAL'
                       ].map((item, idx) => (
                         <div key={idx} className="flex items-start gap-3">
                           <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -611,7 +614,7 @@ export default function CourseDetailsPage() {
                 {/* Para quem é este curso */}
                 <Card>
                   <CardHeader>
-                    <h2 className="text-2xl font-bold">Para quem é este curso</h2>
+                    <h2 className="text-2xl font-bold font-police-title uppercase tracking-wider">PERFIL OPERACIONAL</h2>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
@@ -628,7 +631,7 @@ export default function CourseDetailsPage() {
                 {/* Requisitos */}
                 <Card>
                   <CardHeader>
-                    <h2 className="text-2xl font-bold">Requisitos</h2>
+                    <h2 className="text-2xl font-bold font-police-title uppercase tracking-wider">PRÉ-REQUISITOS</h2>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
@@ -652,7 +655,7 @@ export default function CourseDetailsPage() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-bold">Conteúdo do curso</h2>
+                      <h2 className="text-2xl font-bold font-police-title uppercase tracking-wider">ARSENAL DE TREINAMENTO</h2>
                       <Badge variant="secondary">
                         {course.modules.length} módulos
                       </Badge>
@@ -725,7 +728,7 @@ export default function CourseDetailsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-2xl font-bold">Sobre o instrutor</h2>
+                    <h2 className="text-2xl font-bold font-police-title uppercase tracking-wider">PERFIL DO COMANDANTE</h2>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-start gap-6">
@@ -745,17 +748,17 @@ export default function CourseDetailsPage() {
                           <div className="flex items-center gap-2">
                             <Star className="w-4 h-4 text-yellow-500 fill-current" />
                             <span className="font-medium">{course.instructor.rating}</span>
-                            <span className="text-primary-500">Avaliação</span>
+                            <span className="text-primary-500 font-police-body uppercase tracking-wider">AVALIAÇÃO</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Users className="w-4 h-4 text-primary-400" />
                             <span className="font-medium">{course.instructor.students.toLocaleString()}</span>
-                            <span className="text-primary-500">Alunos</span>
+                            <span className="text-primary-500 font-police-body uppercase tracking-wider">RECRUTAS</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <BookOpen className="w-4 h-4 text-primary-400" />
                             <span className="font-medium">{course.instructor.courses}</span>
-                            <span className="text-primary-500">Cursos</span>
+                            <span className="text-primary-500 font-police-body uppercase tracking-wider">OPERAÇÕES</span>
                           </div>
                         </div>
                       </div>
@@ -774,7 +777,7 @@ export default function CourseDetailsPage() {
                 {/* Resumo das avaliações */}
                 <Card>
                   <CardHeader>
-                    <h2 className="text-2xl font-bold">Avaliações dos alunos</h2>
+                    <h2 className="text-2xl font-bold font-police-title uppercase tracking-wider">RELATÓRIOS OPERACIONAIS</h2>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -881,7 +884,7 @@ export default function CourseDetailsPage() {
             {/* Sobre o curso - movido para cá para melhor aproveitamento do espaço */}
             <Card>
               <CardHeader>
-                <h3 className="text-lg font-bold">Sobre o curso</h3>
+                <h3 className="text-lg font-bold font-police-subtitle uppercase tracking-wider">BRIEFING DA OPERAÇÃO</h3>
               </CardHeader>
               <CardContent>
                 <div className="text-sm text-primary-700 space-y-3">
@@ -897,7 +900,7 @@ export default function CourseDetailsPage() {
               <CardHeader>
                 <h3 className="text-lg font-bold flex items-center gap-2">
                   <HelpCircle className="w-5 h-5" />
-                  Perguntas frequentes
+DÚVIDAS OPERACIONAIS
                 </h3>
               </CardHeader>
               <CardContent>
@@ -912,8 +915,8 @@ export default function CourseDetailsPage() {
                       </p>
                     </div>
                   ))}
-                  <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">
-                    Ver todas as perguntas →
+                  <button className="text-sm text-primary-600 hover:text-primary-700 font-medium font-police-body uppercase tracking-wider">
+                    VER TODAS AS DÚVIDAS →
                   </button>
                 </div>
               </CardContent>
@@ -922,27 +925,27 @@ export default function CourseDetailsPage() {
             {/* Estatísticas do curso */}
             <Card>
               <CardHeader>
-                <h3 className="text-lg font-bold">Estatísticas</h3>
+                <h3 className="text-lg font-bold font-police-subtitle uppercase tracking-wider">DADOS OPERACIONAIS</h3>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-primary-600">Última atualização</span>
+                    <span className="text-primary-600 font-police-body uppercase tracking-wider">ÚLTIMA ATUALIZAÇÃO</span>
                     <span className="font-medium">
                       {new Date(course.lastUpdated).toLocaleDateString('pt-BR')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-primary-600">Idioma</span>
+                    <span className="text-primary-600 font-police-body uppercase tracking-wider">IDIOMA</span>
                     <span className="font-medium">{course.language}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-primary-600">Nível</span>
+                    <span className="text-primary-600 font-police-body uppercase tracking-wider">NÍVEL</span>
                     <span className="font-medium">{course.level}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-primary-600">Certificado</span>
-                    <span className="font-medium">Sim</span>
+                    <span className="text-primary-600 font-police-body uppercase tracking-wider">CONDECORAÇÃO</span>
+                    <span className="font-medium font-police-body uppercase tracking-wider">DISPONÍVEL</span>
                   </div>
                 </div>
               </CardContent>
@@ -953,7 +956,7 @@ export default function CourseDetailsPage() {
               <CardHeader>
                 <h3 className="text-lg font-bold flex items-center gap-2">
                   <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                  Por que escolher este curso?
+POR QUE ESTA OPERAÇÃO?
                 </h3>
               </CardHeader>
               <CardContent>
@@ -961,25 +964,25 @@ export default function CourseDetailsPage() {
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                     <span className="text-sm text-primary-700">
-                      <strong>Taxa de aprovação de 89%</strong> entre nossos alunos
+                      <strong>TAXA DE SUCESSO OPERACIONAL: 89%</strong> DOS RECRUTAS
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <TrendingUp className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
                     <span className="text-sm text-primary-700">
-                      <strong>Material sempre atualizado</strong> conforme mudanças no edital
+                      <strong>ARSENAL SEMPRE ATUALIZADO</strong> CONFORME INTELIGÊNCIA
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Users className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
                     <span className="text-sm text-primary-700">
-                      <strong>Grupo exclusivo</strong> para networking e dúvidas
+                      <strong>ESQUADRÃO EXCLUSIVO</strong> PARA NETWORKING E APOIO
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Award className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
                     <span className="text-sm text-primary-700">
-                      <strong>Professor especialista</strong> com experiência na área
+                      <strong>COMANDANTE ESPECIALISTA</strong> COM EXPERIÊNCIA DE CAMPO
                     </span>
                   </li>
                 </ul>

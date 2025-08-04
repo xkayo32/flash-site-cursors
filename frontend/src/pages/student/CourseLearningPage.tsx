@@ -456,7 +456,7 @@ export default function CourseLearningPage() {
       <header className="bg-gray-800 border-b border-gray-700 px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/my-courses">
+            <Link to="/student/my-courses">
               <Logo variant="icon" size="sm" className="text-white" />
             </Link>
             <div className="hidden md:block">
@@ -572,7 +572,7 @@ export default function CourseLearningPage() {
                 </div>
               )}
             </div>
-            <Link to="/my-courses">
+            <Link to="/student/my-courses">
               <Button variant="outline" size="sm" className="text-white border-gray-600 hover:bg-gray-700 hover:text-white">
                 Voltar aos cursos
               </Button>
@@ -592,7 +592,7 @@ export default function CourseLearningPage() {
             {/* Progresso do curso */}
             <div className="p-4 border-b border-gray-700">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Progresso do curso</span>
+                <span className="text-sm font-medium font-police-body uppercase tracking-wider">PROGRESSO DA OPERAÇÃO</span>
                 <span className="text-sm text-gray-400">{course.progress}%</span>
               </div>
               <div className="w-full bg-gray-700 rounded-full h-2">
@@ -631,7 +631,7 @@ export default function CourseLearningPage() {
                           className={cn(
                             "w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors",
                             lesson.id === currentLessonId
-                              ? "bg-accent-600 text-white"
+                              ? "bg-accent-500 text-black"
                               : "hover:bg-gray-700"
                           )}
                         >
@@ -768,7 +768,7 @@ export default function CourseLearningPage() {
                             onClick={() => handlePlaybackRateChange(rate)}
                             className={cn(
                               "block w-full text-left px-2 py-1 rounded text-sm hover:bg-gray-700",
-                              playbackRate === rate && "bg-accent-600"
+                              playbackRate === rate && "bg-accent-500"
                             )}
                           >
                             {rate}x
@@ -814,7 +814,7 @@ export default function CourseLearningPage() {
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={markLessonComplete}>
                     <CheckCircle className="w-4 h-4 mr-2" />
-                    Marcar como concluída
+                    CONCLUIR MISSÃO
                   </Button>
                   <Button variant="ghost" size="sm">
                     <Flag className="w-4 h-4" />
@@ -826,7 +826,7 @@ export default function CourseLearningPage() {
               {currentLesson?.description && (
                 <Card className="mb-6">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold mb-2">Sobre esta aula</h3>
+                    <h3 className="font-semibold mb-2 font-police-subtitle uppercase tracking-wider">BRIEFING DA MISSÃO</h3>
                     <p className="text-gray-700">{currentLesson.description}</p>
                   </CardContent>
                 </Card>
@@ -836,9 +836,9 @@ export default function CourseLearningPage() {
               {currentLesson?.resources && (
                 <Card className="mb-6">
                   <CardContent className="p-4">
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
+                    <h3 className="font-semibold mb-4 flex items-center gap-2 font-police-subtitle uppercase tracking-wider">
                       <FileText className="w-5 h-5" />
-                      Materiais de apoio
+                      ARSENAL DE APOIO
                     </h3>
                     <div className="space-y-2">
                       {currentLesson.resources.map((resource, index) => (
@@ -868,7 +868,7 @@ export default function CourseLearningPage() {
                     className="gap-2"
                   >
                     <ChevronLeft className="w-4 h-4" />
-                    Aula anterior
+                    MISSÃO ANTERIOR
                   </Button>
                 ) : (
                   <div />
@@ -879,12 +879,12 @@ export default function CourseLearningPage() {
                     onClick={() => goToLesson(nextLesson.id)}
                     className="gap-2"
                   >
-                    Próxima aula
+                    PRÓXIMA MISSÃO
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 ) : (
-                  <Button variant="outline" disabled>
-                    Curso concluído!
+                  <Button variant="outline" disabled className="font-police-body font-semibold uppercase tracking-wider">
+                    OPERAÇÃO FINALIZADA!
                   </Button>
                 )}
               </div>

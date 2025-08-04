@@ -29,6 +29,7 @@ import {
   Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import toast from 'react-hot-toast';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
@@ -86,7 +87,7 @@ interface StudySession {
 const mockDecks: FlashcardDeck[] = [
   {
     id: '1',
-    name: 'Direito Constitucional - Direitos Fundamentais',
+    name: 'OPERAÇÃO CONSTITUCIONAL - Direitos Fundamentais',
     description: 'Flashcards sobre os direitos e garantias fundamentais da CF/88',
     subject: 'Direito Constitucional',
     totalCards: 156,
@@ -96,11 +97,11 @@ const mockDecks: FlashcardDeck[] = [
     createdAt: '2024-01-10',
     lastStudied: '2024-01-18',
     isUserDeck: false,
-    author: 'Prof. Carlos Mendez'
+    author: 'COMANDANTE CARLOS MENDEZ'
   },
   {
     id: '2',
-    name: 'Direito Penal - Crimes contra a Administração',
+    name: 'OPERAÇÃO PENAL - Crimes contra a Administração',
     description: 'Conceitos e tipificações dos crimes contra a administração pública',
     subject: 'Direito Penal',
     totalCards: 89,
@@ -110,11 +111,11 @@ const mockDecks: FlashcardDeck[] = [
     createdAt: '2024-01-08',
     lastStudied: '2024-01-17',
     isUserDeck: false,
-    author: 'Prof. Ana Silva'
+    author: 'COMANDANTE ANA SILVA'
   },
   {
     id: '3',
-    name: 'Informática - Segurança da Informação',
+    name: 'INTELIGÊNCIA DIGITAL - Segurança da Informação',
     description: 'Conceitos fundamentais de segurança da informação',
     subject: 'Informática',
     totalCards: 67,
@@ -124,11 +125,11 @@ const mockDecks: FlashcardDeck[] = [
     createdAt: '2024-01-05',
     lastStudied: '2024-01-16',
     isUserDeck: false,
-    author: 'StudyPro Team'
+    author: 'ESQUADRÃO STUDYPRO'
   },
   {
     id: '4',
-    name: 'Português - Concordância Verbal',
+    name: 'COMUNICAÇÃO TÁTICA - Concordância Verbal',
     description: 'Regras de concordância verbal e casos especiais',
     subject: 'Português',
     totalCards: 45,
@@ -137,11 +138,11 @@ const mockDecks: FlashcardDeck[] = [
     color: 'bg-purple-500',
     createdAt: '2024-01-12',
     isUserDeck: false,
-    author: 'Prof. Maria Santos'
+    author: 'COMANDANTE MARIA SANTOS'
   },
   {
     id: '5',
-    name: 'Meus Resumos - Direito Administrativo',
+    name: 'ARSENAL PESSOAL - Direito Administrativo',
     description: 'Cards pessoais sobre princípios e atos administrativos',
     subject: 'Direito Administrativo',
     totalCards: 32,
@@ -351,7 +352,10 @@ export default function FlashcardsPage() {
       author: 'Você'
     };
 
-    alert(`Deck "${newDeckName}" criado com sucesso com ${selectedCards.length} flashcard${selectedCards.length > 1 ? 's' : ''}!`);
+    toast.success(`ARSENAL "${newDeckName}" CRIADO COM SUCESSO!`, {
+      description: `${selectedCards.length} flashcard${selectedCards.length > 1 ? 's' : ''} adicionado${selectedCards.length > 1 ? 's' : ''}`,
+      icon: '🎯'
+    });
     
     // Reset form
     setNewDeckName('');
@@ -504,9 +508,12 @@ export default function FlashcardsPage() {
     const accuracy = Math.round((sessionStats.correct / sessionStats.total) * 100);
     
     // Mostra estatísticas finais com um modal mais atrativo
-    const message = `🎉 Sessão finalizada!\n\n📚 Cards estudados: ${sessionStats.total}\n✅ Acertos: ${sessionStats.correct}\n🎯 Precisão: ${accuracy}%\n⏱️ Tempo: ${timeSpent} minuto${timeSpent !== 1 ? 's' : ''}\n\n${accuracy >= 80 ? '🌟 Excelente trabalho!' : accuracy >= 60 ? '👍 Bom desempenho!' : '💪 Continue praticando!'}`;
-    
-    alert(message);
+    // Mostra estatísticas finais
+    toast.success('MISSÃO CONCLUÍDA!', {
+      description: `📚 ${sessionStats.total} cards | ✅ ${sessionStats.correct} acertos | 🎯 ${accuracy}% precisão | ⏱️ ${timeSpent}min`,
+      duration: 5000,
+      icon: accuracy >= 80 ? '🌟' : accuracy >= 60 ? '👍' : '💪'
+    });
     
     // Reset da sessão
     setStudySession(null);
@@ -570,22 +577,22 @@ export default function FlashcardsPage() {
             <div className="flex flex-col items-end gap-1">
               <Badge variant="secondary">{deck.subject}</Badge>
               {deck.isUserDeck && (
-                <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">
-                  Meu Deck
+                <Badge className="bg-green-100 text-green-700 border-green-200 text-xs font-police-body">
+                  MEU ARSENAL
                 </Badge>
               )}
             </div>
           </div>
 
-          <h3 className="font-bold text-lg text-primary-900 mb-2 line-clamp-2">
+          <h3 className="font-bold text-lg text-primary-900 mb-2 line-clamp-2 font-police-subtitle uppercase tracking-wider">
             {deck.name}
           </h3>
-          <p className="text-sm text-primary-600 mb-2 line-clamp-2">
+          <p className="text-sm text-primary-600 mb-2 line-clamp-2 font-police-body">
             {deck.description}
           </p>
           {deck.author && (
-            <p className="text-xs text-primary-500 mb-4">
-              Criado por: {deck.author}
+            <p className="text-xs text-primary-500 mb-4 font-police-body uppercase tracking-wider">
+              COMANDANTE: {deck.author}
             </p>
           )}
 
@@ -593,22 +600,22 @@ export default function FlashcardsPage() {
           <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
             <div className="text-center">
               <div className="font-bold text-primary-900">{deck.totalCards}</div>
-              <div className="text-primary-600">Total</div>
+              <div className="text-primary-600 font-police-body uppercase tracking-wider text-xs">TOTAL</div>
             </div>
             <div className="text-center">
-              <div className="font-bold text-red-600">{deck.dueCards}</div>
-              <div className="text-primary-600">Pendentes</div>
+              <div className="font-bold text-red-600 font-police-numbers">{deck.dueCards}</div>
+              <div className="text-primary-600 font-police-body uppercase tracking-wider text-xs">PENDENTES</div>
             </div>
             <div className="text-center">
-              <div className="font-bold text-green-600">{deck.newCards}</div>
-              <div className="text-primary-600">Novos</div>
+              <div className="font-bold text-green-600 font-police-numbers">{deck.newCards}</div>
+              <div className="text-primary-600 font-police-body uppercase tracking-wider text-xs">NOVOS</div>
             </div>
           </div>
 
           {/* Data do último estudo */}
           {deck.lastStudied && (
-            <p className="text-xs text-primary-500 mb-4">
-              Último estudo: {new Date(deck.lastStudied).toLocaleDateString('pt-BR')}
+            <p className="text-xs text-primary-500 mb-4 font-police-body uppercase tracking-wider">
+              ÚLTIMA OPERAÇÃO: {new Date(deck.lastStudied).toLocaleDateString('pt-BR')}
             </p>
           )}
 
@@ -619,7 +626,7 @@ export default function FlashcardsPage() {
             disabled={deck.dueCards === 0 && deck.newCards === 0}
           >
             <Play className="w-4 h-4" />
-            {deck.dueCards > 0 ? `Estudar (${deck.dueCards + deck.newCards})` : 'Sem cards pendentes'}
+            {deck.dueCards > 0 ? `EXECUTAR OPERAÇÃO (${deck.dueCards + deck.newCards})` : 'SEM ALVOS PENDENTES'}
           </Button>
         </CardContent>
       </Card>
@@ -785,15 +792,15 @@ export default function FlashcardsPage() {
       >
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-primary-900 mb-2">Flashcards</h1>
-            <p className="text-primary-600">
-              Sistema de repetição espaçada para memorização eficiente
+            <h1 className="text-3xl font-police-title font-bold text-gray-900 dark:text-white mb-2 uppercase tracking-wider">ARSENAL DE FLASHCARDS</h1>
+            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+              SISTEMA TÁTICO DE REPETIÇÃO ESPAÇADA PARA MEMORIZAÇÃO OPERACIONAL
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="text-lg px-4 py-2">
               <Flame className="w-5 h-5 mr-2 text-orange-500" />
-              {studyStats.dailyStreak} dias seguidos
+              {studyStats.dailyStreak} DIAS DE OPERAÇÃO
             </Badge>
           </div>
         </div>
@@ -804,7 +811,7 @@ export default function FlashcardsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Cards pendentes hoje</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">ARSENAL PENDENTE</p>
                   <p className="text-2xl font-bold text-red-600">{studyStats.dueToday}</p>
                 </div>
                 <Clock className="w-8 h-8 text-red-500" />
@@ -816,7 +823,7 @@ export default function FlashcardsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Cards novos</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">ARSENAL NOVO</p>
                   <p className="text-2xl font-bold text-green-600">{studyStats.newCards}</p>
                 </div>
                 <Plus className="w-8 h-8 text-green-500" />
@@ -828,7 +835,7 @@ export default function FlashcardsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Estudados hoje</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">EXECUTADOS HOJE</p>
                   <p className="text-2xl font-bold text-blue-600">{studyStats.cardsStudiedToday}</p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-blue-500" />
@@ -840,7 +847,7 @@ export default function FlashcardsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Tempo hoje</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">TEMPO OPERACIONAL</p>
                   <p className="text-2xl font-bold text-purple-600">{formatTime(studyStats.timeStudiedToday)}</p>
                 </div>
                 <Brain className="w-8 h-8 text-purple-500" />
@@ -852,10 +859,10 @@ export default function FlashcardsPage() {
         {/* Tabs de navegação */}
         <div className="flex gap-1 mb-6">
           {[
-            { key: 'overview', label: 'Visão Geral', icon: BookOpen },
-            { key: 'study', label: 'Estudar', icon: Brain },
-            { key: 'create', label: 'Criar Deck', icon: Plus },
-            { key: 'stats', label: 'Estatísticas', icon: BarChart3 }
+            { key: 'overview', label: 'ARSENAL DISPONÍVEL', icon: BookOpen },
+            { key: 'study', label: 'TREINAR', icon: Brain },
+            { key: 'create', label: 'CRIAR DECK', icon: Plus },
+            { key: 'stats', label: 'RELATÓRIOS', icon: BarChart3 }
           ].map(tab => {
             const Icon = tab.icon;
             return (
@@ -865,8 +872,8 @@ export default function FlashcardsPage() {
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all",
                   activeTab === tab.key 
-                    ? "bg-primary-600 text-white shadow-lg" 
-                    : "bg-white text-primary-600 hover:bg-primary-50"
+                    ? "bg-accent-500 text-black shadow-lg font-semibold" 
+                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 )}
               >
                 <Icon className="w-4 h-4" />
@@ -894,10 +901,10 @@ export default function FlashcardsPage() {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary-400" />
                     <input
                       type="text"
-                      placeholder="Buscar decks de flashcards..."
+                      placeholder="BUSCAR ARSENAL DE FLASHCARDS..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent font-police-body placeholder:uppercase placeholder:tracking-wider"
                     />
                   </div>
                 </div>
@@ -907,9 +914,9 @@ export default function FlashcardsPage() {
                     onChange={(e) => setDeckFilter(e.target.value as any)}
                     className="px-4 py-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
-                    <option value="all">Todos os decks</option>
-                    <option value="my">Meus decks</option>
-                    <option value="system">Decks do sistema</option>
+                    <option value="all">TODOS OS ARSENAIS</option>
+                    <option value="my">MEUS ARSENAIS</option>
+                    <option value="system">ARSENAIS DO SISTEMA</option>
                   </select>
                   <select
                     value={filterSubject}
@@ -918,7 +925,7 @@ export default function FlashcardsPage() {
                   >
                     {subjects.map(subject => (
                       <option key={subject} value={subject}>
-                        {subject === 'all' ? 'Todas as matérias' : subject}
+                        {subject === 'all' ? 'TODAS AS ÁREAS' : subject}
                       </option>
                     ))}
                   </select>
@@ -936,16 +943,20 @@ export default function FlashcardsPage() {
             ) : (
               <div className="text-center py-12">
                 <Brain className="w-16 h-16 text-primary-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-primary-900 mb-2">
-                  Nenhum deck encontrado
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 font-police-subtitle uppercase tracking-wider">
+                  NENHUM ARSENAL ENCONTRADO
                 </h3>
-                <p className="text-primary-600 mb-6">
-                  Não há decks disponíveis para esta matéria no momento.
+                <p className="text-primary-600 mb-6 font-police-body">
+                  NÃO HÁ ARSENAIS DISPONÍVEIS PARA ESTA ÁREA NO MOMENTO.
                   <br />
-                  Novos decks são adicionados regularmente pelos professores.
+                  NOVOS ARSENAIS SÃO ADICIONADOS REGULARMENTE PELOS COMANDANTES.
                 </p>
-                <Button variant="outline" onClick={() => setFilterSubject('all')}>
-                  Ver todos os decks
+                <Button 
+                  variant="outline" 
+                  onClick={() => setFilterSubject('all')}
+                  className="font-police-body uppercase tracking-wider"
+                >
+                  VER TODOS OS ARSENAIS
                 </Button>
               </div>
             )}
@@ -1004,14 +1015,17 @@ export default function FlashcardsPage() {
             ) : (
               <div className="text-center py-12">
                 <Brain className="w-16 h-16 text-primary-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-primary-900 mb-2">
-                  Selecione um deck para estudar
+                <h3 className="text-xl font-semibold text-primary-900 mb-2 font-police-subtitle uppercase tracking-wider">
+                  SELECIONE UM ARSENAL PARA TREINAMENTO
                 </h3>
-                <p className="text-primary-600 mb-6">
-                  Volte para a visão geral e escolha um deck para começar
+                <p className="text-primary-600 mb-6 font-police-body uppercase tracking-wider">
+                  RETORNE AO ARSENAL DISPONÍVEL E ESCOLHA UMA OPERAÇÃO PARA INICIAR
                 </p>
-                <Button onClick={() => setActiveTab('overview')}>
-                  Ver decks disponíveis
+                <Button 
+                  onClick={() => setActiveTab('overview')}
+                  className="font-police-body uppercase tracking-wider"
+                >
+                  VER ARSENAIS DISPONÍVEIS
                 </Button>
               </div>
             )}
@@ -1028,9 +1042,9 @@ export default function FlashcardsPage() {
           >
             <Card>
               <CardHeader>
-                <h3 className="text-xl font-bold text-primary-900">Criar Novo Deck</h3>
-                <p className="text-primary-600">
-                  Monte sua coleção personalizada selecionando flashcards existentes do sistema
+                <h3 className="text-xl font-bold text-primary-900 font-police-title uppercase tracking-wider">CRIAR NOVO ARSENAL</h3>
+                <p className="text-primary-600 font-police-body">
+                  MONTE SUA COLEÇÃO PERSONALIZADA SELECIONANDO FLASHCARDS EXISTENTES DO SISTEMA
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">

@@ -5,7 +5,6 @@ import {
   FileText,
   Users,
   Brain,
-  BarChart3,
   BookOpen,
   Scale,
   LogOut,
@@ -14,11 +13,11 @@ import {
   Menu,
   X,
   Shield,
-  Upload,
   Tag,
   PanelLeft,
   GripVertical,
-  Layers
+  Layers,
+  Target
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -70,14 +69,14 @@ const adminNavItems = [
     path: '/admin/flashcards'
   },
   {
-    title: 'Analytics',
-    icon: BarChart3,
-    path: '/admin/analytics'
+    title: 'Simulados',
+    icon: Target,
+    path: '/admin/mock-exams'
   },
   {
-    title: 'Importação em Massa',
-    icon: Upload,
-    path: '/admin/import'
+    title: 'Provas Anteriores',
+    icon: FileText,
+    path: '/admin/previous-exams'
   },
   {
     title: 'Categorias',

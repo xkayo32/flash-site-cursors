@@ -21,12 +21,19 @@ import {
   Grid,
   List,
   SortAsc,
-  X
+  X,
+  Shield,
+  Command,
+  Activity,
+  Crosshair,
+  Zap,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
+import toast from 'react-hot-toast';
 
 // Tipos
 interface EnrolledCourse {
@@ -52,12 +59,12 @@ interface EnrolledCourse {
   expiresAt?: string;
 }
 
-// Dados mockados dos cursos matriculados
+// Dados mockados das operações em andamento
 const mockEnrolledCourses: EnrolledCourse[] = [
   {
     id: '1',
-    title: 'Receita Federal - Auditor Fiscal',
-    instructor: 'Prof. Ana Silva',
+    title: 'OPERAÇÃO RECEITA FEDERAL - AUDITOR FISCAL',
+    instructor: 'COMANDANTE ANA SILVA',
     thumbnail: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=250&fit=crop',
     progress: 45,
     totalLessons: 240,
@@ -65,20 +72,20 @@ const mockEnrolledCourses: EnrolledCourse[] = [
     lastAccessed: '2024-01-18',
     nextLesson: {
       id: '109',
-      title: 'Direito Tributário - ICMS parte 2',
+      title: 'BRIEFING TRIBUTÁRIO - ICMS PARTE 2',
       duration: '45min'
     },
     certificate: {
       available: false
     },
-    category: 'Fiscal',
-    duration: '220h',
+    category: 'FISCAL',
+    duration: '220H TÁTICAS',
     expiresAt: '2024-12-31'
   },
   {
     id: '2',
-    title: 'TCU - Auditor Federal de Controle',
-    instructor: 'Prof. Paulo Santos',
+    title: 'OPERAÇÃO TCU - AUDITOR FEDERAL DE CONTROLE',
+    instructor: 'COMANDANTE PAULO SANTOS',
     thumbnail: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop',
     progress: 78,
     totalLessons: 180,
@@ -86,19 +93,19 @@ const mockEnrolledCourses: EnrolledCourse[] = [
     lastAccessed: '2024-01-17',
     nextLesson: {
       id: '141',
-      title: 'Controle Externo - Fiscalização',
+      title: 'MISSÃO CONTROLE EXTERNO - FISCALIZAÇÃO',
       duration: '30min'
     },
     certificate: {
       available: false
     },
-    category: 'Controle',
-    duration: '200h'
+    category: 'CONTROLE',
+    duration: '200H ESPECIALIZADAS'
   },
   {
     id: '3',
-    title: 'Português para Concursos',
-    instructor: 'Prof. Maria Oliveira',
+    title: 'OPERAÇÃO COMUNICAÇÃO TÁTICA - PORTUGUÊS',
+    instructor: 'COMANDANTE MARIA OLIVEIRA',
     thumbnail: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=250&fit=crop',
     progress: 100,
     totalLessons: 60,
@@ -106,20 +113,20 @@ const mockEnrolledCourses: EnrolledCourse[] = [
     lastAccessed: '2024-01-15',
     nextLesson: {
       id: '',
-      title: 'Curso concluído!',
+      title: 'MISSÃO CONCLUÍDA!',
       duration: ''
     },
     certificate: {
       available: true,
       earnedAt: '2024-01-15'
     },
-    category: 'Base',
-    duration: '40h'
+    category: 'BASE',
+    duration: '40H TÁTICAS'
   },
   {
     id: '4',
-    title: 'Raciocínio Lógico - Nível Avançado',
-    instructor: 'Prof. João Costa',
+    title: 'OPERAÇÃO INTELIGÊNCIA - RACIOCÍNIO AVANÇADO',
+    instructor: 'COMANDANTE JOÃO COSTA',
     thumbnail: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=250&fit=crop',
     progress: 25,
     totalLessons: 80,
@@ -127,18 +134,18 @@ const mockEnrolledCourses: EnrolledCourse[] = [
     lastAccessed: '2024-01-10',
     nextLesson: {
       id: '21',
-      title: 'Lógica Proposicional - Tabela Verdade',
+      title: 'ANÁLISE PROPOSICIONAL - TABELA VERDADE',
       duration: '35min'
     },
     certificate: {
       available: false
     },
-    category: 'Base',
-    duration: '60h'
+    category: 'BASE',
+    duration: '60H ESPECIALIZADAS'
   }
 ];
 
-// Estatísticas gerais
+// Estatísticas operacionais
 const learningStats = {
   totalHours: 124,
   currentStreak: 5,
@@ -179,7 +186,7 @@ export default function MyCoursesPage() {
 
   const categories = ['all', ...new Set(mockEnrolledCourses.map(c => c.category))];
 
-  // Cursos próximos do vencimento (30 dias)
+  // Operações próximas do prazo limite (30 dias)
   const expiringCourses = mockEnrolledCourses.filter(course => {
     if (!course.expiresAt) return false;
     const daysUntilExpiry = Math.ceil(
@@ -196,7 +203,7 @@ export default function MyCoursesPage() {
       transition={{ duration: 0.3 }}
     >
       <Card className={cn(
-        "h-full hover:shadow-xl transition-all duration-300 overflow-hidden",
+        "h-full hover:shadow-xl transition-all duration-300 overflow-hidden bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700",
         course.progress === 100 && "ring-2 ring-green-500"
       )}>
         {/* Thumbnail */}
@@ -210,11 +217,11 @@ export default function MyCoursesPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
             <div className="absolute bottom-4 left-4 right-4">
               <div className="flex items-center justify-between text-white mb-2">
-                <span className="text-sm font-medium">
-                  {course.progress}% concluído
+                <span className="text-sm font-medium font-police-body uppercase tracking-wider">
+                  {course.progress}% EXECUTADO
                 </span>
-                <span className="text-sm">
-                  {course.completedLessons}/{course.totalLessons} aulas
+                <span className="text-sm font-police-numbers">
+                  {course.completedLessons}/{course.totalLessons} BRIEFINGS
                 </span>
               </div>
               <div className="w-full bg-white/20 rounded-full h-2 backdrop-blur-sm">
@@ -222,10 +229,7 @@ export default function MyCoursesPage() {
                   initial={{ width: 0 }}
                   animate={{ width: `${course.progress}%` }}
                   transition={{ duration: 1, ease: "easeOut" }}
-                  className={cn(
-                    "h-full rounded-full",
-                    course.progress === 100 ? "bg-green-500" : "bg-accent-500"
-                  )}
+                  className="h-full rounded-full bg-white"
                 />
               </div>
             </div>
@@ -233,9 +237,9 @@ export default function MyCoursesPage() {
           {/* Badge de conclusão */}
           {course.progress === 100 && (
             <div className="absolute top-4 right-4">
-              <Badge className="bg-green-500 text-white border-0">
+              <Badge className="bg-gray-900 text-white border-0 font-police-body font-semibold uppercase tracking-wider">
                 <CheckCircle className="w-3 h-3 mr-1" />
-                Concluído
+                MISSÃO COMPLETA
               </Badge>
             </div>
           )}
@@ -244,44 +248,60 @@ export default function MyCoursesPage() {
         <CardContent className="p-6">
           {/* Categoria e duração */}
           <div className="flex items-center gap-2 mb-3">
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs font-police-body font-semibold uppercase tracking-wider">
               {course.category}
             </Badge>
-            <span className="text-xs text-primary-500">
+            <span className="text-xs text-gray-600 dark:text-gray-400 font-police-numbers">
               <Clock className="w-3 h-3 inline mr-1" />
               {course.duration}
             </span>
           </div>
 
-          {/* Título e instrutor */}
-          <h3 className="font-bold text-lg text-primary-900 mb-1 line-clamp-2">
+          {/* Título e comandante */}
+          <h3 className="font-police-subtitle font-bold text-lg text-gray-900 dark:text-white mb-1 line-clamp-2 uppercase tracking-wider">
             {course.title}
           </h3>
-          <p className="text-sm text-primary-600 mb-4">{course.instructor}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 font-police-body uppercase tracking-wider">{course.instructor}</p>
 
-          {/* Próxima aula ou certificado */}
+          {/* Próximo briefing ou condecoração */}
           {course.progress === 100 ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-3 mb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-green-600" />
-                  <span className="text-sm font-medium text-green-900">
-                    Certificado disponível
+                  <Award className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100 font-police-body uppercase tracking-wider">
+                    CONDECORAÇÃO DISPONÍVEL
                   </span>
                 </div>
-                <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-50">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="text-gray-700 dark:text-gray-300 border-gray-400 dark:border-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 font-police-body uppercase tracking-wider"
+                  onClick={() => {
+                    // TODO: Implementar download real do certificado
+                    toast.success('CONDECORAÇÃO BAIXADA COM SUCESSO!', { 
+                      icon: '🏆',
+                      description: 'Verifique sua pasta de downloads'
+                    });
+                    // Simulação de download
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.download = `certificado-${course.title.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+                    // link.click();
+                  }}
+                >
                   <Download className="w-4 h-4 mr-1" />
-                  Baixar
+                  BAIXAR
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="bg-primary-50 rounded-lg p-3 mb-4">
-              <p className="text-xs text-primary-600 mb-1">Próxima aula:</p>
-              <p className="text-sm font-medium text-primary-900 line-clamp-1">
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 mb-4 border border-gray-200 dark:border-gray-700">
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-police-body uppercase tracking-wider">PRÓXIMO BRIEFING:</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1 font-police-subtitle uppercase tracking-wider">
                 {course.nextLesson.title}
               </p>
-              <p className="text-xs text-primary-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 font-police-numbers">
                 <Clock className="w-3 h-3 inline mr-1" />
                 {course.nextLesson.duration}
               </p>
@@ -290,12 +310,15 @@ export default function MyCoursesPage() {
 
           {/* Ações */}
           <div className="flex items-center justify-between">
-            <span className="text-xs text-primary-500">
-              Acessado {new Date(course.lastAccessed).toLocaleDateString('pt-BR')}
+            <span className="text-xs text-gray-500 dark:text-gray-500 font-police-body uppercase tracking-wider">
+              ACESSO {new Date(course.lastAccessed).toLocaleDateString('pt-BR')}
             </span>
-            <Link to={`/course/${course.id}/learn`}>
-              <Button size="sm" className="gap-1">
-                {course.progress === 100 ? 'Revisar' : 'Continuar'}
+            <Link to={`/student/courses/${course.id}/learn`}>
+              <Button 
+                size="sm" 
+                className="gap-1 bg-gray-900 hover:bg-gray-800 text-white font-police-body font-semibold uppercase tracking-wider"
+              >
+                {course.progress === 100 ? 'REVISAR' : 'CONTINUAR'}
                 <Play className="w-4 h-4" />
               </Button>
             </Link>
@@ -303,10 +326,10 @@ export default function MyCoursesPage() {
 
           {/* Data de expiração se houver */}
           {course.expiresAt && (
-            <div className="mt-3 pt-3 border-t">
-              <p className="text-xs text-amber-600 flex items-center gap-1">
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1 font-police-body uppercase tracking-wider">
                 <Calendar className="w-3 h-3" />
-                Acesso até {new Date(course.expiresAt).toLocaleDateString('pt-BR')}
+                PRAZO LIMITE {new Date(course.expiresAt).toLocaleDateString('pt-BR')}
               </p>
             </div>
           )}
@@ -322,7 +345,7 @@ export default function MyCoursesPage() {
       whileHover={{ x: 5 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="mb-4 overflow-hidden hover:shadow-lg transition-all">
+      <Card className="mb-4 overflow-hidden hover:shadow-lg transition-all bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
         <div className="flex items-center p-4">
           {/* Thumbnail */}
           <img
@@ -335,17 +358,20 @@ export default function MyCoursesPage() {
           <div className="flex-1">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-bold text-primary-900 mb-1">{course.title}</h3>
-                <p className="text-sm text-primary-600 mb-2">{course.instructor}</p>
-                <div className="flex items-center gap-4 text-sm text-primary-500">
-                  <span>{course.category}</span>
-                  <span>{course.duration}</span>
-                  <span>Acessado {new Date(course.lastAccessed).toLocaleDateString('pt-BR')}</span>
+                <h3 className="font-police-subtitle font-bold text-gray-900 dark:text-white mb-1 uppercase tracking-wider">{course.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 font-police-body uppercase tracking-wider">{course.instructor}</p>
+                <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-500">
+                  <span className="font-police-body uppercase tracking-wider">{course.category}</span>
+                  <span className="font-police-numbers">{course.duration}</span>
+                  <span className="font-police-body uppercase tracking-wider">ACESSO {new Date(course.lastAccessed).toLocaleDateString('pt-BR')}</span>
                 </div>
               </div>
-              <Link to={`/course/${course.id}/learn`}>
-                <Button size="sm">
-                  {course.progress === 100 ? 'Revisar' : 'Continuar'}
+              <Link to={`/student/courses/${course.id}/learn`}>
+                <Button 
+                  size="sm"
+                  className="bg-gray-900 hover:bg-gray-800 text-white font-police-body font-semibold uppercase tracking-wider"
+                >
+                  {course.progress === 100 ? 'REVISAR' : 'CONTINUAR'}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
@@ -354,17 +380,14 @@ export default function MyCoursesPage() {
             {/* Barra de progresso */}
             <div className="mt-3">
               <div className="flex items-center justify-between text-sm mb-1">
-                <span className="font-medium">{course.progress}% concluído</span>
-                <span className="text-primary-500">
-                  {course.completedLessons}/{course.totalLessons} aulas
+                <span className="font-medium text-gray-900 dark:text-white font-police-body uppercase tracking-wider">{course.progress}% EXECUTADO</span>
+                <span className="text-gray-500 dark:text-gray-500 font-police-numbers">
+                  {course.completedLessons}/{course.totalLessons} BRIEFINGS
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
-                  className={cn(
-                    "h-full rounded-full transition-all duration-500",
-                    course.progress === 100 ? "bg-green-500" : "bg-accent-500"
-                  )}
+                  className="h-full rounded-full transition-all duration-500 bg-gray-900 dark:bg-gray-100"
                   style={{ width: `${course.progress}%` }}
                 />
               </div>
@@ -377,21 +400,21 @@ export default function MyCoursesPage() {
 
   return (
     <div className="p-6">
-      {/* Alerta de cursos próximos do vencimento */}
+      {/* Alerta de operações próximas do prazo limite */}
       {showExpirationAlert && expiringCourses.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="mb-6 bg-amber-50 border border-amber-200 rounded-lg p-4"
+          className="mb-6 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-4 backdrop-blur-sm"
         >
           <div className="flex items-start gap-4">
-            <Calendar className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
+            <AlertTriangle className="w-6 h-6 text-gray-700 dark:text-gray-300 flex-shrink-0 mt-1" />
             <div className="flex-1">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-amber-900 mb-2">
-                    Atenção: {expiringCourses.length} {expiringCourses.length === 1 ? 'curso expira' : 'cursos expiram'} em breve!
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 font-police-subtitle uppercase tracking-wider">
+                    ALERTA: {expiringCourses.length} {expiringCourses.length === 1 ? 'OPERAÇÃO PRÓXIMA' : 'OPERAÇÕES PRÓXIMAS'} DO PRAZO LIMITE!
                   </h3>
                   <div className="space-y-2">
                     {expiringCourses.map(course => {
@@ -401,13 +424,13 @@ export default function MyCoursesPage() {
                       return (
                         <div key={course.id} className="flex items-center justify-between text-sm">
                           <Link 
-                            to={`/course/${course.id}/learn`}
-                            className="text-amber-700 hover:text-amber-900 hover:underline font-medium"
+                            to={`/student/courses/${course.id}/learn`}
+                            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:underline font-medium font-police-body uppercase tracking-wider"
                           >
                             {course.title}
                           </Link>
-                          <span className="text-amber-600 font-medium">
-                            {daysLeft} {daysLeft === 1 ? 'dia' : 'dias'} restantes
+                          <span className="text-gray-600 dark:text-gray-400 font-medium font-police-numbers">
+                            {daysLeft} {daysLeft === 1 ? 'DIA' : 'DIAS'} RESTANTES
                           </span>
                         </div>
                       );
@@ -416,7 +439,7 @@ export default function MyCoursesPage() {
                 </div>
                 <button
                   onClick={() => setShowExpirationAlert(false)}
-                  className="text-amber-600 hover:text-amber-700 p-1"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-1"
                   aria-label="Fechar alerta"
                 >
                   <X className="w-5 h-5" />
@@ -433,54 +456,60 @@ export default function MyCoursesPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl font-bold text-primary-900 mb-6">Meus Cursos</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-police-title font-bold text-gray-900 dark:text-white uppercase tracking-wider">MINHAS OPERAÇÕES</h1>
+          <Badge variant="secondary" className="text-lg px-4 py-2 font-police-numbers">
+            <Shield className="w-5 h-5 mr-2" />
+            {mockEnrolledCourses.length} EM ANDAMENTO
+          </Badge>
+        </div>
         
-        {/* Cards de estatísticas */}
+        {/* Cards de estatísticas operacionais */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card>
+          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Horas estudadas</p>
-                  <p className="text-2xl font-bold text-primary-900">{learningStats.totalHours}h</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">HORAS OPERACIONAIS</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">{learningStats.totalHours}H</p>
                 </div>
-                <Clock className="w-8 h-8 text-primary-400" />
+                <Clock className="w-8 h-8 text-gray-500 dark:text-gray-400" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Sequência atual</p>
-                  <p className="text-2xl font-bold text-primary-900">{learningStats.currentStreak} dias</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">SEQUÊNCIA ATIVA</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">{learningStats.currentStreak} DIAS</p>
                 </div>
-                <TrendingUp className="w-8 h-8 text-accent-500" />
+                <Activity className="w-8 h-8 text-gray-500 dark:text-gray-400" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Cursos concluídos</p>
-                  <p className="text-2xl font-bold text-primary-900">{learningStats.coursesCompleted}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">MISSÕES COMPLETAS</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">{learningStats.coursesCompleted}</p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-green-500" />
+                <CheckCircle className="w-8 h-8 text-gray-500 dark:text-gray-400" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Progresso médio</p>
-                  <p className="text-2xl font-bold text-primary-900">{learningStats.averageProgress}%</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">EFICIÊNCIA MÉDIA</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">{learningStats.averageProgress}%</p>
                 </div>
-                <BarChart3 className="w-8 h-8 text-primary-400" />
+                <Crosshair className="w-8 h-8 text-gray-500 dark:text-gray-400" />
               </div>
             </CardContent>
           </Card>
@@ -491,13 +520,13 @@ export default function MyCoursesPage() {
           <div className="flex flex-wrap gap-2">
             {/* Busca */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
-                placeholder="Buscar cursos..."
+                placeholder="BUSCAR OPERAÇÕES..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:uppercase placeholder:tracking-wider"
               />
             </div>
 
@@ -505,9 +534,9 @@ export default function MyCoursesPage() {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
             >
-              <option value="all">Todas as categorias</option>
+              <option value="all">TODAS AS CATEGORIAS</option>
               {categories.slice(1).map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
@@ -517,11 +546,11 @@ export default function MyCoursesPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
             >
-              <option value="lastAccessed">Último acesso</option>
-              <option value="progress">Progresso</option>
-              <option value="title">Nome do curso</option>
+              <option value="lastAccessed">ÚLTIMO ACESSO</option>
+              <option value="progress">PROGRESSO</option>
+              <option value="title">NOME DA OPERAÇÃO</option>
             </select>
           </div>
 
@@ -531,6 +560,7 @@ export default function MyCoursesPage() {
               variant={viewMode === 'grid' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('grid')}
+              className="p-2"
             >
               <Grid className="w-4 h-4" />
             </Button>
@@ -538,6 +568,7 @@ export default function MyCoursesPage() {
               variant={viewMode === 'list' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('list')}
+              className="p-2"
             >
               <List className="w-4 h-4" />
             </Button>
@@ -545,7 +576,7 @@ export default function MyCoursesPage() {
         </div>
       </motion.div>
 
-      {/* Lista de cursos */}
+      {/* Lista de operações */}
       {filteredCourses.length > 0 ? (
         viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -561,40 +592,43 @@ export default function MyCoursesPage() {
           </div>
         )
       ) : (
-        <Card className="p-12 text-center">
-          <BookOpen className="w-16 h-16 text-primary-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-primary-900 mb-2">
-            Nenhum curso encontrado
+        <Card className="p-12 text-center bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+          <Command className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 font-police-subtitle uppercase tracking-wider">
+            NENHUMA OPERAÇÃO ENCONTRADA
           </h3>
-          <p className="text-primary-600 mb-6">
-            Tente ajustar os filtros ou explore nosso catálogo
+          <p className="text-gray-600 dark:text-gray-400 mb-6 font-police-body uppercase tracking-wider">
+            AJUSTE OS FILTROS OU EXPLORE NOVAS OPERAÇÕES DISPONÍVEIS
           </p>
-          <Link to="/courses">
-            <Button>
-              Explorar novos cursos
+          <Link to="/student/courses">
+            <Button className="bg-gray-900 hover:bg-gray-800 text-white font-police-body font-semibold uppercase tracking-wider">
+              EXPLORAR OPERAÇÕES
             </Button>
           </Link>
         </Card>
       )}
 
 
-      {/* Sugestão de novos cursos */}
+      {/* Sugestão de novas operações */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="mt-8 bg-primary-50 rounded-lg p-6 text-center"
+        className="mt-8 bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black rounded-2xl p-8 text-white text-center border border-gray-200 dark:border-gray-700"
       >
-        <Target className="w-12 h-12 text-primary-600 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-primary-900 mb-2">
-          Continue evoluindo!
+        <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-police-title font-semibold text-white mb-2 uppercase tracking-wider">
+          CONTINUE EXPANDINDO SEU ARSENAL!
         </h3>
-        <p className="text-primary-600 mb-4">
-          Explore novos cursos para complementar sua preparação
+        <p className="text-gray-300 dark:text-gray-400 mb-4 font-police-body">
+          EXPLORE NOVAS OPERAÇÕES PARA COMPLEMENTAR SUA PREPARAÇÃO TÁTICA
         </p>
-        <Link to="/courses">
-          <Button variant="outline">
-            Ver catálogo completo
+        <Link to="/student/courses">
+          <Button 
+            variant="secondary"
+            className="bg-white hover:bg-gray-100 text-black font-police-body font-semibold uppercase tracking-wider"
+          >
+            VER OPERAÇÕES DISPONÍVEIS
           </Button>
         </Link>
       </motion.div>

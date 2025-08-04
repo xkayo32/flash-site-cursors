@@ -23,6 +23,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { PageHeader } from '@/components/student';
+import toast from 'react-hot-toast';
 
 // Mock data for payment methods
 const mockPaymentMethods = [
@@ -34,7 +36,7 @@ const mockPaymentMethods = [
     expiryMonth: 12,
     expiryYear: 2025,
     isDefault: true,
-    nickname: 'Cartão Principal'
+    nickname: 'CARTÃO DE COMANDO PRINCIPAL'
   },
   {
     id: '2',
@@ -44,7 +46,7 @@ const mockPaymentMethods = [
     expiryMonth: 8,
     expiryYear: 2026,
     isDefault: false,
-    nickname: 'Cartão Reserva'
+    nickname: 'CARTÃO DE RESERVA TÁTICA'
   }
 ];
 
@@ -56,7 +58,7 @@ const mockPaymentHistory = [
     currency: 'BRL',
     status: 'succeeded',
     date: '2024-01-15',
-    description: 'Assinatura Mensal - Plano Premium',
+    description: 'OPERAÇÃO MENSAL - NÍVEL COMANDANTE VIP',
     method: 'Visa ****4242',
     invoice: 'inv_1234567'
   },
@@ -66,7 +68,7 @@ const mockPaymentHistory = [
     currency: 'BRL',
     status: 'succeeded',
     date: '2023-12-15',
-    description: 'Assinatura Mensal - Plano Premium',
+    description: 'OPERAÇÃO MENSAL - NÍVEL COMANDANTE VIP',
     method: 'Visa ****4242',
     invoice: 'inv_1234566'
   },
@@ -76,10 +78,10 @@ const mockPaymentHistory = [
     currency: 'BRL',
     status: 'failed',
     date: '2023-11-15',
-    description: 'Assinatura Mensal - Plano Premium',
+    description: 'OPERAÇÃO MENSAL - NÍVEL COMANDANTE VIP',
     method: 'Visa ****4242',
     invoice: null,
-    failureReason: 'Cartão recusado'
+    failureReason: 'AUTENTICAÇÃO DE PAGAMENTO RECUSADA'
   }
 ];
 
@@ -146,9 +148,9 @@ export default function PaymentSettingsPage() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      succeeded: { label: 'Pago', color: 'bg-green-100 text-green-800' },
-      pending: { label: 'Pendente', color: 'bg-yellow-100 text-yellow-800' },
-      failed: { label: 'Falhou', color: 'bg-red-100 text-red-800' }
+      succeeded: { label: 'CONFIRMADO', color: 'bg-green-100 text-green-800' },
+      pending: { label: 'EM PROCESSO', color: 'bg-yellow-100 text-yellow-800' },
+      failed: { label: 'NEGADO', color: 'bg-red-100 text-red-800' }
     };
     
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -178,32 +180,34 @@ export default function PaymentSettingsPage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
-      >
-        <div>
-          <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
-            Configurações de Pagamento
-          </h1>
-          <p className="text-primary-600 dark:text-gray-300">
-            Gerencie seus métodos de pagamento e histórico de faturas
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <Button variant="outline" className="gap-2">
-            <Receipt className="w-4 h-4" />
-            Ver Faturas
-          </Button>
-          <Button onClick={() => setShowAddCardModal(true)} className="gap-2">
-            <Plus className="w-4 h-4" />
-            Adicionar Cartão
-          </Button>
-        </div>
-      </motion.div>
+      <PageHeader
+        title="COMANDO FINANCEIRO"
+        subtitle="GERENCIAMENTO DE RECURSOS E OPERAÇÕES FINANCEIRAS"
+        icon={CreditCard}
+        breadcrumbs={[
+          { label: 'DASHBOARD', href: '/student/dashboard' },
+          { label: 'PAGAMENTOS' }
+        ]}
+        actions={
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              className="gap-2 font-police-body uppercase tracking-wider"
+              onClick={() => toast.success('ACESSANDO RELATÓRIOS FINANCEIROS!', { icon: '📄' })}
+            >
+              <Receipt className="w-4 h-4" />
+              RELATÓRIOS
+            </Button>
+            <Button 
+              onClick={() => setShowAddCardModal(true)} 
+              className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+            >
+              <Plus className="w-4 h-4" />
+              ADICIONAR CARTÃO
+            </Button>
+          </div>
+        }
+      />
 
       {/* Current Subscription */}
       <motion.div
@@ -214,36 +218,36 @@ export default function PaymentSettingsPage() {
         <Card className="border-primary-200 dark:border-primary-700">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider">
                 <Star className="w-5 h-5 text-yellow-500" />
-                Assinatura Atual
+                OPERAÇÃO ATIVA
               </CardTitle>
-              <Badge className="bg-green-100 text-green-800">
-                Ativa
+              <Badge className="bg-green-100 text-green-800 font-police-body">
+                OPERACIONAL
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Plano
+                <p className="text-sm font-medium text-primary-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                  NÍVEL
                 </p>
-                <p className="text-lg font-bold text-primary-900 dark:text-white">
-                  Premium Mensal
+                <p className="text-lg font-bold text-primary-900 dark:text-white font-police-title">
+                  COMANDANTE VIP MENSAL
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Valor
+                <p className="text-sm font-medium text-primary-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                  VALOR OPERACIONAL
                 </p>
                 <p className="text-lg font-bold text-primary-900 dark:text-white">
                   R$ 49,90/mês
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Próxima Cobrança
+                <p className="text-sm font-medium text-primary-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                  PRÓXIMA OPERAÇÃO
                 </p>
                 <p className="text-lg font-bold text-primary-900 dark:text-white">
                   15/02/2024
@@ -254,12 +258,17 @@ export default function PaymentSettingsPage() {
             <div className="flex items-center justify-between pt-4 border-t border-primary-100 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <Shield className="w-5 h-5 text-green-600" />
-                <span className="text-sm text-primary-700 dark:text-gray-300">
-                  Renovação automática ativa
+                <span className="text-sm text-primary-700 dark:text-gray-300 font-police-body uppercase tracking-wider">
+                  RENOVAÇÃO AUTOMÁTICA ATIVA
                 </span>
               </div>
-              <Button variant="outline" size="sm">
-                Gerenciar Assinatura
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="font-police-body uppercase tracking-wider"
+                onClick={() => toast.success('ACESSANDO COMANDO DE ASSINATURAS!', { icon: '⚙️' })}
+              >
+                GERENCIAR OPERAÇÃO
               </Button>
             </div>
           </CardContent>
@@ -275,9 +284,9 @@ export default function PaymentSettingsPage() {
         >
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider">
                 <CreditCard className="w-5 h-5" />
-                Métodos de Pagamento
+                ARSENAL FINANCEIRO
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -294,8 +303,8 @@ export default function PaymentSettingsPage() {
                           •••• •••• •••• {method.last4}
                         </span>
                         {method.isDefault && (
-                          <Badge variant="secondary" className="text-xs">
-                            Padrão
+                          <Badge variant="secondary" className="text-xs font-police-body">
+                            PRINCIPAL
                           </Badge>
                         )}
                       </div>
@@ -319,10 +328,10 @@ export default function PaymentSettingsPage() {
               <Button
                 variant="outline"
                 onClick={() => setShowAddCardModal(true)}
-                className="w-full gap-2 border-dashed"
+                className="w-full gap-2 border-dashed font-police-body uppercase tracking-wider"
               >
                 <Plus className="w-4 h-4" />
-                Adicionar Novo Cartão
+                ADICIONAR NOVO ARMAMENTO
               </Button>
             </CardContent>
           </Card>
@@ -336,9 +345,9 @@ export default function PaymentSettingsPage() {
         >
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider">
                 <Settings className="w-5 h-5" />
-                Endereço de Cobrança
+                BASE DE OPERAÇÕES
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -363,11 +372,14 @@ export default function PaymentSettingsPage() {
               
               <Button
                 variant="outline"
-                onClick={() => setShowBillingModal(true)}
-                className="w-full gap-2"
+                onClick={() => {
+                  toast.success('ACESSANDO CONFIGURAÇÕES DA BASE!', { icon: '🏠' });
+                  setShowBillingModal(true);
+                }}
+                className="w-full gap-2 font-police-body uppercase tracking-wider"
               >
                 <Edit className="w-4 h-4" />
-                Editar Endereço
+                CONFIGURAR BASE
               </Button>
             </CardContent>
           </Card>
@@ -375,9 +387,9 @@ export default function PaymentSettingsPage() {
           {/* Notifications */}
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider">
                 <Bell className="w-5 h-5" />
-                Notificações
+                ALERTAS DE COMANDO
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -388,8 +400,8 @@ export default function PaymentSettingsPage() {
                     defaultChecked
                     className="w-4 h-4 text-primary-600 border-primary-300 rounded focus:ring-primary-500"
                   />
-                  <span className="text-sm text-primary-700 dark:text-gray-300">
-                    Notificar sobre próximas cobranças
+                  <span className="text-sm text-primary-700 dark:text-gray-300 font-police-body">
+                    ALERTAS DE PRÓXIMAS OPERAÇÕES FINANCEIRAS
                   </span>
                 </label>
                 
@@ -399,8 +411,8 @@ export default function PaymentSettingsPage() {
                     defaultChecked
                     className="w-4 h-4 text-primary-600 border-primary-300 rounded focus:ring-primary-500"
                   />
-                  <span className="text-sm text-primary-700 dark:text-gray-300">
-                    Alertas de falha no pagamento
+                  <span className="text-sm text-primary-700 dark:text-gray-300 font-police-body">
+                    ALERTAS DE FALHA EM OPERAÇÕES FINANCEIRAS
                   </span>
                 </label>
                 
@@ -409,8 +421,8 @@ export default function PaymentSettingsPage() {
                     type="checkbox"
                     className="w-4 h-4 text-primary-600 border-primary-300 rounded focus:ring-primary-500"
                   />
-                  <span className="text-sm text-primary-700 dark:text-gray-300">
-                    Promoções e ofertas especiais
+                  <span className="text-sm text-primary-700 dark:text-gray-300 font-police-body">
+                    INTELIGÊNCIA DE PROMOÇÕES E OFERTAS TÁTICAS
                   </span>
                 </label>
               </div>
@@ -427,9 +439,9 @@ export default function PaymentSettingsPage() {
       >
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider">
               <Receipt className="w-5 h-5" />
-              Histórico de Pagamentos
+              RELATÓRIO DE OPERAÇÕES FINANCEIRAS
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -437,23 +449,23 @@ export default function PaymentSettingsPage() {
               <table className="w-full">
                 <thead className="bg-primary-50 dark:bg-gray-800">
                   <tr>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Data
+                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white font-police-body uppercase tracking-wider">
+                      DATA
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Descrição
+                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white font-police-body uppercase tracking-wider">
+                      OPERAÇÃO
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Método
+                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white font-police-body uppercase tracking-wider">
+                      ARSENAL
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Valor
+                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white font-police-body uppercase tracking-wider">
+                      VALOR
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Status
+                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white font-police-body uppercase tracking-wider">
+                      STATUS
                     </th>
-                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white">
-                      Ações
+                    <th className="text-left py-4 px-6 font-semibold text-primary-900 dark:text-white font-police-body uppercase tracking-wider">
+                      AÇÕES
                     </th>
                   </tr>
                 </thead>
@@ -496,7 +508,12 @@ export default function PaymentSettingsPage() {
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-2">
                           {payment.invoice && (
-                            <Button variant="ghost" size="sm" title="Baixar Fatura">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              title="Baixar Fatura"
+                              onClick={() => toast.success('DOWNLOAD DO RELATÓRIO INICIADO!', { icon: '📥' })}
+                            >
                               <Download className="w-4 h-4" />
                             </Button>
                           )}
@@ -504,7 +521,10 @@ export default function PaymentSettingsPage() {
                             variant="ghost"
                             size="sm"
                             title="Visualizar Detalhes"
-                            onClick={() => setSelectedPayment(payment)}
+                            onClick={() => {
+                              toast.info('ACESSANDO DETALHES DA OPERAÇÃO', { icon: '🔍' });
+                              setSelectedPayment(payment);
+                            }}
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
@@ -537,15 +557,15 @@ export default function PaymentSettingsPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-xl font-bold text-primary-900 dark:text-white">
-                  Adicionar Cartão de Crédito
+                <h3 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">
+                  ADICIONAR ARSENAL FINANCEIRO
                 </h3>
               </div>
 
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
-                    Número do Cartão
+                  <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                    CÓDIGO DO ARMAMENTO
                   </label>
                   <input
                     type="text"
@@ -559,8 +579,8 @@ export default function PaymentSettingsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
-                      Validade
+                    <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                      EXPIRAÇÃO
                     </label>
                     <input
                       type="text"
@@ -572,8 +592,8 @@ export default function PaymentSettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
-                      CVC
+                    <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                      CÓDIGO DE SEGURANÇA
                     </label>
                     <input
                       type="text"
@@ -587,8 +607,8 @@ export default function PaymentSettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
-                    Nome no Cartão
+                  <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                    NOME DO OPERADOR
                   </label>
                   <input
                     type="text"
@@ -600,22 +620,22 @@ export default function PaymentSettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
-                    Apelido (opcional)
+                  <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                    DESIGNAÇÃO TÁTICA (OPCIONAL)
                   </label>
                   <input
                     type="text"
                     value={cardForm.nickname}
                     onChange={(e) => handleCardFormChange('nickname', e.target.value)}
-                    placeholder="Cartão Principal"
+                    placeholder="ARMAMENTO PRINCIPAL"
                     className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white"
                   />
                 </div>
 
                 <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <Shield className="w-5 h-5 text-blue-600" />
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    Seus dados são protegidos com criptografia SSL 256-bit
+                  <p className="text-sm text-blue-700 dark:text-blue-300 font-police-body">
+                    DADOS PROTEGIDOS COM CRIPTOGRAFIA MILITAR SSL 256-BIT
                   </p>
                 </div>
               </div>
@@ -624,12 +644,19 @@ export default function PaymentSettingsPage() {
                 <Button
                   variant="outline"
                   onClick={() => setShowAddCardModal(false)}
+                  className="font-police-body uppercase tracking-wider"
                 >
-                  Cancelar
+                  CANCELAR OPERAÇÃO
                 </Button>
-                <Button className="gap-2">
+                <Button 
+                  className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+                  onClick={() => {
+                    toast.success('ARMAMENTO ADICIONADO AO ARSENAL!', { icon: '⚔️' });
+                    setShowAddCardModal(false);
+                  }}
+                >
                   <Save className="w-4 h-4" />
-                  Adicionar Cartão
+                  ADICIONAR ARMAMENTO
                 </Button>
               </div>
             </motion.div>
@@ -655,16 +682,16 @@ export default function PaymentSettingsPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-xl font-bold text-primary-900 dark:text-white">
-                  Editar Endereço de Cobrança
+                <h3 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">
+                  CONFIGURAR BASE DE OPERAÇÕES
                 </h3>
               </div>
 
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
-                      Nome Completo
+                    <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                      NOME COMPLETO DO OPERADOR
                     </label>
                     <input
                       type="text"
@@ -673,8 +700,8 @@ export default function PaymentSettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
-                      Email
+                    <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                      COMUNICAÇÃO DIGITAL
                     </label>
                     <input
                       type="email"
@@ -685,8 +712,8 @@ export default function PaymentSettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
-                    Endereço
+                  <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                    LOCALIZAÇÃO DA BASE
                   </label>
                   <input
                     type="text"
@@ -696,8 +723,8 @@ export default function PaymentSettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
-                    Complemento (opcional)
+                  <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                    COMPLEMENTO TÁTICO (OPCIONAL)
                   </label>
                   <input
                     type="text"
@@ -708,8 +735,8 @@ export default function PaymentSettingsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
-                      Cidade
+                    <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                      MUNICÍPIO
                     </label>
                     <input
                       type="text"
@@ -718,8 +745,8 @@ export default function PaymentSettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
-                      Estado
+                    <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                      ESTADO OPERACIONAL
                     </label>
                     <select
                       defaultValue={billingAddress.state}
@@ -734,8 +761,8 @@ export default function PaymentSettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
-                    CEP
+                  <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                    CÓDIGO POSTAL
                   </label>
                   <input
                     type="text"
@@ -749,12 +776,19 @@ export default function PaymentSettingsPage() {
                 <Button
                   variant="outline"
                   onClick={() => setShowBillingModal(false)}
+                  className="font-police-body uppercase tracking-wider"
                 >
-                  Cancelar
+                  CANCELAR MISSÃO
                 </Button>
-                <Button className="gap-2">
+                <Button 
+                  className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+                  onClick={() => {
+                    toast.success('BASE DE OPERAÇÕES CONFIGURADA!', { icon: '🏠' });
+                    setShowBillingModal(false);
+                  }}
+                >
                   <Save className="w-4 h-4" />
-                  Salvar Endereço
+                  CONFIRMAR BASE
                 </Button>
               </div>
             </motion.div>

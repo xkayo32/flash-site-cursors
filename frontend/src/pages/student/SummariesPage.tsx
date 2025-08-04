@@ -42,7 +42,7 @@ interface Summary {
   topic: string;
   author: string;
   readingTime: number; // em minutos
-  difficulty: 'Básico' | 'Intermediário' | 'Avançado';
+  difficulty: 'RECRUTA' | 'CABO' | 'SARGENTO';
   tags: string[];
   stats: {
     views: number;
@@ -78,11 +78,11 @@ const mockSummaries: Summary[] = [
     id: '1',
     title: 'Direitos Fundamentais - Teoria Geral e Classificação',
     description: 'Resumo completo sobre a teoria geral dos direitos fundamentais, suas gerações, características e aplicabilidade.',
-    subject: 'Direito Constitucional',
+    subject: 'DIREITO CONSTITUCIONAL TÁTICO',
     topic: 'Direitos e Garantias Fundamentais',
     author: 'Prof. Carlos Mendez',
     readingTime: 25,
-    difficulty: 'Intermediário',
+    difficulty: 'CABO',
     tags: ['CF/88', 'Direitos Fundamentais', 'Gerações de Direitos'],
     stats: {
       views: 3456,
@@ -98,11 +98,11 @@ const mockSummaries: Summary[] = [
     id: '2',
     title: 'Crimes contra a Administração Pública',
     description: 'Análise detalhada dos crimes funcionais, incluindo corrupção, peculato, concussão e prevaricação.',
-    subject: 'Direito Penal',
+    subject: 'DIREITO PENAL OPERACIONAL',
     topic: 'Parte Especial',
     author: 'Prof. Ana Silva',
     readingTime: 30,
-    difficulty: 'Avançado',
+    difficulty: 'SARGENTO',
     tags: ['Código Penal', 'Crimes Funcionais', 'Administração Pública'],
     stats: {
       views: 2890,
@@ -117,11 +117,11 @@ const mockSummaries: Summary[] = [
     id: '3',
     title: 'Princípios da Administração Pública - LIMPE',
     description: 'Estudo aprofundado dos princípios constitucionais da administração pública com exemplos práticos.',
-    subject: 'Direito Administrativo',
+    subject: 'DIREITO ADMINISTRATIVO',
     topic: 'Princípios Administrativos',
     author: 'Prof. Roberto Lima',
     readingTime: 20,
-    difficulty: 'Básico',
+    difficulty: 'RECRUTA',
     tags: ['LIMPE', 'Art. 37 CF', 'Princípios'],
     stats: {
       views: 5123,
@@ -141,7 +141,7 @@ const mockSummaries: Summary[] = [
     topic: 'Segurança',
     author: 'Prof. Tech Masters',
     readingTime: 35,
-    difficulty: 'Intermediário',
+    difficulty: 'CABO',
     tags: ['Criptografia', 'Protocolos', 'Firewall', 'VPN'],
     stats: {
       views: 1876,
@@ -159,7 +159,7 @@ const mockSummaries: Summary[] = [
     topic: 'Gramática',
     author: 'Prof. Maria Santos',
     readingTime: 40,
-    difficulty: 'Intermediário',
+    difficulty: 'CABO',
     tags: ['Concordância', 'Gramática', 'Sintaxe'],
     stats: {
       views: 4321,
@@ -630,9 +630,9 @@ export default function SummariesPage() {
           >
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-primary-900 mb-2">Resumos Interativos</h1>
+                <h1 className="text-3xl font-bold text-primary-900 mb-2 font-police-title uppercase tracking-wider">BRIEFINGS TÁTICOS</h1>
                 <p className="text-primary-600">
-                  Conteúdo didático com flashcards e questões incorporados
+                  CONTEÚXTO DIDÁTICO COM FLASHCARDS E QUESTÕES INCORPORADOS
                 </p>
               </div>
               <div className="flex items-center gap-2">

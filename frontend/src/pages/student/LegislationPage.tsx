@@ -34,10 +34,10 @@ interface Legislation {
   id: string;
   title: string;
   number: string;
-  type: 'Lei' | 'Decreto' | 'Medida Provisória' | 'Constituição' | 'Código' | 'Estatuto';
+  type: 'LEI' | 'DECRETO' | 'MEDIDA PROVISÓRIA' | 'CONSTITUIÇÃO' | 'CÓDIGO' | 'ESTATUTO';
   category: string;
   date: string;
-  status: 'Vigente' | 'Revogada' | 'Alterada';
+  status: 'ATIVO' | 'REVOGADO' | 'ALTERADO';
   summary: string;
   articles: number;
   lastUpdate?: string;
@@ -69,44 +69,44 @@ interface Article {
 const mockLegislations: Legislation[] = [
   {
     id: '1',
-    title: 'Constituição Federal',
+    title: 'CONSTITUIÇÃO FEDERAL - BASE TÁTICA',
     number: 'CF/1988',
-    type: 'Constituição',
-    category: 'Direito Constitucional',
+    type: 'CONSTITUIÇÃO',
+    category: 'DIREITO CONSTITUCIONAL TÁTICO',
     date: '1988-10-05',
-    status: 'Vigente',
-    summary: 'Constituição da República Federativa do Brasil de 1988',
+    status: 'ATIVO',
+    summary: 'CONSTITUIÇÃO DA REPÚBLICA FEDERATIVA - MANUAL BÁSICO OPERACIONAL',
     articles: 250,
     lastUpdate: '2023-12-15',
-    relatedExams: ['Polícia Federal', 'Receita Federal', 'Tribunais'],
-    tags: ['CF/88', 'Constituição', 'Lei Fundamental'],
+    relatedExams: ['OPERAÇÃO PF', 'OPERAÇÃO RF', 'OPERAÇÕES TRIBUNAIS'],
+    tags: ['CF/88', 'CONSTITUIÇÃO', 'BASE JURÍDICA'],
     views: 15678,
     isFavorite: true
   },
   {
     id: '2',
-    title: 'Código Penal',
+    title: 'CÓDIGO PENAL - MANUAL OPERACIONAL',
     number: 'Decreto-Lei nº 2.848/1940',
-    type: 'Código',
-    category: 'Direito Penal',
+    type: 'CÓDIGO',
+    category: 'DIREITO PENAL OPERACIONAL',
     date: '1940-12-07',
-    status: 'Vigente',
-    summary: 'Código Penal Brasileiro',
+    status: 'ATIVO',
+    summary: 'CÓDIGO PENAL BRASILEIRO - MANUAL DE OPERAÇÕES',
     articles: 361,
     lastUpdate: '2024-01-10',
-    relatedExams: ['Polícia Federal', 'Polícia Civil', 'MP'],
-    tags: ['CP', 'Código Penal', 'Crimes'],
+    relatedExams: ['OPERAÇÃO PF', 'OPERAÇÃO PC', 'OPERAÇÃO MP'],
+    tags: ['CP', 'CÓDIGO PENAL', 'OPERAÇÕES PENAIS'],
     views: 12456,
     isFavorite: true
   },
   {
     id: '3',
-    title: 'Lei de Licitações e Contratos',
+    title: 'LEI DE LICITAÇÕES - MANUAL TÁTICO',
     number: 'Lei nº 14.133/2021',
-    type: 'Lei',
-    category: 'Direito Administrativo',
+    type: 'LEI',
+    category: 'DIREITO ADMINISTRATIVO',
     date: '2021-04-01',
-    status: 'Vigente',
+    status: 'ATIVO',
     summary: 'Nova Lei de Licitações e Contratos Administrativos',
     articles: 194,
     lastUpdate: '2023-07-20',
@@ -116,12 +116,12 @@ const mockLegislations: Legislation[] = [
   },
   {
     id: '4',
-    title: 'Estatuto dos Servidores Públicos',
+    title: 'ESTATUTO DOS OPERADORES PÚBLICOS',
     number: 'Lei nº 8.112/1990',
-    type: 'Estatuto',
-    category: 'Direito Administrativo',
+    type: 'ESTATUTO',
+    category: 'DIREITO ADMINISTRATIVO',
     date: '1990-12-11',
-    status: 'Vigente',
+    status: 'ATIVO',
     summary: 'Regime jurídico dos servidores públicos civis da União',
     articles: 253,
     lastUpdate: '2023-11-05',
@@ -131,12 +131,12 @@ const mockLegislations: Legislation[] = [
   },
   {
     id: '5',
-    title: 'Lei de Improbidade Administrativa',
+    title: 'LEI DE IMPROBIDADE - PROTOCOLO TÁTICO',
     number: 'Lei nº 8.429/1992',
-    type: 'Lei',
-    category: 'Direito Administrativo',
+    type: 'LEI',
+    category: 'DIREITO ADMINISTRATIVO',
     date: '1992-06-02',
-    status: 'Vigente',
+    status: 'ATIVO',
     summary: 'Dispõe sobre as sanções aplicáveis em virtude da prática de atos de improbidade administrativa',
     articles: 25,
     lastUpdate: '2021-10-26',
@@ -600,9 +600,9 @@ export default function LegislationPage() {
           >
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-primary-900 mb-2">Legislação</h1>
+                <h1 className="text-3xl font-bold text-primary-900 mb-2 font-police-title uppercase tracking-wider">ARSENAL JURÍDICO</h1>
                 <p className="text-primary-600">
-                  Textos de leis relevantes para concursos públicos
+                  ARSENAL DE LEIS E REGULAMENTOS PARA OPERAÇÕES TÁTICAS
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -671,7 +671,7 @@ export default function LegislationPage() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary-400" />
                   <input
                     type="text"
-                    placeholder="Buscar por título, número ou palavra-chave..."
+                    placeholder="BUSCAR NO ARSENAL JURÍDICO..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -770,7 +770,7 @@ export default function LegislationPage() {
               className="border-white text-white hover:bg-white hover:text-primary-700"
             >
               <History className="w-5 h-5 mr-2" />
-              Atualizações Recentes
+ATUALIZAÇÕES TÁTICAS RECENTES
             </Button>
           </div>
         </motion.div>

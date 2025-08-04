@@ -22,7 +22,12 @@ import {
   FileText,
   Video,
   Layers,
-  Star
+  Star,
+  Check,
+  X,
+  Edit,
+  CalendarDays,
+  Filter
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
@@ -66,20 +71,20 @@ interface ExamInfo {
 
 // Dados mockados
 const examInfo: ExamInfo = {
-  name: 'Polícia Federal - Agente',
+  name: 'OPERAÇÃO PF - AGENTE TÁTICO',
   date: '2024-05-15',
   daysLeft: 117,
   totalTopics: 156,
   completedTopics: 42,
   subjects: [
-    { name: 'Direito Constitucional', weight: 20, progress: 35, hoursNeeded: 120 },
-    { name: 'Direito Penal', weight: 15, progress: 28, hoursNeeded: 90 },
-    { name: 'Direito Administrativo', weight: 15, progress: 22, hoursNeeded: 90 },
-    { name: 'Informática', weight: 10, progress: 45, hoursNeeded: 60 },
-    { name: 'Português', weight: 10, progress: 55, hoursNeeded: 60 },
-    { name: 'Raciocínio Lógico', weight: 10, progress: 18, hoursNeeded: 60 },
-    { name: 'Contabilidade', weight: 10, progress: 15, hoursNeeded: 60 },
-    { name: 'Economia', weight: 10, progress: 12, hoursNeeded: 60 }
+    { name: 'DIREITO CONSTITUCIONAL TÁTICO', weight: 20, progress: 35, hoursNeeded: 120 },
+    { name: 'DIREITO PENAL OPERACIONAL', weight: 15, progress: 28, hoursNeeded: 90 },
+    { name: 'DIREITO ADMINISTRATIVO', weight: 15, progress: 22, hoursNeeded: 90 },
+    { name: 'INTELIGÊNCIA DIGITAL', weight: 10, progress: 45, hoursNeeded: 60 },
+    { name: 'COMUNICAÇÃO TÁTICA', weight: 10, progress: 55, hoursNeeded: 60 },
+    { name: 'RACIOCÍNIO LÓGICO TÁTICO', weight: 10, progress: 18, hoursNeeded: 60 },
+    { name: 'CONTABILIDADE OPERACIONAL', weight: 10, progress: 15, hoursNeeded: 60 },
+    { name: 'ECONOMIA ESTRATÉGICA', weight: 10, progress: 12, hoursNeeded: 60 }
   ]
 };
 
@@ -91,7 +96,7 @@ const weeklySchedule: DailySchedule[] = [
         id: '1', 
         startTime: '06:00', 
         endTime: '08:00', 
-        subject: 'Direito Constitucional', 
+        subject: 'DIREITO CONSTITUCIONAL TÁTICO', 
         topic: 'Direitos Fundamentais', 
         type: 'video', 
         duration: 120, 
@@ -102,7 +107,7 @@ const weeklySchedule: DailySchedule[] = [
         id: '2', 
         startTime: '08:30', 
         endTime: '10:00', 
-        subject: 'Direito Penal', 
+        subject: 'DIREITO PENAL OPERACIONAL', 
         topic: 'Crimes contra a Administração', 
         type: 'reading', 
         duration: 90, 
@@ -113,7 +118,7 @@ const weeklySchedule: DailySchedule[] = [
         id: '3', 
         startTime: '14:00', 
         endTime: '15:30', 
-        subject: 'Informática', 
+        subject: 'INTELIGÊNCIA DIGITAL', 
         topic: 'Segurança da Informação', 
         type: 'practice', 
         duration: 90, 
@@ -124,7 +129,7 @@ const weeklySchedule: DailySchedule[] = [
         id: '4', 
         startTime: '16:00', 
         endTime: '17:00', 
-        subject: 'Português', 
+        subject: 'COMUNICAÇÃO TÁTICA', 
         topic: 'Concordância Verbal', 
         type: 'review', 
         duration: 60, 
@@ -134,7 +139,7 @@ const weeklySchedule: DailySchedule[] = [
         id: '5', 
         startTime: '19:00', 
         endTime: '20:30', 
-        subject: 'Raciocínio Lógico', 
+        subject: 'RACIOCÍNIO LÓGICO TÁTICO', 
         topic: 'Proposições e Conectivos', 
         type: 'video', 
         duration: 90, 
@@ -151,7 +156,7 @@ const weeklySchedule: DailySchedule[] = [
         id: '6', 
         startTime: '06:00', 
         endTime: '07:30', 
-        subject: 'Direito Administrativo', 
+        subject: 'DIREITO ADMINISTRATIVO', 
         topic: 'Princípios da Administração', 
         type: 'video', 
         duration: 90, 
@@ -161,7 +166,7 @@ const weeklySchedule: DailySchedule[] = [
         id: '7', 
         startTime: '08:00', 
         endTime: '10:00', 
-        subject: 'Simulado', 
+        subject: 'SIMULAÇÃO TÁTICA', 
         topic: 'Simulado Semanal - Múltiplas Matérias', 
         type: 'exam', 
         duration: 120, 
@@ -171,7 +176,7 @@ const weeklySchedule: DailySchedule[] = [
         id: '8', 
         startTime: '14:00', 
         endTime: '15:30', 
-        subject: 'Contabilidade', 
+        subject: 'CONTABILIDADE OPERACIONAL', 
         topic: 'Balanço Patrimonial', 
         type: 'reading', 
         duration: 90, 
@@ -181,7 +186,7 @@ const weeklySchedule: DailySchedule[] = [
         id: '9', 
         startTime: '16:00', 
         endTime: '17:30', 
-        subject: 'Economia', 
+        subject: 'ECONOMIA ESTRATÉGICA', 
         topic: 'Macroeconomia Básica', 
         type: 'video', 
         duration: 90, 
@@ -203,8 +208,11 @@ const studyStats = {
 
 export default function SchedulePage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [showSettings, setShowSettings] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<StudyBlock | null>(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
 
   const getBlockIcon = (type: StudyBlock['type']) => {
     switch (type) {
@@ -226,6 +234,52 @@ export default function SchedulePage() {
     }
   };
 
+  // Gerar dias do calendário
+  const generateCalendarDays = () => {
+    const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    const end = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+    const days = [];
+    
+    // Adicionar dias do mês anterior para completar a semana
+    const startDay = start.getDay();
+    for (let i = startDay - 1; i >= 0; i--) {
+      const date = new Date(start);
+      date.setDate(date.getDate() - i - 1);
+      days.push({ date, isCurrentMonth: false });
+    }
+    
+    // Adicionar dias do mês atual
+    for (let i = 1; i <= end.getDate(); i++) {
+      days.push({ 
+        date: new Date(selectedDate.getFullYear(), selectedDate.getMonth(), i),
+        isCurrentMonth: true 
+      });
+    }
+    
+    // Adicionar dias do próximo mês para completar a semana
+    const remainingDays = 42 - days.length; // 6 semanas * 7 dias
+    for (let i = 1; i <= remainingDays; i++) {
+      const date = new Date(end);
+      date.setDate(date.getDate() + i);
+      days.push({ date, isCurrentMonth: false });
+    }
+    
+    return days;
+  };
+
+  // Obter tarefas do dia
+  const getTasksForDate = (date: Date) => {
+    return weeklySchedule
+      .find(d => new Date(d.date).toDateString() === date.toDateString())
+      ?.blocks || [];
+  };
+
+  // Marcar tarefa como concluída
+  const toggleTaskComplete = (taskId: string) => {
+    // Aqui será integrado com o backend futuramente
+    console.log('Marcar tarefa como concluída:', taskId);
+  };
+
   const StudyBlockCard = ({ block }: { block: StudyBlock }) => {
     const Icon = getBlockIcon(block.type);
     
@@ -233,377 +287,653 @@ export default function SchedulePage() {
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className={cn(
-          "relative p-4 rounded-lg border-2 transition-all",
-          getBlockColor(block.type),
-          block.completed && "opacity-75"
-        )}
+        className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl rounded-lg relative overflow-hidden"
       >
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Icon className="w-5 h-5" />
-            <span className="font-medium">{block.startTime} - {block.endTime}</span>
-          </div>
-          {block.completed && (
-            <CheckCircle className="w-5 h-5 text-green-600" />
-          )}
-        </div>
+        {/* Tactical stripe */}
+        <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
         
-        <h4 className="font-semibold mb-1">{block.subject}</h4>
-        <p className="text-sm opacity-80">{block.topic}</p>
-        
-        {block.progress && !block.completed && (
-          <div className="mt-3">
-            <div className="flex justify-between text-xs mb-1">
-              <span>Progresso</span>
-              <span>{block.progress}%</span>
+        <div className="p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
+                <Icon className="w-4 h-4 text-gray-700 dark:text-accent-500" />
+              </div>
+              <span className="font-police-body font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                {block.startTime} - {block.endTime}
+              </span>
             </div>
-            <div className="w-full bg-white/50 rounded-full h-2">
-              <div
-                className="bg-current h-full rounded-full transition-all"
-                style={{ width: `${block.progress}%` }}
-              />
-            </div>
-          </div>
-        )}
-        
-        <div className="mt-3 flex items-center justify-between">
-          <Badge 
-            variant="secondary" 
-            className={cn(
-              "text-xs",
-              block.priority === 'high' && "bg-red-50 text-red-700",
-              block.priority === 'medium' && "bg-yellow-50 text-yellow-700",
-              block.priority === 'low' && "bg-green-50 text-green-700"
+            {block.completed && (
+              <CheckCircle className="w-5 h-5 text-accent-500" />
             )}
-          >
-            {block.priority === 'high' ? 'Alta' : block.priority === 'medium' ? 'Média' : 'Baixa'} prioridade
-          </Badge>
-          <span className="text-xs">{block.duration} min</span>
+          </div>
+          
+          <h4 className="font-police-title uppercase tracking-wider text-gray-900 dark:text-white mb-1">
+            {block.subject}
+          </h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+            {block.topic}
+          </p>
+          
+          {block.progress && !block.completed && (
+            <div className="mt-4">
+              <div className="flex justify-between text-xs mb-2">
+                <span className="font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                  PROGRESSO
+                </span>
+                <span className="font-police-numbers font-bold text-gray-900 dark:text-white">
+                  {block.progress}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div
+                  className="bg-accent-500 h-full rounded-full transition-all"
+                  style={{ width: `${block.progress}%` }}
+                />
+              </div>
+            </div>
+          )}
+          
+          <div className="mt-4 flex items-center justify-between">
+            <Badge 
+              variant="secondary" 
+              className={cn(
+                "font-police-subtitle tracking-wider border-2 border-current",
+                block.priority === 'high' && "text-red-700 dark:text-red-400",
+                block.priority === 'medium' && "text-yellow-700 dark:text-yellow-400",
+                block.priority === 'low' && "text-green-700 dark:text-green-400"
+              )}
+            >
+              {block.priority === 'high' ? 'CRÍTICA' : block.priority === 'medium' ? 'MÉDIA' : 'BAIXA'}
+            </Badge>
+            <span className="text-xs font-police-numbers font-bold text-gray-600 dark:text-gray-400">
+              {block.duration} MIN
+            </span>
+          </div>
         </div>
       </motion.div>
     );
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6 bg-gray-50 dark:bg-black min-h-full relative">
+      {/* Background Pattern */}
+      <div 
+        className="absolute inset-0 opacity-5 dark:opacity-10 pointer-events-none"
+        style={{
+          backgroundImage: `repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 35px,
+            rgba(250, 204, 21, 0.05) 35px,
+            rgba(250, 204, 21, 0.05) 70px
+          )`
+        }}
+      />
+      
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-primary-900 mb-2">Cronograma Personalizado</h1>
-            <p className="text-primary-600">
-              Plano de estudos otimizado por IA para {examInfo.name}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">
+            CRONOGRAMA TÁTICO
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300 font-police-body tracking-wider">
+              PLANO DE OPERAÇÕES OTIMIZADO POR IA MILITAR PARA {examInfo.name}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Download className="w-4 h-4" />
-              Exportar
-            </Button>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Share2 className="w-4 h-4" />
-              Compartilhar
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-2"
-              onClick={() => setShowSettings(!showSettings)}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={cn(
+                "px-3 py-1.5 rounded-md text-sm font-police-body uppercase tracking-wider transition-all",
+                viewMode === 'calendar' 
+                  ? "bg-accent-500 text-black" 
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              )}
             >
-              <Settings className="w-4 h-4" />
-              Configurar
-            </Button>
+              <CalendarDays className="w-4 h-4 inline mr-2" />
+              CALENDÁRIO
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={cn(
+                "px-3 py-1.5 rounded-md text-sm font-police-body uppercase tracking-wider transition-all",
+                viewMode === 'list' 
+                  ? "bg-accent-500 text-black" 
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              )}
+            >
+              <BarChart3 className="w-4 h-4 inline mr-2" />
+              LISTA
+            </button>
           </div>
+          
+          <select 
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as 'all' | 'pending' | 'completed')}
+            className="px-4 py-2 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors text-sm"
+          >
+            <option value="all">TODAS AS TAREFAS</option>
+            <option value="pending">PENDENTES</option>
+            <option value="completed">CONCLUÍDAS</option>
+          </select>
+          
+          <Button variant="ghost" size="sm" className="font-police-body uppercase tracking-wider hover:text-accent-500">
+            <Download className="w-4 h-4 mr-2" />
+            EXPORTAR
+          </Button>
         </div>
+      </motion.div>
 
-        {/* Informações do Concurso */}
-        <Card className="mb-6 bg-gradient-to-r from-primary-50 to-primary-100 border-primary-200">
+      {/* Informações do Concurso */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
+          {/* Tactical stripe */}
+          <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+          
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <Target className="w-6 h-6 text-primary-600" />
-                  <h3 className="text-xl font-bold text-primary-900">{examInfo.name}</h3>
+                  <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
+                    <Target className="w-5 h-5 text-gray-700 dark:text-accent-500" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">{examInfo.name}</h3>
                 </div>
-                <p className="text-primary-700">
-                  Data da prova: {new Date(examInfo.date).toLocaleDateString('pt-BR')}
+                <p className="text-gray-600 dark:text-gray-400 font-police-body tracking-wider">
+                  DATA DA OPERAÇÃO: {new Date(examInfo.date).toLocaleDateString('pt-BR')}
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-primary-900">{examInfo.daysLeft}</div>
-                <div className="text-sm text-primary-600">dias restantes</div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white font-police-numbers">{examInfo.daysLeft}</div>
+                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">DIAS PARA MISSÃO</div>
               </div>
             </div>
             
-            <div className="mt-4 grid grid-cols-4 gap-4">
+            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary-900">
+                <div className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {Math.round((examInfo.completedTopics / examInfo.totalTopics) * 100)}%
                 </div>
-                <div className="text-sm text-primary-600">Progresso geral</div>
+                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">PROGRESSO GERAL</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary-900">
+                <div className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {examInfo.completedTopics}/{examInfo.totalTopics}
                 </div>
-                <div className="text-sm text-primary-600">Tópicos estudados</div>
+                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">ALVOS NEUTRALIZADOS</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary-900">
+                <div className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
                   {studyStats.averageDaily}h
                 </div>
-                <div className="text-sm text-primary-600">Média diária</div>
+                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">MÉDIA DIÁRIA</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">
-                  {studyStats.streak} 🔥
+                <div className="text-xl font-bold text-accent-500 font-police-numbers">
+                  {studyStats.streak}
                 </div>
-                <div className="text-sm text-primary-600">Dias seguidos</div>
+                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">SEQUÊNCIA ATIVA</div>
               </div>
             </div>
           </CardContent>
         </Card>
-
-        {/* Navegação de Data */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm">
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <h3 className="text-lg font-semibold text-primary-900">
-              Semana de {new Date(weeklySchedule[0].date).toLocaleDateString('pt-BR')}
-            </h3>
-            <Button variant="outline" size="sm">
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant={viewMode === 'week' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('week')}
-            >
-              Semana
-            </Button>
-            <Button
-              variant={viewMode === 'month' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('month')}
-            >
-              Mês
-            </Button>
-          </div>
-        </div>
       </motion.div>
 
-      {/* Cronograma */}
+      {/* Navegação de Data */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="hover:text-accent-500"
+            onClick={() => {
+              const newDate = new Date(selectedDate);
+              newDate.setMonth(newDate.getMonth() - 1);
+              setSelectedDate(newDate);
+            }}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+            {selectedDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase()}
+          </h3>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="hover:text-accent-500"
+            onClick={() => {
+              const newDate = new Date(selectedDate);
+              newDate.setMonth(newDate.getMonth() + 1);
+              setSelectedDate(newDate);
+            }}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline"
+            size="sm"
+            className="font-police-body uppercase tracking-wider"
+            onClick={() => setSelectedDate(new Date())}
+          >
+            HOJE
+          </Button>
+          <Button 
+            size="sm"
+            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            NOVA TAREFA
+          </Button>
+        </div>
+      </div>
+
+      {/* Área Principal - Calendário ou Lista */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Coluna Principal - Cronograma */}
-        <div className="lg:col-span-2 space-y-6">
-          {weeklySchedule.map((day) => (
+        <div className="lg:col-span-2">
+          {viewMode === 'calendar' ? (
+            /* Modo Calendário */
             <motion.div
-              key={day.date}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-bold text-primary-900">
-                        {new Date(day.date).toLocaleDateString('pt-BR', { 
-                          weekday: 'long', 
-                          day: 'numeric', 
-                          month: 'long' 
-                        })}
-                      </h3>
-                      <p className="text-sm text-primary-600">
-                        {day.completedHours}/{day.totalHours}h concluídas
-                      </p>
+              <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
+                <CardContent className="p-6">
+                  {/* Dias da semana */}
+                  <div className="grid grid-cols-7 gap-1 mb-4">
+                    {['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map((day) => (
+                      <div key={day} className="text-center">
+                        <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                          {day}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Dias do calendário */}
+                  <div className="grid grid-cols-7 gap-1">
+                    {generateCalendarDays().map((day, index) => {
+                      const tasks = getTasksForDate(day.date);
+                      const isToday = day.date.toDateString() === new Date().toDateString();
+                      const completedTasks = tasks.filter(t => t.completed).length;
+                      const totalTasks = tasks.length;
+                      
+                      return (
+                        <motion.div
+                          key={index}
+                          whileHover={{ scale: 1.05 }}
+                          className={cn(
+                            "min-h-[100px] p-2 border rounded-lg cursor-pointer transition-all",
+                            day.isCurrentMonth 
+                              ? "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700" 
+                              : "bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 opacity-50",
+                            isToday && "border-accent-500 border-2",
+                            tasks.length > 0 && "hover:border-accent-500"
+                          )}
+                          onClick={() => {
+                            setSelectedDate(day.date);
+                            if (tasks.length > 0) {
+                              setViewMode('list');
+                            }
+                          }}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <span className={cn(
+                              "text-sm font-police-numbers font-bold",
+                              isToday ? "text-accent-500" : "text-gray-900 dark:text-white"
+                            )}>
+                              {day.date.getDate()}
+                            </span>
+                            {tasks.length > 0 && (
+                              <Badge 
+                                variant="secondary" 
+                                className="text-xs font-police-numbers"
+                              >
+                                {completedTasks}/{totalTasks}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          {/* Mini indicadores de tarefas */}
+                          <div className="space-y-1">
+                            {tasks.slice(0, 3).map((task, i) => (
+                              <div 
+                                key={i}
+                                className={cn(
+                                  "h-1.5 rounded-full",
+                                  task.completed ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"
+                                )}
+                              />
+                            ))}
+                            {tasks.length > 3 && (
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                +{tasks.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Legenda */}
+                  <div className="mt-6 flex items-center justify-center gap-6 text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full" />
+                      <span className="font-police-body uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                        CONCLUÍDA
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="text-sm text-primary-600">
-                        {Math.round((day.completedHours / day.totalHours) * 100)}%
-                      </div>
-                      <div className="w-24 bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-primary-500 h-full rounded-full transition-all"
-                          style={{ width: `${(day.completedHours / day.totalHours) * 100}%` }}
-                        />
-                      </div>
+                      <div className="w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full" />
+                      <span className="font-police-body uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                        PENDENTE
+                      </span>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {day.blocks.map((block, index) => (
-                    <StudyBlockCard key={block.id} block={block} />
-                  ))}
-                  
-                  <Button variant="outline" className="w-full gap-2">
-                    <Plus className="w-4 h-4" />
-                    Adicionar bloco de estudo
-                  </Button>
                 </CardContent>
               </Card>
             </motion.div>
-          ))}
+          ) : (
+            /* Modo Lista */
+            <div className="space-y-6">
+              {weeklySchedule
+                .filter(day => {
+                  if (filter === 'all') return true;
+                  const hasCompleted = day.blocks.some(b => b.completed);
+                  const hasPending = day.blocks.some(b => !b.completed);
+                  return filter === 'completed' ? hasCompleted : hasPending;
+                })
+                .map((day) => (
+                  <motion.div
+                    key={day.date}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
+                      <CardHeader className="border-b-2 border-gray-200 dark:border-accent-500/30">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+                              {new Date(day.date).toLocaleDateString('pt-BR', { 
+                                weekday: 'long', 
+                                day: 'numeric', 
+                                month: 'long' 
+                              }).toUpperCase()}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body tracking-wider">
+                              {day.completedHours}/{day.totalHours}H EXECUTADAS
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">
+                              {Math.round((day.completedHours / day.totalHours) * 100)}%
+                            </div>
+                            <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                              <div
+                                className="bg-accent-500 h-full rounded-full transition-all"
+                                style={{ width: `${(day.completedHours / day.totalHours) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3 p-4">
+                        {day.blocks
+                          .filter(block => {
+                            if (filter === 'all') return true;
+                            return filter === 'completed' ? block.completed : !block.completed;
+                          })
+                          .map((block) => (
+                            <div key={block.id} className="relative">
+                              <StudyBlockCard block={block} />
+                              {/* Botão de marcar como concluído */}
+                              <button
+                                onClick={() => toggleTaskComplete(block.id)}
+                                className={cn(
+                                  "absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                                  block.completed 
+                                    ? "bg-green-500 border-green-500" 
+                                    : "border-gray-300 dark:border-gray-600 hover:border-accent-500"
+                                )}
+                              >
+                                {block.completed && (
+                                  <Check className="w-4 h-4 text-white" />
+                                )}
+                              </button>
+                            </div>
+                          ))}
+                        
+                        <button className="w-full py-2 px-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:border-accent-500 hover:text-accent-500 transition-all duration-300 flex items-center justify-center gap-2 font-police-body uppercase tracking-wider">
+                          <Plus className="w-4 h-4" />
+                          ADICIONAR TAREFA
+                        </button>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+            </div>
+          )}
         </div>
 
-        {/* Coluna Lateral - Estatísticas e Progresso */}
+        {/* Coluna Lateral - Estatísticas e Progresso Tático */}
         <div className="space-y-6">
           {/* Estatísticas de Estudo */}
-          <Card>
-            <CardHeader>
-              <h3 className="text-lg font-bold text-primary-900">Estatísticas</h3>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-primary-600">Horas planejadas</span>
-                  <span className="font-medium">{studyStats.totalHoursPlanned}h</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-primary-600">Horas concluídas</span>
-                  <span className="font-medium text-green-600">{studyStats.totalHoursCompleted}h</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-primary-600">Eficiência</span>
-                  <span className="font-medium">{studyStats.efficiency}%</span>
-                </div>
-              </div>
-              
-              <div className="pt-4 border-t">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Distribuição por tipo</span>
-                </div>
-                <div className="space-y-2">
-                  {[
-                    { type: 'Videoaulas', percent: 35, color: 'bg-blue-500' },
-                    { type: 'Leitura', percent: 25, color: 'bg-green-500' },
-                    { type: 'Exercícios', percent: 30, color: 'bg-purple-500' },
-                    { type: 'Revisão', percent: 10, color: 'bg-orange-500' }
-                  ].map((item) => (
-                    <div key={item.type} className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span>{item.type}</span>
-                        <span>{item.percent}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className={cn("h-full rounded-full", item.color)}
-                          style={{ width: `${item.percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Progresso por Matéria */}
-          <Card>
-            <CardHeader>
-              <h3 className="text-lg font-bold text-primary-900">Progresso por Matéria</h3>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {examInfo.subjects.slice(0, 5).map((subject) => (
-                <div key={subject.name} className="space-y-2">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
+              <CardHeader className="flex flex-row items-center justify-between border-b-2 border-gray-200 dark:border-accent-500/30">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
+                  <BarChart3 className="w-5 h-5 text-accent-500" />
+                  ESTATÍSTICAS OPERACIONAIS
+                </h3>
+              </CardHeader>
+              <CardContent className="space-y-4 p-4">
+                <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-medium text-primary-900">{subject.name}</p>
-                      <p className="text-xs text-primary-600">
-                        {subject.hoursNeeded}h necessárias • Peso: {subject.weight}%
+                    <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                      HORAS PLANEJADAS
+                    </span>
+                    <span className="font-police-numbers font-bold text-gray-900 dark:text-white">
+                      {studyStats.totalHoursPlanned}H
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                      HORAS EXECUTADAS
+                    </span>
+                    <span className="font-police-numbers font-bold text-accent-500">
+                      {studyStats.totalHoursCompleted}H
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                      EFICIÊNCIA
+                    </span>
+                    <span className="font-police-numbers font-bold text-gray-900 dark:text-white">
+                      {studyStats.efficiency}%
+                    </span>
+                  </div>
+                </div>
+              
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                      DISTRIBUIÇÃO TÁTICA
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    {[
+                      { type: 'BRIEFINGS', percent: 35, color: 'bg-blue-500' },
+                      { type: 'INTELIGÊNCIA', percent: 25, color: 'bg-green-500' },
+                      { type: 'TREINAMENTO', percent: 30, color: 'bg-purple-500' },
+                      { type: 'RECONHECIMENTO', percent: 10, color: 'bg-accent-500' }
+                    ].map((item) => (
+                      <div key={item.type} className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-police-body uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                            {item.type}
+                          </span>
+                          <span className="text-xs font-police-numbers font-bold text-gray-900 dark:text-white">
+                            {item.percent}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                          <div
+                            className={cn("h-full rounded-full transition-all", item.color)}
+                            style={{ width: `${item.percent}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Progresso por Disciplina Tática */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
+              <CardHeader className="flex flex-row items-center justify-between border-b-2 border-gray-200 dark:border-accent-500/30">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
+                  <Layers className="w-5 h-5 text-accent-500" />
+                  PROGRESSO POR DISCIPLINA
+                </h3>
+              </CardHeader>
+              <CardContent className="space-y-3 p-4">
+                {examInfo.subjects.slice(0, 5).map((subject) => (
+                  <div key={subject.name} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-sm font-police-body uppercase tracking-wider text-gray-900 dark:text-white">
+                          {subject.name}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">
+                          {subject.hoursNeeded}H • PESO: {subject.weight}%
+                        </p>
+                      </div>
+                      <Badge 
+                        variant="secondary"
+                        className={cn(
+                          "font-police-numbers font-bold",
+                          subject.progress >= 50 ? "text-green-700 dark:text-green-400" :
+                          subject.progress >= 30 ? "text-yellow-700 dark:text-yellow-400" :
+                          "text-red-700 dark:text-red-400"
+                        )}
+                      >
+                        {subject.progress}%
+                      </Badge>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all",
+                          subject.progress >= 50 ? "bg-green-500" :
+                          subject.progress >= 30 ? "bg-yellow-500" :
+                          "bg-red-500"
+                        )}
+                        style={{ width: `${subject.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full mt-4 font-police-body uppercase tracking-wider hover:text-accent-500"
+                >
+                  VER TODAS AS DISCIPLINAS
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Recomendações da IA Militar */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card className="bg-white dark:bg-gray-900 border-2 border-accent-500/50 relative overflow-hidden">
+              {/* Tactical stripe */}
+              <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+              
+              <CardHeader className="flex flex-row items-center justify-between border-b-2 border-gray-200 dark:border-accent-500/30">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
+                  <Zap className="w-5 h-5 text-accent-500" />
+                  INTELIGÊNCIA TÁTICA IA
+                </h3>
+              </CardHeader>
+              <CardContent className="space-y-3 p-4">
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
+                      <AlertCircle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-police-body uppercase tracking-wider text-gray-900 dark:text-white">
+                        INTENSIFICAR RACIOCÍNIO LÓGICO
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body mt-1">
+                        PROGRESSO ABAIXO DO ESPERADO. +30MIN DIÁRIOS RECOMENDADOS.
                       </p>
                     </div>
-                    <Badge 
-                      variant="secondary"
-                      className={cn(
-                        subject.progress >= 50 ? "bg-green-100 text-green-700" :
-                        subject.progress >= 30 ? "bg-yellow-100 text-yellow-700" :
-                        "bg-red-100 text-red-700"
-                      )}
-                    >
-                      {subject.progress}%
-                    </Badge>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={cn(
-                        "h-full rounded-full transition-all",
-                        subject.progress >= 50 ? "bg-green-500" :
-                        subject.progress >= 30 ? "bg-yellow-500" :
-                        "bg-red-500"
-                      )}
-                      style={{ width: `${subject.progress}%` }}
-                    />
                   </div>
                 </div>
-              ))}
+                
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                      <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-police-body uppercase tracking-wider text-gray-900 dark:text-white">
+                        EXCELENTE EM COMUNICAÇÃO TÁTICA
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body mt-1">
+                        CONTINUE ASSIM. FOQUE EM QUESTÕES AVANÇADAS.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               
-              <Button variant="outline" size="sm" className="w-full mt-4">
-                Ver todas as matérias
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Sugestões da IA */}
-          <Card className="border-primary-200 bg-primary-50">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-primary-600" />
-                <h3 className="text-lg font-bold text-primary-900">Sugestões da IA</h3>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="p-3 bg-white rounded-lg border border-primary-200">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-primary-900">
-                      Aumentar foco em Raciocínio Lógico
-                    </p>
-                    <p className="text-xs text-primary-600">
-                      Seu progresso está abaixo da média. Recomendo +30min/dia.
-                    </p>
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center">
+                      <Star className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-police-body uppercase tracking-wider text-gray-900 dark:text-white">
+                        HORA DA SIMULAÇÃO TÁTICA!
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body mt-1">
+                        TREINAMENTO INTENSO NESTA SEMANA. TESTE SUAS HABILIDADES.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="p-3 bg-white rounded-lg border border-primary-200">
-                <div className="flex items-start gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-primary-900">
-                      Excelente progresso em Português!
-                    </p>
-                    <p className="text-xs text-primary-600">
-                      Continue assim e foque mais em questões avançadas.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-3 bg-white rounded-lg border border-primary-200">
-                <div className="flex items-start gap-2">
-                  <Star className="w-4 h-4 text-purple-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-primary-900">
-                      Hora de um simulado!
-                    </p>
-                    <p className="text-xs text-primary-600">
-                      Você estudou bastante esta semana. Teste seus conhecimentos.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
 
@@ -611,29 +941,47 @@ export default function SchedulePage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="mt-12 bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-8 text-white text-center"
+        transition={{ delay: 0.6 }}
+        className="mt-8 bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 text-white text-center relative overflow-hidden"
       >
-        <Calendar className="w-12 h-12 mx-auto mb-4 text-accent-400" />
-        <h2 className="text-2xl font-bold mb-2">
-          Mantenha o foco e a disciplina!
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 20px,
+              rgba(250, 204, 21, 0.1) 20px,
+              rgba(250, 204, 21, 0.1) 40px
+            )`
+          }} />
+        </div>
+        
+        <div className="relative z-10">
+          <Calendar className="w-12 h-12 mx-auto mb-4 text-accent-500" />
+          <h2 className="text-2xl font-bold mb-2 font-police-title uppercase tracking-wider">
+MANTENHA O FOCO E A DISCIPLINA MILITAR!
         </h2>
-        <p className="text-primary-100 mb-6 max-w-2xl mx-auto">
-          Seu cronograma é atualizado diariamente pela IA para maximizar suas chances de aprovação
-        </p>
-        <div className="flex gap-3 justify-center">
-          <Button variant="secondary" size="lg">
-            <Trophy className="w-5 h-5 mr-2" />
-            Ver Metas da Semana
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="border-white text-white hover:bg-white hover:text-primary-700"
-          >
-            <BarChart3 className="w-5 h-5 mr-2" />
-            Relatório Detalhado
-          </Button>
+            <p className="text-gray-300 mb-6 max-w-2xl mx-auto font-police-body tracking-wider">
+              SEU PLANO TÁTICO É ATUALIZADO DIARIAMENTE PELA IA PARA MAXIMIZAR SUAS CHANCES DE SUCESSO
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Button 
+                size="lg" 
+                className="bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider"
+              >
+                <Trophy className="w-5 h-5 mr-2" />
+                VER METAS DA SEMANA
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="border-gray-300 text-white hover:bg-white hover:text-gray-900 font-police-body font-semibold uppercase tracking-wider"
+              >
+                <BarChart3 className="w-5 h-5 mr-2" />
+                RELATÓRIO DETALHADO
+              </Button>
+            </div>
         </div>
       </motion.div>
     </div>

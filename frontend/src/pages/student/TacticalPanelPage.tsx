@@ -35,6 +35,8 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
+import { PageHeader } from '@/components/student';
+import toast from 'react-hot-toast';
 import {
   LineChart,
   Line,
@@ -114,98 +116,98 @@ const performanceHistory: PerformanceData[] = [
 
 const subjectPerformance: SubjectPerformance[] = [
   {
-    subject: 'Direito Constitucional',
+    subject: 'DIREITO CONSTITUCIONAL',
     accuracy: 87.5,
     questions: 234,
     improvement: 12.3,
-    weakPoints: ['Controle de Constitucionalidade', 'Processo Legislativo']
+    weakPoints: ['CONTROLE DE CONSTITUCIONALIDADE', 'PROCESSO LEGISLATIVO']
   },
   {
-    subject: 'Direito Administrativo',
+    subject: 'DIREITO ADMINISTRATIVO',
     accuracy: 82.1,
     questions: 189,
     improvement: 8.7,
-    weakPoints: ['Licitações', 'Improbidade Administrativa']
+    weakPoints: ['LICITAÇÕES', 'IMPROBIDADE ADMINISTRATIVA']
   },
   {
-    subject: 'Direito Penal',
+    subject: 'DIREITO PENAL',
     accuracy: 79.3,
     questions: 156,
     improvement: -2.1,
-    weakPoints: ['Crimes contra a Administração', 'Teoria do Crime']
+    weakPoints: ['CRIMES CONTRA A ADMINISTRAÇÃO', 'TEORIA DO CRIME']
   },
   {
-    subject: 'Português',
+    subject: 'PORTUGUÊS TÁTICO',
     accuracy: 91.2,
     questions: 178,
     improvement: 5.4,
-    weakPoints: ['Concordância Verbal']
+    weakPoints: ['CONCORDÂNCIA VERBAL']
   },
   {
-    subject: 'Informática',
+    subject: 'INFORMÁTICA MILITAR',
     accuracy: 76.8,
     questions: 142,
     improvement: 15.2,
-    weakPoints: ['Segurança da Informação', 'Redes']
+    weakPoints: ['SEGURANÇA DA INFORMAÇÃO', 'REDES TÁTICAS']
   }
 ];
 
 const competitors: CompetitorData[] = [
-  { rank: 1, user: 'João Silva', score: 9234, accuracy: 92.3, questionsAnswered: 1234 },
-  { rank: 2, user: 'Maria Santos', score: 9156, accuracy: 91.8, questionsAnswered: 1189 },
-  { rank: 3, user: 'Pedro Oliveira', score: 8987, accuracy: 90.5, questionsAnswered: 1156 },
-  { rank: 4, user: 'Você', score: 8876, accuracy: 89.1, questionsAnswered: 1098, isCurrentUser: true },
-  { rank: 5, user: 'Ana Costa', score: 8654, accuracy: 88.7, questionsAnswered: 1076 },
-  { rank: 6, user: 'Carlos Mendes', score: 8543, accuracy: 87.9, questionsAnswered: 1045 }
+  { rank: 1, user: 'COMANDANTE SILVA', score: 9234, accuracy: 92.3, questionsAnswered: 1234 },
+  { rank: 2, user: 'CAPITÃ SANTOS', score: 9156, accuracy: 91.8, questionsAnswered: 1189 },
+  { rank: 3, user: 'SARGENTO OLIVEIRA', score: 8987, accuracy: 90.5, questionsAnswered: 1156 },
+  { rank: 4, user: 'OPERADOR', score: 8876, accuracy: 89.1, questionsAnswered: 1098, isCurrentUser: true },
+  { rank: 5, user: 'AGENTE COSTA', score: 8654, accuracy: 88.7, questionsAnswered: 1076 },
+  { rank: 6, user: 'TENENTE MENDES', score: 8543, accuracy: 87.9, questionsAnswered: 1045 }
 ];
 
 const weakPoints: WeakPoint[] = [
   {
     id: '1',
-    subject: 'Direito Penal',
-    topic: 'Crimes contra a Administração Pública',
+    subject: 'DIREITO PENAL',
+    topic: 'CRIMES CONTRA A ADMINISTRAÇÃO PÚBLICA',
     accuracy: 65.2,
     totalQuestions: 23,
     priority: 'high',
-    recommendation: 'Revisar arts. 312-337 do Código Penal com foco em peculato e corrupção'
+    recommendation: 'REVISAR ARTS. 312-337 DO CÓDIGO PENAL COM FOCO EM PECULATO E CORRUPÇÃO'
   },
   {
     id: '2',
-    subject: 'Direito Administrativo',
-    topic: 'Lei de Licitações',
+    subject: 'DIREITO ADMINISTRATIVO',
+    topic: 'LEI DE LICITAÇÕES',
     accuracy: 68.9,
     totalQuestions: 45,
     priority: 'high',
-    recommendation: 'Estudar modalidades de licitação e casos de dispensa/inexigibilidade'
+    recommendation: 'ESTUDAR MODALIDADES DE LICITAÇÃO E CASOS DE DISPENSA/INEXIGIBILIDADE'
   },
   {
     id: '3',
-    subject: 'Informática',
-    topic: 'Protocolos de Rede',
+    subject: 'INFORMÁTICA MILITAR',
+    topic: 'PROTOCOLOS DE REDE TÁTICA',
     accuracy: 71.4,
     totalQuestions: 28,
     priority: 'medium',
-    recommendation: 'Focar em TCP/IP, HTTP/HTTPS e protocolos de email'
+    recommendation: 'FOCAR EM TCP/IP, HTTP/HTTPS E PROTOCOLOS DE COMUNICAÇÃO DIGITAL'
   },
   {
     id: '4',
-    subject: 'Direito Constitucional',
-    topic: 'Controle de Constitucionalidade',
+    subject: 'DIREITO CONSTITUCIONAL',
+    topic: 'CONTROLE DE CONSTITUCIONALIDADE',
     accuracy: 74.3,
     totalQuestions: 35,
     priority: 'medium',
-    recommendation: 'Revisar ADI, ADC, ADPF e controle difuso'
+    recommendation: 'REVISAR ADI, ADC, ADPF E CONTROLE DIFUSO'
   }
 ];
 
 const studyPatterns: StudyPattern[] = [
-  { dayOfWeek: 'Segunda', avgHours: 3.2, productivity: 85 },
-  { dayOfWeek: 'Terça', avgHours: 2.8, productivity: 88 },
-  { dayOfWeek: 'Quarta', avgHours: 3.5, productivity: 82 },
-  { dayOfWeek: 'Quinta', avgHours: 2.5, productivity: 90 },
-  { dayOfWeek: 'Sexta', avgHours: 2.0, productivity: 78 },
-  { dayOfWeek: 'Sábado', avgHours: 4.2, productivity: 92 },
-  { dayOfWeek: 'Domingo', avgHours: 3.8, productivity: 87 }
+  { dayOfWeek: 'SEG', avgHours: 3.2, productivity: 85 },
+  { dayOfWeek: 'TER', avgHours: 2.8, productivity: 88 },
+  { dayOfWeek: 'QUA', avgHours: 3.5, productivity: 82 },
+  { dayOfWeek: 'QUI', avgHours: 2.5, productivity: 90 },
+  { dayOfWeek: 'SEX', avgHours: 2.0, productivity: 78 },
+  { dayOfWeek: 'SAB', avgHours: 4.2, productivity: 92 },
+  { dayOfWeek: 'DOM', avgHours: 3.8, productivity: 87 }
 ];
 
 // Dados para radar chart
@@ -288,74 +290,84 @@ export default function TacticalPanelPage() {
             </div>
           )}
         </div>
-        <h3 className="text-2xl font-bold text-primary-900">{value}</h3>
-        <p className="text-sm text-primary-600 mt-1">{title}</p>
+        <h3 className="text-2xl font-bold text-primary-900 font-police-numbers">{value}</h3>
+        <p className="text-sm text-primary-600 mt-1 font-police-body uppercase tracking-wider">{title}</p>
       </CardContent>
     </Card>
   );
 
   return (
     <div className="p-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-primary-900 mb-2">Painel Tático</h1>
-            <p className="text-primary-600">
-              Análise avançada de desempenho e insights personalizados
-            </p>
-          </div>
+      <PageHeader
+        title="COMANDO TÁTICO DE INTELIGÊNCIA"
+        subtitle="ANÁLISE AVANÇADA DE DESEMPENHO E INSIGHTS ESTRATÉGICOS"
+        icon={Target}
+        breadcrumbs={[
+          { label: 'DASHBOARD', href: '/student/dashboard' },
+          { label: 'PAINEL TÁTICO' }
+        ]}
+        actions={
           <div className="flex items-center gap-3">
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-police-body"
             >
-              <option value="7days">Últimos 7 dias</option>
-              <option value="30days">Últimos 30 dias</option>
-              <option value="90days">Últimos 90 dias</option>
-              <option value="all">Todo período</option>
+              <option value="7days">ÚLTIMOS 7 DIAS</option>
+              <option value="30days">ÚLTIMOS 30 DIAS</option>
+              <option value="90days">ÚLTIMOS 90 DIAS</option>
+              <option value="all">TODO PERÍODO</option>
             </select>
-            <Button variant="outline" className="gap-2">
+            <Button 
+              variant="outline" 
+              className="gap-2 font-police-body uppercase tracking-wider"
+              onClick={() => toast.success('INTELIGÊNCIA ATUALIZADA!', { icon: '🔄' })}
+            >
               <RefreshCw className="w-4 h-4" />
-              Atualizar
+              ATUALIZAR
             </Button>
-            <Button variant="outline" className="gap-2">
+            <Button 
+              variant="outline" 
+              className="gap-2 font-police-body uppercase tracking-wider"
+              onClick={() => toast.success('RELATÓRIO EXPORTADO!', { icon: '📥' })}
+            >
               <Download className="w-4 h-4" />
-              Exportar
+              EXPORTAR
             </Button>
           </div>
-        </div>
+        }
+      />
 
-        {/* Métricas principais */}
+      {/* Métricas principais */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <MetricCard
-            title="Taxa de Acerto"
+            title="PRECISÃO TÁTICA"
             value={`${avgAccuracy}%`}
             change={5.2}
             icon={Target}
             color="bg-blue-500"
           />
           <MetricCard
-            title="Questões Respondidas"
+            title="ALVOS ABATIDOS"
             value={totalQuestions.toString()}
             change={12.3}
             icon={FileText}
             color="bg-green-500"
           />
           <MetricCard
-            title="Tempo de Estudo"
+            title="TEMPO DE OPERAÇÃO"
             value={`${totalStudyTime.toFixed(1)}h`}
             change={-3.1}
             icon={Clock}
             color="bg-purple-500"
           />
           <MetricCard
-            title="Ranking Geral"
+            title="RANKING OPERACIONAL"
             value="#4"
             change={0}
             icon={Trophy}
@@ -373,7 +385,7 @@ export default function TacticalPanelPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Activity className="w-5 h-5 text-primary-600" />
-              <h2 className="text-xl font-bold text-primary-900">Evolução de Performance</h2>
+              <h2 className="text-xl font-bold text-primary-900 font-police-title uppercase tracking-wider">EVOLUÇÃO DE DESEMPENHO TÁTICO</h2>
             </div>
             {expandedSections.includes('performance') ? (
               <ChevronUp className="w-5 h-5 text-primary-600" />
@@ -396,11 +408,11 @@ export default function TacticalPanelPage() {
                   <div className="flex items-center gap-6 text-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-blue-500 rounded-full" />
-                      <span>Taxa de Acerto</span>
+                      <span className="font-police-body">PRECISÃO TÁTICA</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-green-500 rounded-full" />
-                      <span>Questões Respondidas</span>
+                      <span className="font-police-body">ALVOS ELIMINADOS</span>
                     </div>
                   </div>
                 </div>
@@ -412,8 +424,8 @@ export default function TacticalPanelPage() {
                     <YAxis yAxisId="left" />
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip />
-                    <Line yAxisId="left" type="monotone" dataKey="accuracy" stroke="#3B82F6" strokeWidth={2} name="Taxa de Acerto (%)" />
-                    <Line yAxisId="right" type="monotone" dataKey="questions" stroke="#10B981" strokeWidth={2} name="Questões" />
+                    <Line yAxisId="left" type="monotone" dataKey="accuracy" stroke="#3B82F6" strokeWidth={2} name="PRECISÃO TÁTICA (%)" />
+                    <Line yAxisId="right" type="monotone" dataKey="questions" stroke="#10B981" strokeWidth={2} name="ALVOS" />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -431,7 +443,7 @@ export default function TacticalPanelPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <BarChart3 className="w-5 h-5 text-primary-600" />
-              <h2 className="text-xl font-bold text-primary-900">Desempenho por Disciplina</h2>
+              <h2 className="text-xl font-bold text-primary-900 font-police-title uppercase tracking-wider">DESEMPENHO POR ÁREA OPERACIONAL</h2>
             </div>
             {expandedSections.includes('subjects') ? (
               <ChevronUp className="w-5 h-5 text-primary-600" />
@@ -453,7 +465,7 @@ export default function TacticalPanelPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Gráfico de barras */}
                   <div>
-                    <h3 className="text-sm font-medium text-primary-700 mb-4">Taxa de Acerto por Disciplina</h3>
+                    <h3 className="text-sm font-medium text-primary-700 mb-4 font-police-body uppercase tracking-wider">PRECISÃO POR ÁREA TÁTICA</h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={subjectPerformance}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -467,13 +479,13 @@ export default function TacticalPanelPage() {
                   
                   {/* Radar chart */}
                   <div>
-                    <h3 className="text-sm font-medium text-primary-700 mb-4">Visão Geral de Competências</h3>
+                    <h3 className="text-sm font-medium text-primary-700 mb-4 font-police-body uppercase tracking-wider">MAPA DE COMPETÊNCIAS TÁTICAS</h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <RadarChart data={radarData}>
                         <PolarGrid />
                         <PolarAngleAxis dataKey="subject" />
                         <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                        <Radar name="Desempenho" dataKey="A" stroke="#8B5CF6" fill="#8B5CF6" fillOpacity={0.6} />
+                        <Radar name="DESEMPENHO TÁTICO" dataKey="A" stroke="#8B5CF6" fill="#8B5CF6" fillOpacity={0.6} />
                         <Tooltip />
                       </RadarChart>
                     </ResponsiveContainer>
@@ -496,8 +508,8 @@ export default function TacticalPanelPage() {
                           <div className="flex items-center justify-between mb-2">
                             <h4 className="font-medium text-primary-900">{subject.subject}</h4>
                             <div className="flex items-center gap-3">
-                              <Badge variant="secondary">
-                                {subject.questions} questões
+                              <Badge variant="secondary" className="font-police-body">
+                                {subject.questions} ALVOS
                               </Badge>
                               <div className={cn(
                                 "flex items-center gap-1 text-sm font-medium",
@@ -512,8 +524,8 @@ export default function TacticalPanelPage() {
                           <div className="flex items-center gap-4">
                             <div className="flex-1">
                               <div className="flex justify-between text-sm mb-1">
-                                <span className="text-primary-600">Taxa de acerto</span>
-                                <span className="font-medium">{subject.accuracy}%</span>
+                                <span className="text-primary-600 font-police-body">PRECISÃO</span>
+                                <span className="font-medium font-police-numbers">{subject.accuracy}%</span>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div
@@ -531,7 +543,7 @@ export default function TacticalPanelPage() {
                           
                           {selectedSubject === subject.subject && subject.weakPoints.length > 0 && (
                             <div className="mt-3 pt-3 border-t">
-                              <p className="text-sm text-primary-600 mb-2">Pontos de atenção:</p>
+                              <p className="text-sm text-primary-600 mb-2 font-police-body uppercase tracking-wider">PONTOS CRÍTICOS:</p>
                               <div className="flex flex-wrap gap-2">
                                 {subject.weakPoints.map((point) => (
                                   <Badge key={point} variant="outline" className="text-xs">
@@ -559,7 +571,7 @@ export default function TacticalPanelPage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-600" />
-              <h2 className="text-xl font-bold text-primary-900">Pontos de Atenção</h2>
+              <h2 className="text-xl font-bold text-primary-900 font-police-title uppercase tracking-wider">PONTOS CRÍTICOS DE ATENÇÃO</h2>
             </div>
           </CardHeader>
           <CardContent>
@@ -578,18 +590,18 @@ export default function TacticalPanelPage() {
                         point.priority === 'low' && "bg-green-100 text-green-700"
                       )}
                     >
-                      {point.priority === 'high' ? 'Alta' : point.priority === 'medium' ? 'Média' : 'Baixa'}
+                      {point.priority === 'high' ? 'CRÍTICA' : point.priority === 'medium' ? 'MÉDIA' : 'BAIXA'}
                     </Badge>
                   </div>
                   
                   <div className="flex items-center gap-4 mb-3">
                     <div className="text-sm">
-                      <span className="text-primary-600">Taxa de acerto: </span>
-                      <span className="font-medium text-red-600">{point.accuracy}%</span>
+                      <span className="text-primary-600 font-police-body">PRECISÃO: </span>
+                      <span className="font-medium text-red-600 font-police-numbers">{point.accuracy}%</span>
                     </div>
                     <div className="text-sm">
-                      <span className="text-primary-600">Questões: </span>
-                      <span className="font-medium">{point.totalQuestions}</span>
+                      <span className="text-primary-600 font-police-body">ALVOS: </span>
+                      <span className="font-medium font-police-numbers">{point.totalQuestions}</span>
                     </div>
                   </div>
                   
@@ -610,12 +622,12 @@ export default function TacticalPanelPage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <Brain className="w-5 h-5 text-purple-600" />
-              <h2 className="text-xl font-bold text-primary-900">Padrões de Estudo</h2>
+              <h2 className="text-xl font-bold text-primary-900 font-police-title uppercase tracking-wider">PADRÕES DE TREINAMENTO</h2>
             </div>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
-              <h3 className="text-sm font-medium text-primary-700 mb-3">Horas de Estudo por Dia</h3>
+              <h3 className="text-sm font-medium text-primary-700 mb-3 font-police-body uppercase tracking-wider">HORAS DE TREINAMENTO POR DIA</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={studyPatterns}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -630,13 +642,13 @@ export default function TacticalPanelPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-purple-50 rounded-lg">
                 <Zap className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-primary-900">{avgStudyTime}h</p>
-                <p className="text-sm text-primary-600">Média diária</p>
+                <p className="text-2xl font-bold text-primary-900 font-police-numbers">{avgStudyTime}h</p>
+                <p className="text-sm text-primary-600 font-police-body uppercase tracking-wider">MÉDIA DIÁRIA</p>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-lg">
                 <Trophy className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-primary-900">Quinta</p>
-                <p className="text-sm text-primary-600">Dia mais produtivo</p>
+                <p className="text-2xl font-bold text-primary-900 font-police-title">QUINTA</p>
+                <p className="text-sm text-primary-600 font-police-body uppercase tracking-wider">DIA MAIS EFICIENTE</p>
               </div>
             </div>
           </CardContent>
@@ -649,9 +661,9 @@ export default function TacticalPanelPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Users className="w-5 h-5 text-primary-600" />
-              <h2 className="text-xl font-bold text-primary-900">Ranking Comparativo</h2>
+              <h2 className="text-xl font-bold text-primary-900 font-police-title uppercase tracking-wider">RANKING OPERACIONAL</h2>
             </div>
-            <Badge variant="secondary">Top 10%</Badge>
+            <Badge variant="secondary" className="font-police-body">TOP 10% ELITE</Badge>
           </div>
         </CardHeader>
         <CardContent>
@@ -659,11 +671,11 @@ export default function TacticalPanelPage() {
             <table className="w-full">
               <thead>
                 <tr className="text-left border-b">
-                  <th className="pb-3 text-sm font-medium text-primary-600">Posição</th>
-                  <th className="pb-3 text-sm font-medium text-primary-600">Usuário</th>
-                  <th className="pb-3 text-sm font-medium text-primary-600">Pontuação</th>
-                  <th className="pb-3 text-sm font-medium text-primary-600">Taxa de Acerto</th>
-                  <th className="pb-3 text-sm font-medium text-primary-600">Questões</th>
+                  <th className="pb-3 text-sm font-medium text-primary-600 font-police-body uppercase tracking-wider">POSIÇÃO</th>
+                  <th className="pb-3 text-sm font-medium text-primary-600 font-police-body uppercase tracking-wider">OPERADOR</th>
+                  <th className="pb-3 text-sm font-medium text-primary-600 font-police-body uppercase tracking-wider">PONTUAÇÃO</th>
+                  <th className="pb-3 text-sm font-medium text-primary-600 font-police-body uppercase tracking-wider">PRECISÃO</th>
+                  <th className="pb-3 text-sm font-medium text-primary-600 font-police-body uppercase tracking-wider">ALVOS</th>
                 </tr>
               </thead>
               <tbody>
@@ -691,7 +703,7 @@ export default function TacticalPanelPage() {
                     <td className="py-3 font-medium">
                       {competitor.user}
                       {competitor.isCurrentUser && (
-                        <Badge className="ml-2" variant="secondary">Você</Badge>
+                        <Badge className="ml-2 font-police-body" variant="secondary">VOCÊ</Badge>
                       )}
                     </td>
                     <td className="py-3">{competitor.score.toLocaleString()}</td>
@@ -710,7 +722,7 @@ export default function TacticalPanelPage() {
         <CardHeader>
           <div className="flex items-center gap-3">
             <PieChart className="w-5 h-5 text-primary-600" />
-            <h2 className="text-xl font-bold text-primary-900">Distribuição de Questões</h2>
+            <h2 className="text-xl font-bold text-primary-900 font-police-title uppercase tracking-wider">DISTRIBUIÇÃO DE ALVOS POR ÁREA</h2>
           </div>
         </CardHeader>
         <CardContent>

@@ -74,7 +74,7 @@ interface ExamResult {
 // Mock data dos resultados
 const mockExamResult: ExamResult = {
   id: 'result-1',
-  examTitle: 'Polícia Federal 2024 - Simulado Completo',
+  examTitle: 'OPERAÇÃO PF 2024 - SIMULAÇÃO TÁTICA COMPLETA',
   score: 78,
   correctAnswers: 94,
   totalQuestions: 120,
@@ -181,7 +181,7 @@ export default function ExamResultsPage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Meu resultado no simulado',
+          title: 'RELATÓRIO DE OPERAÇÃO TÁTICA',
           text: `Acabei de fazer o simulado "${examResult.examTitle}" e obtive ${examResult.score}% de aproveitamento!`,
           url: window.location.href
         });
@@ -203,9 +203,23 @@ export default function ExamResultsPage() {
     }
 
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-black relative">
+        {/* Background Pattern */}
+        <div 
+          className="absolute inset-0 opacity-5 dark:opacity-10 pointer-events-none"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 35px,
+              rgba(250, 204, 21, 0.05) 35px,
+              rgba(250, 204, 21, 0.05) 70px
+            )`
+          }}
+        />
+        
         {/* Header da revisão */}
-        <div className="bg-white shadow-lg border-b sticky top-0 z-40">
+        <div className="bg-white dark:bg-gray-900 shadow-lg border-b-2 border-gray-200 dark:border-accent-500/50 sticky top-0 z-40">
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -216,10 +230,10 @@ export default function ExamResultsPage() {
                   className="gap-2"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Voltar aos resultados
+                  RETORNAR AO RELATÓRIO
                 </Button>
                 <div>
-                  <h1 className="text-lg font-bold text-primary-900">Revisão de Questões</h1>
+                  <h1 className="text-lg font-bold text-primary-900 font-police-title uppercase tracking-wider">ANÁLISE TÁTICA DE QUESTÕES</h1>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
                     <span>Questão {currentReviewIndex + 1} de {filteredQuestions.length}</span>
                     <Badge variant="outline">
@@ -382,21 +396,21 @@ export default function ExamResultsPage() {
                   className="text-primary-600 hover:text-primary-700 font-medium mb-2 inline-flex items-center gap-1"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Voltar aos simulados
+                  RETORNAR ÀS SIMULAÇÕES
                 </Link>
-                <h1 className="text-3xl font-bold text-primary-900">{examResult.examTitle}</h1>
-                <p className="text-gray-600 mt-1">
-                  Simulado concluído em {new Date(examResult.completedAt).toLocaleDateString('pt-BR')}
+                <h1 className="text-3xl font-bold text-primary-900 font-police-title uppercase tracking-wider">{examResult.examTitle}</h1>
+                <p className="text-gray-600 mt-1 font-police-body uppercase tracking-wider">
+                  OPERAÇÃO CONCLUÍDA EM {new Date(examResult.completedAt).toLocaleDateString('pt-BR')}
                 </p>
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" onClick={handleShareResults} className="gap-2">
                   <Share2 className="w-4 h-4" />
-                  Compartilhar
+                  TRANSMITIR RELATÓRIO
                 </Button>
                 <Button onClick={handleRetakeExam} className="gap-2">
                   <RotateCcw className="w-4 h-4" />
-                  Refazer simulado
+                  REPETIR OPERAÇÃO
                 </Button>
               </div>
             </div>
@@ -475,7 +489,7 @@ export default function ExamResultsPage() {
               {/* Performance por matéria */}
               <Card>
                 <CardHeader>
-                  <h3 className="text-xl font-bold text-primary-900">Performance por Matéria</h3>
+                  <h3 className="text-xl font-bold text-primary-900 font-police-title uppercase tracking-wider">DESEMPENHO POR ÁREA OPERACIONAL</h3>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -515,7 +529,7 @@ export default function ExamResultsPage() {
               {/* Ações de revisão */}
               <Card>
                 <CardHeader>
-                  <h3 className="text-xl font-bold text-primary-900">Revisão de Questões</h3>
+                  <h3 className="text-xl font-bold text-primary-900 font-police-title uppercase tracking-wider">ANÁLISE TÁTICA DE QUESTÕES</h3>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -548,7 +562,7 @@ export default function ExamResultsPage() {
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <XCircle className="w-5 h-5 text-red-500" />
-                        <span className="font-medium text-red-700">Questões erradas</span>
+                        <span className="font-medium text-red-700 font-police-body uppercase tracking-wider">ALVOS PERDIDOS</span>
                       </div>
                       <p className="text-sm text-gray-600 text-left">
                         Focar nas {examResult.totalQuestions - examResult.correctAnswers} questões incorretas
@@ -566,7 +580,7 @@ export default function ExamResultsPage() {
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span className="font-medium text-green-700">Questões corretas</span>
+                        <span className="font-medium text-green-700 font-police-body uppercase tracking-wider">ALVOS ELIMINADOS</span>
                       </div>
                       <p className="text-sm text-gray-600 text-left">
                         Revisar as {examResult.correctAnswers} questões acertadas
@@ -582,7 +596,7 @@ export default function ExamResultsPage() {
               {/* Comparação com a média */}
               <Card>
                 <CardHeader>
-                  <h3 className="text-lg font-bold text-primary-900">Comparação</h3>
+                  <h3 className="text-lg font-bold text-primary-900 font-police-title uppercase tracking-wider">INTELIGÊNCIA COMPARATIVA</h3>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -628,7 +642,7 @@ export default function ExamResultsPage() {
               {/* Recomendações de estudo */}
               <Card>
                 <CardHeader>
-                  <h3 className="text-lg font-bold text-primary-900">Recomendações de Estudo</h3>
+                  <h3 className="text-lg font-bold text-primary-900 font-police-title uppercase tracking-wider">RECOMENDAÇÕES TÁTICAS</h3>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -655,7 +669,7 @@ export default function ExamResultsPage() {
               {/* Próximas ações */}
               <Card>
                 <CardHeader>
-                  <h3 className="text-lg font-bold text-primary-900">Próximas Ações</h3>
+                  <h3 className="text-lg font-bold text-primary-900 font-police-title uppercase tracking-wider">PRÓXIMAS OPERAÇÕES</h3>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -672,14 +686,14 @@ export default function ExamResultsPage() {
                     </Button>
                     <Button variant="outline" className="w-full gap-2 justify-start">
                       <Download className="w-4 h-4" />
-                      Baixar relatório em PDF
+                      EXPORTAR RELATÓRIO TÁTICO
                     </Button>
                     <Button 
                       onClick={handleRetakeExam}
                       className="w-full gap-2 justify-start"
                     >
                       <RotateCcw className="w-4 h-4" />
-                      Refazer este simulado
+                      REPETIR OPERAÇÃO TÁTICA
                     </Button>
                     <Link to="/simulations">
                       <Button variant="outline" className="w-full gap-2 justify-start">

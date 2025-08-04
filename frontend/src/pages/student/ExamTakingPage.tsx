@@ -38,7 +38,7 @@ interface Question {
     text: string;
   }[];
   explanation?: string;
-  difficulty: 'Fácil' | 'Médio' | 'Difícil';
+  difficulty: 'RECRUTA' | 'CABO' | 'SARGENTO';
   year?: number;
   institution?: string;
 }
@@ -61,7 +61,7 @@ interface ExamSession {
 const mockExamSession: ExamSession = {
   id: 'session-1',
   examId: '1',
-  title: 'Polícia Federal 2024 - Simulado Completo',
+  title: 'OPERAÇÃO PF 2024 - SIMULAÇÃO TÁTICA COMPLETA',
   duration: 180,
   startedAt: new Date().toISOString(),
   answers: {},
@@ -102,7 +102,7 @@ const mockExamSession: ExamSession = {
           text: 'A liberdade de consciência e de crença é inviolável, mas o exercício dos cultos religiosos depende de autorização do Poder Público.'
         }
       ],
-      difficulty: 'Médio',
+      difficulty: 'CABO',
       year: 2023,
       institution: 'CESPE'
     },
@@ -138,7 +138,7 @@ const mockExamSession: ExamSession = {
           text: 'João deve responder por prevaricação, pois retardou ato de ofício.'
         }
       ],
-      difficulty: 'Difícil',
+      difficulty: 'SARGENTO',
       year: 2022,
       institution: 'CESPE'
     },
@@ -174,7 +174,7 @@ const mockExamSession: ExamSession = {
           text: 'Backup incremental copia todos os arquivos do sistema a cada execução.'
         }
       ],
-      difficulty: 'Fácil',
+      difficulty: 'RECRUTA',
       year: 2023,
       institution: 'CESPE'
     }
@@ -355,11 +355,11 @@ export default function ExamTakingPage() {
                 <X className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-lg font-bold text-primary-900">{examSession.title}</h1>
+                <h1 className="text-lg font-bold text-primary-900 font-police-title uppercase tracking-wider">{examSession.title}</h1>
                 <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <span>Questão {currentQuestion.number} de {totalQuestions}</span>
-                  <span>{currentQuestion.subject}</span>
-                  <Badge variant="outline" className="text-xs">
+                  <span className="font-police-body uppercase tracking-wider">ALVO {currentQuestion.number} DE {totalQuestions}</span>
+                  <span className="font-police-body uppercase tracking-wider">{currentQuestion.subject}</span>
+                  <Badge variant="outline" className="text-xs font-police-body">
                     {currentQuestion.difficulty}
                   </Badge>
                 </div>
@@ -402,7 +402,7 @@ export default function ExamTakingPage() {
                 className="gap-1"
               >
                 {examSession.isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-                {examSession.isPaused ? 'Continuar' : 'Pausar'}
+                {examSession.isPaused ? 'RETOMAR' : 'PAUSAR'}
               </Button>
 
               <Button
@@ -429,7 +429,7 @@ export default function ExamTakingPage() {
                 className="bg-green-600 hover:bg-green-700 gap-1"
               >
                 <Send className="w-4 h-4" />
-                Finalizar
+                CONCLUIR MISSÃO
               </Button>
             </div>
           </div>
@@ -492,13 +492,13 @@ export default function ExamTakingPage() {
             <div className="flex items-center justify-center h-96">
               <Card className="p-8 text-center">
                 <Pause className="w-16 h-16 text-amber-500 mx-auto mb-4" />
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Prova Pausada</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-2 font-police-title uppercase tracking-wider">OPERAÇÃO PAUSADA</h2>
                 <p className="text-gray-600 mb-4">
-                  Clique em "Continuar" para retomar a prova
+                  CLIQUE EM "RETOMAR" PARA CONTINUAR A OPERAÇÃO
                 </p>
                 <Button onClick={handlePauseToggle} className="gap-2">
                   <Play className="w-4 h-4" />
-                  Continuar Prova
+                  RETOMAR OPERAÇÃO
                 </Button>
               </Card>
             </div>
@@ -540,7 +540,7 @@ export default function ExamTakingPage() {
                         )}
                       >
                         <Flag className="w-4 h-4" />
-                        {examSession.flaggedQuestions.has(currentQuestion.id) ? 'Desmarcada' : 'Marcar'}
+                        {examSession.flaggedQuestions.has(currentQuestion.id) ? 'DESMARCAR' : 'SINALIZAR'}
                       </Button>
                     </div>
 
@@ -611,7 +611,7 @@ export default function ExamTakingPage() {
                   className="gap-2"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  Anterior
+                  ANTERIOR
                 </Button>
 
                 <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -630,7 +630,7 @@ export default function ExamTakingPage() {
                   disabled={currentQuestionIndex === totalQuestions - 1}
                   className="gap-2"
                 >
-                  Próxima
+                  PRÓXIMO
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
@@ -659,11 +659,11 @@ export default function ExamTakingPage() {
               <div className="text-center">
                 <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  Finalizar Prova?
+                  CONCLUIR OPERAÇÃO TÁTICA?
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Você respondeu {answeredQuestions} de {totalQuestions} questões. 
-                  Tem certeza que deseja finalizar a prova?
+                  VOCÊ ELIMINOU {answeredQuestions} DE {totalQuestions} ALVOS. 
+                  TEM CERTEZA QUE DESEJA CONCLUIR A OPERAÇÃO?
                 </p>
                 <div className="flex gap-3">
                   <Button
@@ -671,13 +671,13 @@ export default function ExamTakingPage() {
                     onClick={() => setShowConfirmDialog(false)}
                     className="flex-1"
                   >
-                    Continuar Prova
+                    RETOMAR OPERAÇÃO
                   </Button>
                   <Button
                     onClick={() => handleSubmitExam()}
                     className="flex-1 bg-green-600 hover:bg-green-700"
                   >
-                    Finalizar
+                    CONCLUIR MISSÃO
                   </Button>
                 </div>
               </div>
@@ -727,7 +727,7 @@ export default function ExamTakingPage() {
                     }}
                     className="flex-1 bg-red-600 hover:bg-red-700"
                   >
-                    Finalizar Mesmo Assim
+                    CONCLUIR MESMO ASSIM
                   </Button>
                 </div>
               </div>

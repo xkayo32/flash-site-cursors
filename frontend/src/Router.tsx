@@ -14,7 +14,6 @@ import CoursesPage from './pages/student/CoursesPage';
 import CourseDetailsPage from './pages/student/CourseDetailsPage';
 import MyCoursesPage from './pages/student/MyCoursesPage';
 import CourseLearningPage from './pages/student/CourseLearningPage';
-import SimuladosPage from './pages/student/SimuladosPage';
 import ExamTakingPage from './pages/student/ExamTakingPage';
 import ExamResultsPage from './pages/student/ExamResultsPage';
 import FlashcardsPage from './pages/student/FlashcardsPage';
@@ -23,7 +22,6 @@ import QuestionsPage from './pages/student/QuestionsPage';
 import SummariesPage from './pages/student/SummariesPage';
 import LegislationPage from './pages/student/LegislationPage';
 import TacticalPanelPage from './pages/student/TacticalPanelPage';
-import PreviousExamsPage from './pages/student/PreviousExamsPage';
 import SubscriptionPage from './pages/student/SubscriptionPage';
 import SettingsPage from './pages/student/SettingsPage';
 
@@ -34,13 +32,10 @@ import UserManager from './pages/admin/UserManager';
 import NewUser from './pages/admin/NewUser';
 import QuestionEditor from './pages/admin/QuestionEditor';
 import NewQuestion from './pages/admin/NewQuestion';
-import Analytics from './pages/admin/Analytics';
 import CourseEditor from './pages/admin/CourseEditor';
-import CourseCreator from './pages/admin/CourseCreator';
 import SummaryEditor from './pages/admin/SummaryEditor';
 import LegislationManager from './pages/admin/LegislationManager';
 import NewLegislation from './pages/admin/NewLegislation';
-import ImportManager from './pages/admin/ImportManager';
 import CategoryManager from './pages/admin/CategoryManager';
 import AdminSettings from './pages/admin/AdminSettings';
 import CourseForm from './pages/admin/CourseForm';
@@ -50,6 +45,10 @@ import NewFlashcardDeck from './pages/admin/NewFlashcardDeck';
 import FlashcardEditor from './pages/admin/FlashcardEditor';
 import IndividualFlashcards from './pages/admin/IndividualFlashcards';
 import NewFlashcard from './pages/admin/NewFlashcard';
+import MockExamManagerSimple from './pages/admin/MockExamManagerSimple';
+import PreviousExamsManagerSimple from './pages/admin/PreviousExamsManagerSimple';
+import MockExamsPageSimple from './pages/student/MockExamsPageSimple';
+import PreviousExamsPageSimple from './pages/student/PreviousExamsPageSimple';
 import AdminLayout from './components/layout/AdminLayout';
 
 // Componente para rotas protegidas
@@ -128,10 +127,10 @@ function Router() {
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/my-courses" element={<MyCoursesPage />} />
         <Route path="/schedule" element={<SchedulePage />} />
-        <Route path="/simulations" element={<SimuladosPage />} />
+        <Route path="/simulations" element={<MockExamsPageSimple />} />
         <Route path="/flashcards" element={<FlashcardsPage />} />
         <Route path="/questions" element={<QuestionsPage />} />
-        <Route path="/previous-exams" element={<PreviousExamsPage />} />
+        <Route path="/previous-exams" element={<PreviousExamsPageSimple />} />
         <Route path="/summaries" element={<SummariesPage />} />
         <Route path="/legislation" element={<LegislationPage />} />
         <Route path="/tactical" element={<TacticalPanelPage />} />
@@ -170,8 +169,8 @@ function Router() {
         <Route path="/admin/flashcards/cards" element={<IndividualFlashcards />} />
         <Route path="/admin/flashcards/cards/new" element={<NewFlashcard />} />
         <Route path="/admin/flashcards/cards/:cardId/edit" element={<FlashcardEditor />} />
-        <Route path="/admin/analytics" element={<Analytics />} />
-        <Route path="/admin/import" element={<ImportManager />} />
+        <Route path="/admin/mock-exams" element={<MockExamManagerSimple />} />
+        <Route path="/admin/previous-exams" element={<PreviousExamsManagerSimple />} />
         <Route path="/admin/categories" element={<CategoryManager />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
       </Route>

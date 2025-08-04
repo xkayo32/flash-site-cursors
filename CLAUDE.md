@@ -76,6 +76,9 @@ psql -h localhost -p 5532 -U estudos_user -d estudos_db -f sample_data.sql
 
 # Common fixes
 psql -h localhost -p 5532 -U estudos_user -d estudos_db -f complete_fix.sql
+
+# Add previous exams system
+psql -h localhost -p 5532 -U estudos_user -d estudos_db -f add_previous_exams.sql
 ```
 
 ## Architecture Overview
@@ -181,6 +184,14 @@ Advanced features:
 - Custom PHP framework with PDO - not Laravel/Symfony
 - PostgreSQL port 5532 is custom to avoid conflicts with default 5432
 
+### Critical Architecture Clarifications
+- **IMPORTANT**: The README.md is outdated - this is NOT a Laravel project
+- The backend is a **custom PHP framework** with its own routing and middleware system
+- Authentication uses **Firebase JWT**, not Laravel Sanctum
+- Database operations use **direct PDO**, not Eloquent ORM
+- No Artisan commands - all database operations use direct SQL files
+- No Composer autoloading for controllers - custom autoloader in `includes/autoload.php`
+
 ### UI/UX Design System
 The project uses a **monochromatic military/police themed design system**:
 
@@ -285,6 +296,53 @@ DB_PASSWORD=estudos_pass
 JWT_SECRET=your-jwt-secret-here
 ```
 
+## Testing Commands
+
+### Frontend Testing
+```bash
+# Currently no test framework is configured
+# Frontend uses ESLint for code quality
+cd frontend
+npm run lint               # Run ESLint with TypeScript rules
+npm run build              # Build and TypeScript check (recommended before commits)
+```
+
+### Backend Testing
+```bash
+# No unit test framework configured
+# Manual testing via endpoints
+curl http://localhost:8180/api/v1/test  # Health check endpoint
+
+# Test specific endpoints with authentication
+TOKEN="your-jwt-token"
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8180/api/v1/users
+
+# Test file uploads
+curl -X POST -H "Authorization: Bearer $TOKEN" \
+  -F "image=@/path/to/image.jpg" \
+  http://localhost:8180/api/v1/courses/1/image
+```
+
+### Running Single Tests
+Since no test framework is configured, testing is done manually:
+- Frontend: Use browser developer tools and React Developer Tools
+- Backend: Use curl commands or tools like Postman/Insomnia
+- Database: Test queries directly in psql
+
+## Code Quality Commands
+
+### Before Committing Changes
+```bash
+# Frontend - always run these commands
+cd frontend
+npm run lint               # Check for linting errors
+npm run build              # TypeScript compilation and build check
+
+# Backend - syntax check
+cd backend/public
+php -l index.php           # Check PHP syntax
+```
+
 ## Recent Updates
 
 ### **2025-08-02**: Sistema Completo de Flashcards Individuais
@@ -361,3 +419,66 @@ Implementação total dos 7 tipos de flashcard com interface profissional para a
 - ✅ `frontend/src/pages/admin/FlashcardManager.tsx` (ATUALIZADO)
 
 **Sistema 100% funcional e pronto para apresentação profissional.**
+
+### **2025-08-03**: Sistema de Provas Anteriores e Simulados
+Implementação dos sistemas de gestão de provas anteriores e simulados:
+
+#### **Database Schema Extensions:**
+- **`previous_exams`**: Concursos/exames anteriores com metadados completos (organização, banca, ano, posição)
+- **`previous_exam_questions`**: Questões das provas anteriores linkadas aos exames
+- **`mock_exams`**: Simulados personalizados criados pelos administradores
+- **`mock_exam_attempts`**: Tentativas dos usuários nos simulados
+
+#### **SQL Migration:**
+```bash
+# Adicionar sistema de provas anteriores
+PGPASSWORD=estudos_pass psql -h localhost -p 5532 -U estudos_user -d estudos_db -f backend/database/add_previous_exams.sql
+```
+
+#### **Páginas Implementadas:**
+- **Admin**: `MockExamManager.tsx`, `PreviousExamsManager.tsx` - Gestão completa
+- **Student**: `PreviousExamsStudentPage.tsx`, `MockExamsPage.tsx` - Interface de estudo
+- **Variações**: Multiple implementations (Simple, Improved) para diferentes UX approaches
+
+## Common Development Patterns
+
+### Adding a New API Endpoint
+1. Create controller in `backend/public/app/Controller/Api/`
+2. Register route in `backend/public/routes/api/v1/`
+3. Add endpoint to `frontend/src/config/api.ts`
+4. Create service function in `frontend/src/services/`
+
+### Adding a New Frontend Page
+1. Create component in appropriate directory (`admin/`, `student/`, etc.)
+2. Add route in `frontend/src/Router.tsx` with proper role protection
+3. Follow existing component patterns for consistency
+4. Use existing UI components and design system
+
+### Database Changes
+1. Create SQL migration file in `backend/database/`
+2. Apply with: `psql -h localhost -p 5532 -U estudos_user -d estudos_db -f your_migration.sql`
+3. Update sample data if needed
+4. No ORM migrations - use direct SQL files
+
+### Working with Flashcards
+The system supports 7 flashcard types with full implementation:
+1. Basic (front/back)
+2. Basic Inverted (with reverse card)
+3. Cloze (fill-in-the-blank with {{c1::text}})
+4. Multiple Choice (4 options)
+5. True/False (with explanation)
+6. Type Answer (text input)
+7. Image Occlusion (interactive areas)
+
+### File Upload Handling
+- Course images: POST to `/api/v1/courses/{id}/image`
+- Use multipart/form-data
+- Backend handles file storage in `uploads/` directory
+- Frontend uses FormData API
+
+## Performance Considerations
+- Frontend uses lazy loading and code splitting
+- Vite configured for optimal build output
+- Database has proper indexes (check `backend/database/schema_postgres.sql`)
+- Use React Query for API caching
+- Zustand for lightweight state management

@@ -29,6 +29,8 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
+import { PageHeader } from '@/components/student';
+import toast from 'react-hot-toast';
 
 // Tipos
 interface Plan {
@@ -75,72 +77,72 @@ interface Invoice {
 const plans: Plan[] = [
   {
     id: 'basic',
-    name: 'Básico',
-    description: 'Perfeito para começar sua jornada de estudos',
+    name: 'OPERADOR BÁSICO',
+    description: 'TREINAMENTO INICIAL PARA NOVOS RECRUTAS',
     price: 29.90,
     priceYearly: 299.00,
     currency: 'R$',
     interval: 'monthly',
     color: 'gray',
     features: [
-      'Acesso a questões básicas',
-      '100 flashcards por mês',
-      '3 simulados por mês',
-      'Estatísticas básicas',
-      'Suporte por email'
+      'ACESSO A ARSENAL BÁSICO DE QUESTÕES',
+      '100 FLASHCARDS TÁTICOS/MÊS',
+      '3 SIMULAÇÕES/MÊS',
+      'RELATÓRIOS BÁSICOS DE DESEMPENHO',
+      'SUPORTE POR COMUNICAÇÃO DIGITAL'
     ],
     limitations: [
-      'Sem videoaulas',
-      'Sem resumos interativos',
-      'Sem cronograma personalizado'
+      'SEM VIDEOAULAS TÁTICAS',
+      'SEM RESUMOS INTERATIVOS',
+      'SEM CRONOGRAMA PERSONALIZADO DE MISSÃO'
     ]
   },
   {
     id: 'pro',
-    name: 'Pro',
-    description: 'Para estudantes sérios que querem resultados',
+    name: 'OPERADOR ELITE',
+    description: 'PARA AGENTES ESPECIALIZADOS EM MISSÕES CRÍTICAS',
     price: 59.90,
     priceYearly: 599.00,
     currency: 'R$',
     interval: 'monthly',
     color: 'blue',
     recommended: true,
-    badge: 'Mais Popular',
+    badge: 'MAIS REQUISITADO',
     features: [
-      'Acesso ilimitado a questões',
-      'Flashcards ilimitados',
-      'Simulados ilimitados',
-      'Videoaulas em HD',
-      'Resumos interativos',
-      'Cronograma com IA',
-      'Estatísticas avançadas',
-      'Suporte prioritário'
+      'ACESSO TOTAL AO ARSENAL DE QUESTÕES',
+      'FLASHCARDS TÁTICOS ILIMITADOS',
+      'SIMULAÇÕES DE OPERAÇÃO ILIMITADAS',
+      'VIDEOAULAS TÁTICAS EM HD',
+      'RESUMOS INTERATIVOS DE INTELIGÊNCIA',
+      'CRONOGRAMA COM IA MILITAR',
+      'RELATÓRIOS AVANÇADOS DE DESEMPENHO',
+      'SUPORTE PRIORITÁRIO DE COMANDO'
     ],
     limitations: [
-      'Sem mentoria individual',
-      'Sem correção de redação'
+      'SEM MENTORIA INDIVIDUAL DE COMANDANTE',
+      'SEM CORREÇÃO DE REDAÇÃO TÁTICA'
     ]
   },
   {
     id: 'premium',
-    name: 'Premium',
-    description: 'Experiência completa com mentoria personalizada',
+    name: 'COMANDANTE VIP',
+    description: 'OPERAÇÃO COMPLETA COM MENTORIA DE COMANDANTE',
     price: 99.90,
     priceYearly: 999.00,
     currency: 'R$',
     interval: 'monthly',
     color: 'purple',
-    badge: 'VIP',
+    badge: 'COMANDO VIP',
     features: [
-      'Tudo do plano Pro',
-      'Mentoria individual mensal',
-      '5 correções de redação/mês',
-      'Acesso antecipado a novidades',
-      'Grupo VIP no WhatsApp',
-      'Lives exclusivas',
-      'Material em PDF',
-      'Certificado de conclusão',
-      'Suporte VIP 24/7'
+      'TODOS OS RECURSOS DO OPERADOR ELITE',
+      'MENTORIA INDIVIDUAL MENSAL COM COMANDANTE',
+      '5 CORREÇÕES DE REDAÇÃO TÁTICA/MÊS',
+      'ACESSO ANTECIPADO A NOVOS ARMAMENTOS',
+      'GRUPO VIP DE COMANDO NO WHATSAPP',
+      'BRIEFINGS EXCLUSIVOS AO VIVO',
+      'MATERIAL TÁTICO EM PDF',
+      'CERTIFICADO DE CONCLUSÃO DE MISSÃO',
+      'SUPORTE VIP DE COMANDO 24/7'
     ],
     limitations: []
   }
@@ -149,7 +151,7 @@ const plans: Plan[] = [
 const currentSubscription: Subscription = {
   id: '1',
   planId: 'pro',
-  planName: 'Pro',
+  planName: 'OPERADOR ELITE',
   status: 'active',
   currentPeriodStart: '2024-01-01',
   currentPeriodEnd: '2024-02-01',
@@ -167,7 +169,7 @@ const invoices: Invoice[] = [
     date: '2024-01-01',
     amount: 59.90,
     status: 'paid',
-    description: 'Assinatura Pro - Janeiro 2024',
+    description: 'OPERADOR ELITE - Janeiro 2024',
     downloadUrl: '#'
   },
   {
@@ -175,7 +177,7 @@ const invoices: Invoice[] = [
     date: '2023-12-01',
     amount: 59.90,
     status: 'paid',
-    description: 'Assinatura Pro - Dezembro 2023',
+    description: 'OPERADOR ELITE - Dezembro 2023',
     downloadUrl: '#'
   },
   {
@@ -183,7 +185,7 @@ const invoices: Invoice[] = [
     date: '2023-11-01',
     amount: 59.90,
     status: 'paid',
-    description: 'Assinatura Pro - Novembro 2023',
+    description: 'OPERADOR ELITE - Novembro 2023',
     downloadUrl: '#'
   }
 ];
@@ -275,8 +277,8 @@ export default function SubscriptionPage() {
                 {plan.name === 'Premium' && <Crown className="w-8 h-8 text-purple-600" />}
               </div>
 
-              <h3 className="text-2xl font-bold text-primary-900 mb-2">{plan.name}</h3>
-              <p className="text-primary-600 text-sm mb-4">{plan.description}</p>
+              <h3 className="text-2xl font-bold text-primary-900 mb-2 font-police-title uppercase tracking-wider">{plan.name}</h3>
+              <p className="text-primary-600 text-sm mb-4 font-police-body uppercase tracking-wider">{plan.description}</p>
 
               {/* Preço */}
               <div className="mb-4">
@@ -308,8 +310,8 @@ export default function SubscriptionPage() {
 
             {/* Button */}
             {isCurrentPlan ? (
-              <Button variant="outline" className="w-full" disabled>
-                Plano Atual
+              <Button variant="outline" className="w-full font-police-body uppercase tracking-wider" disabled>
+                NÍVEL ATUAL
               </Button>
             ) : (
               <Button 
@@ -317,11 +319,14 @@ export default function SubscriptionPage() {
                   "w-full",
                   plan.recommended && "bg-primary-600 hover:bg-primary-700"
                 )}
-                onClick={() => setSelectedPlan(plan.id)}
+                onClick={() => {
+                  toast.success('SELECIONANDO NÍVEL OPERACIONAL!', { icon: '✨' });
+                  setSelectedPlan(plan.id);
+                }}
               >
                 {currentSubscription.planId && 
                  plans.findIndex(p => p.id === plan.id) > plans.findIndex(p => p.id === currentSubscription.planId)
-                  ? 'Fazer Upgrade' : 'Selecionar Plano'}
+                  ? 'FAZER UPGRADE' : 'SELECIONAR NÍVEL'}
               </Button>
             )}
           </CardContent>
@@ -332,21 +337,21 @@ export default function SubscriptionPage() {
 
   return (
     <div className="p-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-primary-900 mb-2">Gerenciar Assinatura</h1>
-            <p className="text-primary-600">
-              Escolha o plano ideal para sua jornada de estudos
-            </p>
-          </div>
-        </div>
+      <PageHeader
+        title="COMANDO DE ASSINATURAS"
+        subtitle="SELECIONE SEU NÍVEL OPERACIONAL PARA MISSÕES DE ELITE"
+        icon={Crown}
+        breadcrumbs={[
+          { label: 'DASHBOARD', href: '/student/dashboard' },
+          { label: 'ASSINATURA' }
+        ]}
+      />
 
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
         {/* Status da assinatura atual */}
         {currentSubscription && (
           <Card className="mb-6 bg-gradient-to-r from-primary-50 to-primary-100 border-primary-200">
@@ -354,24 +359,24 @@ export default function SubscriptionPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-bold text-primary-900">
-                      Plano {currentSubscription.planName}
+                    <h3 className="text-xl font-bold text-primary-900 font-police-title uppercase tracking-wider">
+                      NÍVEL {currentSubscription.planName}
                     </h3>
                     <Badge className={cn(
                       currentSubscription.status === 'active' && "bg-green-100 text-green-700",
                       currentSubscription.status === 'trial' && "bg-blue-100 text-blue-700",
                       currentSubscription.status === 'cancelled' && "bg-red-100 text-red-700"
                     )}>
-                      {currentSubscription.status === 'active' && 'Ativo'}
-                      {currentSubscription.status === 'trial' && 'Período de Teste'}
-                      {currentSubscription.status === 'cancelled' && 'Cancelado'}
+                      {currentSubscription.status === 'active' && 'OPERACIONAL'}
+                      {currentSubscription.status === 'trial' && 'TESTE DE CAMPO'}
+                      {currentSubscription.status === 'cancelled' && 'DESATIVADO'}
                     </Badge>
                   </div>
                   
                   <div className="flex items-center gap-6 text-sm text-primary-600">
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1 font-police-body uppercase tracking-wider">
                       <Calendar className="w-4 h-4" />
-                      Renovação: {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString('pt-BR')}
+                      PRÓXIMA MISSÃO: {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString('pt-BR')}
                     </span>
                     {currentSubscription.paymentMethod && (
                       <span className="flex items-center gap-1">
@@ -383,17 +388,22 @@ export default function SubscriptionPage() {
                 </div>
                 
                 <div className="flex gap-3">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="font-police-body uppercase tracking-wider"
+                    onClick={() => toast.success('ACESSANDO CONFIGURAÇÕES DE PAGAMENTO!', { icon: '💳' })}
+                  >
                     <RefreshCw className="w-4 h-4 mr-2" />
-                    Alterar Pagamento
+                    ALTERAR PAGAMENTO
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="text-red-600 hover:bg-red-50"
+                    className="text-red-600 hover:bg-red-50 font-police-body uppercase tracking-wider"
                     onClick={() => setShowCancelModal(true)}
                   >
-                    Cancelar Assinatura
+                    CANCELAR OPERAÇÃO
                   </Button>
                 </div>
               </div>
@@ -414,7 +424,7 @@ export default function SubscriptionPage() {
             )}
             onClick={() => setBillingInterval('monthly')}
           >
-            Mensal
+            MENSAL
           </button>
           <button
             className={cn(
@@ -425,9 +435,9 @@ export default function SubscriptionPage() {
             )}
             onClick={() => setBillingInterval('yearly')}
           >
-            Anual
-            <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
-              Economize 20%
+            ANUAL
+            <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 font-police-body">
+              ECONOMIZE 20%
             </Badge>
           </button>
         </div>
@@ -443,17 +453,17 @@ export default function SubscriptionPage() {
       {/* Comparação de recursos */}
       <Card className="mb-12">
         <CardHeader>
-          <h2 className="text-2xl font-bold text-primary-900">Comparação Completa</h2>
+          <h2 className="text-2xl font-bold text-primary-900 font-police-title uppercase tracking-wider">COMPARAÇÃO COMPLETA DE NÍVEIS</h2>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-3 px-4">Recursos</th>
+                  <th className="text-left py-3 px-4 font-police-body uppercase tracking-wider">RECURSOS TÁTICOS</th>
                   {plans.map(plan => (
                     <th key={plan.id} className="text-center py-3 px-4">
-                      <div className="font-bold text-primary-900">{plan.name}</div>
+                      <div className="font-bold text-primary-900 font-police-title">{plan.name}</div>
                       <div className="text-sm text-primary-600 font-normal">
                         R$ {plan.price}/mês
                       </div>
@@ -463,25 +473,25 @@ export default function SubscriptionPage() {
               </thead>
               <tbody>
                 <tr className="border-b">
-                  <td className="py-4 px-4">Questões</td>
+                  <td className="py-4 px-4 font-police-body">ARSENAL DE QUESTÕES</td>
                   <td className="text-center py-4 px-4">100/mês</td>
                   <td className="text-center py-4 px-4">Ilimitadas</td>
                   <td className="text-center py-4 px-4">Ilimitadas</td>
                 </tr>
                 <tr className="border-b bg-gray-50">
-                  <td className="py-4 px-4">Flashcards</td>
+                  <td className="py-4 px-4 font-police-body">FLASHCARDS TÁTICOS</td>
                   <td className="text-center py-4 px-4">100/mês</td>
                   <td className="text-center py-4 px-4">Ilimitados</td>
                   <td className="text-center py-4 px-4">Ilimitados</td>
                 </tr>
                 <tr className="border-b">
-                  <td className="py-4 px-4">Simulados</td>
+                  <td className="py-4 px-4 font-police-body">SIMULAÇÕES</td>
                   <td className="text-center py-4 px-4">3/mês</td>
                   <td className="text-center py-4 px-4">Ilimitados</td>
                   <td className="text-center py-4 px-4">Ilimitados</td>
                 </tr>
                 <tr className="border-b bg-gray-50">
-                  <td className="py-4 px-4">Videoaulas</td>
+                  <td className="py-4 px-4 font-police-body">VIDEOAULAS TÁTICAS</td>
                   <td className="text-center py-4 px-4">
                     <X className="w-5 h-5 text-red-500 mx-auto" />
                   </td>
@@ -493,7 +503,7 @@ export default function SubscriptionPage() {
                   </td>
                 </tr>
                 <tr className="border-b">
-                  <td className="py-4 px-4">Mentoria</td>
+                  <td className="py-4 px-4 font-police-body">MENTORIA DE COMANDANTE</td>
                   <td className="text-center py-4 px-4">
                     <X className="w-5 h-5 text-red-500 mx-auto" />
                   </td>
@@ -514,10 +524,15 @@ export default function SubscriptionPage() {
       <Card className="mb-8">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-primary-900">Histórico de Pagamentos</h2>
-            <Button variant="outline" size="sm" className="gap-2">
+            <h2 className="text-2xl font-bold text-primary-900 font-police-title uppercase tracking-wider">HISTÓRICO DE OPERAÇÕES FINANCEIRAS</h2>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2 font-police-body uppercase tracking-wider"
+              onClick={() => toast.success('BAIXANDO RELATÓRIOS!', { icon: '📎' })}
+            >
               <Download className="w-4 h-4" />
-              Baixar Todas
+              BAIXAR TODAS
             </Button>
           </div>
         </CardHeader>
@@ -544,14 +559,18 @@ export default function SubscriptionPage() {
                       invoice.status === 'pending' && "bg-yellow-100 text-yellow-700",
                       invoice.status === 'failed' && "bg-red-100 text-red-700"
                     )}>
-                      {invoice.status === 'paid' && 'Pago'}
-                      {invoice.status === 'pending' && 'Pendente'}
-                      {invoice.status === 'failed' && 'Falhou'}
+                      {invoice.status === 'paid' && 'PAGO'}
+                      {invoice.status === 'pending' && 'PENDENTE'}
+                      {invoice.status === 'failed' && 'FALHOU'}
                     </Badge>
                   </div>
                   
                   {invoice.downloadUrl && (
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => toast.success('DOWNLOAD INICIADO!', { icon: '📥' })}
+                    >
                       <Download className="w-4 h-4" />
                     </Button>
                   )}
@@ -570,24 +589,30 @@ export default function SubscriptionPage() {
         className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-8 text-white text-center"
       >
         <Gift className="w-12 h-12 mx-auto mb-4 text-accent-400" />
-        <h2 className="text-2xl font-bold mb-2">
-          Indique amigos e ganhe descontos!
+        <h2 className="text-2xl font-bold mb-2 font-police-title uppercase tracking-wider">
+          RECRUTE AGENTES E GANHE BENEFÍCIOS!
         </h2>
-        <p className="text-primary-100 mb-6 max-w-2xl mx-auto">
-          A cada amigo que assinar usando seu código, você ganha 1 mês grátis e ele ganha 20% de desconto
+        <p className="text-primary-100 mb-6 max-w-2xl mx-auto font-police-body">
+          A CADA AGENTE RECRUTADO COM SEU CÓDIGO, VOCÊ GANHA 1 MÊS GRÁTIS E ELE GANHA 20% DE DESCONTO
         </p>
         <div className="flex gap-3 justify-center">
-          <Button variant="secondary" size="lg">
+          <Button 
+            variant="secondary" 
+            size="lg"
+            className="font-police-body uppercase tracking-wider"
+            onClick={() => toast.success('SISTEMA DE RECRUTAMENTO ATIVADO!', { icon: '👥' })}
+          >
             <Users className="w-5 h-5 mr-2" />
-            Convidar Amigos
+            RECRUTAR AGENTES
           </Button>
           <Button 
             variant="outline" 
             size="lg" 
-            className="border-white text-white hover:bg-white hover:text-primary-700"
+            className="border-white text-white hover:bg-white hover:text-primary-700 font-police-body uppercase tracking-wider"
+            onClick={() => toast.info('DETALHES DO PROGRAMA DE RECRUTAMENTO', { icon: 'ℹ️' })}
           >
             <Info className="w-5 h-5 mr-2" />
-            Saiba Mais
+            INTELÊNCIA
           </Button>
         </div>
       </motion.div>
@@ -613,16 +638,16 @@ export default function SubscriptionPage() {
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <AlertCircle className="w-8 h-8 text-red-600" />
                 </div>
-                <h3 className="text-xl font-bold text-primary-900 mb-2">
-                  Tem certeza que deseja cancelar?
+                <h3 className="text-xl font-bold text-primary-900 mb-2 font-police-title uppercase tracking-wider">
+                  CONFIRMAR CANCELAMENTO DE OPERAÇÃO?
                 </h3>
-                <p className="text-primary-600">
-                  Você perderá acesso a todos os recursos premium ao final do período atual
+                <p className="text-primary-600 font-police-body">
+                  VOCÊ PERDERÁ ACESSO A TODOS OS RECURSOS TÁTICOS AO FINAL DO PERÍODO ATUAL
                 </p>
               </div>
               
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <p className="text-sm text-primary-700 mb-2">Você ainda terá acesso até:</p>
+                <p className="text-sm text-primary-700 mb-2 font-police-body uppercase tracking-wider">ACESSO MANTIDO ATÉ:</p>
                 <p className="font-bold text-primary-900">
                   {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString('pt-BR')}
                 </p>
@@ -631,19 +656,22 @@ export default function SubscriptionPage() {
               <div className="flex gap-3">
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 font-police-body uppercase tracking-wider"
                   onClick={() => setShowCancelModal(false)}
                 >
-                  Manter Assinatura
+                  MANTER OPERAÇÃO
                 </Button>
                 <Button
-                  className="flex-1 bg-red-600 hover:bg-red-700"
+                  className="flex-1 bg-red-600 hover:bg-red-700 font-police-body uppercase tracking-wider"
                   onClick={() => {
-                    // Lógica de cancelamento
+                    toast.success('OPERAÇÃO CANCELADA!', {
+                      description: 'Sua assinatura será cancelada ao final do período',
+                      icon: '⚠️'
+                    });
                     setShowCancelModal(false);
                   }}
                 >
-                  Confirmar Cancelamento
+                  CONFIRMAR CANCELAMENTO
                 </Button>
               </div>
             </motion.div>

@@ -28,6 +28,7 @@ import {
   Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import toast from 'react-hot-toast';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
@@ -89,12 +90,12 @@ const mockQuestions: Question[] = [
     ],
     correctAnswer: 2,
     explanation: 'A propriedade privada dos meios de produção não é um direito social previsto no art. 6º da CF/88. Os direitos sociais são: educação, saúde, alimentação, trabalho, moradia, transporte, lazer, segurança, previdência social, proteção à maternidade e à infância, e assistência aos desamparados.',
-    subject: 'Direito Constitucional',
+    subject: 'DIREITO CONSTITUCIONAL TÁTICO',
     topic: 'Direitos e Garantias Fundamentais',
     subtopic: 'Direitos Sociais',
     year: 2023,
     exam: 'FGV',
-    difficulty: 'Médio',
+    difficulty: 'CABO',
     tags: ['CF/88', 'Art. 6º', 'Direitos Sociais'],
     stats: {
       totalAttempts: 3456,
@@ -117,12 +118,12 @@ const mockQuestions: Question[] = [
     ],
     correctAnswer: 1,
     explanation: 'A corrupção passiva (art. 317, CP) ocorre quando o funcionário público solicita ou recebe, para si ou para outrem, direta ou indiretamente, ainda que fora da função ou antes de assumi-la, mas em razão dela, vantagem indevida, ou aceita promessa de tal vantagem.',
-    subject: 'Direito Penal',
+    subject: 'DIREITO PENAL OPERACIONAL',
     topic: 'Crimes contra a Administração Pública',
     subtopic: 'Corrupção Passiva',
     year: 2023,
     exam: 'CESPE',
-    difficulty: 'Difícil',
+    difficulty: 'SARGENTO',
     tags: ['Código Penal', 'Art. 317', 'Corrupção'],
     stats: {
       totalAttempts: 2890,
@@ -145,11 +146,11 @@ const mockQuestions: Question[] = [
     ],
     correctAnswer: 0,
     explanation: 'O princípio da eficiência foi incluído no art. 37 da CF/88 pela Emenda Constitucional nº 19/1998. Os demais princípios (legalidade, impessoalidade, moralidade e publicidade) já constavam no texto original.',
-    subject: 'Direito Administrativo',
+    subject: 'DIREITO ADMINISTRATIVO',
     topic: 'Princípios da Administração Pública',
     year: 2024,
     exam: 'FCC',
-    difficulty: 'Fácil',
+    difficulty: 'RECRUTA',
     tags: ['Princípios', 'LIMPE', 'EC 19/98'],
     stats: {
       totalAttempts: 4123,
@@ -169,12 +170,12 @@ const mockQuestions: Question[] = [
     ],
     correctAnswer: 0,
     explanation: 'O comando "ls -la" lista todos os arquivos e diretórios (incluindo ocultos) com detalhes como permissões, proprietário, tamanho e data de modificação.',
-    subject: 'Informática',
+    subject: 'INTELIGÊNCIA DIGITAL',
     topic: 'Sistemas Operacionais',
     subtopic: 'Linux',
     year: 2023,
     exam: 'IBFC',
-    difficulty: 'Fácil',
+    difficulty: 'RECRUTA',
     tags: ['Linux', 'Comandos', 'Terminal'],
     stats: {
       totalAttempts: 1876,
@@ -193,12 +194,12 @@ const mockQuestions: Question[] = [
     ],
     correctAnswer: 0,
     explanation: 'O verbo "fazer", quando indica tempo decorrido, é impessoal e deve permanecer na 3ª pessoa do singular. O correto é "Faz dois anos que não o vejo".',
-    subject: 'Português',
+    subject: 'COMUNICAÇÃO TÁTICA',
     topic: 'Gramática',
     subtopic: 'Concordância Verbal',
     year: 2024,
     exam: 'CESPE',
-    difficulty: 'Médio',
+    difficulty: 'CABO',
     tags: ['Concordância', 'Verbos Impessoais'],
     stats: {
       totalAttempts: 3234,
@@ -208,10 +209,10 @@ const mockQuestions: Question[] = [
   }
 ];
 
-const subjects = ['Todos', 'Direito Constitucional', 'Direito Penal', 'Direito Administrativo', 'Informática', 'Português'];
-const exams = ['Todos', 'CESPE', 'FCC', 'FGV', 'IBFC', 'VUNESP'];
-const years = ['Todos', 2024, 2023, 2022, 2021, 2020];
-const difficulties = ['Todas', 'Fácil', 'Médio', 'Difícil'];
+const subjects = ['TODAS', 'DIREITO CONSTITUCIONAL TÁTICO', 'DIREITO PENAL OPERACIONAL', 'DIREITO ADMINISTRATIVO', 'INTELIGÊNCIA DIGITAL', 'COMUNICAÇÃO TÁTICA'];
+const exams = ['TODOS', 'CESPE', 'FCC', 'FGV', 'IBFC', 'VUNESP'];
+const years = ['TODOS', 2024, 2023, 2022, 2021, 2020];
+const difficulties = ['TODOS', 'RECRUTA', 'CABO', 'SARGENTO'];
 
 // Estatísticas gerais
 const generalStats = {
@@ -220,8 +221,8 @@ const generalStats = {
   correctAnswers: 2567,
   totalTime: 4320, // minutos
   averageAccuracy: 74.3,
-  strongSubjects: ['Direito Administrativo', 'Informática'],
-  weakSubjects: ['Direito Penal', 'Raciocínio Lógico']
+  strongSubjects: ['DIREITO ADMINISTRATIVO', 'INTELIGÊNCIA DIGITAL'],
+  weakSubjects: ['DIREITO PENAL OPERACIONAL', 'RACIOCÍNIO LÓGICO TÁTICO']
 };
 
 export default function QuestionsPage() {
@@ -296,7 +297,10 @@ export default function QuestionsPage() {
       progress: 0
     };
 
-    alert(`Caderno "${notebookName}" criado com ${selectedQuestions.length} questões!`);
+    toast.success(`CADERNO TÁTICO "${notebookName}" CRIADO!`, {
+      description: `${selectedQuestions.length} questões selecionadas para treinamento`,
+      icon: '🎯'
+    });
     
     // Reset
     setNotebookName('');
@@ -344,9 +348,9 @@ export default function QuestionsPage() {
                 <Badge variant="secondary">{question.subject}</Badge>
                 <Badge 
                   className={cn(
-                    question.difficulty === 'Fácil' && "bg-green-100 text-green-700",
-                    question.difficulty === 'Médio' && "bg-yellow-100 text-yellow-700",
-                    question.difficulty === 'Difícil' && "bg-red-100 text-red-700"
+                    question.difficulty === 'RECRUTA' && "bg-green-100 text-green-700",
+                    question.difficulty === 'CABO' && "bg-yellow-100 text-yellow-700",
+                    question.difficulty === 'SARGENTO' && "bg-red-100 text-red-700"
                   )}
                 >
                   {question.difficulty}
@@ -431,7 +435,7 @@ export default function QuestionsPage() {
             <div className="flex items-start gap-2">
               <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
               <div>
-                <p className="font-medium text-blue-900 mb-1">Explicação:</p>
+                <p className="font-medium text-blue-900 mb-1 font-police-subtitle uppercase tracking-wider">BRIEFING TÁTICO:</p>
                 <p className="text-sm text-blue-800">{question.explanation}</p>
               </div>
             </div>
@@ -443,16 +447,16 @@ export default function QuestionsPage() {
           <div className="flex items-center gap-4 text-primary-600">
             <span className="flex items-center gap-1">
               <BarChart3 className="w-4 h-4" />
-              {Math.round((question.stats.correctAttempts / question.stats.totalAttempts) * 100)}% acertos
+              {Math.round((question.stats.correctAttempts / question.stats.totalAttempts) * 100)}% PRECISÃO
             </span>
             <span className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
-              {question.stats.avgTime}s média
+              {question.stats.avgTime}s TEMPO MÉDIO
             </span>
             {question.timeSpent && (
               <span className="flex items-center gap-1">
                 <Target className="w-4 h-4" />
-                Você: {question.timeSpent}s
+                SEU TEMPO: {question.timeSpent}s
               </span>
             )}
           </div>
@@ -466,12 +470,12 @@ export default function QuestionsPage() {
                 className="gap-1"
               >
                 {showExplanation ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                {showExplanation ? 'Ocultar' : 'Ver'} explicação
+                {showExplanation ? 'OCULTAR' : 'VER'} BRIEFING
               </Button>
             )}
             <Button variant="outline" size="sm" className="gap-1">
               <MessageSquare className="w-4 h-4" />
-              Comentários
+RELATÓRIOS
             </Button>
           </div>
         </div>
@@ -500,15 +504,15 @@ export default function QuestionsPage() {
       >
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-primary-900 mb-2">Banco de Questões</h1>
-            <p className="text-primary-600">
-              Pratique com questões de provas anteriores
+            <h1 className="text-3xl font-police-title font-bold text-gray-900 dark:text-white mb-2 uppercase tracking-wider">ARSENAL DE QUESTÕES</h1>
+            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+              TREINAMENTO TÁTICO COM QUESTÕES DE PROVAS ANTERIORES
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="text-lg px-4 py-2">
               <FileQuestion className="w-5 h-5 mr-2" />
-              {generalStats.totalQuestions.toLocaleString()} questões
+              {generalStats.totalQuestions.toLocaleString()} QUESTÕES OPERACIONAIS
             </Badge>
           </div>
         </div>
@@ -519,7 +523,7 @@ export default function QuestionsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Respondidas</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">EXECUTADAS</p>
                   <p className="text-2xl font-bold text-primary-900">
                     {generalStats.answeredQuestions.toLocaleString()}
                   </p>
@@ -533,7 +537,7 @@ export default function QuestionsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Taxa de acerto</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">PRECISÃO</p>
                   <p className="text-2xl font-bold text-primary-900">{generalStats.averageAccuracy}%</p>
                 </div>
                 <Target className="w-8 h-8 text-blue-500" />
@@ -545,7 +549,7 @@ export default function QuestionsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Tempo total</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">TEMPO DE OPERAÇÃO</p>
                   <p className="text-2xl font-bold text-primary-900">
                     {Math.floor(generalStats.totalTime / 60)}h
                   </p>
@@ -559,7 +563,7 @@ export default function QuestionsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Matéria forte</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">ESPECIALIDADE</p>
                   <p className="text-sm font-bold text-green-600">
                     {generalStats.strongSubjects[0]}
                   </p>
@@ -573,7 +577,7 @@ export default function QuestionsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-primary-600">Precisa revisar</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">REFORÇO TÁTICO</p>
                   <p className="text-sm font-bold text-red-600">
                     {generalStats.weakSubjects[0]}
                   </p>
@@ -591,7 +595,7 @@ export default function QuestionsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary-400" />
               <input
                 type="text"
-                placeholder="Buscar questões por palavra-chave, assunto ou tag..."
+                placeholder="BUSCAR QUESTÕES POR PALAVRA-CHAVE, ASSUNTO OU TAG..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -606,7 +610,7 @@ export default function QuestionsPage() {
               className="gap-2"
             >
               <Filter className="w-4 h-4" />
-              Filtros
+              FILTROS TÁTICOS
               {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </Button>
             
@@ -616,7 +620,7 @@ export default function QuestionsPage() {
               disabled={selectedQuestions.length === 0}
             >
               <Plus className="w-4 h-4" />
-              Criar Caderno {selectedQuestions.length > 0 && `(${selectedQuestions.length})`}
+CRIAR ARSENAL {selectedQuestions.length > 0 && `(${selectedQuestions.length})`}
             </Button>
           </div>
         </div>
@@ -634,8 +638,8 @@ export default function QuestionsPage() {
                 <CardContent className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-2">
-                        Matéria
+                      <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                        DISCIPLINA TÁTICA
                       </label>
                       <select 
                         className="w-full p-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -651,8 +655,8 @@ export default function QuestionsPage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-2">
-                        Banca
+                      <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                        COMANDO DE PROVA
                       </label>
                       <select 
                         className="w-full p-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -668,8 +672,8 @@ export default function QuestionsPage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-2">
-                        Ano
+                      <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                        ANO OPERACIONAL
                       </label>
                       <select className="w-full p-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                         {years.map(year => (
@@ -679,8 +683,8 @@ export default function QuestionsPage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-2">
-                        Dificuldade
+                      <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                        NÍVEL TÁTICO
                       </label>
                       <select 
                         className="w-full p-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -696,8 +700,8 @@ export default function QuestionsPage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-2">
-                        Status
+                      <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                        STATUS OPERACIONAL
                       </label>
                       <select 
                         className="w-full p-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -706,9 +710,9 @@ export default function QuestionsPage() {
                           answered: e.target.value as any
                         }))}
                       >
-                        <option value="all">Todas</option>
-                        <option value="answered">Respondidas</option>
-                        <option value="unanswered">Não respondidas</option>
+                        <option value="all">TODAS AS OPERAÇÕES</option>
+                        <option value="answered">EXECUTADAS</option>
+                        <option value="unanswered">PENDENTES</option>
                       </select>
                     </div>
                   </div>
@@ -716,7 +720,7 @@ export default function QuestionsPage() {
                   <div className="mt-4 flex items-center justify-between">
                     <div className="flex gap-2">
                       <Badge variant="secondary">
-                        {filteredQuestions.length} questões encontradas
+                        {filteredQuestions.length} ALVOS LOCALIZADOS
                       </Badge>
                     </div>
                     <Button
@@ -732,7 +736,7 @@ export default function QuestionsPage() {
                         performance: 'all'
                       })}
                     >
-                      Limpar filtros
+RESETAR FILTROS
                     </Button>
                   </div>
                 </CardContent>
@@ -752,7 +756,7 @@ export default function QuestionsPage() {
           <div className="flex items-center gap-2">
             <CheckCircle className="w-5 h-5 text-primary-600" />
             <span className="text-primary-700 font-medium">
-              {selectedQuestions.length} questão(ões) selecionada(s)
+              {selectedQuestions.length} ALVO(S) SELECIONADO(S)
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -761,13 +765,13 @@ export default function QuestionsPage() {
               size="sm"
               onClick={() => setSelectedQuestions([])}
             >
-              Limpar seleção
+LIMPAR SELEÇÃO
             </Button>
             <Button
               size="sm"
               onClick={() => setShowCreateNotebook(true)}
             >
-              Criar Caderno
+CRIAR ARSENAL
             </Button>
           </div>
         </motion.div>
@@ -782,23 +786,23 @@ export default function QuestionsPage() {
         ) : (
           <Card className="p-12 text-center">
             <FileQuestion className="w-16 h-16 text-primary-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-primary-900 mb-2">
-              Nenhuma questão encontrada
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 font-police-subtitle uppercase tracking-wider">
+              NENHUMA QUESTÃO ENCONTRADA
             </h3>
             <p className="text-primary-600 mb-6">
-              Tente ajustar os filtros ou fazer uma nova busca
+AJUSTE OS FILTROS TÁTICOS OU REFINE A BUSCA
             </p>
             <Button variant="outline" onClick={() => {
               setSearchTerm('');
               setShowFilters(false);
             }}>
-              Limpar busca
+RESETAR BUSCA
             </Button>
           </Card>
         )}
       </div>
 
-      {/* Modal de Criar Caderno */}
+      {/* Modal de Criar Arsenal */}
       <AnimatePresence>
         {showCreateNotebook && (
           <>
@@ -820,21 +824,21 @@ export default function QuestionsPage() {
             >
               <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-auto">
               <div className="p-6 border-b">
-                <h2 className="text-2xl font-bold text-primary-900">Criar Novo Caderno</h2>
+                <h2 className="text-2xl font-bold text-primary-900 font-police-title uppercase tracking-wider">CRIAR NOVO ARSENAL</h2>
                 <p className="text-primary-600 mt-1">
-                  Organize suas questões em um caderno personalizado
+                  ORGANIZE SUAS QUESTÕES EM UM ARSENAL PERSONALIZADO
                 </p>
               </div>
               
               <div className="p-6 space-y-6">
                 {/* Nome do caderno */}
                 <div>
-                  <label className="block text-sm font-medium text-primary-700 mb-2">
-                    Nome do Caderno
+                  <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                    NOME DO ARSENAL
                   </label>
                   <input
                     type="text"
-                    placeholder="Ex: Questões de Direito Constitucional - CF/88"
+                    placeholder="EX: ARSENAL CONSTITUCIONAL - CF/88"
                     value={notebookName}
                     onChange={(e) => setNotebookName(e.target.value)}
                     className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -843,11 +847,11 @@ export default function QuestionsPage() {
                 
                 {/* Descrição */}
                 <div>
-                  <label className="block text-sm font-medium text-primary-700 mb-2">
-                    Descrição (opcional)
+                  <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                    BRIEFING (OPCIONAL)
                   </label>
                   <textarea
-                    placeholder="Descreva o objetivo deste caderno..."
+                    placeholder="DESCREVA O OBJETIVO DESTA OPERAÇÃO..."
                     value={notebookDescription}
                     onChange={(e) => setNotebookDescription(e.target.value)}
                     className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[80px]"
@@ -856,8 +860,8 @@ export default function QuestionsPage() {
                 
                 {/* Resumo das questões selecionadas */}
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-primary-900 mb-3">
-                    Questões Selecionadas ({selectedQuestions.length})
+                  <h3 className="font-semibold text-primary-900 mb-3 font-police-subtitle uppercase tracking-wider">
+                    ALVOS SELECIONADOS ({selectedQuestions.length})
                   </h3>
                   
                   {/* Estatísticas das questões selecionadas */}
@@ -866,7 +870,7 @@ export default function QuestionsPage() {
                       <div className="text-2xl font-bold text-primary-600">
                         {selectedQuestions.length}
                       </div>
-                      <div className="text-sm text-gray-600">Total</div>
+                      <div className="text-sm text-gray-600 font-police-body uppercase tracking-wider">TOTAL</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-blue-600">
@@ -879,7 +883,7 @@ export default function QuestionsPage() {
                           return subjects.size;
                         })()}
                       </div>
-                      <div className="text-sm text-gray-600">Matérias</div>
+                      <div className="text-sm text-gray-600 font-police-body uppercase tracking-wider">DISCIPLINAS</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-600">
@@ -889,7 +893,7 @@ export default function QuestionsPage() {
                             .reduce((acc, q) => acc + q.stats.avgTime, 0) / 60
                         )}min
                       </div>
-                      <div className="text-sm text-gray-600">Tempo estimado</div>
+                      <div className="text-sm text-gray-600 font-police-body uppercase tracking-wider">TEMPO ESTIMADO</div>
                     </div>
                   </div>
                   
@@ -911,9 +915,9 @@ export default function QuestionsPage() {
                                   <Badge 
                                     className={cn(
                                       "text-xs",
-                                      q.difficulty === 'Fácil' && "bg-green-100 text-green-700",
-                                      q.difficulty === 'Médio' && "bg-yellow-100 text-yellow-700",
-                                      q.difficulty === 'Difícil' && "bg-red-100 text-red-700"
+                                      q.difficulty === 'RECRUTA' && "bg-green-100 text-green-700",
+                                      q.difficulty === 'CABO' && "bg-yellow-100 text-yellow-700",
+                                      q.difficulty === 'SARGENTO' && "bg-red-100 text-red-700"
                                     )}
                                   >
                                     {q.difficulty}
@@ -927,8 +931,8 @@ export default function QuestionsPage() {
                           ))}
                       </div>
                     ) : (
-                      <p className="text-center text-gray-500 py-8">
-                        Nenhuma questão selecionada
+                      <p className="text-center text-gray-500 py-8 font-police-body uppercase tracking-wider">
+                        NENHUM ALVO SELECIONADO
                       </p>
                     )}
                     </div>
@@ -946,7 +950,7 @@ export default function QuestionsPage() {
                     disabled={!notebookName.trim()}
                   >
                     <BookMarked className="w-4 h-4 mr-2" />
-                    Criar Caderno
+      CRIAR ARSENAL
                   </Button>
                   <Button
                     variant="outline"
@@ -956,7 +960,7 @@ export default function QuestionsPage() {
                       setNotebookDescription('');
                     }}
                   >
-                    Cancelar
+CANCELAR
                   </Button>
                 </div>
               </div>
@@ -971,19 +975,19 @@ export default function QuestionsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="mt-12 bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-8 text-white text-center"
+        className="mt-12 bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black rounded-2xl p-8 text-white text-center"
       >
         <Brain className="w-12 h-12 mx-auto mb-4 text-accent-400" />
-        <h2 className="text-2xl font-bold mb-2">
-          Continue praticando!
+        <h2 className="text-2xl font-police-title font-bold mb-2 uppercase tracking-wider">
+          MANTENHA O TREINAMENTO!
         </h2>
-        <p className="text-primary-100 mb-6 max-w-2xl mx-auto">
-          Quanto mais questões você resolve, melhor fica sua preparação. Crie cadernos personalizados para focar nas suas necessidades.
+        <p className="text-gray-300 mb-6 max-w-2xl mx-auto font-police-body uppercase tracking-wider">
+          INTENSIFIQUE SEU TREINAMENTO TÁTICO. CRIE CADERNOS PERSONALIZADOS PARA OPERAÇÕES ESPECÍFICAS.
         </p>
         <div className="flex gap-3 justify-center">
           <Button variant="secondary" size="lg">
             <Zap className="w-5 h-5 mr-2" />
-            Modo Intensivo
+MODO INTENSIVO
           </Button>
           <Button 
             variant="outline" 
@@ -991,7 +995,7 @@ export default function QuestionsPage() {
             className="border-white text-white hover:bg-white hover:text-primary-700"
           >
             <Award className="w-5 h-5 mr-2" />
-            Ver Ranking
+VER RANKING
           </Button>
         </div>
       </motion.div>

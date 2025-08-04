@@ -37,7 +37,12 @@ import {
   UserCheck,
   BookMarked,
   ChevronLeft,
-  Info
+  Info,
+  Shield,
+  Activity,
+  AlertTriangle,
+  Command,
+  Crosshair
 } from 'lucide-react';
 import { mockStatistics, mockCourses } from '@/lib/mockData';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -45,6 +50,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { cn } from '@/utils/cn';
+import { Badge } from '@/components/ui/Badge';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -104,9 +111,14 @@ export default function DashboardPage() {
     try {
       // Simular carregamento de dados
       await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Dados atualizados com sucesso!');
+      toast.success('DADOS TÁTICOS ATUALIZADOS!', {
+        icon: '🎯',
+        duration: 3000
+      });
     } catch (error) {
-      toast.error('Erro ao atualizar dados');
+      toast.error('FALHA NA ATUALIZAÇÃO TÁTICA', {
+        icon: '⚠️'
+      });
     } finally {
       setIsRefreshing(false);
     }
@@ -114,24 +126,24 @@ export default function DashboardPage() {
 
   const getCurrentTime = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Bom dia';
-    if (hour < 18) return 'Boa tarde';
-    return 'Boa noite';
+    if (hour < 12) return 'BOM DIA';
+    if (hour < 18) return 'BOA TARDE';
+    return 'BOA NOITE';
   };
 
   const statsCards = [
     {
-      title: 'Questões Resolvidas',
+      title: 'EXERCÍCIOS TÁTICOS COMPLETADOS',
       value: stats.questionsAnswered.toLocaleString(),
-      icon: BookOpen,
-      color: 'text-blue-600',
+      icon: Crosshair,
+      color: 'text-accent-500',
       bgColor: 'bg-blue-100',
       progress: Math.round((stats.correctAnswers / stats.questionsAnswered) * 100),
       change: '+12%',
       trend: 'up',
     },
     {
-      title: 'Taxa de Acerto',
+      title: 'TAXA DE PRECISÃO',
       value: `${Math.round((stats.correctAnswers / stats.questionsAnswered) * 100)}%`,
       icon: Target,
       color: 'text-green-600',
@@ -141,7 +153,7 @@ export default function DashboardPage() {
       trend: 'up',
     },
     {
-      title: 'Flashcards Revisados',
+      title: 'CARTÕES TÁTICOS REVISADOS',
       value: stats.flashcardsReviewed.toLocaleString(),
       icon: Brain,
       color: 'text-purple-600',
@@ -151,8 +163,8 @@ export default function DashboardPage() {
       trend: 'down',
     },
     {
-      title: 'Sequência de Estudos',
-      value: `${stats.studyStreak} dias`,
+      title: 'SEQUÊNCIA OPERACIONAL',
+      value: `${stats.studyStreak} DIAS`,
       icon: Flame,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
@@ -164,19 +176,19 @@ export default function DashboardPage() {
 
   const dailyGoals = [
     { 
-      task: 'Resolver 50 questões', 
+      task: 'COMPLETAR 50 EXERCÍCIOS TÁTICOS', 
       completed: 32, 
       total: 50, 
-      icon: BookOpen,
+      icon: Crosshair,
       color: 'blue',
       bgGradient: 'from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30',
       borderColor: 'border-blue-200 dark:border-blue-700',
       iconBg: 'bg-blue-100 dark:bg-blue-800/50',
-      iconColor: 'text-blue-600 dark:text-blue-400',
+      iconColor: 'text-accent-500 dark:text-accent-400',
       progressGradient: 'from-blue-400 to-blue-600'
     },
     { 
-      task: 'Revisar 30 flashcards', 
+      task: 'REVISAR 30 CARTÕES TÁTICOS', 
       completed: 30, 
       total: 30, 
       icon: Brain,
@@ -188,7 +200,7 @@ export default function DashboardPage() {
       progressGradient: 'from-purple-400 to-purple-600'
     },
     { 
-      task: 'Estudar por 4 horas', 
+      task: 'TREINAR POR 4 HORAS', 
       completed: 2.5, 
       total: 4, 
       icon: Clock,
@@ -200,7 +212,7 @@ export default function DashboardPage() {
       progressGradient: 'from-amber-400 to-amber-600'
     },
     { 
-      task: 'Fazer 1 simulado', 
+      task: 'EXECUTAR 1 SIMULAÇÃO TÁTICA', 
       completed: 0, 
       total: 1, 
       icon: Trophy,
@@ -214,54 +226,54 @@ export default function DashboardPage() {
   ];
 
   const upcomingEvents = [
-    { title: 'Prova Polícia Federal - Agente', date: '2024-03-15', daysLeft: 45, type: 'exam', progress: 68 },
-    { title: 'Simulado Semanal - PF', date: '2024-02-10', daysLeft: 12, type: 'simulation', progress: 100 },
-    { title: 'Revisão Direito Penal', date: '2024-02-05', daysLeft: 7, type: 'study', progress: 45 },
+    { title: 'OPERAÇÃO POLÍCIA FEDERAL - AGENTE', date: '2024-03-15', daysLeft: 45, type: 'exam', progress: 68 },
+    { title: 'SIMULAÇÃO TÁTICA SEMANAL - PF', date: '2024-02-10', daysLeft: 12, type: 'simulation', progress: 100 },
+    { title: 'REVISÃO CÓDIGO PENAL MILITAR', date: '2024-02-05', daysLeft: 7, type: 'study', progress: 45 },
   ];
 
   const editalProgress = [
-    { materia: 'Direito Constitucional', total: 120, concluido: 89, porcentagem: 74 },
-    { materia: 'Direito Administrativo', total: 95, concluido: 67, porcentagem: 71 },
-    { materia: 'Direito Penal', total: 110, concluido: 58, porcentagem: 53 },
-    { materia: 'Português', total: 80, concluido: 72, porcentagem: 90 },
-    { materia: 'Raciocínio Lógico', total: 60, concluido: 38, porcentagem: 63 },
+    { materia: 'DIREITO CONSTITUCIONAL', total: 120, concluido: 89, porcentagem: 74 },
+    { materia: 'DIREITO ADMINISTRATIVO', total: 95, concluido: 67, porcentagem: 71 },
+    { materia: 'DIREITO PENAL', total: 110, concluido: 58, porcentagem: 53 },
+    { materia: 'PORTUGUÊS TÁTICO', total: 80, concluido: 72, porcentagem: 90 },
+    { materia: 'RACIOCÍNIO LÓGICO', total: 60, concluido: 38, porcentagem: 63 },
   ];
 
   const studyTips = [
-    'Use a técnica Pomodoro: 25min estudo + 5min pausa',
-    'Revise flashcards antes de dormir para melhor fixação',
-    'Faça questões de provas anteriores da mesma banca',
-    'Mantenha um cronograma consistente de estudos',
+    'USE A TÉCNICA POMODORO: 25MIN OPERAÇÃO + 5MIN DESCANSO TÁTICO',
+    'REVISE CARTÕES TÁTICOS ANTES DO DESCANSO NOTURNO',
+    'EXECUTE EXERCÍCIOS DE OPERAÇÕES ANTERIORES DA MESMA BANCA',
+    'MANTENHA CRONOGRAMA OPERACIONAL CONSISTENTE',
   ];
 
   const weakSubjects = [
-    { name: 'Direito Penal', accuracy: 65, questions: 150 },
-    { name: 'Raciocínio Lógico', accuracy: 72, questions: 98 },
-    { name: 'Informática', accuracy: 78, questions: 87 },
+    { name: 'DIREITO PENAL', accuracy: 65, questions: 150 },
+    { name: 'RACIOCÍNIO LÓGICO', accuracy: 72, questions: 98 },
+    { name: 'INFORMÁTICA FORENSE', accuracy: 78, questions: 87 },
   ];
 
-  // Dados das turmas
+  // Dados dos esquadrões (antigas turmas)
   const userGroups = [
     {
       id: '1',
-      name: 'TURMA ELITE PF 2024',
+      name: 'ESQUADRÃO ELITE PF 2024',
       members: 127,
-      role: 'Aluno',
+      role: 'OPERADOR',
       badge: '🎯',
       progress: 78,
-      nextActivity: 'Simulado às 19h',
-      instructor: 'Prof. Carlos Silva',
+      nextActivity: 'SIMULAÇÃO TÁTICA ÀS 19H',
+      instructor: 'COMANDANTE CARLOS SILVA',
       rank: 12
     },
     {
       id: '2',
-      name: 'GRUPO DE ESTUDOS - CONSTITUCIONAL',
+      name: 'FORÇA TÁTICA - CONSTITUCIONAL',
       members: 42,
-      role: 'Moderador',
-      badge: '📚',
+      role: 'LÍDER DE ESQUADRÃO',
+      badge: '⚡',
       progress: 85,
-      nextActivity: 'Revisão amanhã',
-      instructor: 'Ana Santos',
+      nextActivity: 'REVISÃO OPERACIONAL AMANHÃ',
+      instructor: 'CAP. ANA SANTOS',
       rank: 3
     }
   ];
@@ -269,17 +281,17 @@ export default function DashboardPage() {
   // Eventos do calendário
   const calendarEvents = {
     [`${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-15`]: [
-      { type: 'exam', title: 'Simulado Nacional', time: '14:00' },
-      { type: 'class', title: 'Aula ao vivo - Dir. Penal', time: '19:00' }
+      { type: 'exam', title: 'SIMULAÇÃO NACIONAL', time: '14:00' },
+      { type: 'class', title: 'BRIEFING AO VIVO - DIR. PENAL', time: '19:00' }
     ],
     [`${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-18`]: [
-      { type: 'deadline', title: 'Entrega de Resumos', time: '23:59' }
+      { type: 'deadline', title: 'ENTREGA DE RELATÓRIOS', time: '23:59' }
     ],
     [`${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-22`]: [
-      { type: 'class', title: 'Revisão Geral', time: '20:00' }
+      { type: 'class', title: 'REVISÃO GERAL TÁTICA', time: '20:00' }
     ],
     [`${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-25`]: [
-      { type: 'exam', title: 'Prova Final - Módulo 3', time: '09:00' }
+      { type: 'exam', title: 'OPERAÇÃO FINAL - MÓDULO 3', time: '09:00' }
     ]
   };
 
@@ -359,18 +371,19 @@ export default function DashboardPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl lg:text-3xl font-bold text-primary-900">
-                {getCurrentTime()}, {user?.name?.split(' ')[0] || 'Estudante'}! 👋
+              <h1 className="text-2xl lg:text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
+                {getCurrentTime()}, OPERADOR {user?.name?.split(' ')[0]?.toUpperCase() || 'RECRUTA'}! 
               </h1>
+              <Shield className="w-6 h-6 text-accent-500" />
               <div className="flex items-center gap-2">
                 {/* Status de conexão */}
-                <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
+                <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-police-body uppercase tracking-wider ${
                   isOnline 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-red-100 text-red-700'
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400' 
+                    : 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400'
                 }`}>
                   {isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-                  {isOnline ? 'Online' : 'Offline'}
+                  {isOnline ? 'CONECTADO' : 'OFFLINE'}
                 </div>
                 
                 {/* Botão de refresh */}
@@ -379,14 +392,14 @@ export default function DashboardPage() {
                   size="sm"
                   onClick={handleRefresh}
                   disabled={isRefreshing}
-                  className="p-2"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                 </Button>
               </div>
             </div>
-            <p className="text-primary-600">
-              Continue sua jornada rumo à aprovação. Você está no caminho certo!
+            <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
+              MANTENHA O FOCO NA MISSÃO. VOCÊ ESTÁ NO CAMINHO DA EXCELÊNCIA OPERACIONAL!
             </p>
           </div>
           
@@ -394,15 +407,15 @@ export default function DashboardPage() {
             {/* Informações do plano - Mobile friendly */}
             <div className="text-right">
               <div className="flex items-center gap-2 lg:justify-end">
-                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                  <Medal className="w-4 h-4 lg:w-5 lg:h-5 text-primary-600" />
+                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-accent-500 flex items-center justify-center">
+                  <Medal className="w-4 h-4 lg:w-5 lg:h-5 text-black" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-primary-900">
-                    Plano {user?.subscription?.plan}
+                  <p className="text-sm font-police-body font-medium text-gray-900 dark:text-white uppercase tracking-wider">
+                    PLANO {user?.subscription?.plan?.toUpperCase() || 'BÁSICO'}
                   </p>
-                  <p className="text-xs text-primary-600">
-                    Expira em {user?.subscription?.expiresAt}
+                  <p className="text-xs text-gray-600 dark:text-gray-400 font-police-numbers">
+                    EXPIRA EM {user?.subscription?.expiresAt || '30 DIAS'}
                   </p>
                 </div>
               </div>
@@ -413,10 +426,10 @@ export default function DashboardPage() {
               <img
                 src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=14242f&color=fff`}
                 alt={user?.name || 'Usuário'}
-                className="w-12 h-12 lg:w-14 lg:h-14 rounded-full border-2 border-primary-200 hover:border-primary-300 transition-colors cursor-pointer"
-                onClick={() => navigate('/settings')}
+                className="w-12 h-12 lg:w-14 lg:h-14 rounded-full border-2 border-accent-500 hover:border-accent-600 dark:hover:border-accent-650 transition-colors cursor-pointer"
+                onClick={() => navigate('/student/settings')}
               />
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
             </div>
           </div>
         </div>
@@ -455,29 +468,29 @@ export default function DashboardPage() {
                   transition={{ delay: index * 0.1 }}
                   whileHover={{ y: -4, shadow: "0 10px 25px -3px rgba(0, 0, 0, 0.1)" }}
                 >
-                  <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary-500 bg-gradient-to-br from-white to-primary-50/30 dark:from-gray-800 dark:to-gray-800/50">
+                  <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent-500 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className={`p-3 rounded-xl ${stat.bgColor} shadow-sm`}>
                           <Icon className={`w-6 h-6 ${stat.color}`} />
                         </div>
-                        <div className={`flex items-center gap-1 text-sm font-medium px-2 py-1 rounded-full ${
+                        <div className={`flex items-center gap-1 text-sm font-police-numbers font-medium px-2 py-1 rounded-full ${
                           stat.trend === 'up' 
-                            ? 'text-green-700 bg-green-100' 
-                            : 'text-red-700 bg-red-100'
+                            ? 'text-green-700 bg-green-100 dark:bg-green-900/50 dark:text-green-400' 
+                            : 'text-red-700 bg-red-100 dark:bg-red-900/50 dark:text-red-400'
                         }`}>
                           <TrendIcon className="w-3 h-3" />
                           {stat.change}
                         </div>
                       </div>
-                      <h3 className="text-2xl lg:text-3xl font-bold text-primary-900 mb-1">
+                      <h3 className="text-2xl lg:text-3xl font-police-numbers font-bold text-gray-900 dark:text-white mb-1">
                         {stat.value}
                       </h3>
-                      <p className="text-sm text-primary-600 mb-4">{stat.title}</p>
+                      <p className="text-sm font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-4">{stat.title}</p>
                       
                       {/* Progress Bar melhorada */}
                       <div className="relative">
-                        <div className="bg-primary-100 rounded-full h-2.5 overflow-hidden">
+                        <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${stat.progress}%` }}
@@ -491,7 +504,7 @@ export default function DashboardPage() {
                             }`}
                           />
                         </div>
-                        <span className="absolute right-0 -top-6 text-xs font-medium text-primary-700">
+                        <span className="absolute right-0 -top-6 text-xs font-police-numbers font-medium text-gray-700 dark:text-gray-300">
                           {stat.progress}%
                         </span>
                       </div>
@@ -504,7 +517,7 @@ export default function DashboardPage() {
         )}
       </AnimatePresence>
 
-      {/* Metas Diárias */}
+      {/* Objetivos da Missão (antigas Metas Diárias) */}
       <AnimatePresence mode="wait">
         {isLoading ? (
           <motion.div
@@ -536,19 +549,19 @@ export default function DashboardPage() {
             initial="hidden"
             animate="visible"
           >
-            <Card className="bg-gradient-to-br from-white to-primary-50/20 dark:from-gray-800 dark:to-gray-800/50 border-primary-200 dark:border-gray-700">
-              <CardHeader className="bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-t-lg">
+            <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+              <CardHeader className="bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black text-white rounded-t-lg">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <Target className="w-5 h-5" />
-                    Metas de Hoje
+                  <CardTitle className="flex items-center gap-2 text-white font-police-title uppercase tracking-wider">
+                    <Target className="w-5 h-5 text-accent-500" />
+                    OBJETIVOS DA MISSÃO - HOJE
                   </CardTitle>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-primary-100">
-                      {dailyGoals.filter(goal => goal.completed >= goal.total).length}/{dailyGoals.length} concluídas
+                    <span className="text-sm font-police-body text-gray-300 uppercase tracking-wider">
+                      {dailyGoals.filter(goal => goal.completed >= goal.total).length}/{dailyGoals.length} CONCLUÍDOS
                     </span>
-                    <div className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
-                      <span className="text-xs font-bold">
+                    <div className="w-8 h-8 rounded-full bg-accent-500 flex items-center justify-center">
+                      <span className="text-xs font-police-numbers font-bold text-black">
                         {Math.round((dailyGoals.filter(goal => goal.completed >= goal.total).length / dailyGoals.length) * 100)}%
                       </span>
                     </div>
@@ -606,15 +619,15 @@ export default function DashboardPage() {
                             )}
                           </div>
                           
-                          <p className="text-sm font-semibold text-primary-900 mb-3 leading-relaxed">
+                          <p className="text-sm font-police-body font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3 leading-relaxed">
                             {goal.task}
                           </p>
                           
                           <div className="flex items-center justify-between text-sm mb-3">
-                            <span className="font-medium text-primary-700">
+                            <span className="font-police-numbers font-medium text-gray-700 dark:text-gray-300">
                               {goal.completed}/{goal.total}
                             </span>
-                            <span className={`font-bold px-2 py-1 rounded-full text-xs ${
+                            <span className={`font-police-numbers font-bold px-2 py-1 rounded-full text-xs ${
                               isCompleted 
                                 ? 'bg-green-200 dark:bg-green-800/70 text-green-800 dark:text-green-200' 
                                 : `${goal.iconBg} ${goal.iconColor}`
@@ -624,7 +637,7 @@ export default function DashboardPage() {
                           </div>
                           
                           <div className="relative">
-                            <div className="bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
                               <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${Math.min(progress, 100)}%` }}
@@ -644,17 +657,17 @@ export default function DashboardPage() {
                 </div>
                 
                 {/* Motivational message */}
-                <div className="mt-6 p-4 bg-gradient-to-r from-primary-50 to-accent-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-primary-200 dark:border-gray-700">
+                <div className="mt-6 p-4 bg-gradient-to-r from-gray-100 to-accent-100/50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-                      <Flame className="w-5 h-5 text-primary-600" />
+                    <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center">
+                      <Flame className="w-5 h-5 text-black" />
                     </div>
                     <div>
-                      <p className="font-medium text-primary-900">Continue assim!</p>
-                      <p className="text-sm text-primary-600">
+                      <p className="font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">MANTENHA O RITMO OPERACIONAL!</p>
+                      <p className="text-sm font-police-body text-gray-600 dark:text-gray-400">
                         {dailyGoals.filter(goal => goal.completed >= goal.total).length === dailyGoals.length
-                          ? "🎉 Todas as metas concluídas! Você está no caminho certo!"
-                          : `Faltam apenas ${dailyGoals.length - dailyGoals.filter(goal => goal.completed >= goal.total).length} metas para completar o dia.`
+                          ? "🎯 TODOS OS OBJETIVOS CONCLUÍDOS! VOCÊ É UM OPERADOR DE ELITE!"
+                          : `FALTAM APENAS ${dailyGoals.length - dailyGoals.filter(goal => goal.completed >= goal.total).length} OBJETIVOS PARA COMPLETAR A MISSÃO.`
                         }
                       </p>
                     </div>
@@ -668,16 +681,21 @@ export default function DashboardPage() {
 
       {/* Progresso no Edital - Inspirado no Painel Tático */}
       <motion.div variants={itemVariants}>
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <GraduationCap className="w-5 h-5" />
-                Progresso no Edital - PF Agente
+              <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
+                <GraduationCap className="w-5 h-5 text-accent-500" />
+                PROGRESSO OPERACIONAL - PF AGENTE
               </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/tactical')}>
-                Ver Painel Tático
-                <TrendingUp className="w-4 h-4 ml-1" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate('/student/tactical-panel')}
+                className="gap-2 font-police-body uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                VER PAINEL TÁTICO
+                <TrendingUp className="w-4 h-4" />
               </Button>
             </div>
           </CardHeader>
@@ -686,12 +704,12 @@ export default function DashboardPage() {
               {editalProgress.map((materia, index) => (
                 <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800/50">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-primary-900">{materia.materia}</h4>
+                    <h4 className="font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">{materia.materia}</h4>
                     <div className="flex items-center gap-4">
-                      <span className="text-sm text-primary-600">
-                        {materia.concluido}/{materia.total} tópicos
+                      <span className="text-sm font-police-numbers text-gray-600 dark:text-gray-400">
+                        {materia.concluido}/{materia.total} TÓPICOS
                       </span>
-                      <span className={`text-sm font-medium ${
+                      <span className={`text-sm font-police-numbers font-medium ${
                         materia.porcentagem >= 75 ? 'text-green-600 dark:text-green-400' :
                         materia.porcentagem >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
                       }`}>
@@ -712,22 +730,22 @@ export default function DashboardPage() {
               ))}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 p-4 bg-gray-50 dark:bg-gray-800/30 rounded-lg">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  <p className="text-2xl font-police-numbers font-bold text-green-600 dark:text-green-400">
                     {Math.round(editalProgress.reduce((acc, curr) => acc + curr.porcentagem, 0) / editalProgress.length)}%
                   </p>
-                  <p className="text-sm text-primary-600">Progresso Geral</p>
+                  <p className="text-sm font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">PROGRESSO GERAL</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                  <p className="text-2xl font-police-numbers font-bold text-accent-500 dark:text-accent-400">
                     {editalProgress.reduce((acc, curr) => acc + curr.concluido, 0)}
                   </p>
-                  <p className="text-sm text-primary-600">Tópicos Concluídos</p>
+                  <p className="text-sm font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">TÓPICOS CONCLUÍDOS</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  <p className="text-2xl font-police-numbers font-bold text-orange-600 dark:text-orange-400">
                     {editalProgress.reduce((acc, curr) => acc + (curr.total - curr.concluido), 0)}
                   </p>
-                  <p className="text-sm text-primary-600">Tópicos Restantes</p>
+                  <p className="text-sm font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">TÓPICOS RESTANTES</p>
                 </div>
               </div>
             </div>
@@ -735,56 +753,56 @@ export default function DashboardPage() {
         </Card>
       </motion.div>
 
-      {/* Quick Actions melhorado */}
+      {/* Ações Rápidas melhorado */}
       <motion.div variants={itemVariants}>
-        <Card className="bg-gradient-to-br from-white to-primary-50/30 dark:from-gray-800 dark:to-gray-800/50 border-primary-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-primary-900">
-              <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
-                <Zap className="w-5 h-5 text-primary-600" />
+            <CardTitle className="flex items-center gap-2 font-police-title text-gray-900 dark:text-white uppercase tracking-wider">
+              <div className="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center">
+                <Zap className="w-5 h-5 text-black" />
               </div>
-              Ações Rápidas
+              CENTRO DE COMANDO RÁPIDO
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 {
-                  icon: BookOpen,
-                  title: "Resolver Questões",
-                  subtitle: "32/50 questões hoje",
+                  icon: Crosshair,
+                  title: "EXERCÍCIOS TÁTICOS",
+                  subtitle: "32/50 COMPLETADOS HOJE",
                   color: "blue",
-                  path: "/questions",
+                  path: "/student/questions",
                   bgGradient: "from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30",
                   borderColor: "border-blue-200 dark:border-blue-700",
                   hoverColor: "hover:border-blue-300 dark:hover:border-blue-600"
                 },
                 {
                   icon: Brain,
-                  title: "Revisar Flashcards",
-                  subtitle: "15 cards para hoje",
+                  title: "CARTÕES TÁTICOS",
+                  subtitle: "15 CARDS PARA HOJE",
                   color: "purple",
-                  path: "/flashcards",
+                  path: "/student/flashcards",
                   bgGradient: "from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30",
                   borderColor: "border-purple-200 dark:border-purple-700",
                   hoverColor: "hover:border-purple-300 dark:hover:border-purple-600"
                 },
                 {
                   icon: Trophy,
-                  title: "Fazer Simulado",
-                  subtitle: "Teste seus conhecimentos",
+                  title: "SIMULAÇÃO TÁTICA",
+                  subtitle: "TESTE SUAS HABILIDADES",
                   color: "green",
-                  path: "/simulations",
+                  path: "/student/mock-exams",
                   bgGradient: "from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30",
                   borderColor: "border-green-200 dark:border-green-700",
                   hoverColor: "hover:border-green-300 dark:hover:border-green-600"
                 },
                 {
                   icon: Calendar,
-                  title: "Ver Cronograma",
-                  subtitle: "Planejar estudos",
+                  title: "CRONOGRAMA OPERACIONAL",
+                  subtitle: "PLANEJAR MISSÕES",
                   color: "amber",
-                  path: "/schedule",
+                  path: "/student/schedule",
                   bgGradient: "from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30",
                   borderColor: "border-amber-200 dark:border-amber-700",
                   hoverColor: "hover:border-amber-300 dark:hover:border-amber-600"
@@ -805,19 +823,31 @@ export default function DashboardPage() {
                       className={`w-full p-6 rounded-xl border-2 transition-all duration-300 text-left group ${action.borderColor} ${action.hoverColor} bg-gradient-to-br ${action.bgGradient} hover:shadow-lg active:shadow-sm`}
                     >
                       <div className="flex flex-col items-center text-center space-y-3">
-                        <div className={`w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow border border-${action.color}-100`}>
-                          <Icon className={`w-7 h-7 text-${action.color}-600`} />
+                        <div className={`w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow border border-${action.color}-100`}>
+                          <Icon className={cn(
+                            "w-7 h-7",
+                            action.color === 'blue' && "text-accent-500",
+                            action.color === 'purple' && "text-purple-600",
+                            action.color === 'green' && "text-green-600",
+                            action.color === 'amber' && "text-amber-600"
+                          )} />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-primary-900 mb-1 group-hover:text-primary-800 transition-colors">
+                          <h3 className="font-police-subtitle font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider">
                             {action.title}
                           </h3>
-                          <p className="text-xs text-primary-600 group-hover:text-primary-700 transition-colors">
+                          <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors uppercase tracking-wider">
                             {action.subtitle}
                           </p>
                         </div>
-                        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <ArrowRight className={`w-3 h-3 text-${action.color}-600`} />
+                        <div className="w-6 h-6 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ArrowRight className={cn(
+                            "w-3 h-3",
+                            action.color === 'blue' && "text-accent-500",
+                            action.color === 'purple' && "text-purple-600",
+                            action.color === 'green' && "text-green-600",
+                            action.color === 'amber' && "text-amber-600"
+                          )} />
                         </div>
                       </div>
                     </button>
@@ -829,14 +859,14 @@ export default function DashboardPage() {
         </Card>
       </motion.div>
 
-      {/* Turmas e Calendário */}
+      {/* Esquadrões e Calendário */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Minhas Turmas */}
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+        {/* Meus Esquadrões */}
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white font-police-title">
-              <Users className="w-5 h-5" />
-              MINHAS TURMAS
+            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+              <Users className="w-5 h-5 text-accent-500" />
+              MEUS ESQUADRÕES
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -851,19 +881,19 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{group.badge}</span>
                     <div>
-                      <h3 className="font-bold text-gray-900 dark:text-white font-police-subtitle">
+                      <h3 className="font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                         {group.name}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
-                        {group.instructor} • {group.members} membros
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                        {group.instructor} • {group.members} OPERADORES
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <Badge className="bg-accent-500 text-black font-police-numbers">
+                    <Badge className="bg-accent-500 text-black font-police-numbers font-semibold">
                       #{group.rank}
                     </Badge>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-police-body">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-police-body uppercase tracking-wider">
                       {group.role}
                     </p>
                   </div>
@@ -871,8 +901,8 @@ export default function DashboardPage() {
                 
                 <div className="mb-3">
                   <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-gray-600 dark:text-gray-400 font-police-body">Progresso do módulo</span>
-                    <span className="font-bold text-gray-900 dark:text-white font-police-numbers">{group.progress}%</span>
+                    <span className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">PROGRESSO DO MÓDULO</span>
+                    <span className="font-police-numbers font-bold text-gray-900 dark:text-white">{group.progress}%</span>
                   </div>
                   <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                     <div
@@ -883,11 +913,15 @@ export default function DashboardPage() {
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
                     <Clock className="w-4 h-4" />
                     <span>{group.nextActivity}</span>
                   </div>
-                  <Button size="sm" variant="outline" className="gap-1 font-police-subtitle">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="gap-1 font-police-body uppercase tracking-wider hover:bg-accent-500 hover:text-black dark:hover:bg-accent-600 hover:border-accent-500 dark:hover:border-accent-600 transition-all"
+                  >
                     <ChevronRight className="w-4 h-4" />
                     ACESSAR
                   </Button>
@@ -897,22 +931,22 @@ export default function DashboardPage() {
             
             <Button 
               variant="outline" 
-              className="w-full gap-2 font-police-subtitle"
-              onClick={() => navigate('/groups')}
+              className="w-full gap-2 font-police-subtitle uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500"
+              onClick={() => navigate('/student/groups')}
             >
               <Users className="w-4 h-4" />
-              EXPLORAR MAIS TURMAS
+              EXPLORAR MAIS ESQUADRÕES
             </Button>
           </CardContent>
         </Card>
 
-        {/* Calendário */}
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+        {/* Calendário Operacional */}
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white font-police-title">
-                <CalendarDays className="w-5 h-5" />
-                CALENDÁRIO DE ESTUDOS
+              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+                <CalendarDays className="w-5 h-5 text-accent-500" />
+                CALENDÁRIO OPERACIONAL
               </CardTitle>
               <div className="flex items-center gap-2">
                 <Button
@@ -923,7 +957,7 @@ export default function DashboardPage() {
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                <span className="text-sm font-medium text-gray-900 dark:text-white font-police-subtitle min-w-[120px] text-center">
+                <span className="text-sm font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider min-w-[120px] text-center">
                   {currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase()}
                 </span>
                 <Button
@@ -941,7 +975,7 @@ export default function DashboardPage() {
             {/* Dias da semana */}
             <div className="grid grid-cols-7 gap-1 mb-2">
               {['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map((day) => (
-                <div key={day} className="text-center text-xs font-bold text-gray-600 dark:text-gray-400 font-police-subtitle p-2">
+                <div key={day} className="text-center text-xs font-police-subtitle font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider p-2">
                   {day}
                 </div>
               ))}
@@ -995,15 +1029,15 @@ export default function DashboardPage() {
             {/* Eventos do dia selecionado */}
             {calendarEvents[formatDateKey(selectedDate)] && (
               <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <h4 className="font-bold text-gray-900 dark:text-white mb-2 font-police-subtitle">
-                  EVENTOS - {selectedDate.toLocaleDateString('pt-BR')}
+                <h4 className="font-police-subtitle font-bold text-gray-900 dark:text-white mb-2 uppercase tracking-wider">
+                  OPERAÇÕES - {selectedDate.toLocaleDateString('pt-BR')}
                 </h4>
                 <div className="space-y-2">
                   {calendarEvents[formatDateKey(selectedDate)].map((event, idx) => (
                     <div key={idx} className="flex items-center gap-2 text-sm">
                       <div className={cn("w-2 h-2 rounded-full", getEventTypeColor(event.type))} />
                       <span className="font-police-numbers text-gray-600 dark:text-gray-400">{event.time}</span>
-                      <span className="text-gray-900 dark:text-white font-police-body">{event.title}</span>
+                      <span className="text-gray-900 dark:text-white font-police-body uppercase tracking-wider">{event.title}</span>
                     </div>
                   ))}
                 </div>
@@ -1014,132 +1048,144 @@ export default function DashboardPage() {
             <div className="mt-4 flex items-center justify-center gap-4 text-xs">
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-red-500" />
-                <span className="text-gray-600 dark:text-gray-400 font-police-body">Prova</span>
+                <span className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">OPERAÇÃO</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <span className="text-gray-600 dark:text-gray-400 font-police-body">Aula</span>
+                <span className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">BRIEFING</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                <span className="text-gray-600 dark:text-gray-400 font-police-body">Prazo</span>
+                <span className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">PRAZO</span>
               </div>
             </div>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Grid de 3 colunas: Próximos Eventos, Matérias Fracas, Dicas de Estudo */}
+      {/* Grid de 3 colunas: Próximas Operações, Áreas de Melhoria, Inteligência Tática */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Próximos Eventos */}
-        <Card>
+        {/* Próximas Operações */}
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              Próximos Eventos
+            <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
+              <Clock className="w-5 h-5 text-accent-500" />
+              PRÓXIMAS OPERAÇÕES
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {upcomingEvents.map((event, index) => {
               const getEventColor = (type: string) => {
                 switch (type) {
-                  case 'exam': return 'text-red-600 bg-red-100';
-                  case 'simulation': return 'text-blue-600 bg-blue-100';
-                  default: return 'text-green-600 bg-green-100';
+                  case 'exam': return 'text-red-600 bg-red-100 dark:bg-red-900/50 dark:text-red-400';
+                  case 'simulation': return 'text-accent-500 bg-accent-100 dark:bg-accent-900/50 dark:text-accent-400';
+                  default: return 'text-green-600 bg-green-100 dark:bg-green-900/50 dark:text-green-400';
                 }
               };
               
               return (
-                <div key={index} className="p-3 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors">
+                <div key={index} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-accent-500 dark:hover:border-accent-500 transition-colors">
                   <div className="flex items-start justify-between mb-2">
-                    <h4 className="font-medium text-primary-900 text-sm">{event.title}</h4>
-                    <span className={`text-xs px-2 py-1 rounded-full ${getEventColor(event.type)}`}>
-                      {event.daysLeft}d
+                    <h4 className="font-police-body font-medium text-gray-900 dark:text-white text-sm uppercase tracking-wider">{event.title}</h4>
+                    <span className={`text-xs font-police-numbers px-2 py-1 rounded-full ${getEventColor(event.type)}`}>
+                      {event.daysLeft}D
                     </span>
                   </div>
-                  <p className="text-xs text-primary-600 mb-2">{event.date}</p>
+                  <p className="text-xs font-police-numbers text-gray-600 dark:text-gray-400 mb-2">{event.date}</p>
                   {event.progress && (
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                         <div
-                          className="bg-primary-500 h-1.5 rounded-full"
+                          className="bg-accent-500 h-1.5 rounded-full"
                           style={{ width: `${event.progress}%` }}
                         />
                       </div>
-                      <span className="text-xs text-primary-600">{event.progress}%</span>
+                      <span className="text-xs font-police-numbers text-gray-600 dark:text-gray-400">{event.progress}%</span>
                     </div>
                   )}
                 </div>
               );
             })}
-            <Button variant="outline" size="sm" className="w-full">
-              Ver todos os eventos
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500"
+            >
+              VER TODAS AS OPERAÇÕES
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </CardContent>
         </Card>
 
-        {/* Matérias que precisam de atenção */}
-        <Card>
+        {/* Áreas de Melhoria Tática */}
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" />
-              Foque nestas matérias
+            <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              FOCO TÁTICO NECESSÁRIO
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {weakSubjects.map((subject, index) => (
-              <div key={index} className="p-3 border border-gray-200 rounded-lg">
+              <div key={index} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-primary-900 text-sm">{subject.name}</h4>
-                  <span className="text-sm font-medium text-red-600">{subject.accuracy}%</span>
+                  <h4 className="font-police-body font-medium text-gray-900 dark:text-white text-sm uppercase tracking-wider">{subject.name}</h4>
+                  <span className="text-sm font-police-numbers font-medium text-red-600 dark:text-red-400">{subject.accuracy}%</span>
                 </div>
-                <div className="bg-gray-200 rounded-full h-2 mb-2">
+                <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
                   <div
                     className="bg-red-500 h-2 rounded-full"
                     style={{ width: `${subject.accuracy}%` }}
                   />
                 </div>
-                <p className="text-xs text-primary-600">{subject.questions} questões resolvidas</p>
+                <p className="text-xs font-police-numbers text-gray-600 dark:text-gray-400">{subject.questions} EXERCÍCIOS REALIZADOS</p>
               </div>
             ))}
-            <Button variant="outline" size="sm" className="w-full">
-              Ver relatório completo
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500"
+            >
+              VER RELATÓRIO COMPLETO
               <BarChart3 className="w-4 h-4 ml-1" />
             </Button>
           </CardContent>
         </Card>
 
-        {/* Dica de estudo do dia */}
-        <Card>
+        {/* Inteligência Tática do Dia */}
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lightbulb className="w-5 h-5" />
-              Dica do Dia
+            <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
+              <Lightbulb className="w-5 h-5 text-accent-500" />
+              INTELIGÊNCIA TÁTICA
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <Lightbulb className="w-6 h-6 text-amber-600 mb-2" />
-                <p className="text-sm text-amber-800 font-medium mb-2">
-                  Técnica de Hoje
+              <div className="p-4 bg-accent-50 dark:bg-accent-900/20 border border-accent-200 dark:border-accent-800 rounded-lg">
+                <Lightbulb className="w-6 h-6 text-accent-600 dark:text-accent-400 mb-2" />
+                <p className="text-sm font-police-subtitle text-accent-800 dark:text-accent-200 font-medium mb-2 uppercase tracking-wider">
+                  TÉCNICA OPERACIONAL DO DIA
                 </p>
-                <p className="text-sm text-amber-700">
+                <p className="text-sm font-police-body text-accent-700 dark:text-accent-300 uppercase tracking-wider">
                   {studyTips[0]}
                 </p>
               </div>
               <div className="space-y-2">
-                <h4 className="font-medium text-primary-900 text-sm">Outras dicas:</h4>
+                <h4 className="font-police-subtitle font-medium text-gray-900 dark:text-white text-sm uppercase tracking-wider">OUTRAS TÁTICAS:</h4>
                 {studyTips.slice(1, 3).map((tip, index) => (
                   <div key={index} className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-primary-700">{tip}</p>
+                    <p className="text-xs font-police-body text-gray-700 dark:text-gray-300 uppercase tracking-wider">{tip}</p>
                   </div>
                 ))}
               </div>
-              <Button variant="outline" size="sm" className="w-full">
-                Ver mais dicas
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500"
+              >
+                VER MAIS INTELIGÊNCIA
                 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
@@ -1147,17 +1193,21 @@ export default function DashboardPage() {
         </Card>
       </motion.div>
 
-      {/* Cursos em Andamento e Atividade Recente */}
+      {/* Operações em Andamento e Atividade Recente */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5" />
-                Cursos em Andamento
+              <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
+                <BookOpen className="w-5 h-5 text-accent-500" />
+                OPERAÇÕES EM ANDAMENTO
               </CardTitle>
-              <Button variant="ghost" size="sm">
-                Ver todos
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="font-police-body uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                VER TODAS
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
@@ -1166,33 +1216,33 @@ export default function DashboardPage() {
             {mockCourses.map((course) => (
               <div
                 key={course.id}
-                className="p-4 border border-primary-200 rounded-lg hover:border-primary-300 transition-colors cursor-pointer hover:bg-primary-50"
-                onClick={() => navigate(`/courses/${course.id}`)}
+                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-accent-500 dark:hover:border-accent-500 transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                onClick={() => navigate(`/student/courses/${course.id}`)}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-primary-900">{course.name}</h4>
-                  <span className="text-sm font-medium text-primary-600">{course.progress}%</span>
+                  <h4 className="font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">{course.name}</h4>
+                  <span className="text-sm font-police-numbers font-medium text-gray-600 dark:text-gray-400">{course.progress}%</span>
                 </div>
-                <div className="bg-gray-200 rounded-full h-2 mb-3">
+                <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-3">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${course.progress}%` }}
                     transition={{ duration: 1, delay: 0.3 }}
-                    className="bg-gradient-to-r from-primary-500 to-accent-500 h-2 rounded-full"
+                    className="bg-gradient-to-r from-accent-500 to-accent-600 h-2 rounded-full"
                   />
                 </div>
-                <div className="flex items-center gap-4 text-sm text-primary-600">
-                  <span className="flex items-center gap-1">
-                    <BookOpen className="w-4 h-4" />
-                    {course.totalQuestions} questões
+                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  <span className="flex items-center gap-1 font-police-body uppercase tracking-wider">
+                    <Crosshair className="w-4 h-4" />
+                    {course.totalQuestions} EXERCÍCIOS
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1 font-police-body uppercase tracking-wider">
                     <Brain className="w-4 h-4" />
-                    {course.totalFlashcards} cards
+                    {course.totalFlashcards} CARDS
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1 font-police-body uppercase tracking-wider">
                     <Users className="w-4 h-4" />
-                    {Math.floor(Math.random() * 500) + 100} alunos
+                    {Math.floor(Math.random() * 500) + 100} OPERADORES
                   </span>
                 </div>
               </div>
@@ -1200,64 +1250,68 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Atividade Recente
+            <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
+              <Activity className="w-5 h-5 text-accent-500" />
+              ATIVIDADE OPERACIONAL
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {[
                 { 
-                  icon: BookOpen, 
-                  text: 'Resolveu 25 questões de Direito Constitucional', 
-                  time: '2 horas atrás',
+                  icon: Crosshair, 
+                  text: 'COMPLETOU 25 EXERCÍCIOS DE DIREITO CONSTITUCIONAL', 
+                  time: '2 HORAS ATRÁS',
                   score: '+78%',
                   type: 'questions'
                 },
                 { 
                   icon: Brain, 
-                  text: 'Revisou 30 flashcards de Português', 
-                  time: '4 horas atrás',
+                  text: 'REVISOU 30 CARTÕES TÁTICOS DE PORTUGUÊS', 
+                  time: '4 HORAS ATRÁS',
                   score: '100%',
                   type: 'flashcards'
                 },
                 { 
                   icon: Trophy, 
-                  text: 'Completou simulado de Direito Penal', 
-                  time: 'Ontem',
+                  text: 'COMPLETOU SIMULAÇÃO DE DIREITO PENAL', 
+                  time: 'ONTEM',
                   score: '+85%',
                   type: 'simulation'
                 },
                 { 
                   icon: Flame, 
-                  text: 'Atingiu nova sequência de 15 dias', 
-                  time: 'Ontem',
-                  score: '🎉',
+                  text: 'ATINGIU SEQUÊNCIA OPERACIONAL DE 15 DIAS', 
+                  time: 'ONTEM',
+                  score: '🎯',
                   type: 'streak'
                 },
               ].map((activity, index) => {
                 const Icon = activity.icon;
                 return (
-                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="p-2 bg-primary-100 rounded-lg">
-                      <Icon className="w-4 h-4 text-primary-600" />
+                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className="p-2 bg-accent-100 dark:bg-accent-900/30 rounded-lg">
+                      <Icon className="w-4 h-4 text-accent-600 dark:text-accent-400" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-primary-900">{activity.text}</p>
-                        <span className="text-sm font-medium text-green-600">{activity.score}</span>
+                        <p className="text-sm font-police-body font-medium text-gray-900 dark:text-white uppercase tracking-wider">{activity.text}</p>
+                        <span className="text-sm font-police-numbers font-medium text-green-600 dark:text-green-400">{activity.score}</span>
                       </div>
-                      <p className="text-xs text-primary-500 mt-0.5">{activity.time}</p>
+                      <p className="text-xs font-police-body text-gray-500 dark:text-gray-400 mt-0.5">{activity.time}</p>
                     </div>
                   </div>
                 );
               })}
             </div>
-            <Button variant="outline" size="sm" className="w-full mt-4">
-              Ver histórico completo
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full mt-4 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500"
+            >
+              VER HISTÓRICO COMPLETO
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </CardContent>

@@ -69,29 +69,29 @@ interface PrivacySetting {
 const notificationSettings: NotificationSetting[] = [
   {
     id: 'study-reminders',
-    title: 'Lembretes de Estudo',
-    description: 'Notificações sobre sessões de estudo agendadas',
+    title: 'ALERTAS DE TREINAMENTO',
+    description: 'ALERTAS SOBRE SESSÕES DE TREINAMENTO AGENDADAS',
     enabled: true,
     channels: { email: true, push: true, sms: false }
   },
   {
     id: 'new-content',
-    title: 'Novo Conteúdo',
-    description: 'Avisos sobre novas aulas, questões e materiais',
+    title: 'NOVO ARSENAL',
+    description: 'AVISOS SOBRE NOVOS BRIEFINGS, QUESTÕES E MATERIAIS',
     enabled: true,
     channels: { email: true, push: false, sms: false }
   },
   {
     id: 'achievements',
-    title: 'Conquistas',
-    description: 'Notificações sobre metas alcançadas e badges',
+    title: 'CONDECORAÇÕES',
+    description: 'ALERTAS SOBRE METAS ALCANÇADAS E INSIGNIAS',
     enabled: true,
     channels: { email: false, push: true, sms: false }
   },
   {
     id: 'marketing',
-    title: 'Promoções e Ofertas',
-    description: 'Comunicações sobre descontos e novidades',
+    title: 'PROMOÇÕES ESTRATÉGICAS',
+    description: 'COMUNICAÇÕES SOBRE DESCONTOS E NOVIDADES',
     enabled: false,
     channels: { email: false, push: false, sms: false }
   }
@@ -100,20 +100,20 @@ const notificationSettings: NotificationSetting[] = [
 const privacySettings: PrivacySetting[] = [
   {
     id: 'profile-visibility',
-    title: 'Perfil Público',
-    description: 'Permitir que outros usuários vejam seu perfil e estatísticas',
+    title: 'PERFIL PÚBLICO',
+    description: 'PERMITIR QUE OUTROS OPERADORES VEJAM SEU PERFIL E ESTATÍSTICAS',
     enabled: false
   },
   {
     id: 'ranking-participation',
-    title: 'Participar do Ranking',
-    description: 'Aparecer no ranking geral e comparações',
+    title: 'RANKING OPERACIONAL',
+    description: 'APARECER NO RANKING GERAL E COMPARAÇÕES TÁTICAS',
     enabled: true
   },
   {
     id: 'study-data-sharing',
-    title: 'Compartilhar Dados de Estudo',
-    description: 'Contribuir anonimamente para melhorias do sistema',
+    title: 'INTELIGÊNCIA DE DADOS',
+    description: 'CONTRIBUIR ANONIMAMENTE PARA MELHORIAS DO SISTEMA',
     enabled: true
   }
 ];
@@ -134,15 +134,15 @@ export default function SettingsPage() {
 
   // Sections do menu
   const sections = [
-    { id: 'account', label: 'Conta', icon: User },
-    { id: 'payments', label: 'Pagamentos', icon: CreditCard },
-    { id: 'branding', label: 'Personalização', icon: Palette },
-    { id: 'notifications', label: 'Notificações', icon: Bell },
-    { id: 'privacy', label: 'Privacidade', icon: Shield },
-    { id: 'appearance', label: 'Aparência', icon: Monitor },
-    { id: 'study', label: 'Estudos', icon: Settings },
-    { id: 'data', label: 'Dados', icon: Download },
-    { id: 'help', label: 'Ajuda', icon: HelpCircle }
+    { id: 'account', label: 'IDENTIFICAÇÃO', icon: User },
+    { id: 'payments', label: 'FINANCEIRO', icon: CreditCard },
+    { id: 'branding', label: 'PERSONALIZAÇÃO', icon: Palette },
+    { id: 'notifications', label: 'ALERTAS', icon: Bell },
+    { id: 'privacy', label: 'SEGURANÇA', icon: Shield },
+    { id: 'appearance', label: 'VISUAL', icon: Monitor },
+    { id: 'study', label: 'TREINAMENTO', icon: Settings },
+    { id: 'data', label: 'DADOS', icon: Download },
+    { id: 'help', label: 'SUPORTE', icon: HelpCircle }
   ];
 
   // Toggle notificação
@@ -229,9 +229,9 @@ export default function SettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl font-bold text-primary-900 dark:text-white mb-2">Configurações</h1>
+        <h1 className="text-3xl font-bold text-primary-900 dark:text-white mb-2 font-police-title uppercase tracking-wider">CENTRO DE COMANDO</h1>
         <p className="text-primary-600 dark:text-gray-300">
-          Gerencie suas preferências e configurações da conta
+          GERENCIE SUAS PREFERÊNCIAS E CONFIGURAÇÕES TÁTICAS
         </p>
       </motion.div>
 
@@ -273,13 +273,13 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Informações da Conta</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">IDENTIFICAÇÃO OPERACIONAL</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Foto de perfil */}
                     <div>
                       <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-3">
-                        Foto de Perfil
+FOTO DE IDENTIFICAÇÃO
                       </label>
                       <div className="flex items-center gap-4">
                         <div className="w-20 h-20 bg-primary-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
@@ -288,7 +288,7 @@ export default function SettingsPage() {
                         <div>
                           <Button variant="outline" size="sm" className="gap-2">
                             <Camera className="w-4 h-4" />
-                            Alterar Foto
+ALTERAR FOTO
                           </Button>
                           <p className="text-xs text-primary-500 dark:text-gray-400 mt-1">
                             JPG, PNG ou GIF. Máximo 2MB.
@@ -301,7 +301,7 @@ export default function SettingsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                          Nome Completo
+NOME COMPLETO
                         </label>
                         <input
                           type="text"
@@ -321,7 +321,7 @@ export default function SettingsPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                          Telefone
+CONTATO TÁTICO
                         </label>
                         <input
                           type="tel"
@@ -343,11 +343,11 @@ export default function SettingsPage() {
 
                     {/* Alterar senha */}
                     <div className="border-t pt-6">
-                      <h3 className="text-lg font-semibold text-primary-900 dark:text-white mb-4">Segurança</h3>
+                      <h3 className="text-lg font-semibold text-primary-900 dark:text-white mb-4 font-police-subtitle uppercase tracking-wider">SEGURANÇA TÁTICA</h3>
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                            Senha Atual
+SENHA ATUAL
                           </label>
                           <div className="relative">
                             <input
@@ -370,7 +370,7 @@ export default function SettingsPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                              Nova Senha
+NOVA SENHA
                             </label>
                             <input
                               type="password"
@@ -379,7 +379,7 @@ export default function SettingsPage() {
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                              Confirmar Nova Senha
+CONFIRMAR NOVA SENHA
                             </label>
                             <input
                               type="password"
@@ -398,7 +398,7 @@ export default function SettingsPage() {
                         onClick={() => setShowDeleteModal(true)}
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Excluir Conta
+EXCLUIR CONTA
                       </Button>
                       <Button onClick={saveSettings} disabled={isLoading}>
                         {isLoading ? (
@@ -406,7 +406,7 @@ export default function SettingsPage() {
                         ) : (
                           <>
                             <Save className="w-4 h-4 mr-2" />
-                            Salvar Alterações
+  SALVAR ALTERAÇÕES
                           </>
                         )}
                       </Button>
@@ -426,7 +426,7 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Configurações de Pagamento</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">COMANDO FINANCEIRO</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Assinatura Atual */}
@@ -507,7 +507,7 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Personalização do Sistema</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">PERSONALIZAÇÃO TÁTICA</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Nome do Sistema */}
@@ -684,7 +684,7 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Preferências de Notificação</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">SISTEMA DE ALERTAS</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {notifications.map(notif => (
@@ -739,7 +739,7 @@ export default function SettingsPage() {
                     
                     <div className="flex justify-end">
                       <Button onClick={saveSettings} disabled={isLoading}>
-                        Salvar Preferências
+SALVAR PREFERÊNCIAS
                       </Button>
                     </div>
                   </CardContent>
@@ -757,7 +757,7 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Configurações de Privacidade</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">PROTOCOLOS DE SEGURANÇA</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {privacy.map(setting => (
@@ -791,7 +791,7 @@ export default function SettingsPage() {
                     
                     <div className="flex justify-end">
                       <Button onClick={saveSettings} disabled={isLoading}>
-                        Salvar Configurações
+SALVAR CONFIGURAÇÕES
                       </Button>
                     </div>
                   </CardContent>
@@ -809,7 +809,7 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Personalização Visual</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">CONFIGURAÇÃO VISUAL</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Tema */}
@@ -872,7 +872,7 @@ export default function SettingsPage() {
                     
                     <div className="flex justify-end">
                       <Button onClick={saveSettings} disabled={isLoading}>
-                        Aplicar Tema
+APLICAR TEMA
                       </Button>
                     </div>
                   </CardContent>
@@ -890,7 +890,7 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Preferências de Estudo</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">CONFIGURAÇÕES DE TREINAMENTO</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Metas diárias */}
@@ -947,7 +947,7 @@ export default function SettingsPage() {
                     
                     <div className="flex justify-end">
                       <Button onClick={saveSettings} disabled={isLoading}>
-                        Salvar Preferências
+SALVAR PREFERÊNCIAS
                       </Button>
                     </div>
                   </CardContent>
@@ -965,20 +965,20 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Seus Dados</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">SEUS DADOS OPERACIONAIS</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
                       <div className="p-4 border dark:border-gray-600 rounded-lg flex items-center justify-between">
                         <div>
-                          <h3 className="font-medium text-primary-900 dark:text-white">Exportar Dados</h3>
+                          <h3 className="font-medium text-primary-900 dark:text-white font-police-subtitle uppercase tracking-wider">EXPORTAR DADOS</h3>
                           <p className="text-sm text-primary-600 dark:text-gray-300">
                             Baixe todos os seus dados em formato JSON
                           </p>
                         </div>
                         <Button variant="outline" className="gap-2">
                           <Download className="w-4 h-4" />
-                          Exportar
+EXPORTAR
                         </Button>
                       </div>
                       
@@ -991,20 +991,20 @@ export default function SettingsPage() {
                         </div>
                         <Button variant="outline" className="gap-2">
                           <FileText className="w-4 h-4" />
-                          Gerar Relatório
+GERAR RELATÓRIO
                         </Button>
                       </div>
                       
                       <div className="p-4 border border-red-200 dark:border-red-700 rounded-lg flex items-center justify-between">
                         <div>
-                          <h3 className="font-medium text-red-900 dark:text-red-400">Limpar Cache</h3>
+                          <h3 className="font-medium text-red-900 dark:text-red-400 font-police-subtitle uppercase tracking-wider">LIMPAR CACHE</h3>
                           <p className="text-sm text-red-600 dark:text-red-400">
                             Remove dados temporários para liberar espaço
                           </p>
                         </div>
                         <Button variant="outline" className="text-red-600 hover:bg-red-50">
                           <Trash2 className="w-4 h-4" />
-                          Limpar
+LIMPAR
                         </Button>
                       </div>
                     </div>
@@ -1023,7 +1023,7 @@ export default function SettingsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white">Central de Ajuda</h2>
+                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">CENTRAL DE SUPORTE</h2>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
