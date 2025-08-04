@@ -390,20 +390,20 @@ export default function SchedulePage() {
             {record.subject}
           </p>
           
-          {block.progress && !block.completed && (
+          {record.progress && record.progress < 100 && (
             <div className="mt-4">
               <div className="flex justify-between text-xs mb-2">
                 <span className="font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
                   PROGRESSO
                 </span>
                 <span className="font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {block.progress}%
+                  {record.progress}%
                 </span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
                   className="bg-accent-500 h-full rounded-full transition-all"
-                  style={{ width: `${block.progress}%` }}
+                  style={{ width: `${record.progress}%` }}
                 />
               </div>
             </div>
