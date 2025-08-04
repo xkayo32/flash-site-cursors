@@ -27,7 +27,8 @@ import {
   X,
   Edit,
   CalendarDays,
-  Filter
+  Filter,
+  RotateCcw
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
@@ -239,26 +240,6 @@ export default function SchedulePage() {
   });
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  const getBlockIcon = (type: 'video' | 'reading' | 'practice' | 'review' | 'exam') => {
-    switch (type) {
-      case 'video': return Video;
-      case 'reading': return FileText;
-      case 'practice': return Brain;
-      case 'review': return BookOpen;
-      case 'exam': return Trophy;
-    }
-  };
-
-  const getBlockColor = (type: 'video' | 'reading' | 'practice' | 'review' | 'exam') => {
-    switch (type) {
-      case 'video': return 'bg-blue-100 border-blue-300 text-blue-700';
-      case 'reading': return 'bg-green-100 border-green-300 text-green-700';
-      case 'practice': return 'bg-purple-100 border-purple-300 text-purple-700';
-      case 'review': return 'bg-orange-100 border-orange-300 text-orange-700';
-      case 'exam': return 'bg-red-100 border-red-300 text-red-700';
-    }
-  };
-
   // Gerar dias do calendário
   const generateCalendarDays = () => {
     const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
@@ -406,6 +387,24 @@ export default function SchedulePage() {
                   style={{ width: `${record.progress}%` }}
                 />
               </div>
+            </div>
+          )}
+          
+          {record.score && (
+            <div className="mt-4">
+              <div className="flex justify-between text-xs mb-2">
+                <span className="font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                  TAXA DE ACERTO
+                </span>
+                <span className="font-police-numbers font-bold text-gray-900 dark:text-white">
+                  {record.score}%
+                </span>
+              </div>
+              {record.details && record.details.questionsAnswered && (
+                <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">
+                  {record.details.correctAnswers}/{record.details.questionsAnswered} questões corretas
+                </p>
+              )}
             </div>
           )}
           
@@ -661,7 +660,7 @@ export default function SchedulePage() {
                             )}>
                               {day.date.getDate()}
                             </span>
-                            {tasks.length > 0 && (
+                            {dayTasks.length > 0 && (
                               <Badge 
                                 variant="secondary" 
                                 className="text-xs font-police-numbers"
@@ -673,7 +672,7 @@ export default function SchedulePage() {
                           
                           {/* Mini indicadores de tarefas */}
                           <div className="space-y-1">
-                            {tasks.slice(0, 3).map((task, i) => (
+                            {dayTasks.slice(0, 3).map((task, i) => (
                               <div 
                                 key={i}
                                 className={cn(
@@ -682,9 +681,9 @@ export default function SchedulePage() {
                                 )}
                               />
                             ))}
-                            {tasks.length > 3 && (
+                            {dayTasks.length > 3 && (
                               <span className="text-xs text-gray-500 dark:text-gray-400">
-                                +{tasks.length - 3}
+                                +{dayTasks.length - 3}
                               </span>
                             )}
                           </div>
@@ -755,24 +754,14 @@ export default function SchedulePage() {
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3 p-4">
-                        {(day.records || [])
-                          .map((record) => (
-                            <div key={record.id} className="relative">
-                              <StudyRecordCard record={record} />
-                              {/* Botão de marcar como concluído */}
-                              <button
-                                onClick={() => toggleTaskComplete(record.id)}
-                                className={cn(
-                                  "absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-                                  "bg-green-500 border-green-500"
-                                )}
-                              >
-                                <Check className="w-4 h-4 text-white" />
-                              </button>
-                            </div>
-                          ))}
+                        {day.records.map((record) => (
+                          <StudyRecordCard key={record.id} record={record} />
+                        ))}
                         
-                        <button className="w-full py-2 px-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:border-accent-500 hover:text-accent-500 transition-all duration-300 flex items-center justify-center gap-2 font-police-body uppercase tracking-wider">
+                        <button 
+                          onClick={() => setShowNewTaskModal(true)}
+                          className="w-full py-2 px-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:border-accent-500 hover:text-accent-500 transition-all duration-300 flex items-center justify-center gap-2 font-police-body uppercase tracking-wider"
+                        >
                           <Plus className="w-4 h-4" />
                           ADICIONAR TAREFA
                         </button>
