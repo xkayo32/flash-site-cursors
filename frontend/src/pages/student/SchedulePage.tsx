@@ -35,24 +35,35 @@ import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 
 // Tipos
-interface StudyBlock {
+interface StudyRecord {
   id: string;
-  startTime: string;
-  endTime: string;
+  timestamp: string;
   subject: string;
-  topic: string;
-  type: 'video' | 'reading' | 'practice' | 'review' | 'exam';
+  title: string;
+  type: 'course' | 'lesson' | 'module' | 'questions' | 'simulation' | 'flashcards' | 'revision';
   duration: number; // em minutos
-  priority: 'high' | 'medium' | 'low';
-  completed?: boolean;
   progress?: number;
+  score?: number; // para questões e simulados
+  courseId?: string;
+  lessonId?: string;
+  icon?: string;
+  details?: {
+    questionsAnswered?: number;
+    correctAnswers?: number;
+    topicsReviewed?: string[];
+  };
 }
 
-interface DailySchedule {
+interface DailyStudyLog {
   date: string;
-  blocks: StudyBlock[];
-  totalHours: number;
-  completedHours: number;
+  records: StudyRecord[];
+  totalMinutes: number;
+  achievements: {
+    coursesCompleted: number;
+    lessonsWatched: number;
+    questionsAnswered: number;
+    averageScore: number;
+  };
 }
 
 interface ExamInfo {
@@ -100,10 +111,11 @@ const examInfo: ExamInfo = {
   ]
 };
 
-const weeklySchedule: DailySchedule[] = [
+// Dados mockados do histórico de estudos
+const studyHistory: DailyStudyLog[] = [
   {
-    date: '2024-01-22',
-    blocks: [
+    date: new Date().toISOString().split('T')[0],
+    records: [
       { 
         id: '1', 
         startTime: '06:00', 
@@ -210,12 +222,19 @@ const weeklySchedule: DailySchedule[] = [
   }
 ];
 
+// Estatísticas de estudo baseadas no histórico real
 const studyStats = {
-  totalHoursPlanned: 450,
-  totalHoursCompleted: 126,
-  averageDaily: 3.5,
-  streak: 12,
-  efficiency: 78
+  totalHours: 142,
+  weeklyTotal: 1680, // minutos na semana
+  todayTotal: 240, // minutos hoje
+  streak: 15,
+  questionsTotal: 1250,
+  averageScore: 82,
+  completedModules: 24,
+  completedLessons: 156,
+  strongSubjects: ['DIREITO CONSTITUCIONAL TÁTICO', 'INTELIGÊNCIA DIGITAL'],
+  weakSubjects: ['RACIOCÍNIO LÓGICO TÁTICO', 'ECONOMIA ESTRATÉGICA'],
+  averageDaily: 4.5
 };
 
 export default function SchedulePage() {
@@ -326,8 +345,8 @@ export default function SchedulePage() {
     console.log('Marcar tarefa como concluída:', taskId);
   };
 
-  const StudyBlockCard = ({ block }: { block: StudyBlock }) => {
-    const Icon = getBlockIcon(block.type);
+  const StudyRecordCard = ({ record }: { record: StudyRecord }) => {
+    const Icon = getRecordIcon(record.type);
     
     return (
       <motion.div
@@ -424,11 +443,11 @@ export default function SchedulePage() {
       >
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">
-            CRONOGRAMA TÁTICO
+            DIÁRIO DE OPERAÇÕES TÁTICAS
           </h1>
           <p className="text-gray-600 dark:text-gray-300 font-police-body tracking-wider">
-              PLANO DE OPERAÇÕES OTIMIZADO POR IA MILITAR PARA {examInfo.name}
-            </p>
+            HISTÓRICO COMPLETO DE SUAS MISSÕES DE ESTUDO E CONQUISTAS
+          </p>
           </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-1">
@@ -469,11 +488,11 @@ export default function SchedulePage() {
           </select>
           
           <Button 
-            onClick={() => setShowNewTaskModal(true)}
-            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-all duration-300 hover:scale-105"
+            variant="outline"
+            className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            NOVA TAREFA
+            <Download className="w-4 h-4 mr-2" />
+            EXPORTAR RELATÓRIO
           </Button>
         </div>
       </motion.div>
@@ -522,7 +541,7 @@ export default function SchedulePage() {
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                  {studyStats.averageDaily}h
+                  {studyStats.todayTotal / 60}h
                 </div>
                 <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">MÉDIA DIÁRIA</div>
               </div>
@@ -790,23 +809,23 @@ export default function SchedulePage() {
                       HORAS PLANEJADAS
                     </span>
                     <span className="font-police-numbers font-bold text-gray-900 dark:text-white">
-                      {studyStats.totalHoursPlanned}H
+                      {studyStats.totalHours}H
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
-                      HORAS EXECUTADAS
+                      MÓDULOS COMPLETOS
                     </span>
                     <span className="font-police-numbers font-bold text-accent-500">
-                      {studyStats.totalHoursCompleted}H
+                      {studyStats.completedModules}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
-                      EFICIÊNCIA
+                      MÉDIA DE ACERTO
                     </span>
                     <span className="font-police-numbers font-bold text-gray-900 dark:text-white">
-                      {studyStats.efficiency}%
+                      {studyStats.averageScore}%
                     </span>
                   </div>
                 </div>
