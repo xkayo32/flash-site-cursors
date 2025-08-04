@@ -412,17 +412,12 @@ export default function SchedulePage() {
           <div className="mt-4 flex items-center justify-between">
             <Badge 
               variant="secondary" 
-              className={cn(
-                "font-police-subtitle tracking-wider border-2 border-current",
-                block.priority === 'high' && "text-red-700 dark:text-red-400",
-                block.priority === 'medium' && "text-yellow-700 dark:text-yellow-400",
-                block.priority === 'low' && "text-green-700 dark:text-green-400"
-              )}
+              className="font-police-subtitle tracking-wider border-2 border-current text-accent-500"
             >
-              {block.priority === 'high' ? 'CRÍTICA' : block.priority === 'medium' ? 'MÉDIA' : 'BAIXA'}
+              {record.type.toUpperCase()}
             </Badge>
             <span className="text-xs font-police-numbers font-bold text-gray-600 dark:text-gray-400">
-              {block.duration} MIN
+              {record.duration} MIN
             </span>
           </div>
         </div>
@@ -743,17 +738,17 @@ export default function SchedulePage() {
                               }).toUpperCase()}
                             </h3>
                             <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body tracking-wider">
-                              {day.completedHours}/{day.totalHours}H EXECUTADAS
+                              {(day.totalMinutes / 60).toFixed(1)}H EXECUTADAS • {day.records.length} ATIVIDADES
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">
-                              {Math.round((day.completedHours / day.totalHours) * 100)}%
+                              {day.records.length} MISSÕES
                             </div>
                             <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                               <div
                                 className="bg-accent-500 h-full rounded-full transition-all"
-                                style={{ width: `${(day.completedHours / day.totalHours) * 100}%` }}
+                                style={{ width: `${Math.min(100, (day.totalMinutes / 240) * 100)}%` }}
                               />
                             </div>
                           </div>
