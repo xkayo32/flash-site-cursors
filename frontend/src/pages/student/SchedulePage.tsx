@@ -116,109 +116,91 @@ const studyHistory: DailyStudyLog[] = [
   {
     date: new Date().toISOString().split('T')[0],
     records: [
-      { 
-        id: '1', 
-        startTime: '06:00', 
-        endTime: '08:00', 
-        subject: 'DIREITO CONSTITUCIONAL TÁTICO', 
-        topic: 'Direitos Fundamentais', 
-        type: 'video', 
-        duration: 120, 
-        priority: 'high',
-        completed: true
+      {
+        id: '1',
+        timestamp: new Date().toISOString(),
+        subject: 'DIREITO CONSTITUCIONAL TÁTICO',
+        title: 'Módulo 3 - Direitos Fundamentais Completo',
+        type: 'module',
+        duration: 120,
+        progress: 100,
+        courseId: 'const-001'
       },
-      { 
-        id: '2', 
-        startTime: '08:30', 
-        endTime: '10:00', 
-        subject: 'DIREITO PENAL OPERACIONAL', 
-        topic: 'Crimes contra a Administração', 
-        type: 'reading', 
-        duration: 90, 
-        priority: 'high',
-        completed: true
+      {
+        id: '2',
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        subject: 'DIREITO PENAL OPERACIONAL',
+        title: 'Simulado - Crimes contra a Administração',
+        type: 'simulation',
+        duration: 45,
+        score: 85,
+        details: {
+          questionsAnswered: 30,
+          correctAnswers: 26
+        }
       },
-      { 
-        id: '3', 
-        startTime: '14:00', 
-        endTime: '15:30', 
-        subject: 'INTELIGÊNCIA DIGITAL', 
-        topic: 'Segurança da Informação', 
-        type: 'practice', 
-        duration: 90, 
-        priority: 'medium',
-        progress: 60
+      {
+        id: '3',
+        timestamp: new Date(Date.now() - 7200000).toISOString(),
+        subject: 'INTELIGÊNCIA DIGITAL',
+        title: 'Aula 15 - Segurança da Informação',
+        type: 'lesson',
+        duration: 45,
+        progress: 100,
+        courseId: 'info-001',
+        lessonId: 'info-001-15'
       },
-      { 
-        id: '4', 
-        startTime: '16:00', 
-        endTime: '17:00', 
-        subject: 'COMUNICAÇÃO TÁTICA', 
-        topic: 'Concordância Verbal', 
-        type: 'review', 
-        duration: 60, 
-        priority: 'medium'
-      },
-      { 
-        id: '5', 
-        startTime: '19:00', 
-        endTime: '20:30', 
-        subject: 'RACIOCÍNIO LÓGICO TÁTICO', 
-        topic: 'Proposições e Conectivos', 
-        type: 'video', 
-        duration: 90, 
-        priority: 'high'
+      {
+        id: '4',
+        timestamp: new Date(Date.now() - 10800000).toISOString(),
+        subject: 'RACIOCÍNIO LÓGICO TÁTICO',
+        title: 'Questões - Lógica Proposicional',
+        type: 'questions',
+        duration: 30,
+        score: 78,
+        details: {
+          questionsAnswered: 25,
+          correctAnswers: 20
+        }
       }
     ],
-    totalHours: 7.5,
-    completedHours: 3.5
+    totalMinutes: 240,
+    achievements: {
+      coursesCompleted: 0,
+      lessonsWatched: 1,
+      questionsAnswered: 55,
+      averageScore: 82
+    }
   },
   {
-    date: '2024-01-23',
-    blocks: [
-      { 
-        id: '6', 
-        startTime: '06:00', 
-        endTime: '07:30', 
-        subject: 'DIREITO ADMINISTRATIVO', 
-        topic: 'Princípios da Administração', 
-        type: 'video', 
-        duration: 90, 
-        priority: 'high'
+    date: new Date(Date.now() - 86400000).toISOString().split('T')[0], // ontem
+    records: [
+      {
+        id: '5',
+        timestamp: new Date(Date.now() - 86400000 - 3600000).toISOString(),
+        subject: 'DIREITO ADMINISTRATIVO',
+        title: 'Curso Completo - Princípios da Administração',
+        type: 'course',
+        duration: 180,
+        progress: 100,
+        courseId: 'admin-001'
       },
-      { 
-        id: '7', 
-        startTime: '08:00', 
-        endTime: '10:00', 
-        subject: 'SIMULAÇÃO TÁTICA', 
-        topic: 'Simulado Semanal - Múltiplas Matérias', 
-        type: 'exam', 
-        duration: 120, 
-        priority: 'high'
-      },
-      { 
-        id: '8', 
-        startTime: '14:00', 
-        endTime: '15:30', 
-        subject: 'CONTABILIDADE OPERACIONAL', 
-        topic: 'Balanço Patrimonial', 
-        type: 'reading', 
-        duration: 90, 
-        priority: 'medium'
-      },
-      { 
-        id: '9', 
-        startTime: '16:00', 
-        endTime: '17:30', 
-        subject: 'ECONOMIA ESTRATÉGICA', 
-        topic: 'Macroeconomia Básica', 
-        type: 'video', 
-        duration: 90, 
-        priority: 'low'
+      {
+        id: '6',
+        timestamp: new Date(Date.now() - 86400000 - 7200000).toISOString(),
+        subject: 'CONTABILIDADE OPERACIONAL',
+        title: 'Revisão - Balanço Patrimonial',
+        type: 'revision',
+        duration: 60
       }
     ],
-    totalHours: 6,
-    completedHours: 0
+    totalMinutes: 240,
+    achievements: {
+      coursesCompleted: 1,
+      lessonsWatched: 0,
+      questionsAnswered: 0,
+      averageScore: 0
+    }
   }
 ];
 
@@ -749,7 +731,7 @@ export default function SchedulePage() {
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3 p-4">
-                        {day.records
+                        {(day.records || [])
                           .map((record) => (
                             <div key={record.id} className="relative">
                               <StudyRecordCard record={record} />
