@@ -577,13 +577,6 @@ export default function SchedulePage() {
           >
             HOJE
           </Button>
-          <Button 
-            size="sm"
-            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            NOVA TAREFA
-          </Button>
         </div>
       </div>
 
