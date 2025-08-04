@@ -241,7 +241,7 @@ export default function SchedulePage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [showSettings, setShowSettings] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<StudyBlock | null>(null);
+  const [selectedTask, setSelectedTask] = useState<StudyRecord | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
@@ -257,7 +257,7 @@ export default function SchedulePage() {
   });
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  const getBlockIcon = (type: StudyBlock['type']) => {
+  const getBlockIcon = (type: 'video' | 'reading' | 'practice' | 'review' | 'exam') => {
     switch (type) {
       case 'video': return Video;
       case 'reading': return FileText;
@@ -267,7 +267,7 @@ export default function SchedulePage() {
     }
   };
 
-  const getBlockColor = (type: StudyBlock['type']) => {
+  const getBlockColor = (type: 'video' | 'reading' | 'practice' | 'review' | 'exam') => {
     switch (type) {
       case 'video': return 'bg-blue-100 border-blue-300 text-blue-700';
       case 'reading': return 'bg-green-100 border-green-300 text-green-700';
@@ -313,9 +313,9 @@ export default function SchedulePage() {
   // Obter tarefas do dia
   const getTasksForDate = (date: Date) => {
     // Combinar tarefas do cronograma com tarefas criadas pelo usuário
-    const scheduledTasks = weeklySchedule
+    const scheduledTasks = studyHistory
       .find(d => new Date(d.date).toDateString() === date.toDateString())
-      ?.blocks || [];
+      ?.records || [];
     
     const userTasks = tasks
       .filter(task => new Date(task.date).toDateString() === date.toDateString())
@@ -325,7 +325,7 @@ export default function SchedulePage() {
         endTime: '', // Calcular baseado na duração se necessário
         subject: task.title,
         topic: task.description || '',
-        type: task.type as StudyBlock['type'],
+        type: 'revision' as StudyRecord['type'],
         duration: task.duration,
         priority: task.priority,
         completed: task.completed
@@ -708,12 +708,11 @@ export default function SchedulePage() {
           ) : (
             /* Modo Lista */
             <div className="space-y-6">
-              {weeklySchedule
+              {studyHistory
                 .filter(day => {
                   if (filter === 'all') return true;
-                  const hasCompleted = day.blocks.some(b => b.completed);
-                  const hasPending = day.blocks.some(b => !b.completed);
-                  return filter === 'completed' ? hasCompleted : hasPending;
+                  // No diário todos os registros são de atividades já realizadas
+                  return filter === 'completed';
                 })
                 .map((day) => (
                   <motion.div
@@ -750,27 +749,19 @@ export default function SchedulePage() {
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3 p-4">
-                        {day.blocks
-                          .filter(block => {
-                            if (filter === 'all') return true;
-                            return filter === 'completed' ? block.completed : !block.completed;
-                          })
-                          .map((block) => (
-                            <div key={block.id} className="relative">
-                              <StudyBlockCard block={block} />
+                        {day.records
+                          .map((record) => (
+                            <div key={record.id} className="relative">
+                              <StudyRecordCard record={record} />
                               {/* Botão de marcar como concluído */}
                               <button
-                                onClick={() => toggleTaskComplete(block.id)}
+                                onClick={() => toggleTaskComplete(record.id)}
                                 className={cn(
                                   "absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-                                  block.completed 
-                                    ? "bg-green-500 border-green-500" 
-                                    : "border-gray-300 dark:border-gray-600 hover:border-accent-500"
+                                  "bg-green-500 border-green-500"
                                 )}
                               >
-                                {block.completed && (
-                                  <Check className="w-4 h-4 text-white" />
-                                )}
+                                <Check className="w-4 h-4 text-white" />
                               </button>
                             </div>
                           ))}
