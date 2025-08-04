@@ -330,18 +330,32 @@ export default function ExamTakingPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'current': return 'bg-primary-600 text-white';
-      case 'answered': return 'bg-green-500 text-white';
-      case 'answered-flagged': return 'bg-amber-500 text-white';
-      case 'flagged': return 'bg-red-500 text-white';
-      default: return 'bg-gray-200 text-gray-700 hover:bg-gray-300';
+      case 'current': return 'bg-accent-500 text-black border-accent-500';
+      case 'answered': return 'bg-green-500 text-white border-green-500';
+      case 'answered-flagged': return 'bg-amber-500 text-black border-amber-500';
+      case 'flagged': return 'bg-red-500 text-white border-red-500';
+      default: return 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-600';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-black relative">
+      {/* Background Pattern */}
+      <div 
+        className="absolute inset-0 opacity-5 dark:opacity-10 pointer-events-none"
+        style={{
+          backgroundImage: `repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 35px,
+            rgba(250, 204, 21, 0.05) 35px,
+            rgba(250, 204, 21, 0.05) 70px
+          )`
+        }}
+      />
+      
       {/* Header */}
-      <div className="bg-white shadow-lg border-b-2 border-primary-200 sticky top-0 z-40">
+      <div className="bg-white dark:bg-gray-900 shadow-lg border-b-2 border-accent-500/50 sticky top-0 z-40 relative">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Título e informações */}
@@ -350,16 +364,16 @@ export default function ExamTakingPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowConfirmDialog(true)}
-                className="text-gray-600 hover:text-gray-800"
+                className="text-gray-600 dark:text-gray-400 hover:text-accent-500"
               >
                 <X className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-lg font-bold text-primary-900 font-police-title uppercase tracking-wider">{examSession.title}</h1>
-                <div className="flex items-center gap-4 text-sm text-gray-600">
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">{examSession.title}</h1>
+                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                   <span className="font-police-body uppercase tracking-wider">ALVO {currentQuestion.number} DE {totalQuestions}</span>
                   <span className="font-police-body uppercase tracking-wider">{currentQuestion.subject}</span>
-                  <Badge variant="outline" className="text-xs font-police-body">
+                  <Badge variant="outline" className="text-xs font-police-body border-accent-500 text-accent-500">
                     {currentQuestion.difficulty}
                   </Badge>
                 </div>
@@ -370,24 +384,24 @@ export default function ExamTakingPage() {
             <div className="flex items-center gap-4">
               {/* Cronômetro */}
               <div className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-lg font-bold",
-                examSession.timeRemaining < 1800 ? "bg-red-100 text-red-700" : 
-                examSession.timeRemaining < 3600 ? "bg-amber-100 text-amber-700" : 
-                "bg-green-100 text-green-700"
+                "flex items-center gap-2 px-4 py-2 rounded-lg font-police-numbers text-lg font-bold border-2 transition-colors",
+                examSession.timeRemaining < 1800 ? "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-500" : 
+                examSession.timeRemaining < 3600 ? "bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-500" : 
+                "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-500"
               )}>
                 <Clock className="w-5 h-5" />
                 {formatTime(examSession.timeRemaining)}
               </div>
 
               {/* Status de progresso */}
-              <div className="text-sm text-gray-600">
-                <span className="font-medium text-green-600">{answeredQuestions}</span>
+              <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                <span className="font-medium text-accent-500 font-police-numbers">{answeredQuestions}</span>
                 <span className="mx-1">/</span>
-                <span>{totalQuestions}</span>
+                <span className="font-police-numbers">{totalQuestions}</span>
                 {flaggedCount > 0 && (
-                  <span className="ml-2 text-amber-600">
+                  <span className="ml-2 text-amber-500 dark:text-amber-400">
                     <Flag className="w-4 h-4 inline mr-1" />
-                    {flaggedCount}
+                    <span className="font-police-numbers">{flaggedCount}</span>
                   </span>
                 )}
               </div>
@@ -399,7 +413,7 @@ export default function ExamTakingPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handlePauseToggle}
-                className="gap-1"
+                className="gap-1 font-police-body uppercase tracking-wider hover:text-accent-500"
               >
                 {examSession.isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
                 {examSession.isPaused ? 'RETOMAR' : 'PAUSAR'}
@@ -409,24 +423,24 @@ export default function ExamTakingPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowQuestionList(!showQuestionList)}
-                className="gap-1"
+                className="gap-1 font-police-body uppercase tracking-wider hover:text-accent-500"
               >
                 <Menu className="w-4 h-4" />
-                Questões
+                QUESTÕES
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleToggleFullscreen}
-                className="gap-1"
+                className="gap-1 hover:text-accent-500"
               >
                 {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
               </Button>
 
               <Button
-                onClick={() => setShowConfirmDialog(true)}
-                className="bg-green-600 hover:bg-green-700 gap-1"
+                onClick={() setShowConfirmDialog(true)}
+                className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider gap-1"
               >
                 <Send className="w-4 h-4" />
                 CONCLUIR MISSÃO
@@ -444,22 +458,25 @@ export default function ExamTakingPage() {
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 300, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              className="bg-white border-r border-gray-200 overflow-hidden"
+              className="bg-white dark:bg-gray-900 border-r border-accent-500/50 overflow-hidden relative"
             >
-              <div className="p-4 border-b">
-                <h3 className="font-semibold text-gray-900">Navegação</h3>
+              {/* Tactical stripe */}
+              <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+              
+              <div className="p-4 border-b border-accent-500/30">
+                <h3 className="font-semibold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">NAVEGAÇÃO TÁTICA</h3>
                 <div className="flex items-center gap-4 mt-2 text-sm">
                   <div className="flex items-center gap-1">
                     <div className="w-3 h-3 bg-green-500 rounded"></div>
-                    <span>Respondida</span>
+                    <span className="font-police-body text-gray-600 dark:text-gray-400">ELIMINADO</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div className="w-3 h-3 bg-red-500 rounded"></div>
-                    <span>Marcada</span>
+                    <span className="font-police-body text-gray-600 dark:text-gray-400">MARCADO</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-gray-300 rounded"></div>
-                    <span>Não respondida</span>
+                    <div className="w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                    <span className="font-police-body text-gray-600 dark:text-gray-400">PENDENTE</span>
                   </div>
                 </div>
               </div>
@@ -473,7 +490,7 @@ export default function ExamTakingPage() {
                         setShowQuestionList(false);
                       }}
                       className={cn(
-                        "w-10 h-10 rounded-lg text-sm font-medium transition-all",
+                        "w-10 h-10 rounded-lg text-sm font-medium transition-all font-police-numbers border-2",
                         getStatusColor(getQuestionStatus(question.id, index))
                       )}
                     >
@@ -490,13 +507,19 @@ export default function ExamTakingPage() {
         <div className="flex-1">
           {examSession.isPaused ? (
             <div className="flex items-center justify-center h-96">
-              <Card className="p-8 text-center">
+              <Card className="p-8 text-center bg-white dark:bg-gray-900 border-2 border-amber-500/50 relative overflow-hidden">
+                {/* Tactical stripe */}
+                <div className="absolute top-0 right-0 w-1 h-full bg-amber-500" />
+                
                 <Pause className="w-16 h-16 text-amber-500 mx-auto mb-4" />
-                <h2 className="text-xl font-bold text-gray-900 mb-2 font-police-title uppercase tracking-wider">OPERAÇÃO PAUSADA</h2>
-                <p className="text-gray-600 mb-4">
-                  CLIQUE EM "RETOMAR" PARA CONTINUAR A OPERAÇÃO
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 font-police-title uppercase tracking-ultra-wide">OPERAÇÃO PAUSADA</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-4 font-police-body tracking-wider">
+                  CLIQUE EM "RETOMAR" PARA CONTINUAR A OPERAÇÃO TÁTICA
                 </p>
-                <Button onClick={handlePauseToggle} className="gap-2">
+                <Button 
+                  onClick={handlePauseToggle} 
+                  className="gap-2 bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider"
+                >
                   <Play className="w-4 h-4" />
                   RETOMAR OPERAÇÃO
                 </Button>
@@ -511,19 +534,22 @@ export default function ExamTakingPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <Card className="mb-6">
+                <Card className="mb-6 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
+                  {/* Tactical stripe */}
+                  <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+                  
                   <CardContent className="p-6">
                     {/* Header da questão */}
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <Badge variant="secondary">
-                          Questão {currentQuestion.number}
+                        <Badge variant="secondary" className="font-police-subtitle tracking-wider border-2 border-current">
+                          ALVO {currentQuestion.number}
                         </Badge>
-                        <Badge variant="outline">
+                        <Badge variant="outline" className="font-police-body border-accent-500 text-accent-500">
                           {currentQuestion.subject}
                         </Badge>
                         {currentQuestion.year && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs font-police-body border-gray-400 text-gray-600 dark:text-gray-400">
                             {currentQuestion.institution} - {currentQuestion.year}
                           </Badge>
                         )}
@@ -533,10 +559,10 @@ export default function ExamTakingPage() {
                         size="sm"
                         onClick={handleToggleFlag}
                         className={cn(
-                          "gap-1",
+                          "gap-1 font-police-body uppercase tracking-wider",
                           examSession.flaggedQuestions.has(currentQuestion.id) 
-                            ? "text-red-600 bg-red-50" 
-                            : "text-gray-500"
+                            ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30" 
+                            : "text-gray-500 dark:text-gray-400 hover:text-accent-500"
                         )}
                       >
                         <Flag className="w-4 h-4" />
@@ -546,7 +572,7 @@ export default function ExamTakingPage() {
 
                     {/* Enunciado */}
                     <div className="mb-6">
-                      <p className="text-gray-900 leading-relaxed text-lg">
+                      <p className="text-gray-900 dark:text-white leading-relaxed text-lg font-police-body">
                         {currentQuestion.statement}
                       </p>
                     </div>
@@ -562,8 +588,8 @@ export default function ExamTakingPage() {
                             className={cn(
                               "w-full p-4 text-left rounded-lg border-2 transition-all hover:shadow-md",
                               isSelected 
-                                ? "border-primary-500 bg-primary-50" 
-                                : "border-gray-200 hover:border-gray-300 bg-white"
+                                ? "border-accent-500 bg-accent-500/10 dark:bg-accent-500/20" 
+                                : "border-gray-200 dark:border-gray-700 hover:border-accent-500/50 bg-white dark:bg-gray-800"
                             )}
                             whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.99 }}
@@ -572,16 +598,16 @@ export default function ExamTakingPage() {
                               <div className={cn(
                                 "flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1",
                                 isSelected 
-                                  ? "border-primary-500 bg-primary-500" 
-                                  : "border-gray-300"
+                                  ? "border-accent-500 bg-accent-500" 
+                                  : "border-gray-300 dark:border-gray-600"
                               )}>
-                                {isSelected && <CheckCircle className="w-4 h-4 text-white" />}
+                                {isSelected && <CheckCircle className="w-4 h-4 text-black" />}
                               </div>
                               <div className="flex-1">
-                                <span className="font-medium text-primary-900 mr-2">
+                                <span className="font-medium text-gray-900 dark:text-white mr-2 font-police-subtitle">
                                   {alternative.letter})
                                 </span>
-                                <span className="text-gray-800">
+                                <span className="text-gray-800 dark:text-gray-200 font-police-body">
                                   {alternative.text}
                                 </span>
                               </div>
@@ -592,9 +618,9 @@ export default function ExamTakingPage() {
                     </div>
 
                     {/* Dica de atalhos */}
-                    <div className="mt-6 p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600">
-                        <strong>Atalhos:</strong> Alt + 1-5 para selecionar alternativa • 
+                    <div className="mt-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-accent-500/30">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                        <strong className="text-accent-500 font-police-subtitle uppercase tracking-wider">ATALHOS TÁTICOS:</strong> Alt + 1-5 para selecionar alternativa • 
                         Setas ← → para navegar • Ctrl + F para marcar questão
                       </p>
                     </div>
@@ -608,17 +634,17 @@ export default function ExamTakingPage() {
                   variant="outline"
                   onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
                   disabled={currentQuestionIndex === 0}
-                  className="gap-2"
+                  className="gap-2 font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   ANTERIOR
                 </Button>
 
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <span>Questão {currentQuestion.number} de {totalQuestions}</span>
-                  <div className="w-32 bg-gray-200 rounded-full h-2">
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                  <span className="font-police-numbers">ALVO {currentQuestion.number} DE {totalQuestions}</span>
+                  <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div 
-                      className="bg-primary-500 h-full rounded-full transition-all"
+                      className="bg-accent-500 h-full rounded-full transition-all"
                       style={{ width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%` }}
                     />
                   </div>
@@ -628,7 +654,7 @@ export default function ExamTakingPage() {
                   variant="outline"
                   onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
                   disabled={currentQuestionIndex === totalQuestions - 1}
-                  className="gap-2"
+                  className="gap-2 font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
                 >
                   PRÓXIMO
                   <ChevronRight className="w-4 h-4" />
@@ -654,28 +680,31 @@ export default function ExamTakingPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
+              className="bg-white dark:bg-gray-900 rounded-lg p-6 max-w-md w-full mx-4 border-2 border-amber-500/50 relative overflow-hidden"
             >
+              {/* Tactical stripe */}
+              <div className="absolute top-0 right-0 w-1 h-full bg-amber-500" />
+              
               <div className="text-center">
                 <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 font-police-title uppercase tracking-ultra-wide">
                   CONCLUIR OPERAÇÃO TÁTICA?
                 </h3>
-                <p className="text-gray-600 mb-6">
-                  VOCÊ ELIMINOU {answeredQuestions} DE {totalQuestions} ALVOS. 
+                <p className="text-gray-600 dark:text-gray-400 mb-6 font-police-body tracking-wider">
+                  VOCÊ ELIMINOU <span className="font-police-numbers font-bold text-accent-500">{answeredQuestions}</span> DE <span className="font-police-numbers font-bold">{totalQuestions}</span> ALVOS. 
                   TEM CERTEZA QUE DESEJA CONCLUIR A OPERAÇÃO?
                 </p>
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
                     onClick={() => setShowConfirmDialog(false)}
-                    className="flex-1"
+                    className="flex-1 font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
                   >
                     RETOMAR OPERAÇÃO
                   </Button>
                   <Button
                     onClick={() => handleSubmitExam()}
-                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    className="flex-1 bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider"
                   >
                     CONCLUIR MISSÃO
                   </Button>
@@ -701,31 +730,34 @@ export default function ExamTakingPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
+              className="bg-white dark:bg-gray-900 rounded-lg p-6 max-w-md w-full mx-4 border-2 border-red-500/50 relative overflow-hidden"
             >
+              {/* Tactical stripe */}
+              <div className="absolute top-0 right-0 w-1 h-full bg-red-500" />
+              
               <div className="text-center">
-                <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  Questões não respondidas
+                <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 font-police-title uppercase tracking-ultra-wide">
+                  ALVOS NÃO ELIMINADOS
                 </h3>
-                <p className="text-gray-600 mb-6">
-                  Você ainda tem {totalQuestions - answeredQuestions} questões não respondidas. 
-                  Deseja continuar mesmo assim?
+                <p className="text-gray-600 dark:text-gray-400 mb-6 font-police-body tracking-wider">
+                  VOCÊ AINDA TEM <span className="font-police-numbers font-bold text-red-500">{totalQuestions - answeredQuestions}</span> ALVOS NÃO ELIMINADOS. 
+                  DESEJA CONCLUIR A OPERAÇÃO MESMO ASSIM?
                 </p>
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
                     onClick={() => setShowWarningDialog(false)}
-                    className="flex-1"
+                    className="flex-1 font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
                   >
-                    Revisar
+                    REVISAR ALVOS
                   </Button>
                   <Button
                     onClick={() => {
                       setShowWarningDialog(false);
                       handleSubmitExam(true);
                     }}
-                    className="flex-1 bg-red-600 hover:bg-red-700"
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-police-body font-semibold uppercase tracking-wider"
                   >
                     CONCLUIR MESMO ASSIM
                   </Button>
