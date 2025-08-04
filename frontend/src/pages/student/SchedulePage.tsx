@@ -327,6 +327,32 @@ export default function SchedulePage() {
     console.log('Marcar tarefa como concluída:', taskId);
   };
 
+  const getRecordIcon = (type: StudyRecord['type']) => {
+    switch (type) {
+      case 'course': return BookOpen;
+      case 'lesson': return Video;
+      case 'module': return Layers;
+      case 'questions': return Brain;
+      case 'simulation': return Target;
+      case 'flashcards': return Star;
+      case 'revision': return RotateCcw;
+      default: return FileText;
+    }
+  };
+
+  const getRecordColor = (type: StudyRecord['type']) => {
+    switch (type) {
+      case 'course': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400';
+      case 'lesson': return 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400';
+      case 'module': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400';
+      case 'questions': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400';
+      case 'simulation': return 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400';
+      case 'flashcards': return 'bg-pink-100 text-pink-700 dark:bg-pink-900/20 dark:text-pink-400';
+      case 'revision': return 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400';
+      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400';
+    }
+  };
+
   const StudyRecordCard = ({ record }: { record: StudyRecord }) => {
     const Icon = getRecordIcon(record.type);
     
@@ -342,23 +368,26 @@ export default function SchedulePage() {
         <div className="p-4">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
-                <Icon className="w-4 h-4 text-gray-700 dark:text-accent-500" />
+              <div className={cn(
+                "w-10 h-10 rounded-full flex items-center justify-center",
+                getRecordColor(record.type)
+              )}>
+                <Icon className="w-5 h-5" />
               </div>
-              <span className="font-police-body font-bold text-gray-900 dark:text-white uppercase tracking-wider">
-                {block.startTime} - {block.endTime}
-              </span>
+              <div>
+                <span className="font-police-body text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  {new Date(record.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                <h4 className="font-police-subtitle uppercase tracking-wider text-gray-900 dark:text-white">
+                  {record.title}
+                </h4>
+              </div>
             </div>
-            {block.completed && (
-              <CheckCircle className="w-5 h-5 text-accent-500" />
-            )}
+            <CheckCircle className="w-5 h-5 text-green-500" />
           </div>
           
-          <h4 className="font-police-title uppercase tracking-wider text-gray-900 dark:text-white mb-1">
-            {block.subject}
-          </h4>
-          <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
-            {block.topic}
+          <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body mb-2">
+            {record.subject}
           </p>
           
           {block.progress && !block.completed && (
