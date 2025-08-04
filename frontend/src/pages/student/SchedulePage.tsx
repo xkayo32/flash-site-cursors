@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar,
   Clock,
@@ -67,6 +67,18 @@ interface ExamInfo {
     progress: number;
     hoursNeeded: number;
   }[];
+}
+
+interface Task {
+  id: string;
+  date: string;
+  title: string;
+  description?: string;
+  type: 'study' | 'practice' | 'review' | 'exam';
+  priority: 'high' | 'medium' | 'low';
+  completed: boolean;
+  time: string;
+  duration: number;
 }
 
 // Dados mockados
@@ -213,6 +225,18 @@ export default function SchedulePage() {
   const [selectedTask, setSelectedTask] = useState<StudyBlock | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [showNewTaskModal, setShowNewTaskModal] = useState(false);
+  const [newTask, setNewTask] = useState({
+    title: '',
+    description: '',
+    date: new Date().toISOString().split('T')[0],
+    time: '09:00',
+    duration: '60',
+    type: 'study' as 'study' | 'practice' | 'review' | 'exam',
+    priority: 'medium' as 'high' | 'medium' | 'low',
+    subject: ''
+  });
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   const getBlockIcon = (type: StudyBlock['type']) => {
     switch (type) {
@@ -269,13 +293,35 @@ export default function SchedulePage() {
 
   // Obter tarefas do dia
   const getTasksForDate = (date: Date) => {
-    return weeklySchedule
+    // Combinar tarefas do cronograma com tarefas criadas pelo usuário
+    const scheduledTasks = weeklySchedule
       .find(d => new Date(d.date).toDateString() === date.toDateString())
       ?.blocks || [];
+    
+    const userTasks = tasks
+      .filter(task => new Date(task.date).toDateString() === date.toDateString())
+      .map(task => ({
+        id: task.id,
+        startTime: task.time,
+        endTime: '', // Calcular baseado na duração se necessário
+        subject: task.title,
+        topic: task.description || '',
+        type: task.type as StudyBlock['type'],
+        duration: task.duration,
+        priority: task.priority,
+        completed: task.completed
+      }));
+    
+    return [...scheduledTasks, ...userTasks];
   };
 
   // Marcar tarefa como concluída
   const toggleTaskComplete = (taskId: string) => {
+    // Atualizar tarefas do usuário
+    setTasks(prev => prev.map(task => 
+      task.id === taskId ? { ...task, completed: !task.completed } : task
+    ));
+    
     // Aqui será integrado com o backend futuramente
     console.log('Marcar tarefa como concluída:', taskId);
   };
@@ -422,9 +468,12 @@ export default function SchedulePage() {
             <option value="completed">CONCLUÍDAS</option>
           </select>
           
-          <Button variant="ghost" size="sm" className="font-police-body uppercase tracking-wider hover:text-accent-500">
-            <Download className="w-4 h-4 mr-2" />
-            EXPORTAR
+          <Button 
+            onClick={() => setShowNewTaskModal(true)}
+            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-all duration-300 hover:scale-105"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            NOVA TAREFA
           </Button>
         </div>
       </motion.div>
@@ -563,10 +612,10 @@ export default function SchedulePage() {
                   {/* Dias do calendário */}
                   <div className="grid grid-cols-7 gap-1">
                     {generateCalendarDays().map((day, index) => {
-                      const tasks = getTasksForDate(day.date);
+                      const dayTasks = getTasksForDate(day.date);
                       const isToday = day.date.toDateString() === new Date().toDateString();
-                      const completedTasks = tasks.filter(t => t.completed).length;
-                      const totalTasks = tasks.length;
+                      const completedTasks = dayTasks.filter(t => t.completed).length;
+                      const totalTasks = dayTasks.length;
                       
                       return (
                         <motion.div
@@ -578,11 +627,11 @@ export default function SchedulePage() {
                               ? "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700" 
                               : "bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 opacity-50",
                             isToday && "border-accent-500 border-2",
-                            tasks.length > 0 && "hover:border-accent-500"
+                            dayTasks.length > 0 && "hover:border-accent-500"
                           )}
                           onClick={() => {
                             setSelectedDate(day.date);
-                            if (tasks.length > 0) {
+                            if (dayTasks.length > 0) {
                               setViewMode('list');
                             }
                           }}
@@ -984,6 +1033,216 @@ MANTENHA O FOCO E A DISCIPLINA MILITAR!
             </div>
         </div>
       </motion.div>
+
+      {/* Modal de Nova Tarefa */}
+      <AnimatePresence>
+        {showNewTaskModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowNewTaskModal(false);
+              }
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-gray-900 rounded-lg p-6 max-w-md w-full border-2 border-gray-200 dark:border-gray-800"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">
+                  NOVA MISSÃO TÁTICA
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowNewTaskModal(false)}
+                  className="hover:text-accent-500"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Título */}
+                <div>
+                  <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                    TÍTULO DA MISSÃO
+                  </label>
+                  <input
+                    type="text"
+                    value={newTask.title}
+                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors focus:outline-none focus:border-accent-500"
+                    placeholder="DIGITE O TÍTULO..."
+                  />
+                </div>
+
+                {/* Descrição */}
+                <div>
+                  <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                    BRIEFING DA MISSÃO
+                  </label>
+                  <textarea
+                    value={newTask.description}
+                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body tracking-wider hover:border-accent-500 transition-colors focus:outline-none focus:border-accent-500 resize-none"
+                    rows={3}
+                    placeholder="Digite a descrição..."
+                  />
+                </div>
+
+                {/* Data e Hora */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                      DATA
+                    </label>
+                    <input
+                      type="date"
+                      value={newTask.date}
+                      onChange={(e) => setNewTask({ ...newTask, date: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers hover:border-accent-500 transition-colors focus:outline-none focus:border-accent-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                      HORÁRIO
+                    </label>
+                    <input
+                      type="time"
+                      value={newTask.time}
+                      onChange={(e) => setNewTask({ ...newTask, time: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers hover:border-accent-500 transition-colors focus:outline-none focus:border-accent-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Tipo e Prioridade */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                      TIPO DE OPERAÇÃO
+                    </label>
+                    <select
+                      value={newTask.type}
+                      onChange={(e) => setNewTask({ ...newTask, type: e.target.value as any })}
+                      className="w-full px-4 py-2 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors focus:outline-none focus:border-accent-500"
+                    >
+                      <option value="study">ESTUDO TÁTICO</option>
+                      <option value="practice">PRÁTICA OPERACIONAL</option>
+                      <option value="review">REVISÃO ESTRATÉGICA</option>
+                      <option value="exam">SIMULAÇÃO DE COMBATE</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                      NÍVEL DE PRIORIDADE
+                    </label>
+                    <select
+                      value={newTask.priority}
+                      onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as any })}
+                      className="w-full px-4 py-2 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors focus:outline-none focus:border-accent-500"
+                    >
+                      <option value="high">CRÍTICA</option>
+                      <option value="medium">PADRÃO</option>
+                      <option value="low">BAIXA</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Duração */}
+                <div>
+                  <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                    DURAÇÃO (MINUTOS)
+                  </label>
+                  <input
+                    type="number"
+                    value={newTask.duration}
+                    onChange={(e) => setNewTask({ ...newTask, duration: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers hover:border-accent-500 transition-colors focus:outline-none focus:border-accent-500"
+                    min="15"
+                    step="15"
+                  />
+                </div>
+
+                {/* Matéria */}
+                <div>
+                  <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                    ÁREA OPERACIONAL
+                  </label>
+                  <select
+                    value={newTask.subject}
+                    onChange={(e) => setNewTask({ ...newTask, subject: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors focus:outline-none focus:border-accent-500"
+                  >
+                    <option value="">SELECIONE A ÁREA...</option>
+                    {examInfo.subjects.map((subject) => (
+                      <option key={subject.name} value={subject.name}>
+                        {subject.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Botões de Ação */}
+              <div className="flex gap-3 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowNewTaskModal(false)}
+                  className="flex-1 font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
+                >
+                  CANCELAR
+                </Button>
+                <Button
+                  onClick={() => {
+                    // Aqui você adicionaria a lógica para salvar a tarefa
+                    console.log('Nova tarefa:', newTask);
+                    
+                    // Adicionar tarefa ao estado de tarefas
+                    setTasks([...tasks, {
+                      id: (tasks.length + 1).toString(),
+                      date: newTask.date,
+                      title: newTask.title,
+                      description: newTask.description,
+                      type: newTask.type,
+                      priority: newTask.priority,
+                      completed: false,
+                      time: newTask.time,
+                      duration: parseInt(newTask.duration)
+                    }]);
+                    
+                    // Resetar o formulário
+                    setNewTask({
+                      title: '',
+                      description: '',
+                      date: new Date().toISOString().split('T')[0],
+                      time: '09:00',
+                      duration: '60',
+                      type: 'study',
+                      priority: 'medium',
+                      subject: ''
+                    });
+                    
+                    setShowNewTaskModal(false);
+                  }}
+                  disabled={!newTask.title || !newTask.subject}
+                  className="flex-1 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  CRIAR MISSÃO
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
