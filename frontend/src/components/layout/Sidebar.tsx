@@ -19,8 +19,6 @@ import {
   Target,
   GraduationCap,
   TrendingUp,
-  Moon,
-  Sun,
   GripVertical,
   ClipboardList,
   Command,
@@ -41,7 +39,6 @@ import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '@/components/ui/Logo';
-import { useTheme } from '@/contexts/ThemeContext';
 
 const menuItems = [
   { icon: Command, label: 'COMANDO CENTRAL', path: '/dashboard' },
@@ -71,7 +68,6 @@ export function Sidebar() {
   const [isResizing, setIsResizing] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuthStore();
-  const { theme, setTheme, resolvedTheme } = useTheme();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isOpen = !isCollapsed;
 
@@ -327,47 +323,6 @@ export function Sidebar() {
             )}
           </div>
 
-          {/* Theme Toggle */}
-          <div className="relative group">
-            <button
-              onClick={() => {
-                const themes: ('light' | 'dark' | 'system')[] = ['light', 'dark', 'system'];
-                const currentIndex = themes.indexOf(theme);
-                const nextIndex = (currentIndex + 1) % themes.length;
-                setTheme(themes[nextIndex]);
-              }}
-              className={cn(
-                'w-full flex items-center rounded-lg transition-all text-left',
-                'hover:bg-primary-500 dark:hover:bg-gray-700',
-                isOpen ? 'gap-3 px-3 py-2.5' : 'justify-center px-2 py-2.5'
-              )}
-            >
-              {resolvedTheme === 'dark' ? (
-                <Moon className="w-5 h-5 flex-shrink-0" />
-              ) : (
-                <Sun className="w-5 h-5 flex-shrink-0" />
-              )}
-              {isOpen && (
-                <motion.span 
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: "auto" }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="font-medium whitespace-nowrap overflow-hidden"
-                >
-                  {theme === 'light' ? 'MODO CLARO' : theme === 'dark' ? 'MODO ESCURO' : 'SISTEMA'}
-                </motion.span>
-              )}
-            </button>
-            
-            {/* Tooltip para menu minimizado */}
-            {!isOpen && (
-              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-primary-800 dark:bg-gray-700 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 border border-primary-700 dark:border-gray-600">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-primary-800 dark:border-r-gray-700"></div>
-                Tema
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Resize Handle - only show on desktop when sidebar is open */}
