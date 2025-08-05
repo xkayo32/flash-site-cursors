@@ -229,13 +229,14 @@ const mockFlashcards: Flashcard[] = [
   {
     id: 'guide-cloze-1',
     type: 'cloze',
-    front: '🟡 FLASHCARD LACUNAS (CLOZE)\n\nEste tipo oculta parte do texto que você deve completar.\n\nTEXTO COM LACUNA:',
-    back: 'A Constituição Federal de 1988 é conhecida como {{c1::Constituição Cidadã}} porque {{c2::ampliou significativamente os direitos e garantias fundamentais}} dos brasileiros.',
+    front: '🟡 FLASHCARD LACUNAS (CLOZE)\n\nEste tipo permite que você teste o preenchimento de lacunas no texto. Clique nas lacunas para revelar as respostas uma por vez.\n\nCOMPLETE O TEXTO ABAIXO:',
+    back: 'A Constituição Federal de 1988 é conhecida como {{c1::Constituição Cidadã}} porque {{c2::ampliou significativamente os direitos e garantias fundamentais}} dos brasileiros, estabelecendo uma base sólida para a {{c3::democracia}} moderna.',
     subject: 'Tutorial/Guia',
     tags: ['tutorial', 'cloze', 'lacunas', 'completar'],
     difficulty: 'Médio',
-    clozeText: 'A Constituição Federal de 1988 é conhecida como {{c1::Constituição Cidadã}} porque {{c2::ampliou significativamente os direitos e garantias fundamentais}} dos brasileiros.',
-    clozeAnswers: ['Constituição Cidadã', 'ampliou significativamente os direitos e garantias fundamentais'],
+    clozeText: 'A Constituição Federal de 1988 é conhecida como {{c1::Constituição Cidadã}} porque {{c2::ampliou significativamente os direitos e garantias fundamentais}} dos brasileiros, estabelecendo uma base sólida para a {{c3::democracia}} moderna.',
+    clozeAnswers: ['Constituição Cidadã', 'ampliou significativamente os direitos e garantias fundamentais', 'democracia'],
+    explanation: '💡 DICA DE USO: Flashcards tipo CLOZE são ideais para: • Memorizar textos legais • Completar definições • Fixar conceitos em contexto • Estudar artigos de lei',
     createdAt: '2024-01-01',
     srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
     stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
@@ -1028,6 +1029,82 @@ export default function FlashcardsPage() {
     );
   };
 
+  // Componente para renderizar texto com lacunas (CLOZE)
+  const ClozeRenderer = ({ text, showAnswers }: { text: string; showAnswers: boolean }) => {
+    const [visibleClozes, setVisibleClozes] = useState<Set<string>>(new Set());
+
+    const toggleCloze = (clozeId: string) => {
+      const newVisible = new Set(visibleClozes);
+      if (newVisible.has(clozeId)) {
+        newVisible.delete(clozeId);
+      } else {
+        newVisible.add(clozeId);
+      }
+      setVisibleClozes(newVisible);
+    };
+
+    const renderClozeText = (text: string) => {
+      // Regex para encontrar padrões {{c1::texto}} ou {{c2::texto}}
+      const clozeRegex = /\{\{c(\d+)::([^}]+)\}\}/g;
+      const parts = [];
+      let lastIndex = 0;
+      let match;
+
+      while ((match = clozeRegex.exec(text)) !== null) {
+        // Adicionar texto antes da lacuna
+        if (match.index > lastIndex) {
+          parts.push(text.substring(lastIndex, match.index));
+        }
+
+        const clozeId = `c${match[1]}`;
+        const clozeContent = match[2];
+        const isVisible = showAnswers || visibleClozes.has(clozeId);
+
+        // Criar o elemento da lacuna
+        parts.push(
+          <span key={`${clozeId}-${match.index}`} className="inline-block">
+            <motion.button
+              onClick={() => !showAnswers && toggleCloze(clozeId)}
+              className={cn(
+                "mx-1 px-3 py-1 rounded-lg font-police-body font-semibold transition-all",
+                isVisible
+                  ? "bg-yellow-200 dark:bg-yellow-800/50 text-yellow-900 dark:text-yellow-200 border-2 border-yellow-400"
+                  : "bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-2 border-gray-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 cursor-pointer"
+              )}
+              whileHover={!showAnswers ? { scale: 1.05 } : {}}
+              whileTap={!showAnswers ? { scale: 0.95 } : {}}
+              disabled={showAnswers}
+            >
+              {isVisible ? clozeContent : `[LACUNA ${match[1]}]`}
+            </motion.button>
+          </span>
+        );
+
+        lastIndex = match.index + match[0].length;
+      }
+
+      // Adicionar texto restante
+      if (lastIndex < text.length) {
+        parts.push(text.substring(lastIndex));
+      }
+
+      return parts;
+    };
+
+    return (
+      <div className="text-lg leading-relaxed text-gray-900 dark:text-white font-police-body">
+        {renderClozeText(text)}
+        {!showAnswers && (
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+            <p className="text-sm text-blue-700 dark:text-blue-300 font-police-body">
+              💡 <strong>INSTRUÇÃO TÁTICA:</strong> Clique nas lacunas para revelar as respostas uma por vez.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const StudyCard = ({ card }: { card: Flashcard }) => {
     const getTypeColor = (type: string) => {
       switch (type) {
@@ -1098,21 +1175,73 @@ export default function FlashcardsPage() {
                 transition={{ duration: 0.3 }}
                 className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 min-h-[200px] flex items-center justify-center border-2 border-gray-200 dark:border-gray-700"
               >
-                <p className="text-lg leading-relaxed text-gray-900 dark:text-white font-police-body">
-                  {showAnswer ? card.back : card.front}
-                </p>
+                {card.type === 'cloze' ? (
+                  <div className="w-full">
+                    {!showAnswer ? (
+                      <div>
+                        <p className="text-lg leading-relaxed text-gray-900 dark:text-white font-police-body mb-4">
+                          {card.front}
+                        </p>
+                        <ClozeRenderer 
+                          text={card.clozeText || card.back} 
+                          showAnswers={false} 
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 font-police-subtitle uppercase tracking-wider">
+                          TEXTO COMPLETO:
+                        </h4>
+                        <ClozeRenderer 
+                          text={card.clozeText || card.back} 
+                          showAnswers={true} 
+                        />
+                        {card.explanation && (
+                          <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
+                            <p className="text-sm text-green-700 dark:text-green-300 font-police-body">
+                              <strong>EXPLICAÇÃO TÁTICA:</strong> {card.explanation}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-lg leading-relaxed text-gray-900 dark:text-white font-police-body">
+                    {showAnswer ? card.back : card.front}
+                  </p>
+                )}
               </motion.div>
             </div>
 
             {!showAnswer ? (
-              <Button 
-                onClick={() => setShowAnswer(true)}
-                className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
-                size="lg"
-              >
-                <Eye className="w-5 h-5" />
-                REVELAR INTEL
-              </Button>
+              card.type === 'cloze' ? (
+                <div className="space-y-4">
+                  <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-2 border-yellow-200 dark:border-yellow-700">
+                    <p className="text-yellow-800 dark:text-yellow-200 font-police-body font-semibold text-center">
+                      🎯 <strong>MODO LACUNAS ATIVO</strong><br />
+                      Clique nas lacunas para revelar as respostas ou veja o texto completo
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => setShowAnswer(true)}
+                    className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+                    size="lg"
+                  >
+                    <Eye className="w-5 h-5" />
+                    VER TEXTO COMPLETO
+                  </Button>
+                </div>
+              ) : (
+                <Button 
+                  onClick={() => setShowAnswer(true)}
+                  className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+                  size="lg"
+                >
+                  <Eye className="w-5 h-5" />
+                  REVELAR INTEL
+                </Button>
+              )
             ) : (
               <div className="space-y-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 font-police-body uppercase tracking-wider">
