@@ -192,31 +192,61 @@ Advanced features:
 - No Artisan commands - all database operations use direct SQL files
 - No Composer autoloading for controllers - custom autoloader in `includes/autoload.php`
 
-### UI/UX Design System
+### UI/UX Design System - Tema Militar/Tático Definitivo
 The project uses a **monochromatic military/police themed design system**:
 
-- **Color Palette**:
-  - Primary: Black (#000000), White (#FFFFFF)
-  - Military Base: #14242f (tactical blue-gray)
-  - Gray Scale: gray-50 to gray-950
-  - Accent Colors:
-    - accent-500: #facc15 (tactical yellow)
-    - accent-600: #e5b91e (yellow hover - light theme)  
-    - accent-650: #d06e0f (orange hover - dark theme)
-- **Button Color System**:
-  - Light Theme: `bg-accent-500 hover:bg-accent-600 text-black`
-  - Dark Theme: `dark:bg-gray-100 dark:hover:bg-accent-650 dark:text-black dark:hover:text-white`
-- **Typography**: 
-  - Headings: Orbitron (font-police-title)
-  - Subtitles: Rajdhani (font-police-subtitle) 
-  - Body: Rajdhani (font-police-body)
-  - Numbers: Exo 2 (font-police-numbers)
-- **Visual Effects**:
-  - Cards: bg-white/90 dark:bg-gray-800/90 with backdrop-blur-sm
-  - Image Overlays: bg-white/60 dark:bg-black/70
-  - Borders: border-gray-200 dark:border-gray-700
-  - Text: text-gray-900 dark:text-white (primary), text-gray-600 dark:text-gray-400 (secondary)
-  - Inputs: bg-gray-50 dark:bg-gray-800 with border-gray-300 dark:border-gray-600
+#### **Core Color Palette**:
+- **Primary**: Black (#000000), White (#FFFFFF)
+- **Military Base**: #14242f (tactical blue-gray - cor principal do tema)
+- **Gray Scale**: gray-50 to gray-950 (tons de cinza para hierarquia)
+- **Accent Colors**:
+  - accent-500: #facc15 (tactical yellow - destaque principal)
+  - accent-600: #e5b91e (yellow hover - light theme)  
+  - accent-650: #d06e0f (orange hover - dark theme)
+
+#### **Button Color System**:
+- **Light Theme**: `bg-accent-500 hover:bg-accent-600 text-black`
+- **Dark Theme**: `dark:bg-gray-100 dark:hover:bg-accent-650 dark:text-black dark:hover:text-white`
+- **Ghost Buttons**: `hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30`
+
+#### **Typography System**: 
+- **Headings**: Orbitron (font-police-title) - uppercase, tracking-wider
+- **Subtitles**: Rajdhani (font-police-subtitle) - uppercase, tracking-wider
+- **Body**: Rajdhani (font-police-body) - normal case
+- **Numbers**: Exo 2 (font-police-numbers) - para estatísticas
+
+#### **Visual Effects & Patterns**:
+- **Cards**: 
+  - Base: `bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm`
+  - Military: `border-l-4 border-l-accent-500` (tactical stripe)
+  - Hover: `hover:shadow-xl transition-all duration-300`
+- **Backgrounds**:
+  - Headers: `bg-gradient-to-r from-gray-900 via-[#14242f] to-gray-900`
+  - Tactical Pattern: `backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,204,21,0.3) 1px, transparent 0)'`
+- **Borders**: 
+  - Standard: `border-gray-200 dark:border-gray-700`
+  - Tactical: `border-accent-500` ou `border-accent-500/30`
+- **Text Colors**: 
+  - Primary: `text-gray-900 dark:text-white`
+  - Secondary: `text-gray-600 dark:text-gray-400`
+  - Tactical: `text-accent-500`
+- **Inputs**: `bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600`
+
+#### **Terminologia Militar (Páginas do Aluno)**:
+- **Dashboard**: "COMANDO TÁTICO", "OPERADOR", "ARSENAL TÁTICO"
+- **Flashcards**: "ARSENAL", "INTEL CARDS", "BRIEFINGS"
+- **Simulados**: "OPERAÇÕES", "ALVOS", "MISSÕES"
+- **Estatísticas**: "ALVOS ELIMINADOS", "PRECISÃO TÁTICA", "TAXA DE SUCESSO"
+- **Usuário**: "OPERADOR", "AGENTE", "RECRUTA"
+- **Planos**: "CLEARANCE", "AUTORIZAÇÃO"
+- **Progresso**: "STATUS OPERACIONAL", "MISSÃO COMPLETA"
+
+#### **Componentes Táticos Especiais**:
+- **Tactical Stripes**: Linhas verticais/horizontais em accent-500
+- **Corner Accents**: `<div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />`
+- **Badge System**: Cores específicas por tipo (blue, green, yellow, purple, red, indigo, orange)
+- **Animações**: Framer Motion com `whileHover`, `initial`, `animate`
+- **Gradientes**: Sempre incluindo #14242f (military base) nos gradientes
 
 ### Troubleshooting
 
