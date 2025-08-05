@@ -27,7 +27,8 @@ import {
   Flame,
   AlertTriangle,
   AlertCircle,
-  Info
+  Info,
+  Command
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
