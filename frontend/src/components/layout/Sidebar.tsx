@@ -62,8 +62,10 @@ const bottomItems = [
   { icon: Cog, label: 'CONFIGURAÇÕES', path: '/settings' },
 ];
 
+import { useSidebarContext } from './Layout';
+
 export function Sidebar() {
-  const [isOpen, setIsOpen] = useState(true);
+  const { isCollapsed } = useSidebarContext();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const [isResizing, setIsResizing] = useState(false);
@@ -71,6 +73,7 @@ export function Sidebar() {
   const { user, logout } = useAuthStore();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const isOpen = !isCollapsed;
 
   const MIN_WIDTH = 200;
   const MAX_WIDTH = 430; // 280px + 150px
@@ -118,7 +121,6 @@ export function Sidebar() {
     };
   }, [isResizing, sidebarWidth]);
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleMobileSidebar = () => setIsMobileOpen(!isMobileOpen);
 
   return (
@@ -174,23 +176,6 @@ export function Sidebar() {
               />
             </div>
             
-            {isOpen && (
-              <button
-                onClick={toggleSidebar}
-                className="hidden lg:block p-1.5 rounded-lg hover:bg-primary-500 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
-              >
-                <ChevronRight className="w-5 h-5 transition-transform" />
-              </button>
-            )}
-            
-            {!isOpen && (
-              <button
-                onClick={toggleSidebar}
-                className="hidden lg:block absolute top-4 right-2 p-1.5 rounded-lg hover:bg-primary-500 dark:hover:bg-gray-700 transition-colors"
-              >
-                <ChevronRight className="w-5 h-5 transition-transform rotate-180" />
-              </button>
-            )}
           </div>
         </div>
 
