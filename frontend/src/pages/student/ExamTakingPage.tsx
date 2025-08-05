@@ -197,6 +197,22 @@ export default function ExamTakingPage() {
   const answeredQuestions = Object.keys(examSession.answers).length;
   const flaggedCount = examSession.flaggedQuestions.size;
 
+  // Submit exam function - defined early to be used in useEffect
+  const handleSubmitExam = useCallback((autoSubmit = false) => {
+    if (!autoSubmit && answeredQuestions < totalQuestions) {
+      setShowWarningDialog(true);
+      return;
+    }
+    
+    // Navigate to results page
+    navigate(`/simulations/${examId}/results`, {
+      state: {
+        answers: examSession.answers,
+        timeSpent: examSession.duration * 60 - examSession.timeRemaining
+      }
+    });
+  }, [answeredQuestions, totalQuestions, navigate, examId, examSession.answers, examSession.timeRemaining, examSession.duration]);
+
   // Timer effect
   useEffect(() => {
     if (examSession.isPaused || examSession.timeRemaining <= 0) return;
@@ -214,7 +230,7 @@ export default function ExamTakingPage() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [examSession.isPaused, examSession.timeRemaining]);
+  }, [examSession.isPaused, examSession.timeRemaining, handleSubmitExam]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -299,21 +315,6 @@ export default function ExamTakingPage() {
     } else {
       document.exitFullscreen();
     }
-  };
-
-  const handleSubmitExam = (autoSubmit = false) => {
-    if (!autoSubmit && answeredQuestions < totalQuestions) {
-      setShowWarningDialog(true);
-      return;
-    }
-    
-    // Navigate to results page
-    navigate(`/simulations/${examId}/results`, {
-      state: {
-        answers: examSession.answers,
-        timeSpent: examSession.duration * 60 - examSession.timeRemaining
-      }
-    });
   };
 
   const getQuestionStatus = (questionId: string, index: number) => {
@@ -439,7 +440,7 @@ export default function ExamTakingPage() {
               </Button>
 
               <Button
-                onClick={() setShowConfirmDialog(true)}
+                onClick={() => setShowConfirmDialog(true)}
                 className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider gap-1"
               >
                 <Send className="w-4 h-4" />
