@@ -368,68 +368,78 @@ export default function DashboardPage() {
     >
       {/* Header com saudação personalizada */}
       <motion.div variants={itemVariants}>
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl lg:text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
-                {getCurrentTime()}, OPERADOR {user?.name?.split(' ')[0]?.toUpperCase() || 'RECRUTA'}! 
-              </h1>
-              <Shield className="w-6 h-6 text-accent-500" />
-              <div className="flex items-center gap-2">
-                {/* Status de conexão */}
-                <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-police-body uppercase tracking-wider ${
-                  isOnline 
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400' 
-                    : 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400'
-                }`}>
-                  {isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-                  {isOnline ? 'CONECTADO' : 'OFFLINE'}
-                </div>
-                
-                {/* Botão de refresh */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRefresh}
-                  disabled={isRefreshing}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                </Button>
-              </div>
-            </div>
-            <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
-              MANTENHA O FOCO NA MISSÃO. VOCÊ ESTÁ NO CAMINHO DA EXCELÊNCIA OPERACIONAL!
-            </p>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 p-6 border border-gray-700">
+          {/* Tactical background pattern */}
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-500 to-transparent" />
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-500 to-transparent" />
+            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-transparent via-accent-500 to-transparent" />
+            <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-transparent via-accent-500 to-transparent" />
           </div>
           
-          <div className="flex items-center gap-4">
-            {/* Informações do plano - Mobile friendly */}
-            <div className="text-right">
-              <div className="flex items-center gap-2 lg:justify-end">
-                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-accent-500 flex items-center justify-center">
-                  <Medal className="w-4 h-4 lg:w-5 lg:h-5 text-black" />
-                </div>
-                <div>
-                  <p className="text-sm font-police-body font-medium text-gray-900 dark:text-white uppercase tracking-wider">
-                    PLANO {user?.subscription?.plan?.toUpperCase() || 'BÁSICO'}
-                  </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 font-police-numbers">
-                    EXPIRA EM {user?.subscription?.expiresAt || '30 DIAS'}
-                  </p>
+          <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-2xl lg:text-3xl font-police-title font-bold uppercase tracking-wider text-white">
+                  {getCurrentTime()}, OPERADOR {user?.name?.split(' ')[0]?.toUpperCase() || 'RECRUTA'}! 
+                </h1>
+                <Command className="w-6 h-6 text-accent-500" />
+                <div className="flex items-center gap-2">
+                  {/* Status de conexão */}
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-police-body uppercase tracking-wider border ${
+                    isOnline 
+                      ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                      : 'bg-red-500/20 text-red-400 border-red-500/30'
+                  }`}>
+                    {isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+                    {isOnline ? 'OPERACIONAL' : 'OFFLINE'}
+                  </div>
+                  
+                  {/* Botão de refresh */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    className="p-2 hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  </Button>
                 </div>
               </div>
+              <p className="text-gray-300 font-police-subtitle uppercase tracking-wider">
+                COMANDO TÁTICO ATIVO. MANTENHA FOCO NA MISSÃO E EXCELÊNCIA OPERACIONAL!
+              </p>
             </div>
-            
-            {/* Avatar do usuário */}
-            <div className="relative">
-              <img
-                src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=14242f&color=fff`}
-                alt={user?.name || 'Usuário'}
-                className="w-12 h-12 lg:w-14 lg:h-14 rounded-full border-2 border-accent-500 hover:border-accent-600 dark:hover:border-accent-650 transition-colors cursor-pointer"
-                onClick={() => navigate('/student/settings')}
-              />
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+          
+            <div className="flex items-center gap-4">
+              {/* Informações do plano - Mobile friendly */}
+              <div className="text-right">
+                <div className="flex items-center gap-2 lg:justify-end">
+                  <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-accent-500 flex items-center justify-center shadow-lg">
+                    <Shield className="w-4 h-4 lg:w-5 lg:h-5 text-black" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-police-body font-medium text-white uppercase tracking-wider">
+                      CLEARANCE {user?.subscription?.plan?.toUpperCase() || 'BÁSICO'}
+                    </p>
+                    <p className="text-xs text-gray-300 font-police-numbers">
+                      EXPIRA EM {user?.subscription?.expiresAt || '30 DIAS'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Avatar do usuário */}
+              <div className="relative">
+                <img
+                  src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=14242f&color=fff`}
+                  alt={user?.name || 'Usuário'}
+                  className="w-12 h-12 lg:w-14 lg:h-14 rounded-full border-2 border-accent-500 hover:border-accent-600 transition-colors cursor-pointer shadow-lg"
+                  onClick={() => navigate('/student/settings')}
+                />
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full shadow-sm"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -468,7 +478,10 @@ export default function DashboardPage() {
                   transition={{ delay: index * 0.1 }}
                   whileHover={{ y: -4, shadow: "0 10px 25px -3px rgba(0, 0, 0, 0.1)" }}
                 >
-                  <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent-500 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+                  <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent-500 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm relative overflow-hidden">
+                    {/* Tactical corner elements */}
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-accent-500/20" />
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className={`p-3 rounded-xl ${stat.bgColor} shadow-sm`}>
@@ -549,12 +562,15 @@ export default function DashboardPage() {
             initial="hidden"
             animate="visible"
           >
-            <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+            <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700 relative overflow-hidden">
+              {/* Tactical stripes */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 via-transparent to-accent-500 opacity-50" />
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-500 to-transparent opacity-30" />
               <CardHeader className="bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black text-white rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-white font-police-title uppercase tracking-wider">
-                    <Target className="w-5 h-5 text-accent-500" />
-                    OBJETIVOS DA MISSÃO - HOJE
+                    <Crosshair className="w-5 h-5 text-accent-500" />
+                    ALVOS OPERACIONAIS - HOJE
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-police-body text-gray-300 uppercase tracking-wider">
@@ -681,21 +697,24 @@ export default function DashboardPage() {
 
       {/* Progresso no Edital - Inspirado no Painel Tático */}
       <motion.div variants={itemVariants}>
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700 relative overflow-hidden">
+          {/* Tactical corner accents */}
+          <div className="absolute top-0 right-0 w-12 h-12 border-t-2 border-r-2 border-accent-500/20" />
+          <div className="absolute bottom-0 left-0 w-12 h-12 border-b-2 border-l-2 border-accent-500/20" />
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
-                <GraduationCap className="w-5 h-5 text-accent-500" />
-                PROGRESSO OPERACIONAL - PF AGENTE
+                <Activity className="w-5 h-5 text-accent-500" />
+                STATUS OPERACIONAL - PF AGENTE
               </CardTitle>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => navigate('/student/tactical-panel')}
-                className="gap-2 font-police-body uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="gap-2 font-police-body uppercase tracking-wider hover:bg-accent-500 hover:text-black border border-accent-500/30 hover:border-accent-500"
               >
-                VER PAINEL TÁTICO
-                <TrendingUp className="w-4 h-4" />
+                COMANDO TÁTICO
+                <Command className="w-4 h-4" />
               </Button>
             </div>
           </CardHeader>
@@ -755,13 +774,15 @@ export default function DashboardPage() {
 
       {/* Ações Rápidas melhorado */}
       <motion.div variants={itemVariants}>
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700 relative overflow-hidden">
+          {/* Tactical grid pattern */}
+          <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,204,21,0.3) 1px, transparent 0)', backgroundSize: '20px 20px' }} />
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 font-police-title text-gray-900 dark:text-white uppercase tracking-wider">
-              <div className="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center">
-                <Zap className="w-5 h-5 text-black" />
+              <div className="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center shadow-lg border border-accent-600">
+                <Command className="w-5 h-5 text-black" />
               </div>
-              CENTRO DE COMANDO RÁPIDO
+              ARSENAL TÁTICO - ACESSO RÁPIDO
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -769,8 +790,8 @@ export default function DashboardPage() {
               {[
                 {
                   icon: Crosshair,
-                  title: "EXERCÍCIOS TÁTICOS",
-                  subtitle: "32/50 COMPLETADOS HOJE",
+                  title: "ARSENAL TÁTICO",
+                  subtitle: "32/50 ALVOS ELIMINADOS",
                   color: "blue",
                   path: "/student/questions",
                   bgGradient: "from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30",
@@ -779,8 +800,8 @@ export default function DashboardPage() {
                 },
                 {
                   icon: Brain,
-                  title: "CARTÕES TÁTICOS",
-                  subtitle: "15 CARDS PARA HOJE",
+                  title: "INTEL CARDS",
+                  subtitle: "15 BRIEFINGS PENDENTES",
                   color: "purple",
                   path: "/student/flashcards",
                   bgGradient: "from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30",
@@ -789,8 +810,8 @@ export default function DashboardPage() {
                 },
                 {
                   icon: Trophy,
-                  title: "SIMULAÇÃO TÁTICA",
-                  subtitle: "TESTE SUAS HABILIDADES",
+                  title: "OPERAÇÃO SIMULADA",
+                  subtitle: "TREINO OPERACIONAL",
                   color: "green",
                   path: "/student/mock-exams",
                   bgGradient: "from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30",
@@ -799,8 +820,8 @@ export default function DashboardPage() {
                 },
                 {
                   icon: Calendar,
-                  title: "CRONOGRAMA OPERACIONAL",
-                  subtitle: "PLANEJAR MISSÕES",
+                  title: "PLANEJAMENTO TÁTICO",
+                  subtitle: "ORGANIZAR MISSÕES",
                   color: "amber",
                   path: "/student/schedule",
                   bgGradient: "from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30",

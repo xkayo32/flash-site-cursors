@@ -35,6 +35,7 @@ import toast from 'react-hot-toast';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
+import { StudyProLogo } from '@/components/ui/StudyProLogo';
 
 // Tipos
 interface Flashcard {
@@ -1173,6 +1174,17 @@ export default function FlashcardsPage() {
     return (
       <div className="max-w-2xl mx-auto">
         <Card className="min-h-[400px] border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
+          {/* Logo do sistema acima do card */}
+          <div className="bg-gradient-to-r from-gray-900 via-[#14242f] to-gray-900 dark:from-black dark:via-[#14242f] dark:to-black p-4 border-b-2 border-accent-500">
+            <div className="flex items-center justify-center gap-4">
+              <StudyProLogo variant="full" size="sm" className="text-white" />
+              <div className="h-6 w-px bg-accent-500" />
+              <span className="font-police-title text-white text-sm tracking-widest">
+                {selectedDeck?.subject || 'CURSO TÁTICO'}
+              </span>
+            </div>
+          </div>
+          
           {/* Tactical stripe */}
           <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
           <CardHeader className="text-center border-b border-gray-200 dark:border-gray-700">
