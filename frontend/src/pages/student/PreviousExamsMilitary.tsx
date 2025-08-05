@@ -3,21 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
   Filter, 
-  Clock,
   Building,
-  Calendar,
-  Users,
   Play,
   Eye,
   Download,
-  BookOpen,
   TrendingUp,
   Award,
   Target,
   FileText,
   AlertTriangle,
   Star,
-  ExternalLink,
   CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -47,7 +42,6 @@ interface PreviousExam {
   passingScore: number;
 }
 
-// Dados de exemplo - Arsenal Tático de Provas
 const previousExams: PreviousExam[] = [
   {
     id: 1,
@@ -72,7 +66,7 @@ const previousExams: PreviousExam[] = [
   },
   {
     id: 2,
-    title: 'OPERAÇÃO PRF - POLICIAL RODOVIÁRIO 2021',
+    title: 'OPERAÇÃO PRF - POLICIAL 2021',
     organization: 'Polícia Rodoviária Federal',
     examBoard: 'CESPE',
     year: 2021,
@@ -132,94 +126,10 @@ const previousExams: PreviousExam[] = [
     avgScore: 65.8,
     totalAttempts: 1420,
     passingScore: 50
-  },
-  {
-    id: 5,
-    title: 'OPERAÇÃO PCDF - AGENTE 2023',
-    organization: 'Polícia Civil DF',
-    examBoard: 'CESPE',
-    year: 2023,
-    examDate: '2023-06-18',
-    position: 'Agente de Polícia',
-    totalQuestions: 120,
-    difficulty: 'hard',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    rating: 4.7,
-    views: 9840,
-    userAttempts: 0,
-    bestScore: null,
-    lastAttempt: null,
-    avgScore: 56.8,
-    totalAttempts: 2180,
-    passingScore: 60
-  },
-  {
-    id: 6,
-    title: 'OPERAÇÃO PMBA - OFICIAL 2022',
-    organization: 'Polícia Militar BA',
-    examBoard: 'IBFC',
-    year: 2022,
-    examDate: '2022-09-25',
-    position: 'Oficial PM',
-    totalQuestions: 100,
-    difficulty: 'expert',
-    hasAnswerSheet: true,
-    hasPDF: false,
-    rating: 4.5,
-    views: 5670,
-    userAttempts: 1,
-    bestScore: 72.0,
-    lastAttempt: '2024-01-12',
-    avgScore: 72.0,
-    totalAttempts: 1340,
-    passingScore: 70
-  },
-  {
-    id: 7,
-    title: 'OPERAÇÃO PENAL - AGEPEN 2022',
-    organization: 'Agente Penitenciário',
-    examBoard: 'FCC',
-    year: 2022,
-    examDate: '2022-04-10',
-    position: 'Agente Penitenciário',
-    totalQuestions: 80,
-    difficulty: 'medium',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    rating: 4.3,
-    views: 4320,
-    userAttempts: 2,
-    bestScore: 68.5,
-    lastAttempt: '2024-01-08',
-    avgScore: 63.7,
-    totalAttempts: 980,
-    passingScore: 50
-  },
-  {
-    id: 8,
-    title: 'OPERAÇÃO BOPE - CURSO ESPECIAL 2023',
-    organization: 'BOPE/PMERJ',
-    examBoard: 'IBADE',
-    year: 2023,
-    examDate: '2023-10-15',
-    position: 'Curso de Operações Especiais',
-    totalQuestions: 150,
-    difficulty: 'expert',
-    hasAnswerSheet: false,
-    hasPDF: true,
-    rating: 4.9,
-    views: 18920,
-    userAttempts: 0,
-    bestScore: null,
-    lastAttempt: null,
-    avgScore: 45.2,
-    totalAttempts: 890,
-    passingScore: 70
   }
 ];
 
-export default function PreviousExamsStudentPage() {
+export default function PreviousExamsMilitary() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedYear, setSelectedYear] = useState<string>('all');
@@ -275,7 +185,6 @@ export default function PreviousExamsStudentPage() {
     ));
   };
 
-  // Stats Summary
   const totalAttempts = previousExams.reduce((sum, exam) => sum + exam.userAttempts, 0);
   const avgUserScore = previousExams
     .filter(exam => exam.bestScore !== null)
@@ -368,7 +277,7 @@ export default function PreviousExamsStudentPage() {
               className="gap-2 font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
             >
               <Filter className="w-4 h-4" />
-              FILTROS TÁTICOS
+              FILTROS
             </Button>
           </div>
         </div>
@@ -381,7 +290,6 @@ export default function PreviousExamsStudentPage() {
             exit={{ opacity: 0, height: 0 }}
             className="bg-white dark:bg-gray-900 p-6 rounded-lg mb-6 space-y-4 border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden"
           >
-            {/* Tactical stripe */}
             <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -444,7 +352,6 @@ export default function PreviousExamsStudentPage() {
               transition={{ delay: 0.1 * index }}
               className="bg-white/90 dark:bg-gray-900/90 rounded-lg shadow-lg hover:shadow-xl border-2 border-gray-200 dark:border-gray-800 overflow-hidden hover:border-accent-500/50 transition-all duration-300 backdrop-blur-sm relative group"
             >
-              {/* Tactical stripe */}
               <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
               
               <div className="p-6">
@@ -498,77 +405,6 @@ export default function PreviousExamsStudentPage() {
                     <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">PRECISÃO</span>
                     <span className="font-bold text-gray-900 dark:text-white font-police-numbers">{exam.passingScore}%</span>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">RECONHECIMENTO</span>
-                    <span className="font-bold text-gray-900 dark:text-white font-police-numbers">{exam.views.toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">OPERAÇÕES</span>
-                    <span className="font-bold text-gray-900 dark:text-white font-police-numbers">{exam.totalAttempts.toLocaleString()}</span>
-                  </div>
-                </div>
-
-                {/* User Progress */}
-                {exam.userAttempts > 0 && (
-                  <div className="border-t-2 border-gray-200 dark:border-gray-700 pt-4 mb-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">SUA MELHOR MARCA</span>
-                        <span className={`font-bold font-police-numbers ${
-                          exam.bestScore && exam.bestScore >= exam.passingScore
-                            ? 'text-green-600 dark:text-green-400'
-                            : 'text-orange-600 dark:text-orange-400'
-                        }`}>
-                          {exam.bestScore?.toFixed(1)}%
-                          {exam.bestScore && exam.bestScore >= exam.passingScore && (
-                            <CheckCircle className="inline w-4 h-4 ml-1 text-green-600 dark:text-green-400" />
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">MISSÕES EXECUTADAS</span>
-                        <span className="font-bold font-police-numbers text-gray-900 dark:text-white">{exam.userAttempts}</span>
-                      </div>
-                      {exam.lastAttempt && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">ÚLTIMA OPERAÇÃO</span>
-                          <span className="text-gray-500 dark:text-gray-400 font-police-numbers">
-                            {new Date(exam.lastAttempt).toLocaleDateString('pt-BR')}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Resources */}
-                <div className="border-t-2 border-gray-200 dark:border-gray-700 pt-4 mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        exam.hasPDF ? 'bg-green-100 dark:bg-green-900/20' : 'bg-gray-100 dark:bg-gray-800'
-                      }`}>
-                        <FileText className={`w-4 h-4 ${exam.hasPDF ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`} />
-                      </div>
-                      <span className={`text-xs font-police-body uppercase tracking-wider ${
-                        exam.hasPDF ? 'text-green-600 dark:text-green-400' : 'text-gray-400'
-                      }`}>
-                        ARQUIVO TÁTICO
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        exam.hasAnswerSheet ? 'bg-green-100 dark:bg-green-900/20' : 'bg-gray-100 dark:bg-gray-800'
-                      }`}>
-                        <Award className={`w-4 h-4 ${exam.hasAnswerSheet ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`} />
-                      </div>
-                      <span className={`text-xs font-police-body uppercase tracking-wider ${
-                        exam.hasAnswerSheet ? 'text-green-600 dark:text-green-400' : 'text-gray-400'
-                      }`}>
-                        GABARITO OFICIAL
-                      </span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Actions */}
@@ -577,8 +413,7 @@ export default function PreviousExamsStudentPage() {
                     size="sm"
                     className="flex-1 gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-all duration-300 hover:scale-105"
                     onClick={() => {
-                      toast.success('INICIANDO OPERAÇÃO TÁTICA!', { 
-                        icon: '🎯',
+                      toast.success('INICIANDO OPERAÇÃO TÁTICA! 🎯', {
                         style: {
                           background: '#14242f',
                           color: '#facc15',
@@ -595,8 +430,7 @@ export default function PreviousExamsStudentPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      toast('ACESSANDO RELATÓRIO TÁTICO', {
-                        icon: '📊',
+                      toast('ACESSANDO RELATÓRIO TÁTICO 📊', {
                         style: {
                           background: '#14242f',
                           color: '#facc15',
@@ -614,20 +448,13 @@ export default function PreviousExamsStudentPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        toast.success('DOWNLOAD DO ARQUIVO TÁTICO INICIADO!', {
-                          description: 'Preparando documento classificado...',
-                          icon: '📄',
+                        toast.success('DOWNLOAD DO ARQUIVO TÁTICO INICIADO! 📄', {
                           style: {
                             background: '#14242f',
                             color: '#facc15',
                             border: '2px solid #facc15'
                           }
                         });
-                        // Simulate download
-                        const link = document.createElement('a');
-                        link.href = '#';
-                        link.download = `${exam.title.replace(/\s+/g, '_')}.pdf`;
-                        link.click();
                       }}
                       className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
                     >
@@ -665,7 +492,6 @@ export default function PreviousExamsStudentPage() {
           transition={{ delay: 0.5 }}
           className="mt-8 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-500/50 rounded-lg p-6 relative overflow-hidden backdrop-blur-sm"
         >
-          {/* Tactical stripe */}
           <div className="absolute top-0 right-0 w-1 h-full bg-amber-500" />
           
           <div className="flex items-start gap-3">

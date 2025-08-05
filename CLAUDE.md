@@ -343,7 +343,22 @@ cd backend/public
 php -l index.php           # Check PHP syntax
 ```
 
+## Git Commit Convention
+The project follows conventional commit format:
+- `feat:` for new features
+- `fix:` for bug fixes
+- `docs:` for documentation
+- `style:` for formatting changes
+- `refactor:` for code refactoring
+- `test:` for adding tests
+- `chore:` for maintenance
+
 ## Recent Updates
+
+### **2025-08-05**: Sistema de Provas Anteriores Militares
+- Nova página: `PreviousExamsMilitary.tsx` com tema militar/tático completo
+- Interface com terminologia militar: "OPERAÇÕES", "ARSENAIS", "COMANDO"
+- Filtros avançados e estatísticas de desempenho tático
 
 ### **2025-08-02**: Sistema Completo de Flashcards Individuais
 Implementação total dos 7 tipos de flashcard com interface profissional para apresentação:

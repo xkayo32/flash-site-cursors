@@ -48,7 +48,7 @@ import NewFlashcard from './pages/admin/NewFlashcard';
 import MockExamManagerSimple from './pages/admin/MockExamManagerSimple';
 import PreviousExamsManagerSimple from './pages/admin/PreviousExamsManagerSimple';
 import MockExamsPageSimple from './pages/student/MockExamsPageSimple';
-import PreviousExamsPageSimple from './pages/student/PreviousExamsPageSimple';
+import PreviousExamsMilitary from './pages/student/PreviousExamsMilitary';
 import AdminLayout from './components/layout/AdminLayout';
 
 // Componente para rotas protegidas
@@ -130,7 +130,7 @@ function Router() {
         <Route path="/simulations" element={<MockExamsPageSimple />} />
         <Route path="/flashcards" element={<FlashcardsPage />} />
         <Route path="/questions" element={<QuestionsPage />} />
-        <Route path="/previous-exams" element={<PreviousExamsPageSimple />} />
+        <Route path="/previous-exams" element={<PreviousExamsMilitary />} />
         <Route path="/summaries" element={<SummariesPage />} />
         <Route path="/legislation" element={<LegislationPage />} />
         <Route path="/tactical" element={<TacticalPanelPage />} />

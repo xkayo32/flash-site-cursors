@@ -26,7 +26,15 @@ import {
   Tag,
   Calendar,
   TrendingUp,
-  BarChart3
+  BarChart3,
+  MessageCircle,
+  Send,
+  ThumbsUp,
+  ThumbsDown,
+  Reply,
+  MoreHorizontal,
+  User,
+  Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
@@ -70,6 +78,21 @@ interface EmbeddedItem {
   type: 'flashcard' | 'question';
   position: number; // posição no texto
   data: any; // dados do flashcard ou questão
+}
+
+interface Comment {
+  id: string;
+  userId: string;
+  userName: string;
+  userRole: 'student' | 'instructor' | 'admin';
+  content: string;
+  timestamp: string;
+  likes: number;
+  dislikes: number;
+  isLiked?: boolean;
+  isDisliked?: boolean;
+  replies?: Comment[];
+  isReplyTo?: string;
 }
 
 // Dados mockados
@@ -221,6 +244,77 @@ const exampleContent: SummarySection[] = [
 const subjects = ['Todos', 'Direito Constitucional', 'Direito Penal', 'Direito Administrativo', 'Informática', 'Português'];
 const difficulties = ['Todos', 'Básico', 'Intermediário', 'Avançado'];
 
+// Comentários mockados
+const mockComments: Comment[] = [
+  {
+    id: '1',
+    userId: 'user1',
+    userName: 'AGENTE SILVA',
+    userRole: 'student',
+    content: 'Excelente resumo! As explicações sobre as gerações de direitos fundamentais ficaram muito claras. Os flashcards ajudaram bastante na fixação.',
+    timestamp: '2024-01-20T10:30:00Z',
+    likes: 12,
+    dislikes: 0,
+    isLiked: true,
+    replies: [
+      {
+        id: '1-1',
+        userId: 'instructor1',
+        userName: 'COMANDANTE SANTOS',
+        userRole: 'instructor',
+        content: 'Fico feliz que tenha gostado! Continue praticando com os flashcards para consolidar o conhecimento.',
+        timestamp: '2024-01-20T11:00:00Z',
+        likes: 5,
+        dislikes: 0,
+        isReplyTo: '1'
+      }
+    ]
+  },
+  {
+    id: '2',
+    userId: 'user2',
+    userName: 'OPERADOR COSTA',
+    userRole: 'student',
+    content: 'Seria interessante adicionar mais exemplos práticos sobre a aplicação dos direitos fundamentais. Talvez alguns casos concretos do STF?',
+    timestamp: '2024-01-19T15:45:00Z',
+    likes: 8,
+    dislikes: 2,
+    replies: [
+      {
+        id: '2-1',
+        userId: 'admin1',
+        userName: 'COMANDO TÁTICO',
+        userRole: 'admin',
+        content: 'Ótima sugestão! Vamos incluir jurisprudências relevantes na próxima atualização do material.',
+        timestamp: '2024-01-19T16:30:00Z',
+        likes: 15,
+        dislikes: 0,
+        isReplyTo: '2'
+      }
+    ]
+  },
+  {
+    id: '3',
+    userId: 'user3',
+    userName: 'SOLDADO OLIVEIRA',
+    userRole: 'student',
+    content: 'Dúvida sobre a 3ª geração de direitos: o direito ao meio ambiente equilibrado se encaixa nesta categoria mesmo sendo um direito individual também?',
+    timestamp: '2024-01-18T09:20:00Z',
+    likes: 3,
+    dislikes: 0
+  },
+  {
+    id: '4',
+    userId: 'user4',
+    userName: 'CABO FERREIRA',
+    userRole: 'student',
+    content: 'Material muito didático! Consegui entender conceitos que antes estavam confusos. Recomendo para todos os colegas da equipe.',
+    timestamp: '2024-01-17T14:10:00Z',
+    likes: 7,
+    dislikes: 0
+  }
+];
+
 export default function SummariesPage() {
   const [selectedSummary, setSelectedSummary] = useState<Summary | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -230,6 +324,10 @@ export default function SummariesPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'reading'>('grid');
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [showFlashcardAnswers, setShowFlashcardAnswers] = useState<{ [key: string]: boolean }>({});
+  const [comments, setComments] = useState<Comment[]>(mockComments);
+  const [newComment, setNewComment] = useState('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
 
   // Filtrar resumos
   const filteredSummaries = mockSummaries.filter(summary => {
@@ -258,6 +356,340 @@ export default function SummariesPage() {
       [flashcardId]: !prev[flashcardId]
     }));
   };
+
+  // Adicionar comentário
+  const addComment = () => {
+    if (!newComment.trim()) return;
+    
+    const comment: Comment = {
+      id: Date.now().toString(),
+      userId: 'current-user',
+      userName: 'AGENTE OPERACIONAL',
+      userRole: 'student',
+      content: newComment,
+      timestamp: new Date().toISOString(),
+      likes: 0,
+      dislikes: 0
+    };
+    
+    setComments([comment, ...comments]);
+    setNewComment('');
+  };
+
+  // Adicionar resposta
+  const addReply = (parentId: string) => {
+    if (!replyText.trim()) return;
+    
+    const reply: Comment = {
+      id: Date.now().toString(),
+      userId: 'current-user',
+      userName: 'AGENTE OPERACIONAL',
+      userRole: 'student',
+      content: replyText,
+      timestamp: new Date().toISOString(),
+      likes: 0,
+      dislikes: 0,
+      isReplyTo: parentId
+    };
+    
+    setComments(prev => prev.map(comment => {
+      if (comment.id === parentId) {
+        return {
+          ...comment,
+          replies: [...(comment.replies || []), reply]
+        };
+      }
+      return comment;
+    }));
+    
+    setReplyText('');
+    setReplyingTo(null);
+  };
+
+  // Toggle like/dislike
+  const toggleReaction = (commentId: string, type: 'like' | 'dislike', isReply = false, parentId?: string) => {
+    if (isReply && parentId) {
+      setComments(prev => prev.map(comment => {
+        if (comment.id === parentId) {
+          return {
+            ...comment,
+            replies: comment.replies?.map(reply => {
+              if (reply.id === commentId) {
+                if (type === 'like') {
+                  return {
+                    ...reply,
+                    isLiked: !reply.isLiked,
+                    isDisliked: false,
+                    likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1,
+                    dislikes: reply.isDisliked ? reply.dislikes - 1 : reply.dislikes
+                  };
+                } else {
+                  return {
+                    ...reply,
+                    isDisliked: !reply.isDisliked,
+                    isLiked: false,
+                    dislikes: reply.isDisliked ? reply.dislikes - 1 : reply.dislikes + 1,
+                    likes: reply.isLiked ? reply.likes - 1 : reply.likes
+                  };
+                }
+              }
+              return reply;
+            })
+          };
+        }
+        return comment;
+      }));
+    } else {
+      setComments(prev => prev.map(comment => {
+        if (comment.id === commentId) {
+          if (type === 'like') {
+            return {
+              ...comment,
+              isLiked: !comment.isLiked,
+              isDisliked: false,
+              likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
+              dislikes: comment.isDisliked ? comment.dislikes - 1 : comment.dislikes
+            };
+          } else {
+            return {
+              ...comment,
+              isDisliked: !comment.isDisliked,
+              isLiked: false,
+              dislikes: comment.isDisliked ? comment.dislikes - 1 : comment.dislikes + 1,
+              likes: comment.isLiked ? comment.likes - 1 : comment.likes
+            };
+          }
+        }
+        return comment;
+      }));
+    }
+  };
+
+  // Função para formatar tempo
+  const formatTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor(diff / (1000 * 60));
+    
+    if (days > 0) return `${days}d atrás`;
+    if (hours > 0) return `${hours}h atrás`;
+    if (minutes > 0) return `${minutes}min atrás`;
+    return 'Agora';
+  };
+
+  // Componente de comentário
+  const CommentComponent = ({ comment, isReply = false, parentId }: { comment: Comment; isReply?: boolean; parentId?: string }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={cn(
+        "border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800",
+        isReply && "ml-8 mt-3 border-l-4 border-l-accent-500"
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div className={cn(
+          "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm font-police-title",
+          comment.userRole === 'admin' && "bg-red-600",
+          comment.userRole === 'instructor' && "bg-blue-600", 
+          comment.userRole === 'student' && "bg-gray-700"
+        )}>
+          {comment.userRole === 'admin' && <Shield className="w-5 h-5" />}
+          {comment.userRole === 'instructor' && <Star className="w-5 h-5" />}
+          {comment.userRole === 'student' && <User className="w-5 h-5" />}
+        </div>
+        
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="font-medium text-gray-900 dark:text-white font-police-body">
+              {comment.userName}
+            </span>
+            <Badge 
+              className={cn(
+                "text-xs font-police-body",
+                comment.userRole === 'admin' && "bg-red-100 text-red-700 border-red-500",
+                comment.userRole === 'instructor' && "bg-blue-100 text-blue-700 border-blue-500",
+                comment.userRole === 'student' && "bg-gray-100 text-gray-700 border-gray-500"
+              )}
+            >
+              {comment.userRole === 'admin' && 'COMANDO'}
+              {comment.userRole === 'instructor' && 'INSTRUTOR'}
+              {comment.userRole === 'student' && 'AGENTE'}
+            </Badge>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {formatTime(comment.timestamp)}
+            </span>
+          </div>
+          
+          <p className="text-gray-800 dark:text-gray-200 mb-3 leading-relaxed">
+            {comment.content}
+          </p>
+          
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => toggleReaction(comment.id, 'like', isReply, parentId)}
+              className={cn(
+                "flex items-center gap-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded transition-colors",
+                comment.isLiked ? "text-green-600 bg-green-50 dark:bg-green-900/20" : "text-gray-600 dark:text-gray-400"
+              )}
+            >
+              <ThumbsUp className="w-4 h-4" />
+              <span className="font-police-numbers">{comment.likes}</span>
+            </button>
+            
+            <button
+              onClick={() => toggleReaction(comment.id, 'dislike', isReply, parentId)}
+              className={cn(
+                "flex items-center gap-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded transition-colors",
+                comment.isDisliked ? "text-red-600 bg-red-50 dark:bg-red-900/20" : "text-gray-600 dark:text-gray-400"
+              )}
+            >
+              <ThumbsDown className="w-4 h-4" />
+              <span className="font-police-numbers">{comment.dislikes}</span>
+            </button>
+            
+            {!isReply && (
+              <button
+                onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded transition-colors font-police-body"
+              >
+                <Reply className="w-4 h-4" />
+                RESPONDER
+              </button>
+            )}
+          </div>
+          
+          {/* Form de resposta */}
+          {replyingTo === comment.id && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
+            >
+              <div className="flex gap-3">
+                <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <textarea
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder="DIGITE SUA RESPOSTA..."
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-police-body"
+                    rows={3}
+                  />
+                  <div className="flex justify-end gap-2 mt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setReplyingTo(null);
+                        setReplyText('');
+                      }}
+                      className="font-police-body uppercase"
+                    >
+                      CANCELAR
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => addReply(comment.id)}
+                      disabled={!replyText.trim()}
+                      className="font-police-body uppercase bg-accent-500 hover:bg-accent-600 text-black"
+                    >
+                      <Send className="w-4 h-4 mr-1" />
+                      RESPONDER
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+      
+      {/* Respostas */}
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="mt-4">
+          {comment.replies.map(reply => (
+            <CommentComponent key={reply.id} comment={reply} isReply={true} parentId={comment.id} />
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+
+  // Seção de comentários
+  const CommentsSection = () => (
+    <Card className="mt-8 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+      <CardHeader className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
+            <MessageCircle className="w-6 h-6 text-accent-500" />
+            DISCUSSÃO TÁTICA ({comments.length})
+          </h3>
+          <Badge className="bg-accent-500/20 text-accent-600 border-accent-500/50 font-police-body">
+            ÁREA DE INTERCÂMBIO
+          </Badge>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="p-6">
+        {/* Formulário para novo comentário */}
+        <div className="mb-6">
+          <div className="flex gap-3">
+            <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="COMPARTILHE SUA ANÁLISE OU DÚVIDA SOBRE ESTE BRIEFING..."
+                className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-police-body"
+                rows={4}
+              />
+              <div className="flex justify-between items-center mt-3">
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-police-body">
+                  Mantenha um ambiente respeitoso e construtivo
+                </p>
+                <Button
+                  onClick={addComment}
+                  disabled={!newComment.trim()}
+                  className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  ENVIAR COMENTÁRIO
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Lista de comentários */}
+        <div className="space-y-4">
+          {comments.length > 0 ? (
+            comments.map(comment => (
+              <CommentComponent key={comment.id} comment={comment} />
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <MessageCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 font-police-title">
+                NENHUMA DISCUSSÃO INICIADA
+              </h4>
+              <p className="text-gray-600 dark:text-gray-400 font-police-body">
+                Seja o primeiro a compartilhar sua opinião sobre este briefing tático
+              </p>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   // Card de resumo
   const SummaryCard = ({ summary }: { summary: Summary }) => (
@@ -592,24 +1024,27 @@ export default function SummariesPage() {
         ))}
       </div>
 
+      {/* Seção de comentários */}
+      <CommentsSection />
+
       {/* Barra de progresso fixa */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="text-sm text-primary-600">
-              Progresso: <span className="font-medium text-primary-900">65%</span>
+            <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+              PROGRESSO: <span className="font-medium text-gray-900 dark:text-white font-police-numbers">65%</span>
             </div>
-            <div className="w-48 bg-gray-200 rounded-full h-2">
-              <div className="bg-primary-500 h-full rounded-full" style={{ width: '65%' }} />
+            <div className="w-48 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="bg-accent-500 h-full rounded-full" style={{ width: '65%' }} />
             </div>
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              Marcar como concluído
+            <Button variant="outline" size="sm" className="font-police-body uppercase">
+              MARCAR CONCLUÍDO
             </Button>
-            <Button size="sm" className="gap-2">
-              Próxima seção
+            <Button size="sm" className="gap-2 font-police-body uppercase bg-accent-500 hover:bg-accent-600 text-black">
+              PRÓXIMA SEÇÃO
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
@@ -630,9 +1065,9 @@ export default function SummariesPage() {
           >
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-primary-900 mb-2 font-police-title uppercase tracking-wider">BRIEFINGS TÁTICOS</h1>
-                <p className="text-primary-600">
-                  CONTEÚXTO DIDÁTICO COM FLASHCARDS E QUESTÕES INCORPORADOS
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 font-police-title uppercase tracking-wider">BRIEFINGS TÁTICOS</h1>
+                <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                  CONTEÚDO DIDÁTICO COM FLASHCARDS E QUESTÕES INCORPORADOS
                 </p>
               </div>
               <div className="flex items-center gap-2">

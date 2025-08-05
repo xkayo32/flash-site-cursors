@@ -90,12 +90,12 @@ const mockQuestions: Question[] = [
     ],
     correctAnswer: 2,
     explanation: 'A propriedade privada dos meios de produção não é um direito social previsto no art. 6º da CF/88. Os direitos sociais são: educação, saúde, alimentação, trabalho, moradia, transporte, lazer, segurança, previdência social, proteção à maternidade e à infância, e assistência aos desamparados.',
-    subject: 'DIREITO CONSTITUCIONAL TÁTICO',
+    subject: 'Direito Constitucional',
     topic: 'Direitos e Garantias Fundamentais',
     subtopic: 'Direitos Sociais',
     year: 2023,
     exam: 'FGV',
-    difficulty: 'CABO',
+    difficulty: 'Médio',
     tags: ['CF/88', 'Art. 6º', 'Direitos Sociais'],
     stats: {
       totalAttempts: 3456,
@@ -118,12 +118,12 @@ const mockQuestions: Question[] = [
     ],
     correctAnswer: 1,
     explanation: 'A corrupção passiva (art. 317, CP) ocorre quando o funcionário público solicita ou recebe, para si ou para outrem, direta ou indiretamente, ainda que fora da função ou antes de assumi-la, mas em razão dela, vantagem indevida, ou aceita promessa de tal vantagem.',
-    subject: 'DIREITO PENAL OPERACIONAL',
+    subject: 'Direito Penal',
     topic: 'Crimes contra a Administração Pública',
     subtopic: 'Corrupção Passiva',
     year: 2023,
     exam: 'CESPE',
-    difficulty: 'SARGENTO',
+    difficulty: 'Difícil',
     tags: ['Código Penal', 'Art. 317', 'Corrupção'],
     stats: {
       totalAttempts: 2890,
@@ -146,11 +146,11 @@ const mockQuestions: Question[] = [
     ],
     correctAnswer: 0,
     explanation: 'O princípio da eficiência foi incluído no art. 37 da CF/88 pela Emenda Constitucional nº 19/1998. Os demais princípios (legalidade, impessoalidade, moralidade e publicidade) já constavam no texto original.',
-    subject: 'DIREITO ADMINISTRATIVO',
+    subject: 'Direito Administrativo',
     topic: 'Princípios da Administração Pública',
     year: 2024,
     exam: 'FCC',
-    difficulty: 'RECRUTA',
+    difficulty: 'Fácil',
     tags: ['Princípios', 'LIMPE', 'EC 19/98'],
     stats: {
       totalAttempts: 4123,
@@ -170,12 +170,12 @@ const mockQuestions: Question[] = [
     ],
     correctAnswer: 0,
     explanation: 'O comando "ls -la" lista todos os arquivos e diretórios (incluindo ocultos) com detalhes como permissões, proprietário, tamanho e data de modificação.',
-    subject: 'INTELIGÊNCIA DIGITAL',
+    subject: 'Informática',
     topic: 'Sistemas Operacionais',
     subtopic: 'Linux',
     year: 2023,
     exam: 'IBFC',
-    difficulty: 'RECRUTA',
+    difficulty: 'Fácil',
     tags: ['Linux', 'Comandos', 'Terminal'],
     stats: {
       totalAttempts: 1876,
@@ -194,12 +194,12 @@ const mockQuestions: Question[] = [
     ],
     correctAnswer: 0,
     explanation: 'O verbo "fazer", quando indica tempo decorrido, é impessoal e deve permanecer na 3ª pessoa do singular. O correto é "Faz dois anos que não o vejo".',
-    subject: 'COMUNICAÇÃO TÁTICA',
+    subject: 'Português',
     topic: 'Gramática',
     subtopic: 'Concordância Verbal',
     year: 2024,
     exam: 'CESPE',
-    difficulty: 'CABO',
+    difficulty: 'Médio',
     tags: ['Concordância', 'Verbos Impessoais'],
     stats: {
       totalAttempts: 3234,
@@ -209,10 +209,10 @@ const mockQuestions: Question[] = [
   }
 ];
 
-const subjects = ['TODAS', 'DIREITO CONSTITUCIONAL TÁTICO', 'DIREITO PENAL OPERACIONAL', 'DIREITO ADMINISTRATIVO', 'INTELIGÊNCIA DIGITAL', 'COMUNICAÇÃO TÁTICA'];
-const exams = ['TODOS', 'CESPE', 'FCC', 'FGV', 'IBFC', 'VUNESP'];
-const years = ['TODOS', 2024, 2023, 2022, 2021, 2020];
-const difficulties = ['TODOS', 'RECRUTA', 'CABO', 'SARGENTO'];
+const subjects = ['Todos', 'Direito Constitucional', 'Direito Penal', 'Direito Administrativo', 'Informática', 'Português'];
+const exams = ['Todos', 'CESPE', 'FCC', 'FGV', 'IBFC', 'VUNESP'];
+const years = ['Todos', 2024, 2023, 2022, 2021, 2020];
+const difficulties = ['Todas', 'Fácil', 'Médio', 'Difícil'];
 
 // Estatísticas gerais
 const generalStats = {
@@ -221,8 +221,8 @@ const generalStats = {
   correctAnswers: 2567,
   totalTime: 4320, // minutos
   averageAccuracy: 74.3,
-  strongSubjects: ['DIREITO ADMINISTRATIVO', 'INTELIGÊNCIA DIGITAL'],
-  weakSubjects: ['DIREITO PENAL OPERACIONAL', 'RACIOCÍNIO LÓGICO TÁTICO']
+  strongSubjects: ['Direito Administrativo', 'Informática'],
+  weakSubjects: ['Direito Penal', 'Raciocínio Lógico']
 };
 
 export default function QuestionsPage() {
@@ -330,7 +330,9 @@ export default function QuestionsPage() {
 
   // Componente de questão
   const QuestionCard = ({ question }: { question: Question }) => (
-    <Card className="mb-4 hover:shadow-lg transition-shadow">
+    <Card className="border-2 border-gray-200 dark:border-gray-800 hover:border-accent-500/50 transition-all relative overflow-hidden">
+      {/* Tactical stripe */}
+      <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
       <CardContent className="p-6">
         {/* Header da questão */}
         <div className="flex items-start justify-between mb-4">
@@ -340,28 +342,31 @@ export default function QuestionsPage() {
               type="checkbox"
               checked={selectedQuestions.includes(question.id)}
               onChange={() => toggleQuestionSelection(question.id)}
-              className="mt-1 w-4 h-4 text-primary-600 border-primary-300 rounded focus:ring-primary-500"
+              className="mt-1 w-4 h-4 text-accent-500 border-gray-300 dark:border-gray-600 rounded focus:ring-accent-500"
             />
             
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary">{question.subject}</Badge>
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <Badge variant="secondary" className="font-police-body border-accent-500 text-accent-500">
+                  {question.subject}
+                </Badge>
                 <Badge 
                   className={cn(
-                    question.difficulty === 'RECRUTA' && "bg-green-100 text-green-700",
-                    question.difficulty === 'CABO' && "bg-yellow-100 text-yellow-700",
-                    question.difficulty === 'SARGENTO' && "bg-red-100 text-red-700"
+                    "font-police-subtitle tracking-wider border-2 border-current",
+                    question.difficulty === 'Fácil' && "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400",
+                    question.difficulty === 'Médio' && "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400",
+                    question.difficulty === 'Difícil' && "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400"
                   )}
                 >
                   {question.difficulty}
                 </Badge>
-                <span className="text-sm text-primary-600">
+                <span className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
                   {question.exam} • {question.year}
                 </span>
               </div>
               
               {question.topic && (
-                <p className="text-sm text-primary-600 mb-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 font-police-body">
                   {question.topic} {question.subtopic && `> ${question.subtopic}`}
                 </p>
               )}
@@ -371,14 +376,18 @@ export default function QuestionsPage() {
           <div className="flex items-center gap-2">
             {question.isAnswered && (
               question.isCorrect ? (
-                <CheckCircle className="w-5 h-5 text-green-500" />
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
               ) : (
-                <XCircle className="w-5 h-5 text-red-500" />
+                <div className="w-8 h-8 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                  <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                </div>
               )
             )}
             <button
               onClick={() => toggleFavorite(question.id)}
-              className="p-1 hover:bg-gray-100 rounded"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
             >
               <Star 
                 className={cn(
@@ -391,7 +400,7 @@ export default function QuestionsPage() {
         </div>
 
         {/* Enunciado */}
-        <p className="text-primary-900 mb-4 font-medium">
+        <p className="text-gray-900 dark:text-white mb-4 font-medium font-police-body">
           {question.question}
         </p>
 
@@ -404,19 +413,21 @@ export default function QuestionsPage() {
               disabled={question.isAnswered}
               className={cn(
                 "w-full text-left p-3 rounded-lg border-2 transition-all",
-                !question.isAnswered && "hover:border-primary-300 hover:bg-primary-50",
-                question.isAnswered && index === question.correctAnswer && "border-green-500 bg-green-50",
-                question.isAnswered && index === question.userAnswer && index !== question.correctAnswer && "border-red-500 bg-red-50",
-                !question.isAnswered && "border-gray-200"
+                !question.isAnswered && "hover:border-accent-500/50 hover:bg-accent-500/5 dark:hover:bg-accent-500/10",
+                question.isAnswered && index === question.correctAnswer && "border-green-500 bg-green-50 dark:bg-green-900/20",
+                question.isAnswered && index === question.userAnswer && index !== question.correctAnswer && "border-red-500 bg-red-50 dark:bg-red-900/20",
+                !question.isAnswered && "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
               )}
             >
               <div className="flex items-center gap-3">
-                <span className="font-medium text-primary-700">
+                <span className="font-medium text-gray-700 dark:text-gray-300 font-police-subtitle">
                   {String.fromCharCode(65 + index)})
                 </span>
                 <span className={cn(
-                  question.isAnswered && index === question.correctAnswer && "text-green-700 font-medium",
-                  question.isAnswered && index === question.userAnswer && index !== question.correctAnswer && "text-red-700"
+                  "font-police-body",
+                  question.isAnswered && index === question.correctAnswer && "text-green-700 dark:text-green-400 font-medium",
+                  question.isAnswered && index === question.userAnswer && index !== question.correctAnswer && "text-red-700 dark:text-red-400",
+                  !question.isAnswered && "text-gray-800 dark:text-gray-200"
                 )}>
                   {option}
                 </span>
@@ -430,13 +441,13 @@ export default function QuestionsPage() {
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4"
+            className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-4"
           >
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
               <div>
-                <p className="font-medium text-blue-900 mb-1 font-police-subtitle uppercase tracking-wider">BRIEFING TÁTICO:</p>
-                <p className="text-sm text-blue-800">{question.explanation}</p>
+                <p className="font-medium text-blue-900 dark:text-blue-100 mb-1 font-police-subtitle uppercase tracking-wider">BRIEFING TÁTICO:</p>
+                <p className="text-sm text-blue-800 dark:text-blue-200 font-police-body">{question.explanation}</p>
               </div>
             </div>
           </motion.div>
@@ -444,19 +455,19 @@ export default function QuestionsPage() {
 
         {/* Estatísticas e ações */}
         <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-4 text-primary-600">
-            <span className="flex items-center gap-1">
-              <BarChart3 className="w-4 h-4" />
-              {Math.round((question.stats.correctAttempts / question.stats.totalAttempts) * 100)}% PRECISÃO
+          <div className="flex items-center gap-4 text-gray-600 dark:text-gray-400">
+            <span className="flex items-center gap-1 font-police-body">
+              <BarChart3 className="w-4 h-4 text-accent-500" />
+              <span className="font-police-numbers">{Math.round((question.stats.correctAttempts / question.stats.totalAttempts) * 100)}%</span> PRECISÃO
             </span>
-            <span className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              {question.stats.avgTime}s TEMPO MÉDIO
+            <span className="flex items-center gap-1 font-police-body">
+              <Clock className="w-4 h-4 text-accent-500" />
+              <span className="font-police-numbers">{question.stats.avgTime}s</span> TEMPO MÉDIO
             </span>
             {question.timeSpent && (
-              <span className="flex items-center gap-1">
-                <Target className="w-4 h-4" />
-                SEU TEMPO: {question.timeSpent}s
+              <span className="flex items-center gap-1 font-police-body">
+                <Target className="w-4 h-4 text-accent-500" />
+                SEU TEMPO: <span className="font-police-numbers">{question.timeSpent}s</span>
               </span>
             )}
           </div>
@@ -467,15 +478,15 @@ export default function QuestionsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowExplanation(!showExplanation)}
-                className="gap-1"
+                className="gap-1 font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
               >
                 {showExplanation ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 {showExplanation ? 'OCULTAR' : 'VER'} BRIEFING
               </Button>
             )}
-            <Button variant="outline" size="sm" className="gap-1">
+            <Button variant="outline" size="sm" className="gap-1 font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500">
               <MessageSquare className="w-4 h-4" />
-RELATÓRIOS
+              RELATÓRIOS
             </Button>
           </div>
         </div>
@@ -484,7 +495,7 @@ RELATÓRIOS
         {question.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-3">
             {question.tags.map((tag, idx) => (
-              <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+              <span key={idx} className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded font-police-body">
                 #{tag}
               </span>
             ))}
@@ -495,94 +506,142 @@ RELATÓRIOS
   );
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6 bg-gray-50 dark:bg-black min-h-full relative">
+      {/* Background Pattern */}
+      <div 
+        className="absolute inset-0 opacity-5 dark:opacity-10 pointer-events-none"
+        style={{
+          backgroundImage: `repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 35px,
+            rgba(250, 204, 21, 0.05) 35px,
+            rgba(250, 204, 21, 0.05) 70px
+          )`
+        }}
+      />
+      
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="relative"
       >
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-police-title font-bold text-gray-900 dark:text-white mb-2 uppercase tracking-wider">ARSENAL DE QUESTÕES</h1>
-            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
-              TREINAMENTO TÁTICO COM QUESTÕES DE PROVAS ANTERIORES
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">
+              ARSENAL DE QUESTÕES TÁTICAS
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300 font-police-body tracking-wider">
+              TREINAMENTO OPERACIONAL COM QUESTÕES DE COMBATE
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-lg px-4 py-2">
+            <Badge variant="secondary" className="text-lg px-4 py-2 font-police-numbers border-2 border-accent-500 text-accent-500">
               <FileQuestion className="w-5 h-5 mr-2" />
-              {generalStats.totalQuestions.toLocaleString()} QUESTÕES OPERACIONAIS
+              {generalStats.totalQuestions.toLocaleString()} ALVOS DISPONÍVEIS
             </Badge>
           </div>
         </div>
 
         {/* Estatísticas rápidas */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-          <Card>
+          <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
+            {/* Tactical stripe */}
+            <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">EXECUTADAS</p>
-                  <p className="text-2xl font-bold text-primary-900">
+                  <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                    ALVOS ELIMINADOS
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                     {generalStats.answeredQuestions.toLocaleString()}
                   </p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-green-500" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">PRECISÃO</p>
-                  <p className="text-2xl font-bold text-primary-900">{generalStats.averageAccuracy}%</p>
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
-                <Target className="w-8 h-8 text-blue-500" />
               </div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
+            {/* Tactical stripe */}
+            <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">TEMPO DE OPERAÇÃO</p>
-                  <p className="text-2xl font-bold text-primary-900">
+                  <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                    TAXA DE PRECISÃO
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                    {generalStats.averageAccuracy}%
+                  </p>
+                </div>
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                  <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
+            {/* Tactical stripe */}
+            <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                    TEMPO OPERACIONAL
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
                     {Math.floor(generalStats.totalTime / 60)}h
                   </p>
                 </div>
-                <Clock className="w-8 h-8 text-purple-500" />
+                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
+            {/* Tactical stripe */}
+            <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">ESPECIALIDADE</p>
-                  <p className="text-sm font-bold text-green-600">
+                  <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                    SETOR FORTE
+                  </p>
+                  <p className="text-sm font-bold text-green-600 dark:text-green-400 font-police-body uppercase">
                     {generalStats.strongSubjects[0]}
                   </p>
                 </div>
-                <TrendingUp className="w-8 h-8 text-green-500" />
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
+            {/* Tactical stripe */}
+            <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">REFORÇO TÁTICO</p>
-                  <p className="text-sm font-bold text-red-600">
+                  <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                    REFORÇO NECESSÁRIO
+                  </p>
+                  <p className="text-sm font-bold text-red-600 dark:text-red-400 font-police-body uppercase">
                     {generalStats.weakSubjects[0]}
                   </p>
                 </div>
-                <AlertCircle className="w-8 h-8 text-red-500" />
+                <div className="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                  <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -592,13 +651,13 @@ RELATÓRIOS
         <div className="flex flex-col lg:flex-row gap-4 mb-6">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="BUSCAR QUESTÕES POR PALAVRA-CHAVE, ASSUNTO OU TAG..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 focus:border-accent-500 transition-colors"
               />
             </div>
           </div>
@@ -607,7 +666,7 @@ RELATÓRIOS
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
+              className="gap-2 font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
             >
               <Filter className="w-4 h-4" />
               FILTROS TÁTICOS
@@ -615,12 +674,12 @@ RELATÓRIOS
             </Button>
             
             <Button 
-              className="gap-2"
+              className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
               onClick={() => setShowCreateNotebook(true)}
               disabled={selectedQuestions.length === 0}
             >
               <Plus className="w-4 h-4" />
-CRIAR ARSENAL {selectedQuestions.length > 0 && `(${selectedQuestions.length})`}
+              CRIAR ARSENAL {selectedQuestions.length > 0 && `(${selectedQuestions.length})`}
             </Button>
           </div>
         </div>
@@ -634,15 +693,17 @@ CRIAR ARSENAL {selectedQuestions.length > 0 && `(${selectedQuestions.length})`}
               exit={{ opacity: 0, height: 0 }}
               className="mb-6"
             >
-              <Card>
+              <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
+                {/* Tactical stripe */}
+                <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
                 <CardContent className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
                         DISCIPLINA TÁTICA
                       </label>
                       <select 
-                        className="w-full p-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full p-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors"
                         onChange={(e) => setSelectedFilters(prev => ({
                           ...prev,
                           subjects: e.target.value === 'Todos' ? [] : [e.target.value]
@@ -655,11 +716,11 @@ CRIAR ARSENAL {selectedQuestions.length > 0 && `(${selectedQuestions.length})`}
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
                         COMANDO DE PROVA
                       </label>
                       <select 
-                        className="w-full p-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full p-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors"
                         onChange={(e) => setSelectedFilters(prev => ({
                           ...prev,
                           exams: e.target.value === 'Todos' ? [] : [e.target.value]
@@ -672,10 +733,10 @@ CRIAR ARSENAL {selectedQuestions.length > 0 && `(${selectedQuestions.length})`}
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
                         ANO OPERACIONAL
                       </label>
-                      <select className="w-full p-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                      <select className="w-full p-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors">
                         {years.map(year => (
                           <option key={year} value={year}>{year}</option>
                         ))}
@@ -683,11 +744,11 @@ CRIAR ARSENAL {selectedQuestions.length > 0 && `(${selectedQuestions.length})`}
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
                         NÍVEL TÁTICO
                       </label>
                       <select 
-                        className="w-full p-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full p-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors"
                         onChange={(e) => setSelectedFilters(prev => ({
                           ...prev,
                           difficulties: e.target.value === 'Todas' ? [] : [e.target.value]
@@ -700,11 +761,11 @@ CRIAR ARSENAL {selectedQuestions.length > 0 && `(${selectedQuestions.length})`}
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
                         STATUS OPERACIONAL
                       </label>
                       <select 
-                        className="w-full p-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full p-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors"
                         onChange={(e) => setSelectedFilters(prev => ({
                           ...prev,
                           answered: e.target.value as any
@@ -719,7 +780,7 @@ CRIAR ARSENAL {selectedQuestions.length > 0 && `(${selectedQuestions.length})`}
                   
                   <div className="mt-4 flex items-center justify-between">
                     <div className="flex gap-2">
-                      <Badge variant="secondary">
+                      <Badge variant="secondary" className="font-police-numbers border-2 border-accent-500 text-accent-500">
                         {filteredQuestions.length} ALVOS LOCALIZADOS
                       </Badge>
                     </div>
@@ -735,8 +796,9 @@ CRIAR ARSENAL {selectedQuestions.length > 0 && `(${selectedQuestions.length})`}
                         answered: 'all',
                         performance: 'all'
                       })}
+                      className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
                     >
-RESETAR FILTROS
+                      LIMPAR FILTROS
                     </Button>
                   </div>
                 </CardContent>
@@ -751,11 +813,11 @@ RESETAR FILTROS
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 bg-primary-100 border border-primary-300 rounded-lg p-4 flex items-center justify-between"
+          className="mb-4 bg-accent-500/10 border-2 border-accent-500/50 rounded-lg p-4 flex items-center justify-between"
         >
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-primary-600" />
-            <span className="text-primary-700 font-medium">
+            <CheckCircle className="w-5 h-5 text-accent-500" />
+            <span className="text-gray-700 dark:text-gray-300 font-medium font-police-body uppercase tracking-wider">
               {selectedQuestions.length} ALVO(S) SELECIONADO(S)
             </span>
           </div>
@@ -764,14 +826,16 @@ RESETAR FILTROS
               variant="outline"
               size="sm"
               onClick={() => setSelectedQuestions([])}
+              className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
             >
-LIMPAR SELEÇÃO
+              LIMPAR SELEÇÃO
             </Button>
             <Button
               size="sm"
               onClick={() => setShowCreateNotebook(true)}
+              className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
             >
-CRIAR ARSENAL
+              CRIAR ARSENAL
             </Button>
           </div>
         </motion.div>
@@ -784,19 +848,25 @@ CRIAR ARSENAL
             <QuestionCard key={question.id} question={question} />
           ))
         ) : (
-          <Card className="p-12 text-center">
-            <FileQuestion className="w-16 h-16 text-primary-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 font-police-subtitle uppercase tracking-wider">
-              NENHUMA QUESTÃO ENCONTRADA
+          <Card className="p-12 text-center border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
+            {/* Tactical stripe */}
+            <div className="absolute top-0 right-0 w-1 h-full bg-amber-500" />
+            <FileQuestion className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 font-police-title uppercase tracking-ultra-wide">
+              NENHUMA QUESTÃO LOCALIZADA
             </h3>
-            <p className="text-primary-600 mb-6">
-AJUSTE OS FILTROS TÁTICOS OU REFINE A BUSCA
+            <p className="text-gray-600 dark:text-gray-400 mb-6 font-police-body uppercase tracking-wider">
+              AJUSTE OS FILTROS TÁTICOS OU REFINE A BUSCA
             </p>
-            <Button variant="outline" onClick={() => {
-              setSearchTerm('');
-              setShowFilters(false);
-            }}>
-RESETAR BUSCA
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setSearchTerm('');
+                setShowFilters(false);
+              }}
+              className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
+            >
+              LIMPAR BUSCA
             </Button>
           </Card>
         )}
@@ -822,18 +892,20 @@ RESETAR BUSCA
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="fixed inset-0 flex items-center justify-center p-4 z-50"
             >
-              <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-auto">
-              <div className="p-6 border-b">
-                <h2 className="text-2xl font-bold text-primary-900 font-police-title uppercase tracking-wider">CRIAR NOVO ARSENAL</h2>
-                <p className="text-primary-600 mt-1">
-                  ORGANIZE SUAS QUESTÕES EM UM ARSENAL PERSONALIZADO
+              <div className="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-h-[90vh] overflow-auto border-2 border-gray-200 dark:border-gray-800">
+              <div className="p-6 border-b-2 border-gray-200 dark:border-gray-700">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">
+                  CRIAR NOVO ARSENAL TÁTICO
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1 font-police-body uppercase tracking-wider">
+                  ORGANIZE SEUS ALVOS EM UM ARSENAL PERSONALIZADO
                 </p>
               </div>
               
               <div className="p-6 space-y-6">
                 {/* Nome do caderno */}
                 <div>
-                  <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
                     NOME DO ARSENAL
                   </label>
                   <input
@@ -841,39 +913,39 @@ RESETAR BUSCA
                     placeholder="EX: ARSENAL CONSTITUCIONAL - CF/88"
                     value={notebookName}
                     onChange={(e) => setNotebookName(e.target.value)}
-                    className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 focus:border-accent-500 transition-colors"
                   />
                 </div>
                 
                 {/* Descrição */}
                 <div>
-                  <label className="block text-sm font-medium text-primary-700 mb-2 font-police-body uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
                     BRIEFING (OPCIONAL)
                   </label>
                   <textarea
                     placeholder="DESCREVA O OBJETIVO DESTA OPERAÇÃO..."
                     value={notebookDescription}
                     onChange={(e) => setNotebookDescription(e.target.value)}
-                    className="w-full p-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[80px]"
+                    className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 focus:border-accent-500 transition-colors min-h-[80px]"
                   />
                 </div>
                 
                 {/* Resumo das questões selecionadas */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-primary-900 mb-3 font-police-subtitle uppercase tracking-wider">
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border-2 border-gray-200 dark:border-gray-700">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-3 font-police-subtitle uppercase tracking-wider">
                     ALVOS SELECIONADOS ({selectedQuestions.length})
                   </h3>
                   
                   {/* Estatísticas das questões selecionadas */}
                   <div className="grid grid-cols-3 gap-4 mb-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-primary-600">
+                      <div className="text-2xl font-bold text-accent-500 font-police-numbers">
                         {selectedQuestions.length}
                       </div>
-                      <div className="text-sm text-gray-600 font-police-body uppercase tracking-wider">TOTAL</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">TOTAL</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 font-police-numbers">
                         {(() => {
                           const subjects = new Set(
                             questions
@@ -883,47 +955,47 @@ RESETAR BUSCA
                           return subjects.size;
                         })()}
                       </div>
-                      <div className="text-sm text-gray-600 font-police-body uppercase tracking-wider">DISCIPLINAS</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">DISCIPLINAS</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">
+                      <div className="text-2xl font-bold text-green-600 dark:text-green-400 font-police-numbers">
                         {Math.round(
                           questions
                             .filter(q => selectedQuestions.includes(q.id))
                             .reduce((acc, q) => acc + q.stats.avgTime, 0) / 60
                         )}min
                       </div>
-                      <div className="text-sm text-gray-600 font-police-body uppercase tracking-wider">TEMPO ESTIMADO</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">TEMPO ESTIMADO</div>
                     </div>
                   </div>
                   
                   {/* Lista de questões selecionadas */}
                   <div className="relative">
-                    <div className="border border-gray-200 rounded-lg p-3 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    <div className="border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3 max-h-48 overflow-y-auto bg-white dark:bg-gray-900">
                     {selectedQuestions.length > 0 ? (
                       <div className="space-y-2">
                         {questions
                           .filter(q => selectedQuestions.includes(q.id))
                           .map((q, idx) => (
-                            <div key={q.id} className="flex items-start gap-2 text-sm pb-2 border-b border-gray-100 last:border-0 last:pb-0">
-                              <span className="text-gray-500 font-medium min-w-[20px]">{idx + 1}.</span>
+                            <div key={q.id} className="flex items-start gap-2 text-sm pb-2 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
+                              <span className="text-gray-500 dark:text-gray-400 font-medium min-w-[20px] font-police-numbers">{idx + 1}.</span>
                               <div className="flex-1 space-y-1">
                                 <div className="flex items-center gap-2">
-                                  <Badge variant="secondary" className="text-xs">
+                                  <Badge variant="secondary" className="text-xs font-police-body border-accent-500 text-accent-500">
                                     {q.subject}
                                   </Badge>
                                   <Badge 
                                     className={cn(
-                                      "text-xs",
-                                      q.difficulty === 'RECRUTA' && "bg-green-100 text-green-700",
-                                      q.difficulty === 'CABO' && "bg-yellow-100 text-yellow-700",
-                                      q.difficulty === 'SARGENTO' && "bg-red-100 text-red-700"
+                                      "text-xs font-police-subtitle tracking-wider border-2 border-current",
+                                      q.difficulty === 'Fácil' && "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400",
+                                      q.difficulty === 'Médio' && "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400",
+                                      q.difficulty === 'Difícil' && "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400"
                                     )}
                                   >
                                     {q.difficulty}
                                   </Badge>
                                 </div>
-                                <p className="text-gray-700 line-clamp-2">
+                                <p className="text-gray-700 dark:text-gray-300 line-clamp-2 font-police-body">
                                   {q.question}
                                 </p>
                               </div>
@@ -931,13 +1003,13 @@ RESETAR BUSCA
                           ))}
                       </div>
                     ) : (
-                      <p className="text-center text-gray-500 py-8 font-police-body uppercase tracking-wider">
+                      <p className="text-center text-gray-500 dark:text-gray-400 py-8 font-police-body uppercase tracking-wider">
                         NENHUM ALVO SELECIONADO
                       </p>
                     )}
                     </div>
                     {selectedQuestions.length > 3 && (
-                      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none rounded-b-lg" />
+                      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-50 dark:from-gray-800 to-transparent pointer-events-none rounded-b-lg" />
                     )}
                   </div>
                 </div>
@@ -945,12 +1017,12 @@ RESETAR BUSCA
                 {/* Ações */}
                 <div className="flex gap-3">
                   <Button
-                    className="flex-1"
+                    className="flex-1 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
                     onClick={handleCreateNotebook}
                     disabled={!notebookName.trim()}
                   >
                     <BookMarked className="w-4 h-4 mr-2" />
-      CRIAR ARSENAL
+                    CRIAR ARSENAL
                   </Button>
                   <Button
                     variant="outline"
@@ -959,8 +1031,9 @@ RESETAR BUSCA
                       setNotebookName('');
                       setNotebookDescription('');
                     }}
+                    className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
                   >
-CANCELAR
+                    CANCELAR
                   </Button>
                 </div>
               </div>
@@ -975,27 +1048,35 @@ CANCELAR
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="mt-12 bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black rounded-2xl p-8 text-white text-center"
+        className="mt-12 bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black rounded-2xl p-8 text-white text-center relative overflow-hidden"
       >
-        <Brain className="w-12 h-12 mx-auto mb-4 text-accent-400" />
-        <h2 className="text-2xl font-police-title font-bold mb-2 uppercase tracking-wider">
+        {/* Tactical stripes */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-accent-500" />
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-accent-500" />
+        
+        <Brain className="w-12 h-12 mx-auto mb-4 text-accent-500" />
+        <h2 className="text-2xl font-bold mb-2 font-police-title uppercase tracking-ultra-wide">
           MANTENHA O TREINAMENTO!
         </h2>
         <p className="text-gray-300 mb-6 max-w-2xl mx-auto font-police-body uppercase tracking-wider">
           INTENSIFIQUE SEU TREINAMENTO TÁTICO. CRIE CADERNOS PERSONALIZADOS PARA OPERAÇÕES ESPECÍFICAS.
         </p>
         <div className="flex gap-3 justify-center">
-          <Button variant="secondary" size="lg">
+          <Button 
+            variant="secondary" 
+            size="lg"
+            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+          >
             <Zap className="w-5 h-5 mr-2" />
-MODO INTENSIVO
+            MODO INTENSIVO
           </Button>
           <Button 
             variant="outline" 
             size="lg" 
-            className="border-white text-white hover:bg-white hover:text-primary-700"
+            className="border-white text-white hover:bg-white hover:text-black font-police-body uppercase tracking-wider"
           >
             <Award className="w-5 h-5 mr-2" />
-VER RANKING
+            VER RANKING
           </Button>
         </div>
       </motion.div>

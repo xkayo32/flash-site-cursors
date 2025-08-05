@@ -5,7 +5,6 @@ import {
   User,
   Bell,
   Shield,
-  Palette,
   Globe,
   Smartphone,
   Mail,
@@ -19,7 +18,6 @@ import {
   Sun,
   Monitor,
   Volume2,
-  Wifi,
   Download,
   Trash2,
   AlertCircle,
@@ -29,14 +27,19 @@ import {
   HelpCircle,
   FileText,
   ExternalLink,
-  ToggleLeft,
-  ToggleRight,
   Info,
   CreditCard,
   Upload,
-  Image,
-  Type,
-  Zap
+  Target,
+  ShieldCheck,
+  Lock,
+  Activity,
+  Crosshair,
+  AlertTriangle,
+  Zap,
+  Swords,
+  Clock,
+  Flag
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
@@ -44,6 +47,8 @@ import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store/authStore';
 import { useTheme } from '@/contexts/ThemeContext';
+import { PageHeader } from '@/components/student';
+import toast from 'react-hot-toast';
 
 // Tipos
 interface NotificationSetting {
@@ -69,29 +74,29 @@ interface PrivacySetting {
 const notificationSettings: NotificationSetting[] = [
   {
     id: 'study-reminders',
-    title: 'ALERTAS DE TREINAMENTO',
-    description: 'ALERTAS SOBRE SESSÕES DE TREINAMENTO AGENDADAS',
+    title: 'ALERTAS DE MISSÃO',
+    description: 'NOTIFICAÇÕES SOBRE OPERAÇÕES AGENDADAS',
     enabled: true,
     channels: { email: true, push: true, sms: false }
   },
   {
     id: 'new-content',
-    title: 'NOVO ARSENAL',
-    description: 'AVISOS SOBRE NOVOS BRIEFINGS, QUESTÕES E MATERIAIS',
+    title: 'NOVO ARSENAL TÁTICO',
+    description: 'AVISOS SOBRE NOVOS RECURSOS E ARMAMENTOS',
     enabled: true,
     channels: { email: true, push: false, sms: false }
   },
   {
     id: 'achievements',
     title: 'CONDECORAÇÕES',
-    description: 'ALERTAS SOBRE METAS ALCANÇADAS E INSIGNIAS',
+    description: 'ALERTAS SOBRE MEDALHAS E PROMOÇÕES',
     enabled: true,
     channels: { email: false, push: true, sms: false }
   },
   {
     id: 'marketing',
-    title: 'PROMOÇÕES ESTRATÉGICAS',
-    description: 'COMUNICAÇÕES SOBRE DESCONTOS E NOVIDADES',
+    title: 'COMUNICADOS DO COMANDO',
+    description: 'INFORMAÇÕES ESTRATÉGICAS E ATUALIZAÇÕES',
     enabled: false,
     channels: { email: false, push: false, sms: false }
   }
@@ -101,18 +106,18 @@ const privacySettings: PrivacySetting[] = [
   {
     id: 'profile-visibility',
     title: 'PERFIL PÚBLICO',
-    description: 'PERMITIR QUE OUTROS OPERADORES VEJAM SEU PERFIL E ESTATÍSTICAS',
+    description: 'PERMITIR QUE OUTROS AGENTES VEJAM SEU PERFIL E ESTATÍSTICAS',
     enabled: false
   },
   {
     id: 'ranking-participation',
     title: 'RANKING OPERACIONAL',
-    description: 'APARECER NO RANKING GERAL E COMPARAÇÕES TÁTICAS',
+    description: 'APARECER NO RANKING GERAL DE AGENTES',
     enabled: true
   },
   {
     id: 'study-data-sharing',
-    title: 'INTELIGÊNCIA DE DADOS',
+    title: 'INTELIGÊNCIA COMPARTILHADA',
     description: 'CONTRIBUIR ANONIMAMENTE PARA MELHORIAS DO SISTEMA',
     enabled: true
   }
@@ -126,23 +131,18 @@ export default function SettingsPage() {
   const [privacy, setPrivacy] = useState(privacySettings);
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [systemName, setSystemName] = useState('Study Pro');
-  const [logoLight, setLogoLight] = useState<string | null>(null);
-  const [logoDark, setLogoDark] = useState<string | null>(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const user = useAuthStore((state) => state.user);
 
   // Sections do menu
   const sections = [
-    { id: 'account', label: 'IDENTIFICAÇÃO', icon: User },
-    { id: 'payments', label: 'FINANCEIRO', icon: CreditCard },
-    { id: 'branding', label: 'PERSONALIZAÇÃO', icon: Palette },
-    { id: 'notifications', label: 'ALERTAS', icon: Bell },
-    { id: 'privacy', label: 'SEGURANÇA', icon: Shield },
-    { id: 'appearance', label: 'VISUAL', icon: Monitor },
-    { id: 'study', label: 'TREINAMENTO', icon: Settings },
-    { id: 'data', label: 'DADOS', icon: Download },
-    { id: 'help', label: 'SUPORTE', icon: HelpCircle }
+    { id: 'account', label: 'DADOS DO AGENTE', icon: User },
+    { id: 'security', label: 'SEGURANÇA', icon: ShieldCheck },
+    { id: 'notifications', label: 'COMUNICAÇÕES', icon: Bell },
+    { id: 'privacy', label: 'PRIVACIDADE', icon: Shield },
+    { id: 'appearance', label: 'INTERFACE', icon: Monitor },
+    { id: 'study', label: 'TREINAMENTO', icon: Target },
+    { id: 'data', label: 'INTELIGÊNCIA', icon: Activity },
+    { id: 'help', label: 'SUPORTE TÁTICO', icon: HelpCircle }
   ];
 
   // Toggle notificação
@@ -169,38 +169,12 @@ export default function SettingsPage() {
     ));
   };
 
-  // Upload de logo
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'light' | 'dark') => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        if (type === 'light') {
-          setLogoLight(result);
-        } else {
-          setLogoDark(result);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Remover logo
-  const removeLogo = (type: 'light' | 'dark') => {
-    if (type === 'light') {
-      setLogoLight(null);
-    } else {
-      setLogoDark(null);
-    }
-  };
-
   // Salvar configurações
   const saveSettings = async () => {
     setIsLoading(true);
-    // Simular salvamento
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsLoading(false);
+    toast.success('CONFIGURAÇÕES ATUALIZADAS!', { icon: '✅' });
   };
 
   // Componente de toggle
@@ -209,7 +183,7 @@ export default function SettingsPage() {
       onClick={onChange}
       className={cn(
         "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-        enabled ? "bg-primary-600" : "bg-gray-200 dark:bg-gray-600"
+        enabled ? "bg-accent-500" : "bg-gray-300 dark:bg-gray-600"
       )}
     >
       <span
@@ -223,21 +197,19 @@ export default function SettingsPage() {
 
   return (
     <div className="p-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <h1 className="text-3xl font-bold text-primary-900 dark:text-white mb-2 font-police-title uppercase tracking-wider">CENTRO DE COMANDO</h1>
-        <p className="text-primary-600 dark:text-gray-300">
-          GERENCIE SUAS PREFERÊNCIAS E CONFIGURAÇÕES TÁTICAS
-        </p>
-      </motion.div>
+      <PageHeader
+        title="CENTRO DE COMANDO"
+        subtitle="GERENCIE SUAS CONFIGURAÇÕES OPERACIONAIS"
+        icon={Settings}
+        breadcrumbs={[
+          { label: 'PAINEL DE COMANDO', href: '/student/dashboard' },
+          { label: 'CONFIGURAÇÕES' }
+        ]}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Menu lateral */}
-        <Card className="lg:col-span-1 h-fit">
+        <Card className="lg:col-span-1 h-fit bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardContent className="p-4">
             <nav className="space-y-1">
               {sections.map(section => (
@@ -245,15 +217,21 @@ export default function SettingsPage() {
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
                   className={cn(
-                    "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors",
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all font-police-body uppercase tracking-wider",
                     activeSection === section.id
-                      ? "bg-primary-100 dark:bg-primary-900/30 text-primary-900 dark:text-white"
-                      : "hover:bg-gray-100 dark:hover:bg-gray-700 text-primary-600 dark:text-gray-300"
+                      ? "bg-gray-900 dark:bg-gray-700 text-white shadow-lg"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                   )}
                 >
-                  <section.icon className="w-5 h-5" />
-                  <span className="font-medium">{section.label}</span>
-                  <ChevronRight className="w-4 h-4 ml-auto" />
+                  <section.icon className={cn(
+                    "w-5 h-5",
+                    activeSection === section.id ? "text-accent-500" : ""
+                  )} />
+                  <span className="text-sm font-medium">{section.label}</span>
+                  <ChevronRight className={cn(
+                    "w-4 h-4 ml-auto transition-transform",
+                    activeSection === section.id ? "rotate-90" : ""
+                  )} />
                 </button>
               ))}
             </nav>
@@ -263,7 +241,7 @@ export default function SettingsPage() {
         {/* Conteúdo principal */}
         <div className="lg:col-span-3">
           <AnimatePresence mode="wait">
-            {/* Seção: Conta */}
+            {/* Seção: Dados do Agente */}
             {activeSection === 'account' && (
               <motion.div
                 key="account"
@@ -271,26 +249,33 @@ export default function SettingsPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <Card>
-                  <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">IDENTIFICAÇÃO OPERACIONAL</h2>
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardHeader className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
+                      <User className="w-6 h-6 text-accent-500" />
+                      IDENTIFICAÇÃO DO AGENTE
+                    </h2>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-6 p-6">
                     {/* Foto de perfil */}
                     <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-3">
-FOTO DE IDENTIFICAÇÃO
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 font-police-body uppercase">
+                        FOTO DE IDENTIFICAÇÃO
                       </label>
                       <div className="flex items-center gap-4">
-                        <div className="w-20 h-20 bg-primary-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                        <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-white text-2xl font-bold font-police-title">
                           {user?.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <Button variant="outline" size="sm" className="gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="gap-2 font-police-body uppercase tracking-wider"
+                          >
                             <Camera className="w-4 h-4" />
-ALTERAR FOTO
+                            ALTERAR FOTO
                           </Button>
-                          <p className="text-xs text-primary-500 dark:text-gray-400 mt-1">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             JPG, PNG ou GIF. Máximo 2MB.
                           </p>
                         </div>
@@ -300,113 +285,97 @@ ALTERAR FOTO
                     {/* Informações pessoais */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-NOME COMPLETO
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase">
+                          NOME COMPLETO
                         </label>
                         <input
                           type="text"
                           defaultValue={user?.name}
-                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                          Email
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase">
+                          E-MAIL OPERACIONAL
                         </label>
                         <input
                           type="email"
                           defaultValue={user?.email}
-                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-CONTATO TÁTICO
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase">
+                          CONTATO TÁTICO
                         </label>
                         <input
                           type="tel"
                           placeholder="(00) 00000-0000"
-                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                          CPF
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase">
+                          IDENTIFICAÇÃO (CPF)
                         </label>
                         <input
                           type="text"
                           placeholder="000.000.000-00"
-                          className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                         />
                       </div>
                     </div>
 
-                    {/* Alterar senha */}
-                    <div className="border-t pt-6">
-                      <h3 className="text-lg font-semibold text-primary-900 dark:text-white mb-4 font-police-subtitle uppercase tracking-wider">SEGURANÇA TÁTICA</h3>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-SENHA ATUAL
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={showPassword ? "text" : "password"}
-                              className="w-full px-4 py-2 pr-10 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                            >
-                              {showPassword ? (
-                                <EyeOff className="w-4 h-4 text-primary-400" />
-                              ) : (
-                                <Eye className="w-4 h-4 text-primary-400" />
-                              )}
-                            </button>
-                          </div>
+                    {/* Informações adicionais */}
+                    <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 font-police-subtitle uppercase tracking-wider">
+                        INFORMAÇÕES DE COMBATE
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-center">
+                          <Flag className="w-8 h-8 mx-auto mb-2 text-accent-500" />
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">127</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">DIAS EM CAMPO</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-NOVA SENHA
-                            </label>
-                            <input
-                              type="password"
-                              className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-CONFIRMAR NOVA SENHA
-                            </label>
-                            <input
-                              type="password"
-                              className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            />
-                          </div>
+                        <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-center">
+                          <Target className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">89%</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">PRECISÃO</p>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-center">
+                          <Swords className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">15</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">MEDALHAS</p>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-center">
+                          <ShieldCheck className="w-8 h-8 mx-auto mb-2 text-purple-500" />
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">ELITE</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">PATENTE</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Botões de ação */}
-                    <div className="flex justify-between pt-6 border-t">
+                    <div className="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
                       <Button
                         variant="outline"
-                        className="text-red-600 hover:bg-red-50"
+                        className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 font-police-body uppercase tracking-wider"
                         onClick={() => setShowDeleteModal(true)}
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
-EXCLUIR CONTA
+                        ENCERRAR MISSÃO
                       </Button>
-                      <Button onClick={saveSettings} disabled={isLoading}>
+                      <Button 
+                        onClick={saveSettings} 
+                        disabled={isLoading}
+                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                      >
                         {isLoading ? (
-                          <>Salvando...</>
+                          <>SALVANDO...</>
                         ) : (
                           <>
                             <Save className="w-4 h-4 mr-2" />
-  SALVAR ALTERAÇÕES
+                            SALVAR DADOS
                           </>
                         )}
                       </Button>
@@ -416,257 +385,132 @@ EXCLUIR CONTA
               </motion.div>
             )}
 
-            {/* Seção: Pagamentos */}
-            {activeSection === 'payments' && (
+            {/* Seção: Segurança */}
+            {activeSection === 'security' && (
               <motion.div
-                key="payments"
+                key="security"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <Card>
-                  <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">COMANDO FINANCEIRO</h2>
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardHeader className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
+                      <ShieldCheck className="w-6 h-6 text-accent-500" />
+                      SEGURANÇA OPERACIONAL
+                    </h2>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Assinatura Atual */}
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
+                  <CardContent className="space-y-6 p-6">
+                    {/* Alterar senha */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 font-police-subtitle uppercase tracking-wider">
+                        CREDENCIAIS DE ACESSO
+                      </h3>
+                      <div className="space-y-4">
                         <div>
-                          <h3 className="font-semibold text-green-800 dark:text-green-300">Plano Premium Ativo</h3>
-                          <p className="text-sm text-green-600 dark:text-green-400">R$ 49,90/mês • Renova em 15/02/2024</p>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase">
+                            SENHA ATUAL
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showPassword ? "text" : "password"}
+                              className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="w-4 h-4" />
+                              ) : (
+                                <Eye className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
                         </div>
-                        <Badge className="bg-green-100 text-green-800">Ativo</Badge>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase">
+                              NOVA SENHA
+                            </label>
+                            <input
+                              type="password"
+                              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase">
+                              CONFIRMAR NOVA SENHA
+                            </label>
+                            <input
+                              type="password"
+                              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Métodos de Pagamento */}
-                    <div>
-                      <h3 className="font-medium text-primary-900 dark:text-white mb-3">Métodos de Pagamento</h3>
+                    {/* Autenticação de dois fatores */}
+                    <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 font-police-subtitle uppercase tracking-wider">
+                        AUTENTICAÇÃO DE DOIS FATORES
+                      </h3>
+                      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white">PROTEÇÃO ADICIONAL</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              Adicione uma camada extra de segurança à sua conta
+                            </p>
+                          </div>
+                          <Toggle enabled={false} onChange={() => {}} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sessões ativas */}
+                    <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 font-police-subtitle uppercase tracking-wider">
+                        SESSÕES ATIVAS
+                      </h3>
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 border border-primary-200 dark:border-gray-600 rounded-lg">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-5 bg-blue-600 rounded flex items-center justify-center">
-                              <span className="text-white text-xs font-bold">VI</span>
-                            </div>
+                            <Monitor className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                             <div>
-                              <p className="font-medium text-primary-900 dark:text-white">•••• •••• •••• 4242</p>
-                              <p className="text-sm text-primary-600 dark:text-gray-400">Expires 12/25</p>
+                              <p className="font-medium text-gray-900 dark:text-white">Chrome - Windows</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">São Paulo, Brasil • Agora</p>
                             </div>
                           </div>
-                          <Badge variant="secondary">Padrão</Badge>
+                          <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/50">
+                            ATIVA
+                          </Badge>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Histórico de Pagamentos */}
-                    <div>
-                      <h3 className="font-medium text-primary-900 dark:text-white mb-3">Últimas Transações</h3>
-                      <div className="space-y-2">
-                        {[
-                          { date: '15/01/2024', amount: 'R$ 49,90', status: 'success' },
-                          { date: '15/12/2023', amount: 'R$ 49,90', status: 'success' },
-                          { date: '15/11/2023', amount: 'R$ 49,90', status: 'failed' }
-                        ].map((payment, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Smartphone className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                             <div>
-                              <p className="font-medium text-primary-900 dark:text-white">{payment.amount}</p>
-                              <p className="text-sm text-primary-600 dark:text-gray-400">{payment.date}</p>
-                            </div>
-                            <Badge className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                              {payment.status === 'success' ? 'Pago' : 'Falhou'}
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Ações */}
-                    <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-primary-200 dark:border-gray-700">
-                      <Button variant="outline" onClick={() => setShowPaymentModal(true)} className="gap-2">
-                        <CreditCard className="w-4 h-4" />
-                        Gerenciar Pagamentos
-                      </Button>
-                      <Button variant="outline" className="gap-2">
-                        <Download className="w-4 h-4" />
-                        Baixar Faturas
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Seção: Personalização */}
-            {activeSection === 'branding' && (
-              <motion.div
-                key="branding"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <Card>
-                  <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">PERSONALIZAÇÃO TÁTICA</h2>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Nome do Sistema */}
-                    <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                        Nome do Sistema
-                      </label>
-                      <div className="flex gap-3">
-                        <input
-                          type="text"
-                          value={systemName}
-                          onChange={(e) => setSystemName(e.target.value)}
-                          className="flex-1 px-4 py-2 border border-primary-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          placeholder="Nome da sua plataforma"
-                        />
-                        <Button className="gap-2">
-                          <Type className="w-4 h-4" />
-                          Atualizar
-                        </Button>
-                      </div>
-                      <p className="text-sm text-primary-600 dark:text-gray-400 mt-1">
-                        Este nome aparecerá no cabeçalho e em toda a plataforma
-                      </p>
-                    </div>
-
-                    {/* Logo Tema Claro */}
-                    <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                        Logo - Tema Claro
-                      </label>
-                      <div className="border-2 border-dashed border-primary-300 dark:border-gray-600 rounded-lg p-6">
-                        {logoLight ? (
-                          <div className="text-center">
-                            <img src={logoLight} alt="Logo Claro" className="max-h-16 mx-auto mb-3" />
-                            <div className="flex gap-2 justify-center">
-                              <Button variant="outline" size="sm" onClick={() => removeLogo('light')} className="gap-2">
-                                <Trash2 className="w-4 h-4" />
-                                Remover
-                              </Button>
-                              <label className="cursor-pointer">
-                                <Button variant="outline" size="sm" className="gap-2">
-                                  <Upload className="w-4 h-4" />
-                                  Substituir
-                                </Button>
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => handleLogoUpload(e, 'light')}
-                                />
-                              </label>
+                              <p className="font-medium text-gray-900 dark:text-white">App Mobile - iOS</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">São Paulo, Brasil • 2 horas atrás</p>
                             </div>
                           </div>
-                        ) : (
-                          <label className="cursor-pointer block text-center">
-                            <div className="text-primary-600 dark:text-gray-400">
-                              <Upload className="w-8 h-8 mx-auto mb-2" />
-                              <p className="text-sm font-medium">Clique para fazer upload</p>
-                              <p className="text-xs">PNG, JPG até 2MB</p>
-                            </div>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => handleLogoUpload(e, 'light')}
-                            />
-                          </label>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Logo Tema Escuro */}
-                    <div>
-                      <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                        Logo - Tema Escuro
-                      </label>
-                      <div className="border-2 border-dashed border-primary-300 dark:border-gray-600 rounded-lg p-6 bg-gray-900">
-                        {logoDark ? (
-                          <div className="text-center">
-                            <img src={logoDark} alt="Logo Escuro" className="max-h-16 mx-auto mb-3" />
-                            <div className="flex gap-2 justify-center">
-                              <Button variant="outline" size="sm" onClick={() => removeLogo('dark')} className="gap-2 bg-white text-gray-900">
-                                <Trash2 className="w-4 h-4" />
-                                Remover
-                              </Button>
-                              <label className="cursor-pointer">
-                                <Button variant="outline" size="sm" className="gap-2 bg-white text-gray-900">
-                                  <Upload className="w-4 h-4" />
-                                  Substituir
-                                </Button>
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => handleLogoUpload(e, 'dark')}
-                                />
-                              </label>
-                            </div>
-                          </div>
-                        ) : (
-                          <label className="cursor-pointer block text-center">
-                            <div className="text-gray-400">
-                              <Upload className="w-8 h-8 mx-auto mb-2" />
-                              <p className="text-sm font-medium">Clique para fazer upload</p>
-                              <p className="text-xs">PNG, JPG até 2MB • Versão para tema escuro</p>
-                            </div>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => handleLogoUpload(e, 'dark')}
-                            />
-                          </label>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Preview */}
-                    <div>
-                      <h3 className="font-medium text-primary-900 dark:text-white mb-3">Preview</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-white border border-gray-200 rounded-lg p-4">
-                          <p className="text-xs text-gray-500 mb-2">Tema Claro</p>
-                          <div className="flex items-center gap-2">
-                            {logoLight ? (
-                              <img src={logoLight} alt="Logo" className="h-8" />
-                            ) : (
-                              <div className="w-8 h-8 bg-primary-600 rounded flex items-center justify-center">
-                                <span className="text-white text-xs font-bold">SP</span>
-                              </div>
-                            )}
-                            <span className="font-bold text-gray-900">{systemName}</span>
-                          </div>
-                        </div>
-                        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-                          <p className="text-xs text-gray-400 mb-2">Tema Escuro</p>
-                          <div className="flex items-center gap-2">
-                            {logoDark ? (
-                              <img src={logoDark} alt="Logo" className="h-8" />
-                            ) : (
-                              <div className="w-8 h-8 bg-primary-600 rounded flex items-center justify-center">
-                                <span className="text-white text-xs font-bold">SP</span>
-                              </div>
-                            )}
-                            <span className="font-bold text-white">{systemName}</span>
-                          </div>
+                          <Button variant="outline" size="sm" className="text-red-600">
+                            ENCERRAR
+                          </Button>
                         </div>
                       </div>
                     </div>
 
-                    {/* Ações */}
-                    <div className="flex gap-3 pt-4 border-t border-primary-200 dark:border-gray-700">
-                      <Button onClick={saveSettings} disabled={isLoading} className="gap-2">
-                        <Save className="w-4 h-4" />
-                        Salvar Personalização
-                      </Button>
-                      <Button variant="outline" className="gap-2">
-                        <Zap className="w-4 h-4" />
-                        Restaurar Padrão
+                    <div className="flex justify-end">
+                      <Button 
+                        onClick={saveSettings} 
+                        disabled={isLoading}
+                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                      >
+                        <Lock className="w-4 h-4 mr-2" />
+                        ATUALIZAR SEGURANÇA
                       </Button>
                     </div>
                   </CardContent>
@@ -682,17 +526,20 @@ EXCLUIR CONTA
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <Card>
-                  <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">SISTEMA DE ALERTAS</h2>
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardHeader className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
+                      <Bell className="w-6 h-6 text-accent-500" />
+                      SISTEMA DE COMUNICAÇÕES
+                    </h2>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-6 p-6">
                     {notifications.map(notif => (
-                      <div key={notif.id} className="border dark:border-gray-600 rounded-lg p-4">
+                      <div key={notif.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
                         <div className="flex items-start justify-between mb-3">
                           <div>
-                            <h3 className="font-medium text-primary-900 dark:text-white">{notif.title}</h3>
-                            <p className="text-sm text-primary-600 dark:text-gray-300">{notif.description}</p>
+                            <h3 className="font-medium text-gray-900 dark:text-white font-police-body">{notif.title}</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{notif.description}</p>
                           </div>
                           <Toggle
                             enabled={notif.enabled}
@@ -707,30 +554,30 @@ EXCLUIR CONTA
                                 type="checkbox"
                                 checked={notif.channels.email}
                                 onChange={() => toggleNotification(notif.id, 'email')}
-                                className="rounded border-primary-300"
+                                className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
                               />
-                              <Mail className="w-4 h-4 text-primary-600" />
-                              <span className="text-sm">Email</span>
+                              <Mail className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                              <span className="text-sm font-police-body">EMAIL</span>
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer">
                               <input
                                 type="checkbox"
                                 checked={notif.channels.push}
                                 onChange={() => toggleNotification(notif.id, 'push')}
-                                className="rounded border-primary-300"
+                                className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
                               />
-                              <Smartphone className="w-4 h-4 text-primary-600" />
-                              <span className="text-sm">Push</span>
+                              <Smartphone className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                              <span className="text-sm font-police-body">PUSH</span>
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer">
                               <input
                                 type="checkbox"
                                 checked={notif.channels.sms}
                                 onChange={() => toggleNotification(notif.id, 'sms')}
-                                className="rounded border-primary-300"
+                                className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
                               />
-                              <Volume2 className="w-4 h-4 text-primary-600" />
-                              <span className="text-sm">SMS</span>
+                              <Volume2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                              <span className="text-sm font-police-body">SMS</span>
                             </label>
                           </div>
                         )}
@@ -738,8 +585,13 @@ EXCLUIR CONTA
                     ))}
                     
                     <div className="flex justify-end">
-                      <Button onClick={saveSettings} disabled={isLoading}>
-SALVAR PREFERÊNCIAS
+                      <Button 
+                        onClick={saveSettings} 
+                        disabled={isLoading}
+                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                      >
+                        <Bell className="w-4 h-4 mr-2" />
+                        SALVAR PREFERÊNCIAS
                       </Button>
                     </div>
                   </CardContent>
@@ -755,16 +607,19 @@ SALVAR PREFERÊNCIAS
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <Card>
-                  <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">PROTOCOLOS DE SEGURANÇA</h2>
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardHeader className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
+                      <Shield className="w-6 h-6 text-accent-500" />
+                      PROTOCOLOS DE PRIVACIDADE
+                    </h2>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-6 p-6">
                     {privacy.map(setting => (
-                      <div key={setting.id} className="flex items-start justify-between p-4 border dark:border-gray-600 rounded-lg">
+                      <div key={setting.id} className="flex items-start justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
                         <div>
-                          <h3 className="font-medium text-primary-900 dark:text-white">{setting.title}</h3>
-                          <p className="text-sm text-primary-600 dark:text-gray-300">{setting.description}</p>
+                          <h3 className="font-medium text-gray-900 dark:text-white font-police-body">{setting.title}</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{setting.description}</p>
                         </div>
                         <Toggle
                           enabled={setting.enabled}
@@ -773,16 +628,16 @@ SALVAR PREFERÊNCIAS
                       </div>
                     ))}
                     
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                       <div className="flex items-start gap-3">
-                        <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+                        <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                         <div>
                           <p className="text-sm text-blue-800 dark:text-blue-200">
-                            Suas informações pessoais são protegidas de acordo com a LGPD.
-                            Nunca compartilhamos seus dados com terceiros sem sua autorização.
+                            Suas informações são protegidas seguindo os mais altos padrões de segurança militar.
+                            Dados sensíveis são criptografados e nunca compartilhados sem autorização.
                           </p>
-                          <Button variant="link" size="sm" className="text-blue-600 dark:text-blue-400 p-0 mt-2">
-                            Ler Política de Privacidade
+                          <Button variant="link" size="sm" className="text-blue-600 dark:text-blue-400 p-0 mt-2 font-police-body">
+                            LER POLÍTICA COMPLETA
                             <ExternalLink className="w-3 h-3 ml-1" />
                           </Button>
                         </div>
@@ -790,8 +645,13 @@ SALVAR PREFERÊNCIAS
                     </div>
                     
                     <div className="flex justify-end">
-                      <Button onClick={saveSettings} disabled={isLoading}>
-SALVAR CONFIGURAÇÕES
+                      <Button 
+                        onClick={saveSettings} 
+                        disabled={isLoading}
+                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                      >
+                        <Shield className="w-4 h-4 mr-2" />
+                        CONFIRMAR PROTOCOLOS
                       </Button>
                     </div>
                   </CardContent>
@@ -807,63 +667,83 @@ SALVAR CONFIGURAÇÕES
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <Card>
-                  <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">CONFIGURAÇÃO VISUAL</h2>
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardHeader className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
+                      <Monitor className="w-6 h-6 text-accent-500" />
+                      INTERFACE DE COMANDO
+                    </h2>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-6 p-6">
                     {/* Tema */}
                     <div>
-                      <h3 className="text-lg font-semibold text-primary-900 dark:text-white mb-4">Tema</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 font-police-subtitle uppercase">
+                        MODO DE VISUALIZAÇÃO
+                      </h3>
                       <div className="grid grid-cols-3 gap-4">
                         <button
                           onClick={() => setTheme('light')}
                           className={cn(
-                            "p-4 border-2 rounded-lg transition-colors",
-                            theme === 'light' ? "border-primary-500" : "border-primary-200 dark:border-gray-600"
+                            "p-4 border-2 rounded-lg transition-all",
+                            theme === 'light' 
+                              ? "border-accent-500 bg-accent-500/10" 
+                              : "border-gray-300 dark:border-gray-600 hover:border-gray-400"
                           )}
                         >
                           <Sun className="w-8 h-8 mx-auto mb-2 text-yellow-500" />
-                          <p className="font-medium dark:text-white">Claro</p>
+                          <p className="font-medium text-gray-900 dark:text-white font-police-body">DIURNO</p>
                         </button>
                         <button
                           onClick={() => setTheme('dark')}
                           className={cn(
-                            "p-4 border-2 rounded-lg transition-colors",
-                            theme === 'dark' ? "border-primary-500" : "border-primary-200 dark:border-gray-600"
+                            "p-4 border-2 rounded-lg transition-all",
+                            theme === 'dark' 
+                              ? "border-accent-500 bg-accent-500/10" 
+                              : "border-gray-300 dark:border-gray-600 hover:border-gray-400"
                           )}
                         >
                           <Moon className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                          <p className="font-medium dark:text-white">Escuro</p>
+                          <p className="font-medium text-gray-900 dark:text-white font-police-body">NOTURNO</p>
                         </button>
                         <button
                           onClick={() => setTheme('system')}
                           className={cn(
-                            "p-4 border-2 rounded-lg transition-colors",
-                            theme === 'system' ? "border-primary-500" : "border-primary-200 dark:border-gray-600"
+                            "p-4 border-2 rounded-lg transition-all",
+                            theme === 'system' 
+                              ? "border-accent-500 bg-accent-500/10" 
+                              : "border-gray-300 dark:border-gray-600 hover:border-gray-400"
                           )}
                         >
                           <Monitor className="w-8 h-8 mx-auto mb-2 text-gray-600" />
-                          <p className="font-medium dark:text-white">Sistema</p>
+                          <p className="font-medium text-gray-900 dark:text-white font-police-body">AUTOMÁTICO</p>
                         </button>
                       </div>
                     </div>
 
                     {/* Outras preferências visuais */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-primary-900 dark:text-white mb-4">Preferências Visuais</h3>
+                    <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 font-police-subtitle uppercase">
+                        PREFERÊNCIAS VISUAIS
+                      </h3>
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                           <div>
-                            <p className="font-medium text-primary-900 dark:text-white">Animações</p>
-                            <p className="text-sm text-primary-600 dark:text-gray-300">Ativar animações e transições</p>
+                            <p className="font-medium text-gray-900 dark:text-white font-police-body">ANIMAÇÕES TÁTICAS</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Ativar transições e efeitos visuais</p>
                           </div>
                           <Toggle enabled={true} onChange={() => {}} />
                         </div>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                           <div>
-                            <p className="font-medium text-primary-900 dark:text-white">Modo Compacto</p>
-                            <p className="text-sm text-primary-600 dark:text-gray-300">Reduzir espaçamentos na interface</p>
+                            <p className="font-medium text-gray-900 dark:text-white font-police-body">MODO COMPACTO</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Reduzir espaçamentos para mais informação</p>
+                          </div>
+                          <Toggle enabled={false} onChange={() => {}} />
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white font-police-body">MODO FURTIVO</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Reduzir brilho e contraste</p>
                           </div>
                           <Toggle enabled={false} onChange={() => {}} />
                         </div>
@@ -871,8 +751,13 @@ SALVAR CONFIGURAÇÕES
                     </div>
                     
                     <div className="flex justify-end">
-                      <Button onClick={saveSettings} disabled={isLoading}>
-APLICAR TEMA
+                      <Button 
+                        onClick={saveSettings} 
+                        disabled={isLoading}
+                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                      >
+                        <Monitor className="w-4 h-4 mr-2" />
+                        APLICAR CONFIGURAÇÕES
                       </Button>
                     </div>
                   </CardContent>
@@ -880,7 +765,7 @@ APLICAR TEMA
               </motion.div>
             )}
 
-            {/* Seção: Estudos */}
+            {/* Seção: Treinamento */}
             {activeSection === 'study' && (
               <motion.div
                 key="study"
@@ -888,66 +773,110 @@ APLICAR TEMA
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <Card>
-                  <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">CONFIGURAÇÕES DE TREINAMENTO</h2>
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardHeader className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
+                      <Target className="w-6 h-6 text-accent-500" />
+                      CONFIGURAÇÕES DE TREINAMENTO
+                    </h2>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-6 p-6">
                     {/* Metas diárias */}
                     <div>
-                      <h3 className="text-lg font-semibold text-primary-900 dark:text-white mb-4">Metas Diárias</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 font-police-subtitle uppercase">
+                        OBJETIVOS OPERACIONAIS
+                      </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                            Tempo de Estudo (minutos)
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase">
+                            TEMPO DE OPERAÇÃO (MINUTOS)
                           </label>
                           <input
                             type="number"
                             defaultValue="120"
                             min="15"
                             max="480"
-                            className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                            Questões por Dia
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase">
+                            ALVOS POR DIA
                           </label>
                           <input
                             type="number"
                             defaultValue="50"
                             min="10"
                             max="200"
-                            className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                           />
                         </div>
                       </div>
                     </div>
 
                     {/* Preferências de revisão */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-primary-900 mb-4">Sistema de Revisão</h3>
+                    <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 font-police-subtitle uppercase">
+                        SISTEMA DE REVISÃO TÁTICA
+                      </h3>
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                           <div>
-                            <p className="font-medium text-primary-900">Revisar Automaticamente</p>
-                            <p className="text-sm text-primary-600">Adicionar questões erradas à revisão</p>
+                            <p className="font-medium text-gray-900 dark:text-white font-police-body">REVISÃO AUTOMÁTICA</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Adicionar alvos perdidos à revisão</p>
                           </div>
                           <Toggle enabled={true} onChange={() => {}} />
                         </div>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                           <div>
-                            <p className="font-medium text-primary-900">Modo Focado</p>
-                            <p className="text-sm text-primary-600">Ocultar distrações durante o estudo</p>
+                            <p className="font-medium text-gray-900 dark:text-white font-police-body">MODO INTENSIVO</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Focar em áreas de maior dificuldade</p>
                           </div>
                           <Toggle enabled={false} onChange={() => {}} />
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white font-police-body">MODO FURTIVO</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Ocultar distrações durante operações</p>
+                          </div>
+                          <Toggle enabled={true} onChange={() => {}} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Estatísticas de desempenho */}
+                    <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 font-police-subtitle uppercase">
+                        ANÁLISE DE DESEMPENHO
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg text-center">
+                          <p className="text-2xl font-bold text-green-600 dark:text-green-400 font-police-numbers">92%</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">PRECISÃO GERAL</p>
+                        </div>
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-center">
+                          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 font-police-numbers">2.5h</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">TEMPO MÉDIO</p>
+                        </div>
+                        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg text-center">
+                          <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 font-police-numbers">127</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">SEQUÊNCIA ATUAL</p>
+                        </div>
+                        <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg text-center">
+                          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 font-police-numbers">15k</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">ALVOS ELIMINADOS</p>
                         </div>
                       </div>
                     </div>
                     
                     <div className="flex justify-end">
-                      <Button onClick={saveSettings} disabled={isLoading}>
-SALVAR PREFERÊNCIAS
+                      <Button 
+                        onClick={saveSettings} 
+                        disabled={isLoading}
+                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                      >
+                        <Target className="w-4 h-4 mr-2" />
+                        SALVAR OBJETIVOS
                       </Button>
                     </div>
                   </CardContent>
@@ -963,49 +892,68 @@ SALVAR PREFERÊNCIAS
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <Card>
-                  <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">SEUS DADOS OPERACIONAIS</h2>
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardHeader className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
+                      <Activity className="w-6 h-6 text-accent-500" />
+                      INTELIGÊNCIA DE DADOS
+                    </h2>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-6 p-6">
                     <div className="space-y-4">
-                      <div className="p-4 border dark:border-gray-600 rounded-lg flex items-center justify-between">
+                      <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
                         <div>
-                          <h3 className="font-medium text-primary-900 dark:text-white font-police-subtitle uppercase tracking-wider">EXPORTAR DADOS</h3>
-                          <p className="text-sm text-primary-600 dark:text-gray-300">
-                            Baixe todos os seus dados em formato JSON
+                          <h3 className="font-medium text-gray-900 dark:text-white font-police-subtitle uppercase">EXPORTAR DADOS OPERACIONAIS</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Baixe todo seu histórico de operações em formato JSON
                           </p>
                         </div>
-                        <Button variant="outline" className="gap-2">
+                        <Button 
+                          variant="outline" 
+                          className="gap-2 font-police-body uppercase tracking-wider"
+                          onClick={() => toast.info('PREPARANDO EXPORTAÇÃO...', { icon: '📦' })}
+                        >
                           <Download className="w-4 h-4" />
-EXPORTAR
+                          EXPORTAR
                         </Button>
                       </div>
                       
-                      <div className="p-4 border dark:border-gray-600 rounded-lg flex items-center justify-between">
+                      <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
                         <div>
-                          <h3 className="font-medium text-primary-900 dark:text-white">Histórico de Atividades</h3>
-                          <p className="text-sm text-primary-600 dark:text-gray-300">
-                            Relatório detalhado de todas as suas atividades
+                          <h3 className="font-medium text-gray-900 dark:text-white font-police-subtitle uppercase">RELATÓRIO DE ATIVIDADES</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Análise detalhada de todas as suas operações táticas
                           </p>
                         </div>
-                        <Button variant="outline" className="gap-2">
+                        <Button 
+                          variant="outline" 
+                          className="gap-2 font-police-body uppercase tracking-wider"
+                          onClick={() => toast.info('GERANDO RELATÓRIO...', { icon: '📊' })}
+                        >
                           <FileText className="w-4 h-4" />
-GERAR RELATÓRIO
+                          GERAR PDF
                         </Button>
                       </div>
-                      
-                      <div className="p-4 border border-red-200 dark:border-red-700 rounded-lg flex items-center justify-between">
-                        <div>
-                          <h3 className="font-medium text-red-900 dark:text-red-400 font-police-subtitle uppercase tracking-wider">LIMPAR CACHE</h3>
-                          <p className="text-sm text-red-600 dark:text-red-400">
-                            Remove dados temporários para liberar espaço
-                          </p>
+                    </div>
+
+                    {/* Estatísticas de uso */}
+                    <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 font-police-subtitle uppercase">
+                        ESTATÍSTICAS DE USO
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                          <p className="text-3xl font-bold text-gray-900 dark:text-white font-police-numbers">524MB</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">ESPAÇO UTILIZADO</p>
                         </div>
-                        <Button variant="outline" className="text-red-600 hover:bg-red-50">
-                          <Trash2 className="w-4 h-4" />
-LIMPAR
-                        </Button>
+                        <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                          <p className="text-3xl font-bold text-gray-900 dark:text-white font-police-numbers">1,247</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">OPERAÇÕES REALIZADAS</p>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                          <p className="text-3xl font-bold text-gray-900 dark:text-white font-police-numbers">385h</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">TEMPO TOTAL</p>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -1021,45 +969,52 @@ LIMPAR
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <Card>
-                  <CardHeader>
-                    <h2 className="text-xl font-bold text-primary-900 dark:text-white font-police-title uppercase tracking-wider">CENTRAL DE SUPORTE</h2>
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardHeader className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
+                      <HelpCircle className="w-6 h-6 text-accent-500" />
+                      CENTRAL DE SUPORTE TÁTICO
+                    </h2>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-6 p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <a href="#" className="p-4 border dark:border-gray-600 rounded-lg hover:border-primary-500 dark:hover:border-primary-400 transition-colors">
-                        <FileText className="w-8 h-8 text-primary-600 dark:text-primary-400 mb-3" />
-                        <h3 className="font-medium text-primary-900 dark:text-white">Documentação</h3>
-                        <p className="text-sm text-primary-600 dark:text-gray-300">Guias e tutoriais</p>
+                      <a href="#" className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-accent-500 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all group">
+                        <FileText className="w-8 h-8 text-gray-600 dark:text-gray-400 group-hover:text-accent-500 mb-3" />
+                        <h3 className="font-medium text-gray-900 dark:text-white font-police-body uppercase">MANUAL OPERACIONAL</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Guias e procedimentos táticos</p>
                       </a>
                       
-                      <a href="#" className="p-4 border dark:border-gray-600 rounded-lg hover:border-primary-500 dark:hover:border-primary-400 transition-colors">
-                        <Mail className="w-8 h-8 text-primary-600 dark:text-primary-400 mb-3" />
-                        <h3 className="font-medium text-primary-900 dark:text-white">Suporte</h3>
-                        <p className="text-sm text-primary-600 dark:text-gray-300">Entre em contato</p>
+                      <a href="#" className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-accent-500 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all group">
+                        <Mail className="w-8 h-8 text-gray-600 dark:text-gray-400 group-hover:text-accent-500 mb-3" />
+                        <h3 className="font-medium text-gray-900 dark:text-white font-police-body uppercase">CONTATO DIRETO</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Fale com o comando</p>
                       </a>
                       
-                      <a href="#" className="p-4 border dark:border-gray-600 rounded-lg hover:border-primary-500 dark:hover:border-primary-400 transition-colors">
-                        <HelpCircle className="w-8 h-8 text-primary-600 dark:text-primary-400 mb-3" />
-                        <h3 className="font-medium text-primary-900 dark:text-white">FAQ</h3>
-                        <p className="text-sm text-primary-600 dark:text-gray-300">Perguntas frequentes</p>
+                      <a href="#" className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-accent-500 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all group">
+                        <HelpCircle className="w-8 h-8 text-gray-600 dark:text-gray-400 group-hover:text-accent-500 mb-3" />
+                        <h3 className="font-medium text-gray-900 dark:text-white font-police-body uppercase">PERGUNTAS FREQUENTES</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Respostas rápidas</p>
                       </a>
                       
-                      <a href="#" className="p-4 border dark:border-gray-600 rounded-lg hover:border-primary-500 dark:hover:border-primary-400 transition-colors">
-                        <Shield className="w-8 h-8 text-primary-600 dark:text-primary-400 mb-3" />
-                        <h3 className="font-medium text-primary-900 dark:text-white">Termos de Uso</h3>
-                        <p className="text-sm text-primary-600 dark:text-gray-300">Políticas e termos</p>
+                      <a href="#" className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-accent-500 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all group">
+                        <Shield className="w-8 h-8 text-gray-600 dark:text-gray-400 group-hover:text-accent-500 mb-3" />
+                        <h3 className="font-medium text-gray-900 dark:text-white font-police-body uppercase">TERMOS OPERACIONAIS</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Políticas e regulamentos</p>
                       </a>
                     </div>
                     
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center">
-                      <h3 className="font-medium text-primary-900 dark:text-white mb-2">Precisa de ajuda?</h3>
-                      <p className="text-sm text-primary-600 dark:text-gray-300 mb-4">
-                        Nossa equipe está disponível de segunda a sexta, das 9h às 18h
+                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-6 text-center text-white">
+                      <Crosshair className="w-12 h-12 mx-auto mb-3 text-accent-500" />
+                      <h3 className="font-bold text-lg mb-2 font-police-title uppercase">PRECISA DE SUPORTE IMEDIATO?</h3>
+                      <p className="text-gray-300 mb-4 font-police-body">
+                        Nossa equipe tática está disponível 24/7 para assistência
                       </p>
-                      <Button>
+                      <Button 
+                        className="bg-accent-500 hover:bg-accent-600 text-black font-police-body uppercase tracking-wider"
+                        onClick={() => toast.info('ABRINDO CANAL SEGURO...', { icon: '📡' })}
+                      >
                         <Mail className="w-4 h-4 mr-2" />
-                        Enviar Mensagem
+                        INICIAR CONTATO
                       </Button>
                     </div>
                   </CardContent>
@@ -1084,208 +1039,48 @@ LIMPAR
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full"
+              className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full border border-gray-200 dark:border-gray-700"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertCircle className="w-8 h-8 text-red-600" />
+                <div className="w-16 h-16 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertTriangle className="w-8 h-8 text-red-500" />
                 </div>
-                <h3 className="text-xl font-bold text-primary-900 dark:text-white mb-2">
-                  Excluir Conta Permanentemente?
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 font-police-title uppercase">
+                  ENCERRAR MISSÃO PERMANENTEMENTE?
                 </h3>
-                <p className="text-primary-600 dark:text-gray-300">
-                  Esta ação não pode ser desfeita. Todos os seus dados serão permanentemente removidos.
+                <p className="text-gray-600 dark:text-gray-400 font-police-body">
+                  Esta ação é irreversível. Todos os dados operacionais serão apagados.
                 </p>
               </div>
               
               <div className="mb-6">
-                <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-2">
-                  Digite "EXCLUIR" para confirmar
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase">
+                  Digite "ENCERRAR" para confirmar
                 </label>
                 <input
                   type="text"
-                  placeholder="EXCLUIR"
-                  className="w-full px-4 py-2 border border-red-300 dark:border-red-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  placeholder="ENCERRAR"
+                  className="w-full px-4 py-2 border border-red-300 dark:border-red-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               
               <div className="flex gap-3">
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 font-police-body uppercase tracking-wider"
                   onClick={() => setShowDeleteModal(false)}
                 >
-                  Cancelar
+                  <X className="w-4 h-4 mr-2" />
+                  CANCELAR
                 </Button>
                 <Button
-                  className="flex-1 bg-red-600 hover:bg-red-700"
+                  className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 font-police-body uppercase tracking-wider"
                   disabled
                 >
-                  Excluir Conta
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  ENCERRAR MISSÃO
                 </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Modal de Pagamentos */}
-      <AnimatePresence>
-        {showPaymentModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-            onClick={() => setShowPaymentModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-primary-900 dark:text-white">
-                    Gerenciar Pagamentos
-                  </h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowPaymentModal(false)}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="p-6 space-y-6">
-                {/* Assinatura Atual */}
-                <div>
-                  <h4 className="font-semibold text-primary-900 dark:text-white mb-3">Assinatura Atual</h4>
-                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h5 className="font-semibold text-green-800 dark:text-green-300">Plano Premium</h5>
-                        <p className="text-sm text-green-600 dark:text-green-400">R$ 49,90/mês</p>
-                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">Próxima cobrança: 15/02/2024</p>
-                      </div>
-                      <div className="text-right">
-                        <Badge className="bg-green-100 text-green-800 mb-2">Ativo</Badge>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline">Alterar Plano</Button>
-                          <Button size="sm" variant="outline" className="text-red-600">Cancelar</Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Métodos de Pagamento */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-primary-900 dark:text-white">Métodos de Pagamento</h4>
-                    <Button size="sm" className="gap-2">
-                      <Plus className="w-4 h-4" />
-                      Adicionar Cartão
-                    </Button>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 border border-primary-200 dark:border-gray-600 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-6 bg-blue-600 rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">VISA</span>
-                        </div>
-                        <div>
-                          <p className="font-medium text-primary-900 dark:text-white">•••• •••• •••• 4242</p>
-                          <p className="text-sm text-primary-600 dark:text-gray-400">Expira em 12/25</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">Padrão</Badge>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 border border-primary-200 dark:border-gray-600 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-6 bg-red-600 rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">MC</span>
-                        </div>
-                        <div>
-                          <p className="font-medium text-primary-900 dark:text-white">•••• •••• •••• 5555</p>
-                          <p className="text-sm text-primary-600 dark:text-gray-400">Expira em 08/26</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Endereço de Cobrança */}
-                <div>
-                  <h4 className="font-semibold text-primary-900 dark:text-white mb-3">Endereço de Cobrança</h4>
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                    <div className="text-sm text-primary-700 dark:text-gray-300">
-                      <p className="font-medium">João Silva</p>
-                      <p>joao@email.com</p>
-                      <p>Rua das Flores, 123, Apt 45</p>
-                      <p>São Paulo, SP 01234-567</p>
-                    </div>
-                    <Button size="sm" variant="outline" className="mt-3">
-                      Editar Endereço
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Histórico Recente */}
-                <div>
-                  <h4 className="font-semibold text-primary-900 dark:text-white mb-3">Transações Recentes</h4>
-                  <div className="space-y-2">
-                    {[
-                      { date: '15/01/2024', amount: 'R$ 49,90', status: 'success', method: 'Visa ••••4242' },
-                      { date: '15/12/2023', amount: 'R$ 49,90', status: 'success', method: 'Visa ••••4242' },
-                      { date: '15/11/2023', amount: 'R$ 49,90', status: 'failed', method: 'Visa ••••4242' }
-                    ].map((payment, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <div>
-                          <p className="font-medium text-primary-900 dark:text-white">{payment.amount}</p>
-                          <p className="text-sm text-primary-600 dark:text-gray-400">{payment.date} • {payment.method}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                            {payment.status === 'success' ? 'Pago' : 'Falhou'}
-                          </Badge>
-                          <Button variant="ghost" size="sm">
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Ações */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <Button variant="outline" className="gap-2">
-                    <Download className="w-4 h-4" />
-                    Baixar Todas as Faturas
-                  </Button>
-                  <Button variant="outline" className="gap-2">
-                    <Mail className="w-4 h-4" />
-                    Configurar Notificações
-                  </Button>
-                </div>
               </div>
             </motion.div>
           </motion.div>
