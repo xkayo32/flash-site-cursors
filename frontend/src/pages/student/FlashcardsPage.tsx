@@ -108,6 +108,20 @@ interface StudySession {
 
 // Dados mockados
 const mockDecks: FlashcardDeck[] = [
+  // DECK ESPECIAL: Guia dos Tipos de Flashcards
+  {
+    id: 'guide-flashcard-types',
+    name: 'GUIA TÁTICO - TIPOS DE FLASHCARDS',
+    description: 'Aprenda todos os 6 tipos de flashcards disponíveis para criação. Deck educativo com exemplos práticos de cada tipo.',
+    subject: 'Tutorial/Guia',
+    totalCards: 6,
+    dueCards: 6,
+    newCards: 6,
+    color: 'bg-gradient-to-r from-purple-500 to-pink-500',
+    createdAt: '2024-01-01',
+    isUserDeck: false,
+    author: 'SISTEMA TÁTICO'
+  },
   {
     id: '1',
     name: 'OPERAÇÃO CONSTITUCIONAL - Direitos Fundamentais',
@@ -180,6 +194,107 @@ const mockDecks: FlashcardDeck[] = [
 ];
 
 const mockFlashcards: Flashcard[] = [
+  // ===== DECK GUIA: TIPOS DE FLASHCARDS =====
+  
+  // 1. EXEMPLO: Flashcard BÁSICO
+  {
+    id: 'guide-basic-1',
+    type: 'basic',
+    front: '🔵 FLASHCARD BÁSICO\n\nEste é um exemplo de flashcard básico. É o tipo mais simples - uma pergunta na frente e a resposta no verso.\n\nPERGUNTA: Qual é a capital do Brasil?',
+    back: 'RESPOSTA: Brasília\n\n💡 DICA DE USO:\n• Ideal para definições simples\n• Fatos e conceitos diretos\n• Vocabulário e traduções\n• Datas históricas',
+    subject: 'Tutorial/Guia',
+    tags: ['tutorial', 'tipo básico', 'exemplo'],
+    difficulty: 'Fácil',
+    createdAt: '2024-01-01',
+    srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
+    stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
+  },
+
+  // 2. EXEMPLO: Flashcard BÁSICO INVERTIDO
+  {
+    id: 'guide-basic-inverted-1',
+    type: 'basic_inverted',
+    front: '🟢 FLASHCARD BÁSICO INVERTIDO\n\nEste tipo cria DOIS cartões automaticamente - um normal e outro invertido.\n\nPERGUNTA: Qual órgão é responsável pela fiscalização constitucional no Brasil?',
+    back: 'RESPOSTA: Supremo Tribunal Federal (STF)\n\n✨ CARTÃO INVERTIDO AUTOMÁTICO:\n• Pergunta: "Supremo Tribunal Federal (STF)"\n• Resposta: "Órgão responsável pela fiscalização constitucional"\n\n💡 IDEAL PARA: Associações bidirecionais',
+    subject: 'Tutorial/Guia',
+    tags: ['tutorial', 'básico invertido', 'automático'],
+    difficulty: 'Fácil',
+    explanation: 'Este tipo é perfeito quando você precisa lembrar da associação nos dois sentidos: pergunta→resposta e resposta→pergunta.',
+    createdAt: '2024-01-01',
+    srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
+    stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
+  },
+
+  // 3. EXEMPLO: Flashcard CLOZE (Lacunas)
+  {
+    id: 'guide-cloze-1',
+    type: 'cloze',
+    front: '🟡 FLASHCARD LACUNAS (CLOZE)\n\nEste tipo oculta parte do texto que você deve completar.\n\nTEXTO COM LACUNA:',
+    back: 'A Constituição Federal de 1988 é conhecida como {{c1::Constituição Cidadã}} porque {{c2::ampliou significativamente os direitos e garantias fundamentais}} dos brasileiros.',
+    subject: 'Tutorial/Guia',
+    tags: ['tutorial', 'cloze', 'lacunas', 'completar'],
+    difficulty: 'Médio',
+    clozeText: 'A Constituição Federal de 1988 é conhecida como {{c1::Constituição Cidadã}} porque {{c2::ampliou significativamente os direitos e garantias fundamentais}} dos brasileiros.',
+    clozeAnswers: ['Constituição Cidadã', 'ampliou significativamente os direitos e garantias fundamentais'],
+    createdAt: '2024-01-01',
+    srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
+    stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
+  },
+
+  // 4. EXEMPLO: Flashcard MÚLTIPLA ESCOLHA
+  {
+    id: 'guide-multiple-choice-1',
+    type: 'multiple_choice',
+    front: '🟣 FLASHCARD MÚLTIPLA ESCOLHA\n\nApresenta uma pergunta com 4 alternativas.\n\nQual dos poderes abaixo NÃO existe na estrutura constitucional brasileira?',
+    back: 'A) Poder Executivo\nB) Poder Legislativo\nC) Poder Judiciário\nD) Poder Moderador ✓\n\nRESPOSTA CORRETA: D',
+    subject: 'Tutorial/Guia',
+    tags: ['tutorial', 'múltipla escolha', 'alternativas'],
+    difficulty: 'Médio',
+    multipleChoiceOptions: [
+      { id: 'a', text: 'Poder Executivo', isCorrect: false },
+      { id: 'b', text: 'Poder Legislativo', isCorrect: false },
+      { id: 'c', text: 'Poder Judiciário', isCorrect: false },
+      { id: 'd', text: 'Poder Moderador', isCorrect: true }
+    ],
+    explanation: '💡 O Poder Moderador existiu apenas no Brasil Império (1822-1889). A atual Constituição prevê apenas 3 poderes: Executivo, Legislativo e Judiciário.',
+    createdAt: '2024-01-01',
+    srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
+    stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
+  },
+
+  // 5. EXEMPLO: Flashcard VERDADEIRO/FALSO
+  {
+    id: 'guide-true-false-1',
+    type: 'true_false',
+    front: '🔴 FLASHCARD VERDADEIRO/FALSO\n\nAvalie se a afirmação está correta ou incorreta.\n\nAFIRMAÇÃO:\n"O Presidente da República pode ser reeleito quantas vezes quiser."',
+    back: '❌ FALSO\n\nEXPLICAÇÃO:\nO Presidente da República pode ser reeleito apenas UMA vez para o período subsequente (reeleição consecutiva). Após cumprir dois mandatos seguidos, deve aguardar um período antes de poder concorrer novamente.',
+    subject: 'Tutorial/Guia',
+    tags: ['tutorial', 'verdadeiro falso', 'avaliação'],
+    difficulty: 'Médio',
+    truefalseStatement: 'O Presidente da República pode ser reeleito quantas vezes quiser.',
+    explanation: 'Segundo o art. 14, §5º da CF/88, é permitida a reeleição para apenas UM período subsequente.',
+    createdAt: '2024-01-01',
+    srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
+    stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
+  },
+
+  // 6. EXEMPLO: Flashcard DIGITAR RESPOSTA
+  {
+    id: 'guide-type-answer-1',
+    type: 'type_answer',
+    front: '🟦 FLASHCARD DIGITAR RESPOSTA\n\nVocê deve digitar a resposta exata no campo de texto.\n\nPERGUNTA:\nQuem foi o primeiro Presidente da República do Brasil?',
+    back: 'RESPOSTA ESPERADA: Deodoro da Fonseca\n\n💡 DICAS DE USO:\n• Nomes próprios e termos específicos\n• Fórmulas e códigos\n• Números e estatísticas\n• Citações textuais',
+    subject: 'Tutorial/Guia',
+    tags: ['tutorial', 'digitar resposta', 'texto livre'],
+    difficulty: 'Médio',
+    correctAnswer: 'Deodoro da Fonseca',
+    typeAnswerHint: 'Marechal que proclamou a República em 1889',
+    createdAt: '2024-01-01',
+    srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
+    stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
+  },
+
+  // ===== FLASHCARDS ORIGINAIS =====
   // 1. BASIC - Cartão Básico Tradicional
   {
     id: '1',
@@ -474,7 +589,7 @@ const studyStats = {
 };
 
 export default function FlashcardsPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'study' | 'create' | 'stats'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'study' | 'create' | 'create-card' | 'stats'>('overview');
   const [selectedDeck, setSelectedDeck] = useState<FlashcardDeck | null>(null);
   const [currentCard, setCurrentCard] = useState<Flashcard | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -493,6 +608,16 @@ export default function FlashcardsPage() {
   const [newDeckName, setNewDeckName] = useState('');
   const [newDeckDescription, setNewDeckDescription] = useState('');
   const [newDeckSubject, setNewDeckSubject] = useState('');
+  
+  // Estados para criação de flashcard individual
+  const [newCardType, setNewCardType] = useState<'basic' | 'basic_inverted' | 'cloze' | 'multiple_choice' | 'true_false' | 'type_answer'>('basic');
+  const [newCardFront, setNewCardFront] = useState('');
+  const [newCardBack, setNewCardBack] = useState('');
+  const [newCardSubject, setNewCardSubject] = useState('');
+  const [newCardTags, setNewCardTags] = useState('');
+  const [newCardDifficulty, setNewCardDifficulty] = useState<'Fácil' | 'Médio' | 'Difícil'>('Médio');
+  const [newCardExplanation, setNewCardExplanation] = useState('');
+  const [newCardHint, setNewCardHint] = useState('');
 
   // Filtrar decks
   const filteredDecks = mockDecks.filter(deck => {
@@ -519,6 +644,61 @@ export default function FlashcardsPage() {
   };
 
   // Create new deck with selected cards
+  const handleCreateCard = () => {
+    if (!newCardFront.trim() || !newCardBack.trim() || !newCardSubject.trim()) {
+      toast.error('PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS!', {
+        icon: '⚠️',
+        duration: 3000
+      });
+      return;
+    }
+
+    const newCard: Flashcard = {
+      id: `card-${Date.now()}`,
+      type: newCardType,
+      front: newCardFront.trim(),
+      back: newCardBack.trim(),
+      subject: newCardSubject.trim(),
+      tags: newCardTags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
+      difficulty: newCardDifficulty,
+      createdAt: new Date().toISOString(),
+      explanation: newCardExplanation.trim() || undefined,
+      typeAnswerHint: newCardHint.trim() || undefined,
+      srsData: {
+        interval: 1,
+        repetitions: 0,
+        easeFactor: 2.5,
+        nextReview: new Date().toISOString(),
+        quality: 0
+      },
+      stats: {
+        totalReviews: 0,
+        correctReviews: 0,
+        streak: 0,
+        averageTime: 0
+      }
+    };
+
+    // Adicionar ao mockFlashcards (simulação)
+    mockFlashcards.push(newCard);
+    
+    toast.success('CARTÃO TÁTICO CRIADO COM SUCESSO!', {
+      icon: '🎯',
+      duration: 3000
+    });
+
+    // Limpar formulário
+    setNewCardFront('');
+    setNewCardBack('');
+    setNewCardSubject('');
+    setNewCardTags('');
+    setNewCardDifficulty('Médio');
+    setNewCardExplanation('');
+    setNewCardHint('');
+    setNewCardType('basic');
+    setActiveTab('overview');
+  };
+
   const handleCreateDeck = () => {
     if (selectedCards.length === 0 || !newDeckName.trim()) {
       return;
@@ -748,16 +928,41 @@ export default function FlashcardsPage() {
     return `${mins}min`;
   };
 
-  const DeckCard = ({ deck }: { deck: FlashcardDeck }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -5 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Card className="h-full hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-gray-200 dark:border-gray-800 relative">
-        {/* Tactical stripe */}
-        <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+  const DeckCard = ({ deck }: { deck: FlashcardDeck }) => {
+    // Estilo especial para o deck guia
+    const isGuideDeck = deck.id === 'guide-flashcard-types';
+    
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -5, scale: isGuideDeck ? 1.02 : 1 }}
+        transition={{ duration: 0.3 }}
+        className={isGuideDeck ? 'relative' : ''}
+      >
+        {isGuideDeck && (
+          <>
+            {/* Efeito de brilho especial */}
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-purple-500/20 rounded-lg blur-sm animate-pulse" />
+            <div className="absolute -top-2 -right-2 z-10">
+              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-police-body text-xs uppercase tracking-wider animate-bounce">
+                🎓 TUTORIAL
+              </Badge>
+            </div>
+          </>
+        )}
+        
+        <Card className={cn(
+          "h-full hover:shadow-xl transition-all duration-300 overflow-hidden border-2 relative",
+          isGuideDeck 
+            ? "border-purple-500 dark:border-purple-400 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20 shadow-lg shadow-purple-200/50 dark:shadow-purple-900/30" 
+            : "border-gray-200 dark:border-gray-800"
+        )}>
+          {/* Tactical stripe */}
+          <div className={cn(
+            "absolute top-0 right-0 w-1 h-full",
+            isGuideDeck ? "bg-gradient-to-b from-purple-500 to-pink-500" : "bg-accent-500"
+          )} />
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", deck.color)}>
@@ -820,7 +1025,8 @@ export default function FlashcardsPage() {
         </CardContent>
       </Card>
     </motion.div>
-  );
+    );
+  };
 
   const StudyCard = ({ card }: { card: Flashcard }) => {
     const getTypeColor = (type: string) => {
@@ -1113,6 +1319,7 @@ export default function FlashcardsPage() {
             { key: 'overview', label: 'ARSENAL DISPONÍVEL', icon: BookOpen },
             { key: 'study', label: 'EXECUTAR OPERAÇÃO', icon: Brain },
             { key: 'create', label: 'CRIAR ARSENAL', icon: Plus },
+            { key: 'create-card', label: 'CRIAR CARD', icon: Zap },
             { key: 'stats', label: 'INTELIGÊNCIA', icon: BarChart3 }
           ].map(tab => {
             const Icon = tab.icon;
@@ -1226,6 +1433,87 @@ export default function FlashcardsPage() {
               </div>
             </div>
 
+            {/* Destaque especial para o deck tutorial */}
+            <div className="mb-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="relative"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 rounded-2xl blur-sm animate-pulse" />
+                <Card className="relative border-2 border-purple-500 dark:border-purple-400 bg-gradient-to-br from-purple-50/80 to-pink-50/80 dark:from-purple-900/30 dark:to-pink-900/30 shadow-lg shadow-purple-200/50 dark:shadow-purple-900/30 overflow-hidden">
+                  <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-purple-500 to-pink-500" />
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                        <span className="text-2xl">🎓</span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+                            GUIA TÁTICO - TIPOS DE FLASHCARDS
+                          </h3>
+                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-police-body text-xs uppercase tracking-wider animate-bounce">
+                            🎯 TUTORIAL OFICIAL
+                          </Badge>
+                        </div>
+                        <p className="text-gray-700 dark:text-gray-300 font-police-body">
+                          <strong>APRENDA TODOS OS 6 TIPOS DE FLASHCARDS</strong> disponíveis para criação. 
+                          Deck educativo com exemplos práticos demonstrando quando e como usar cada tipo.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-6 gap-2 mb-4">
+                      <Badge className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-police-body">🔵 BÁSICO</Badge>
+                      <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-police-body">🟢 INVERTIDO</Badge>
+                      <Badge className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs font-police-body">🟡 LACUNAS</Badge>
+                      <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-police-body">🟣 MÚLTIPLA</Badge>
+                      <Badge className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-police-body">🔴 V/F</Badge>
+                      <Badge className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-xs font-police-body">🟦 DIGITAR</Badge>
+                    </div>
+                    
+                    <div className="flex gap-3">
+                      <Button 
+                        onClick={() => {
+                          const guideDeck = mockDecks.find(d => d.id === 'guide-flashcard-types');
+                          if (guideDeck) {
+                            const guideCards = mockFlashcards.filter(card => card.id.startsWith('guide-'));
+                            setStudyCards(guideCards);
+                            setCurrentCard(guideCards[0]);
+                            setCurrentCardIndex(0);
+                            setShowAnswer(false);
+                            setStudySession({
+                              deckName: guideDeck.name,
+                              totalCards: guideCards.length,
+                              cardsStudied: 0,
+                              accuracy: 0,
+                              startTime: Date.now(),
+                              isActive: true
+                            });
+                            setActiveTab('study');
+                          }
+                        }}
+                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-police-body font-semibold uppercase tracking-wider"
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        INICIAR TUTORIAL (6 EXEMPLOS)
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setActiveTab('create-card')}
+                        className="border-purple-500 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 font-police-body uppercase tracking-wider"
+                      >
+                        <Zap className="w-4 h-4 mr-2" />
+                        CRIAR MEU FLASHCARD
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+
             {/* Grid de decks */}
             {filteredDecks.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1253,6 +1541,112 @@ export default function FlashcardsPage() {
                 </Button>
               </div>
             )}
+
+            {/* Seção de Flashcards Individuais Criados pelo Usuário */}
+            <div className="mt-12">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+                    🎯 MEUS CARTÕES TÁTICOS
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 font-police-body">
+                    FLASHCARDS INDIVIDUAIS CRIADOS POR VOCÊ
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => setActiveTab('create-card')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-police-body uppercase tracking-wider"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  CRIAR CARTÃO
+                </Button>
+              </div>
+              
+              {/* Grid de flashcards individuais criados pelo usuário */}
+              {mockFlashcards.filter(card => card.id.startsWith('card-')).length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {mockFlashcards
+                    .filter(card => card.id.startsWith('card-'))
+                    .slice(0, 6)
+                    .map((card) => (
+                    <motion.div
+                      key={card.id}
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 transition-colors cursor-pointer"
+                      onClick={() => {
+                        setStudyCards([card]);
+                        setCurrentCard(card);
+                        setCurrentCardIndex(0);
+                        setShowAnswer(false);
+                        setStudySession({
+                          deckName: 'Cartão Individual',
+                          totalCards: 1,
+                          cardsStudied: 0,
+                          accuracy: 0,
+                          startTime: Date.now(),
+                          isActive: true
+                        });
+                        setActiveTab('study');
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <Badge className="bg-accent-500 text-black font-police-body text-xs uppercase tracking-wider">
+                          {card.type === 'basic' && '🔵 BÁSICO'}
+                          {card.type === 'basic_inverted' && '🟢 BÁSICO INV.'}
+                          {card.type === 'cloze' && '🟡 LACUNAS'}
+                          {card.type === 'multiple_choice' && '🟣 MÚLTIPLA'}
+                          {card.type === 'true_false' && '🔴 V/F'}
+                          {card.type === 'type_answer' && '🟦 DIGITAR'}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs font-police-numbers">
+                          {card.difficulty}
+                        </Badge>
+                      </div>
+                      
+                      <h4 className="font-police-subtitle font-semibold text-gray-900 dark:text-white mb-2 text-sm line-clamp-2">
+                        {card.front}
+                      </h4>
+                      
+                      <p className="text-gray-600 dark:text-gray-400 text-xs font-police-body mb-3 line-clamp-2">
+                        {card.back.length > 60 ? `${card.back.substring(0, 60)}...` : card.back}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-500 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                          {card.subject}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-600 dark:text-green-400 font-police-numbers">
+                            {card.stats.totalReviews > 0 ? Math.round((card.stats.correctReviews / card.stats.totalReviews) * 100) : 0}%
+                          </span>
+                          <Eye className="w-3 h-3 text-gray-400" />
+                          <span className="text-gray-500 dark:text-gray-400 font-police-numbers">
+                            {card.stats.totalReviews}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                  <Zap className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 font-police-subtitle uppercase tracking-wider">
+                    NENHUM CARTÃO CRIADO AINDA
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4 font-police-body">
+                    CRIE SEUS PRÓPRIOS FLASHCARDS PERSONALIZADOS PARA OTIMIZAR SEUS ESTUDOS
+                  </p>
+                  <Button 
+                    onClick={() => setActiveTab('create-card')}
+                    className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body uppercase tracking-wider"
+                  >
+                    <Zap className="w-4 h-4 mr-2" />
+                    CRIAR PRIMEIRO CARTÃO
+                  </Button>
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
 
@@ -1619,6 +2013,218 @@ export default function FlashcardsPage() {
           </motion.div>
         )}
 
+        {activeTab === 'create-card' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.1 }}
+            className="max-w-4xl mx-auto"
+          >
+            <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
+              {/* Tactical stripe */}
+              <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+              <CardHeader>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">CRIAR CARTÃO TÁTICO</h3>
+                <p className="text-gray-600 dark:text-gray-400 font-police-body">
+                  CRIE SEU PRÓPRIO FLASHCARD PERSONALIZADO PARA ESTUDOS INDIVIDUAIS
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Tipo de cartão */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
+                    TIPO DE CARTÃO TÁTICO
+                  </label>
+                  <select 
+                    value={newCardType}
+                    onChange={(e) => setNewCardType(e.target.value as any)}
+                    className="w-full p-3 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors"
+                  >
+                    <option value="basic">🔵 BÁSICO - Pergunta e Resposta</option>
+                    <option value="basic_inverted">🟢 BÁSICO INVERTIDO - Com Cartão Reverso</option>
+                    <option value="cloze">🟡 LACUNAS (CLOZE) - Completar Texto</option>
+                    <option value="multiple_choice">🟣 MÚLTIPLA ESCOLHA - 4 Alternativas</option>
+                    <option value="true_false">🔴 VERDADEIRO/FALSO - Avaliar Afirmação</option>
+                    <option value="type_answer">🟦 DIGITAR RESPOSTA - Campo de Texto</option>
+                  </select>
+                </div>
+
+                {/* Campos principais */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
+                      FRENTE DO CARTÃO *
+                    </label>
+                    <textarea
+                      placeholder={newCardType === 'multiple_choice' ? 'QUAL É A PERGUNTA?' : 'DIGITE A PERGUNTA/FRENTE DO CARTÃO...'}
+                      value={newCardFront}
+                      onChange={(e) => setNewCardFront(e.target.value)}
+                      className="w-full p-3 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 min-h-[100px] font-police-body placeholder:uppercase placeholder:tracking-wider hover:border-accent-500 transition-colors"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
+                      VERSO DO CARTÃO *
+                    </label>
+                    <textarea
+                      placeholder={newCardType === 'multiple_choice' ? 'A) OPÇÃO 1\nB) OPÇÃO 2\nC) OPÇÃO 3\nD) OPÇÃO 4\n\nRESPOSTA CORRETA: A' : 'DIGITE A RESPOSTA/VERSO DO CARTÃO...'}
+                      value={newCardBack}
+                      onChange={(e) => setNewCardBack(e.target.value)}
+                      className="w-full p-3 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 min-h-[100px] font-police-body placeholder:uppercase placeholder:tracking-wider hover:border-accent-500 transition-colors"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Informações adicionais */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
+                      ÁREA OPERACIONAL *
+                    </label>
+                    <select 
+                      value={newCardSubject}
+                      onChange={(e) => setNewCardSubject(e.target.value)}
+                      className="w-full p-3 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors"
+                      required
+                    >
+                      <option value="">SELECIONE UMA ÁREA</option>
+                      <option value="Direito Constitucional">Direito Constitucional</option>
+                      <option value="Direito Penal">Direito Penal</option>
+                      <option value="Direito Administrativo">Direito Administrativo</option>
+                      <option value="Informática">Informática</option>
+                      <option value="Português">Português</option>
+                      <option value="Raciocínio Lógico">Raciocínio Lógico</option>
+                      <option value="Conhecimentos Gerais">Conhecimentos Gerais</option>
+                      <option value="Outros">Outros</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
+                      NÍVEL TÁTICO
+                    </label>
+                    <select 
+                      value={newCardDifficulty}
+                      onChange={(e) => setNewCardDifficulty(e.target.value as any)}
+                      className="w-full p-3 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors"
+                    >
+                      <option value="Fácil">🟢 FÁCIL - OPERAÇÃO BÁSICA</option>
+                      <option value="Médio">🟡 MÉDIO - OPERAÇÃO PADRÃO</option>
+                      <option value="Difícil">🔴 DIFÍCIL - OPERAÇÃO COMPLEXA</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
+                    TAGS OPERACIONAIS
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="EX: CONSTITUCIONAL, DIREITOS FUNDAMENTAIS, PRINCÍPIOS (SEPARAR COM VÍRGULAS)"
+                    value={newCardTags}
+                    onChange={(e) => setNewCardTags(e.target.value)}
+                    className="w-full p-3 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 font-police-body placeholder:uppercase placeholder:tracking-wider hover:border-accent-500 transition-colors"
+                  />
+                </div>
+
+                {/* Campos condicionais */}
+                {(newCardType === 'multiple_choice' || newCardType === 'true_false') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
+                      EXPLICAÇÃO TÁTICA
+                    </label>
+                    <textarea
+                      placeholder="EXPLIQUE POR QUE ESTA É A RESPOSTA CORRETA..."
+                      value={newCardExplanation}
+                      onChange={(e) => setNewCardExplanation(e.target.value)}
+                      className="w-full p-3 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 min-h-[80px] font-police-body placeholder:uppercase placeholder:tracking-wider hover:border-accent-500 transition-colors"
+                    />
+                  </div>
+                )}
+
+                {newCardType === 'type_answer' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
+                      DICA OPERACIONAL
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="DICA PARA AJUDAR NA RESPOSTA..."
+                      value={newCardHint}
+                      onChange={(e) => setNewCardHint(e.target.value)}
+                      className="w-full p-3 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 font-police-body placeholder:uppercase placeholder:tracking-wider hover:border-accent-500 transition-colors"
+                    />
+                  </div>
+                )}
+
+                {/* Preview do cartão */}
+                {newCardFront && newCardBack && (
+                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-4 font-police-title uppercase tracking-wider">PREVIEW DO CARTÃO TÁTICO</h4>
+                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <div className="bg-white dark:bg-gray-900 p-4 rounded-lg border-2 border-accent-500/30 hover:border-accent-500 transition-colors">
+                        <div className="text-center">
+                          <Badge className="mb-3 bg-accent-500 text-black font-police-body uppercase tracking-wider">
+                            {newCardType === 'basic' && '🔵 BÁSICO'}
+                            {newCardType === 'basic_inverted' && '🟢 BÁSICO INVERTIDO'}
+                            {newCardType === 'cloze' && '🟡 LACUNAS'}
+                            {newCardType === 'multiple_choice' && '🟣 MÚLTIPLA ESCOLHA'}
+                            {newCardType === 'true_false' && '🔴 VERDADEIRO/FALSO'}
+                            {newCardType === 'type_answer' && '🟦 DIGITAR RESPOSTA'}
+                          </Badge>
+                          <h5 className="font-police-subtitle font-bold text-gray-900 dark:text-white mb-2">FRENTE:</h5>
+                          <p className="text-gray-700 dark:text-gray-300 mb-4 font-police-body">{newCardFront}</p>
+                          <h5 className="font-police-subtitle font-bold text-gray-900 dark:text-white mb-2">VERSO:</h5>
+                          <p className="text-gray-700 dark:text-gray-300 font-police-body">{newCardBack}</p>
+                          {newCardExplanation && (
+                            <>
+                              <h5 className="font-police-subtitle font-bold text-gray-900 dark:text-white mb-2 mt-4">EXPLICAÇÃO:</h5>
+                              <p className="text-gray-600 dark:text-gray-400 font-police-body text-sm">{newCardExplanation}</p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Botões de ação */}
+                <div className="flex gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <Button 
+                    onClick={handleCreateCard}
+                    className="flex-1 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+                  >
+                    <Zap className="w-5 h-5 mr-2" />
+                    CRIAR CARTÃO TÁTICO
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setNewCardFront('');
+                      setNewCardBack('');
+                      setNewCardSubject('');
+                      setNewCardTags('');
+                      setNewCardDifficulty('Médio');
+                      setNewCardExplanation('');
+                      setNewCardHint('');
+                      setNewCardType('basic');
+                      setActiveTab('overview');
+                    }}
+                    className="px-8 font-police-body uppercase tracking-wider hover:border-red-500 hover:text-red-500"
+                  >
+                    ABORTAR
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {activeTab === 'stats' && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -1707,7 +2313,7 @@ export default function FlashcardsPage() {
         <p className="text-gray-300 mb-6 max-w-2xl mx-auto font-police-body">
           O SISTEMA DE REPETIÇÃO ESPAÇADA OTIMIZA SEU TEMPO DE ESTUDO, MOSTRANDO OS CARTÕES NO MOMENTO IDEAL PARA FIXAÇÃO
         </p>
-        <div className="flex gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button 
             size="lg" 
             className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
@@ -1715,6 +2321,14 @@ export default function FlashcardsPage() {
           >
             <Plus className="w-5 h-5 mr-2" />
             CRIAR MEU ARSENAL
+          </Button>
+          <Button 
+            size="lg" 
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-police-body font-semibold uppercase tracking-wider border-2 border-blue-500"
+            onClick={() => setActiveTab('create-card')}
+          >
+            <Zap className="w-5 h-5 mr-2" />
+            CRIAR CARTÃO TÁTICO
           </Button>
           <Button 
             variant="outline" 
