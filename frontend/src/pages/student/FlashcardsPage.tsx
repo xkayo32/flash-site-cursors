@@ -619,6 +619,7 @@ export default function FlashcardsPage() {
   const [newCardDifficulty, setNewCardDifficulty] = useState<'Fácil' | 'Médio' | 'Difícil'>('Médio');
   const [newCardExplanation, setNewCardExplanation] = useState('');
   const [newCardHint, setNewCardHint] = useState('');
+  const [showDeckSelector, setShowDeckSelector] = useState(false);
 
   // Filtrar decks
   const filteredDecks = mockDecks.filter(deck => {
@@ -891,6 +892,42 @@ export default function FlashcardsPage() {
     setShowAnswer(false);
     setSessionStats({ correct: 0, total: 0, startTime: Date.now() });
     setActiveTab('overview');
+  };
+
+  // Função para trocar de deck durante o estudo
+  const switchDeck = (newDeck: FlashcardDeck) => {
+    const newCards = mockFlashcards.filter(card => {
+      if (newDeck.id === 'guide-flashcard-types') {
+        return card.id.startsWith('guide-');
+      }
+      return card.subject === newDeck.subject;
+    }).slice(0, newDeck.totalCards);
+
+    setSelectedDeck(newDeck);
+    setStudyCards(newCards);
+    setCurrentCard(newCards[0] || null);
+    setCurrentCardIndex(0);
+    setShowAnswer(false);
+    
+    // Resetar estatísticas da sessão mas manter a sessão ativa
+    if (studySession) {
+      setStudySession({
+        ...studySession,
+        deckName: newDeck.name,
+        totalCards: newCards.length,
+        cardsStudied: 0,
+        accuracy: 0,
+        startTime: Date.now()
+      });
+    }
+    
+    setSessionStats({ correct: 0, total: 0, startTime: Date.now() });
+    setShowDeckSelector(false);
+    
+    toast.success(`DECK ALTERADO: ${newDeck.name}`, {
+      icon: '🎯',
+      duration: 3000
+    });
   };
 
   const startStudySession = (deck: FlashcardDeck) => {
@@ -1788,42 +1825,201 @@ export default function FlashcardsPage() {
           >
             {currentCard ? (
               <div>
-                {/* Header da sessão */}
+                {/* Header da sessão MELHORADO */}
                 {studySession && (
-                  <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
-                          {selectedDeck?.name}
-                        </h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 font-police-body">
-                          <span>CARTÃO {currentCardIndex + 1} DE {studyCards.length}</span>
-                          <span>EXECUTADOS: {studySession.cardsStudied}</span>
-                          <span>PRECISÃO: {studySession.accuracy}%</span>
+                  <div className="mb-6">
+                    {/* Header principal com logo e navegação */}
+                    <Card className="mb-4 border-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 relative overflow-hidden">
+                      {/* Tactical stripe */}
+                      <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-accent-500 to-blue-500" />
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          {/* Logo e título */}
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-accent-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                              <Command className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-bold text-xl text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+                                  STUDYPRO TACTICAL
+                                </h3>
+                                <Badge className="bg-green-500 text-white text-xs font-police-body">
+                                  ✓ ONLINE
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                                SISTEMA TÁTICO DE APRENDIZAGEM
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Botões de ação */}
+                          <div className="flex items-center gap-3">
+                            <div className="relative">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowDeckSelector(!showDeckSelector)}
+                                className="gap-2 font-police-body uppercase tracking-wider border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                              >
+                                <Settings className="w-4 h-4" />
+                                TROCAR DECK
+                                <ChevronRight className={cn("w-4 h-4 transition-transform", showDeckSelector && "rotate-90")} />
+                              </Button>
+                              
+                              {/* Dropdown de seleção de deck */}
+                              <AnimatePresence>
+                                {showDeckSelector && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                    className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-xl z-50"
+                                  >
+                                    <div className="p-4">
+                                      <h4 className="font-police-title font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">
+                                        SELECIONAR ARSENAL:
+                                      </h4>
+                                      <div className="max-h-60 overflow-y-auto space-y-2">
+                                        {mockDecks.map((deck) => (
+                                          <button
+                                            key={deck.id}
+                                            onClick={() => switchDeck(deck)}
+                                            className={cn(
+                                              "w-full p-3 rounded-lg text-left transition-all hover:bg-gray-100 dark:hover:bg-gray-700 border",
+                                              selectedDeck?.id === deck.id 
+                                                ? "border-accent-500 bg-accent-50 dark:bg-accent-900/20" 
+                                                : "border-gray-200 dark:border-gray-600"
+                                            )}
+                                          >
+                                            <div className="flex items-center justify-between">
+                                              <div>
+                                                <p className="font-police-subtitle font-semibold text-gray-900 dark:text-white text-sm uppercase tracking-wider">
+                                                  {deck.name}
+                                                </p>
+                                                <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">
+                                                  {deck.totalCards} CARTÕES • {deck.subject}
+                                                </p>
+                                              </div>
+                                              {selectedDeck?.id === deck.id && (
+                                                <CheckCircle className="w-5 h-5 text-accent-500" />
+                                              )}
+                                            </div>
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                            
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="font-police-body uppercase tracking-wider border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              onClick={() => {
+                                if (confirm('TEM CERTEZA QUE DESEJA ABORTAR A OPERAÇÃO?')) {
+                                  finishStudySession();
+                                }
+                              }}
+                            >
+                              <XCircle className="w-4 h-4 mr-1" />
+                              ABORTAR
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
-                        onClick={() => {
-                          if (confirm('TEM CERTEZA QUE DESEJA ABORTAR A OPERAÇÃO?')) {
-                            finishStudySession();
-                          }
-                        }}
-                      >
-                        ABORTAR OPERAÇÃO
-                      </Button>
+
+                        {/* Deck atual em destaque */}
+                        <div className="bg-gradient-to-r from-blue-50 to-accent-50 dark:from-blue-900/20 dark:to-accent-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                              <BookOpen className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-police-title font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                                🎯 OPERAÇÃO ATIVA: {selectedDeck?.name || studySession.deckName}
+                              </h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                                {selectedDeck?.description || 'Arsenal tático em execução'}
+                              </p>
+                            </div>
+                            <Badge className="bg-blue-500 text-white font-police-body">
+                              {selectedDeck?.subject || 'OPERAÇÃO'}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Estatísticas da sessão */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                      <Card className="border border-gray-200 dark:border-gray-700">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-accent-500 font-police-numbers mb-1">
+                            {currentCardIndex + 1}/{studyCards.length}
+                          </div>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                            CARTÃO ATUAL
+                          </p>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="border border-gray-200 dark:border-gray-700">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-green-600 font-police-numbers mb-1">
+                            {studySession.cardsStudied}
+                          </div>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                            EXECUTADOS
+                          </p>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="border border-gray-200 dark:border-gray-700">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-blue-600 font-police-numbers mb-1">
+                            {studySession.accuracy}%
+                          </div>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                            PRECISÃO
+                          </p>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="border border-gray-200 dark:border-gray-700">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-purple-600 font-police-numbers mb-1">
+                            {Math.round(((currentCardIndex + 1) / studyCards.length) * 100)}%
+                          </div>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                            PROGRESSO
+                          </p>
+                        </CardContent>
+                      </Card>
                     </div>
                     
-                    {/* Barra de progresso */}
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${((currentCardIndex + 1) / studyCards.length) * 100}%` }}
-                        className="bg-accent-500 h-full rounded-full transition-all duration-500"
-                      />
-                    </div>
+                    {/* Barra de progresso melhorada */}
+                    <Card className="border border-gray-200 dark:border-gray-700">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-police-body font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                            PROGRESSO DA OPERAÇÃO
+                          </span>
+                          <span className="text-sm font-police-numbers font-bold text-accent-500">
+                            {Math.round(((currentCardIndex + 1) / studyCards.length) * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${((currentCardIndex + 1) / studyCards.length) * 100}%` }}
+                            className="bg-gradient-to-r from-accent-500 to-blue-500 h-full rounded-full transition-all duration-500"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
 
