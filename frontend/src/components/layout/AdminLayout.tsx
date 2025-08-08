@@ -330,7 +330,7 @@ export default function AdminLayout() {
                           
                           {/* Hover Tactical Stripe */}
                           <div className="absolute left-0 top-0 w-1 h-full bg-accent-500/0 group-hover:bg-accent-500/60 transition-all duration-300" />
-                        >
+                          
                           <item.icon className={cn(
                             "w-5 h-5 flex-shrink-0 relative z-10",
                             isActive && "text-accent-500 drop-shadow-lg",
