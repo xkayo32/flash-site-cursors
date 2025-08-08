@@ -29,24 +29,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 
-// Estrutura de matérias para concursos policiais
+// Estrutura militar/tática para academia operacional
 const materias = {
-  'DIREITO': {
-    'Direito Constitucional': ['Princípios Fundamentais', 'Direitos e Garantias', 'Organização do Estado', 'Poderes da República'],
-    'Direito Administrativo': ['Princípios', 'Atos Administrativos', 'Licitações', 'Contratos', 'Servidores Públicos'],
-    'Direito Penal': ['Teoria do Crime', 'Crimes em Espécie', 'Penas', 'Extinção da Punibilidade'],
-    'Direito Processual Penal': ['Inquérito Policial', 'Ação Penal', 'Provas', 'Prisões']
+  'OPERAÇÕES TÁTICAS': {
+    'Direito Constitucional': ['PROTOCOLOS FUNDAMENTAIS', 'DIREITOS E GARANTIAS', 'ESTRUTURA ESTATAL', 'PODERES OPERACIONAIS'],
+    'Direito Administrativo': ['PRINCÍPIOS TÁTICOS', 'ATOS OPERACIONAIS', 'LICITAÇÕES', 'CONTRATOS', 'PESSOAL OPERACIONAL'],
+    'Direito Penal': ['TEORIA DO CRIME', 'CRIMES EM ESPÉCIE', 'PENAS', 'EXTINÇÃO DA PUNIBILIDADE'],
+    'Direito Processual Penal': ['INQUÉRITO POLICIAL', 'AÇÃO PENAL', 'PROVAS', 'PRISÕES']
   },
-  'SEGURANÇA PÚBLICA': {
-    'Legislação Policial': ['Estatutos', 'Códigos de Conduta', 'Regulamentos'],
-    'Táticas Operacionais': ['Abordagem', 'Uso da Força', 'Negociação'],
-    'Investigação Criminal': ['Técnicas de Investigação', 'Perícia', 'Inteligência']
+  'ARSENAL OPERACIONAL': {
+    'Legislação Policial': ['ESTATUTOS MILITARES', 'CÓDIGOS DE CONDUTA', 'REGULAMENTOS TÁTICOS'],
+    'Táticas Operacionais': ['ABORDAGEM TÁTICA', 'USO DA FORÇA', 'NEGOCIAÇÃO ESTRATÉGICA'],
+    'Investigação Criminal': ['TÉCNICAS DE INVESTIGAÇÃO', 'PERÍCIA', 'INTELIGÊNCIA']
   },
-  'CONHECIMENTOS GERAIS': {
-    'Português': ['Gramática', 'Interpretação de Texto', 'Redação'],
-    'Matemática': ['Raciocínio Lógico', 'Estatística', 'Matemática Básica'],
-    'Informática': ['Hardware', 'Software', 'Segurança da Informação'],
-    'História': ['História do Brasil', 'História Geral', 'Atualidades']
+  'ARSENAL INTEL': {
+    'Português': ['GRAMÁTICA TÁTICA', 'INTERPRETAÇÃO DE TEXTOS', 'REDAÇÃO OPERACIONAL'],
+    'Matemática': ['RACIOCÍNIO LÓGICO', 'ESTATÍSTICA', 'MATEMÁTICA BÁSICA'],
+    'Informática': ['HARDWARE', 'SOFTWARE', 'SEGURANÇA DA INFORMAÇÃO'],
+    'História': ['HISTÓRIA DO BRASIL', 'HISTÓRIA GERAL', 'ATUALIDADES']
   }
 };
 
@@ -54,10 +54,10 @@ const materias = {
 const initialContentItems: ContentItem[] = [
   {
     id: 1,
-    title: 'Direito Constitucional - Princípios Fundamentais',
+    title: 'PROTOCOLO CONSTITUCIONAL - OPERAÇÕES FUNDAMENTAIS',
     type: 'course',
-    category: 'Direito',
-    materia: 'DIREITO',
+    category: 'OPERAÇÕES TÁTICAS',
+    materia: 'OPERAÇÕES TÁTICAS',
     submateria: 'Direito Constitucional',
     topico: 'Princípios Fundamentais',
     author: 'Prof. Dr. Carlos Lima',
@@ -73,10 +73,10 @@ const initialContentItems: ContentItem[] = [
   },
   {
     id: 2,
-    title: 'Matemática Básica - Álgebra Linear',
+    title: 'ARSENAL MATEMÁTICO - OPERAÇÕES ALGÉBRICAS',
     type: 'course',
-    category: 'Matemática',
-    materia: 'CONHECIMENTOS GERAIS',
+    category: 'ARSENAL INTEL',
+    materia: 'ARSENAL INTEL',
     submateria: 'Matemática',
     topico: 'Matemática Básica',
     author: 'Prof. Ana Santos',
@@ -206,7 +206,7 @@ const initialContentItems: ContentItem[] = [
   }
 ];
 
-const categories = ['TODOS', 'DIREITO', 'SEGURANÇA PÚBLICA', 'CONHECIMENTOS GERAIS', 'TÁTICO', 'OPERACIONAL'];
+const categories = ['TODOS', 'OPERAÇÕES TÁTICAS', 'ARSENAL OPERACIONAL', 'ARSENAL INTEL', 'COMANDO ESPECIAL', 'BRIEFINGS INTEL'];
 const types = ['Todos', 'course', 'flashcards', 'questions', 'summary'];
 const statuses = ['Todos', 'published', 'draft', 'review', 'archived'];
 
@@ -599,20 +599,51 @@ export default function ContentManager() {
   };
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-full">
+    <div className="p-6 space-y-6 bg-gradient-to-br from-gray-100 via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800 min-h-full relative">
+      {/* Tactical Background Pattern */}
+      <div 
+        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] pointer-events-none"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 1px 1px, rgba(250,204,21,0.3) 1px, transparent 0),
+            repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 35px,
+              rgba(250, 204, 21, 0.05) 35px,
+              rgba(250, 204, 21, 0.05) 70px
+            )
+          `,
+          backgroundSize: '20px 20px, 100px 100px'
+        }}
+      />
+      
+      {/* Tactical Corner Accents */}
+      <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-accent-500/20" />
+      <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-accent-500/20" />
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
-        <div>
+        <div className="relative z-10">
+          {/* Command Header with Tactical Elements */}
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-2 h-2 bg-accent-500 rounded-full animate-pulse" />
+            <div className="w-1 h-8 bg-accent-500/60" />
+            <FileText className="w-8 h-8 text-accent-500" />
+            <div className="w-1 h-8 bg-accent-500/60" />
+            <Brain className="w-6 h-6 text-accent-500" />
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">
-            CENTRAL DE CONTEÚDO TÁTICO
+            ARSENAL OPERACIONAL
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 font-police-body mt-2 tracking-wider">
-            GERENCIAMENTO DE MATERIAL DIDÁTICO OPERACIONAL
+          <p className="text-gray-600 dark:text-gray-300 font-police-subtitle mt-2 tracking-wider uppercase">
+            SISTEMA DE GESTÃO DE CONTEÚDO TÁTICO
           </p>
+          {/* Tactical underline */}
+          <div className="mt-3 w-40 h-1 bg-gradient-to-r from-accent-500 via-accent-600 to-transparent" />
         </div>
         
         <div className="flex items-center gap-3">
@@ -626,7 +657,7 @@ export default function ContentManager() {
           <Button 
             variant="outline" 
             onClick={handleImport}
-            className="gap-2 font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-2 border-gray-300 dark:border-gray-700 hover:border-accent-500 hover:text-accent-500 dark:hover:border-accent-500"
+            className="gap-2 font-police-title font-bold uppercase tracking-ultra-wide transition-all duration-300 border-2 border-accent-500/30 hover:border-accent-500 hover:text-accent-500 hover:bg-accent-500/10 shadow-lg hover:shadow-xl"
           >
             <Upload className="w-4 h-4" />
             IMPORTAR
@@ -634,19 +665,14 @@ export default function ContentManager() {
           <Button 
             variant="outline" 
             onClick={handleExport}
-            className="gap-2 font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-2 border-gray-300 dark:border-gray-700 hover:border-accent-500 hover:text-accent-500 dark:hover:border-accent-500"
+            className="gap-2 font-police-title font-bold uppercase tracking-ultra-wide transition-all duration-300 border-2 border-accent-500/30 hover:border-accent-500 hover:text-accent-500 hover:bg-accent-500/10 shadow-lg hover:shadow-xl"
           >
             <Download className="w-4 h-4" />
             EXPORTAR
           </Button>
           <Button 
             onClick={() => setShowCreateModal(true)} 
-            className={cn(
-              "gap-2 font-police-body font-semibold transition-all duration-300 uppercase tracking-wider shadow-lg",
-              resolvedTheme === 'dark' 
-                ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-gray-900 shadow-yellow-500/20' 
-                : 'bg-gradient-to-r from-military-base to-military-base/90 hover:from-military-base/90 hover:to-military-base text-white shadow-military-base/30'
-            )}
+            className="gap-2 font-police-title font-bold transition-all duration-300 uppercase tracking-ultra-wide shadow-lg bg-accent-500 hover:bg-accent-600 text-black border-2 border-accent-600 hover:border-accent-700 hover:scale-105 hover:shadow-xl"
           >
             <Plus className="w-4 h-4" />
             Novo Conteúdo

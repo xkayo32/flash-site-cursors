@@ -123,15 +123,31 @@ export default function MockExamManager() {
   };
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto bg-gradient-to-br from-gray-100 via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800 min-h-full relative">
+      {/* Tactical Background Pattern */}
+      <div 
+        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(250,204,21,0.3) 1px, transparent 0)',
+          backgroundSize: '20px 20px'
+        }}
+      />
+      
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white font-police-title mb-2">
-          Gerenciar Simulados
+      <div className="mb-6 relative z-10">
+        <div className="flex items-center gap-4 mb-2">
+          <div className="w-2 h-2 bg-accent-500 rounded-full animate-pulse" />
+          <div className="w-1 h-8 bg-accent-500/60" />
+          <BarChart className="w-8 h-8 text-accent-500" />
+          <div className="w-1 h-8 bg-accent-500/60" />
+        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white font-police-title mb-2 uppercase tracking-ultra-wide">
+          OPERAÇÕES TÁTICAS
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Crie e gerencie simulados para preparação dos alunos
+        <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
+          SISTEMA DE SIMULADOS OPERACIONAIS
         </p>
+        <div className="mt-3 w-40 h-1 bg-gradient-to-r from-accent-500 via-accent-600 to-transparent" />
       </div>
 
       {/* Stats Cards */}

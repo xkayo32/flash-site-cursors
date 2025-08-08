@@ -36,7 +36,8 @@ import { userService } from '@/services/userService';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 
-const plans = ['Todos', 'Básico', 'Premium', 'VIP', 'Unlimited'];
+// Tactical military terminology for admin interface
+const plans = ['Todos', 'RECRUTA', 'ESPECIALISTA', 'ELITE', 'COMANDO SUPREMO'];
 const roles = ['Todos', 'student', 'instructor', 'admin'];
 const statuses = ['Todos', 'active', 'suspended', 'pending', 'inactive'];
 
@@ -197,16 +198,16 @@ export default function UserManager() {
 
   const getRoleBadge = (role: string) => {
     const roleConfig = {
-      admin: { label: 'ADMIN', variant: 'default' as const, icon: Shield, color: 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-800' },
-      instructor: { label: 'INSTRUTOR', variant: 'secondary' as const, icon: Crown, color: 'bg-gray-600 text-white dark:bg-gray-400 dark:text-gray-800' },
-      student: { label: 'ALUNO', variant: 'secondary' as const, icon: User, color: 'bg-gray-400 text-white dark:bg-gray-600 dark:text-white' }
+      admin: { label: 'COMANDO', variant: 'default' as const, icon: Shield, color: 'bg-accent-500 text-black dark:bg-accent-600 dark:text-black border-2 border-accent-600' },
+      instructor: { label: 'OFICIAL', variant: 'secondary' as const, icon: Crown, color: 'bg-gray-600 text-white dark:bg-gray-400 dark:text-gray-800 border-2 border-gray-700' },
+      student: { label: 'OPERADOR', variant: 'secondary' as const, icon: User, color: 'bg-gray-500 text-white dark:bg-gray-600 dark:text-white border-2 border-gray-600' }
     };
     
     const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.student;
     const Icon = config.icon;
     
     return (
-      <Badge variant={config.variant} className={`${config.color} flex items-center gap-1 font-police-body font-semibold uppercase tracking-wider`}>
+      <Badge variant={config.variant} className={`${config.color} flex items-center gap-1 font-police-title font-bold uppercase tracking-ultra-wide shadow-lg`}>
         <Icon className="w-3 h-3" />
         {config.label}
       </Badge>
@@ -215,15 +216,15 @@ export default function UserManager() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      active: { label: 'ATIVO', color: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
-      suspended: { label: 'SUSPENSO', color: 'bg-gray-400 text-white dark:bg-gray-600 dark:text-gray-200' },
-      pending: { label: 'PENDENTE', color: 'bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300' },
-      inactive: { label: 'INATIVO', color: 'bg-gray-500 text-white dark:bg-gray-700 dark:text-gray-400' }
+      active: { label: 'OPERACIONAL', color: 'bg-green-500 text-white dark:bg-green-600 dark:text-white border-2 border-green-600' },
+      suspended: { label: 'SUSPENSO', color: 'bg-red-500 text-white dark:bg-red-600 dark:text-white border-2 border-red-600' },
+      pending: { label: 'EM ANÁLISE', color: 'bg-yellow-500 text-black dark:bg-yellow-600 dark:text-black border-2 border-yellow-600' },
+      inactive: { label: 'FORA DE SERVIÇO', color: 'bg-gray-500 text-white dark:bg-gray-600 dark:text-white border-2 border-gray-600' }
     };
     
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
     return (
-      <Badge className={`${config.color} font-police-body font-semibold uppercase tracking-wider`}>
+      <Badge className={`${config.color} font-police-title font-bold uppercase tracking-ultra-wide shadow-lg`}>
         {config.label}
       </Badge>
     );
@@ -278,20 +279,51 @@ export default function UserManager() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-gradient-to-br from-gray-100 via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800 min-h-full relative">
+      {/* Tactical Background Pattern */}
+      <div 
+        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] pointer-events-none"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 1px 1px, rgba(250,204,21,0.3) 1px, transparent 0),
+            repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 35px,
+              rgba(250, 204, 21, 0.05) 35px,
+              rgba(250, 204, 21, 0.05) 70px
+            )
+          `,
+          backgroundSize: '20px 20px, 100px 100px'
+        }}
+      />
+      
+      {/* Tactical Corner Accents */}
+      <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-accent-500/20" />
+      <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-accent-500/20" />
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
-        <div>
-          <h1 className="text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
-            CENTRAL DE COMANDO - USUÁRIOS
+        <div className="relative z-10">
+          {/* Command Header with Tactical Elements */}
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-2 h-2 bg-accent-500 rounded-full animate-pulse" />
+            <div className="w-1 h-8 bg-accent-500/60" />
+            <Shield className="w-8 h-8 text-accent-500" />
+            <div className="w-1 h-8 bg-accent-500/60" />
+            <User className="w-6 h-6 text-accent-500" />
+          </div>
+          <h1 className="text-3xl font-police-title font-bold uppercase tracking-ultra-wide text-gray-900 dark:text-white">
+            GESTÃO DE TROPAS
           </h1>
           <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
-            SISTEMA INTEGRADO DE GESTÃO DE PESSOAL
+            SISTEMA INTEGRADO DE COMANDO PESSOAL
           </p>
+          {/* Tactical underline */}
+          <div className="mt-3 w-40 h-1 bg-gradient-to-r from-accent-500 via-accent-600 to-transparent" />
         </div>
         
         <div className="flex items-center gap-3">
@@ -303,7 +335,7 @@ export default function UserManager() {
                 icon: '📋'
               });
             }}
-            className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
+            className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-title font-bold uppercase tracking-ultra-wide transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-accent-600 hover:border-accent-700 hover:scale-105"
           >
             <Plus className="w-4 h-4" />
             NOVO USUÁRIO
@@ -318,73 +350,93 @@ export default function UserManager() {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-          <CardContent className="p-4">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500/50 transition-all duration-300 shadow-lg hover:shadow-xl group relative overflow-hidden">
+          <CardContent className="p-4 relative z-10">
+            {/* Tactical Elements */}
+            <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-accent-500/60 to-accent-500/30" />
+            <div className="absolute top-0 left-0 w-8 h-1 bg-accent-500/50 group-hover:bg-accent-500 transition-all duration-300" />
+            <div className="absolute bottom-0 right-4 w-4 h-4 border-b-2 border-r-2 border-accent-500/20 group-hover:border-accent-500/60 transition-all duration-300" />
+            
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  TOTAL DE USUÁRIOS
+                <p className="text-sm font-police-subtitle font-bold text-gray-600 dark:text-accent-500 uppercase tracking-ultra-wide">
+                  TROPAS OPERACIONAIS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {totalUsers}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg flex items-center justify-center border-2 border-gray-600 group-hover:scale-110 transition-all duration-300 shadow-lg">
+                <User className="w-6 h-6 text-accent-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-          <CardContent className="p-4">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500/50 transition-all duration-300 shadow-lg hover:shadow-xl group relative overflow-hidden">
+          <CardContent className="p-4 relative z-10">
+            {/* Tactical Elements */}
+            <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-green-500/60 to-green-500/30" />
+            <div className="absolute top-0 left-0 w-8 h-1 bg-green-500/50 group-hover:bg-green-500 transition-all duration-300" />
+            <div className="absolute bottom-0 right-4 w-4 h-4 border-b-2 border-r-2 border-green-500/20 group-hover:border-green-500/60 transition-all duration-300" />
+            
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  ASSINATURAS ATIVAS
+                <p className="text-sm font-police-subtitle font-bold text-gray-600 dark:text-green-400 uppercase tracking-ultra-wide">
+                  CLEARANCE ATIVO
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {users.filter(u => u.subscription?.status === 'active').length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-accent-500 to-accent-600 rounded-lg flex items-center justify-center border-2 border-accent-600 group-hover:scale-110 transition-all duration-300 shadow-lg">
                 <CheckCircle className="w-6 h-6 text-black" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-          <CardContent className="p-4">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500/50 transition-all duration-300 shadow-lg hover:shadow-xl group relative overflow-hidden">
+          <CardContent className="p-4 relative z-10">
+            {/* Tactical Elements */}
+            <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-blue-500/60 to-blue-500/30" />
+            <div className="absolute top-0 left-0 w-8 h-1 bg-blue-500/50 group-hover:bg-blue-500 transition-all duration-300" />
+            <div className="absolute bottom-0 right-4 w-4 h-4 border-b-2 border-r-2 border-blue-500/20 group-hover:border-blue-500/60 transition-all duration-300" />
+            
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  NOVOS ESTE MÊS
+                <p className="text-sm font-police-subtitle font-bold text-gray-600 dark:text-blue-400 uppercase tracking-ultra-wide">
+                  RECRUTAS RECENTES
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   12
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
-                <Activity className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg flex items-center justify-center border-2 border-gray-700 group-hover:scale-110 transition-all duration-300 shadow-lg">
+                <Activity className="w-6 h-6 text-blue-400" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-          <CardContent className="p-4">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500/50 transition-all duration-300 shadow-lg hover:shadow-xl group relative overflow-hidden">
+          <CardContent className="p-4 relative z-10">
+            {/* Tactical Elements */}
+            <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-red-500/60 to-red-500/30" />
+            <div className="absolute top-0 left-0 w-8 h-1 bg-red-500/50 group-hover:bg-red-500 transition-all duration-300" />
+            <div className="absolute bottom-0 right-4 w-4 h-4 border-b-2 border-r-2 border-red-500/20 group-hover:border-red-500/60 transition-all duration-300" />
+            
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  TAXA DE CHURN
+                <p className="text-sm font-police-subtitle font-bold text-gray-600 dark:text-red-400 uppercase tracking-ultra-wide">
+                  DESERÇÃO TÁTICA
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   2.3%
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gray-600 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center border-2 border-gray-600 group-hover:scale-110 transition-all duration-300 shadow-lg">
+                <DollarSign className="w-6 h-6 text-red-400" />
               </div>
             </div>
           </CardContent>
@@ -396,15 +448,19 @@ export default function UserManager() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg p-6"
+        className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-lg relative overflow-hidden"
       >
+        {/* Tactical Filter Elements */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500/30 via-accent-500/60 to-accent-500/30" />
+        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent-500/20" />
+        <div className="absolute top-2 right-2 w-2 h-2 bg-accent-500 rounded-full animate-pulse" />
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-hover:text-accent-500 transition-colors" />
             <input
               type="text"
               placeholder="BUSCAR POR NOME OU EMAIL..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+              className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-subtitle placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all duration-300 shadow-inner hover:shadow-lg"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

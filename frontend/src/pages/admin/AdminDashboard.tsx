@@ -248,18 +248,25 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 dark:bg-black min-h-full relative">
-      {/* Background Pattern */}
+    <div className="p-6 space-y-6 bg-gradient-to-br from-gray-100 via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800 min-h-full relative">
+      {/* Tactical Corner Accents */}
+      <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-accent-500/20" />
+      <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-accent-500/20" />
+      {/* Enhanced Tactical Background Pattern */}
       <div 
-        className="absolute inset-0 opacity-5 dark:opacity-10 pointer-events-none"
+        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.08] pointer-events-none"
         style={{
-          backgroundImage: `repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 35px,
-            rgba(250, 204, 21, 0.05) 35px,
-            rgba(250, 204, 21, 0.05) 70px
-          )`
+          backgroundImage: `
+            radial-gradient(circle at 1px 1px, rgba(250,204,21,0.3) 1px, transparent 0),
+            repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 35px,
+              rgba(250, 204, 21, 0.05) 35px,
+              rgba(250, 204, 21, 0.05) 70px
+            )
+          `,
+          backgroundSize: '20px 20px, 100px 100px'
         }}
       />
       {/* Header */}
@@ -268,13 +275,22 @@ export default function AdminDashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
-        <div>
+        <div className="relative">
+          {/* Command Header with Tactical Elements */}
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-2 h-2 bg-accent-500 rounded-full animate-pulse" />
+            <div className="w-1 h-8 bg-accent-500/60" />
+            <Shield className="w-8 h-8 text-accent-500" />
+            <div className="w-1 h-8 bg-accent-500/60" />
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">
             CENTRAL DE COMANDO
           </h1>
           <p className="text-gray-600 dark:text-gray-300 font-police-body tracking-wider">
             MONITORAMENTO TÁTICO EM TEMPO REAL
           </p>
+          {/* Tactical underline */}
+          <div className="mt-3 w-32 h-1 bg-gradient-to-r from-accent-500 via-accent-600 to-transparent" />
         </div>
         
         <div className="flex items-center gap-3">
@@ -304,10 +320,12 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl">
+            <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-lg hover:shadow-xl hover:shadow-accent-500/10 group">
               <CardContent className="p-4 relative overflow-hidden">
-                {/* Tactical stripe */}
-                <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+                {/* Enhanced Tactical Elements */}
+                <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-accent-500 via-accent-600 to-accent-500" />
+                <div className="absolute top-0 left-0 w-8 h-1 bg-accent-500/50 group-hover:bg-accent-500 transition-all duration-300" />
+                <div className="absolute bottom-0 right-4 w-4 h-4 border-b-2 border-r-2 border-accent-500/20 group-hover:border-accent-500/60 transition-all duration-300" />
                 
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
@@ -332,10 +350,12 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="relative">
-                    <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
-                      <TacticalIcon name={stat.icon} className="w-5 h-5 text-gray-700 dark:text-accent-500" />
+                    <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center border-3 border-accent-500/30 group-hover:border-accent-500 shadow-lg group-hover:scale-110 transition-all duration-300">
+                      <TacticalIcon name={stat.icon} className="w-6 h-6 text-gray-700 dark:text-accent-500 group-hover:scale-110 transition-all duration-300" />
                     </div>
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-500 rounded-full animate-pulse" />
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent-500 rounded-full border-2 border-white dark:border-gray-900 animate-pulse shadow-lg" />
+                    {/* Tactical corner accent */}
+                    <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-accent-500/40" />
                   </div>
                 </div>
               </CardContent>
@@ -363,13 +383,16 @@ export default function AdminDashboard() {
               key={index}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="p-3 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-lg hover:border-accent-500/50 transition-all duration-300 group"
+              className="p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-800 rounded-lg hover:border-accent-500/50 transition-all duration-300 group relative overflow-hidden shadow-lg hover:shadow-xl"
             >
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center group-hover:bg-accent-500 group-hover:scale-110 transition-all duration-300">
-                  <Icon className="w-5 h-5 text-gray-700 dark:text-gray-300 group-hover:text-black" />
+              {/* Tactical Hover Effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-accent-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300" />
+              <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-accent-500/0 group-hover:border-accent-500/40 transition-all duration-300" />
+              <div className="flex flex-col items-center gap-4 relative z-10">
+                <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-accent-500 group-hover:to-accent-600 group-hover:scale-110 transition-all duration-300 border-2 border-gray-300 dark:border-gray-600 group-hover:border-accent-500 shadow-lg">
+                  <Icon className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-black transition-all duration-300" />
                 </div>
-                <span className="text-xs font-police-subtitle uppercase tracking-wider text-gray-600 dark:text-gray-400 group-hover:text-accent-500">
+                <span className="text-xs font-police-title uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400 group-hover:text-accent-500 font-bold text-center leading-tight">
                   {action.label}
                 </span>
               </div>
@@ -386,8 +409,12 @@ export default function AdminDashboard() {
           transition={{ delay: 0.2 }}
           className="lg:col-span-2"
         >
-          <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
-            <CardHeader className="flex flex-row items-center justify-between border-b-2 border-gray-200 dark:border-accent-500/30">
+          <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-800 hover:border-accent-500/30 transition-all duration-300 shadow-xl relative overflow-hidden">
+            {/* Tactical Card Elements */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500/50 via-accent-500 to-accent-500/50" />
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent-500/20" />
+            
+            <CardHeader className="flex flex-row items-center justify-between border-b-4 border-accent-500/30 relative z-10">
               <CardTitle className="text-lg font-police-title uppercase tracking-widest flex items-center gap-3">
                 <Shield className="w-5 h-5 text-accent-500" />
                 RECRUTAS RECENTES
@@ -401,10 +428,13 @@ export default function AdminDashboard() {
                 {recentUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-accent-500/50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 group"
+                    className="flex items-center justify-between p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-accent-500/50 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 transition-all duration-300 group relative overflow-hidden backdrop-blur-sm"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center text-black font-bold font-police-title shadow-lg">
+                    {/* User Row Tactical Elements */}
+                    <div className="absolute left-0 top-0 w-1 h-full bg-accent-500/0 group-hover:bg-accent-500/60 transition-all duration-300" />
+                    <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-accent-500/0 group-hover:border-accent-500/40 transition-all duration-300" />
+                    <div className="flex items-center gap-3 relative z-10">
+                      <div className="w-12 h-12 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center text-black font-bold font-police-title shadow-lg border-2 border-accent-500/50 group-hover:scale-110 transition-all duration-300">
                         {user.name.charAt(0)}
                       </div>
                       <div>
@@ -417,7 +447,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 relative z-10">
                       <div className="text-right">
                         <p className="text-sm font-medium text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wide">
                           {user.plan}
@@ -444,8 +474,12 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
-            <CardHeader className="border-b-2 border-gray-200 dark:border-accent-500/30">
+          <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-800 hover:border-accent-500/30 transition-all duration-300 shadow-xl relative overflow-hidden">
+            {/* Tactical Alert Card Elements */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500/30 via-accent-500/50 to-red-500/30" />
+            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-accent-500/20" />
+            
+            <CardHeader className="border-b-4 border-accent-500/30 relative z-10">
               <CardTitle className="text-lg font-police-title uppercase tracking-widest flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-accent-500" />
                 ALERTAS TÁTICOS
@@ -484,8 +518,12 @@ export default function AdminDashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
-          <CardHeader className="flex flex-row items-center justify-between border-b-2 border-gray-200 dark:border-accent-500/30">
+        <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-800 hover:border-accent-500/30 transition-all duration-300 shadow-xl relative overflow-hidden">
+          {/* Content Table Tactical Elements */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-500/50 to-transparent" />
+          <div className="absolute bottom-0 right-0 w-10 h-10 border-b-2 border-r-2 border-accent-500/20" />
+          
+          <CardHeader className="flex flex-row items-center justify-between border-b-4 border-accent-500/30 relative z-10">
             <CardTitle className="text-lg font-police-title uppercase tracking-widest flex items-center gap-3">
               <Target className="w-5 h-5 text-accent-500" />
               ARSENAL DE CONTEÚDO
@@ -530,8 +568,10 @@ export default function AdminDashboard() {
                   {recentContent.map((content) => (
                     <tr
                       key={content.id}
-                      className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 group"
+                      className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 group relative"
                     >
+                      {/* Table Row Tactical Hover */}
+                      <div className="absolute left-0 top-0 w-1 h-full bg-accent-500/0 group-hover:bg-accent-500/40 transition-all duration-300" />
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           {getTypeIcon(content.type)}
