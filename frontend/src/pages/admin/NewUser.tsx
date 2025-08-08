@@ -26,16 +26,16 @@ import { userService } from '@/services/userService';
 import toast from 'react-hot-toast';
 
 const roles = [
-  { value: 'student', label: 'ALUNO', icon: User, description: 'Acesso aos cursos e conteúdos educacionais' },
-  { value: 'instructor', label: 'INSTRUTOR', icon: Crown, description: 'Criação e gestão de conteúdo educacional' },
-  { value: 'admin', label: 'ADMINISTRADOR', icon: Shield, description: 'Acesso completo ao sistema' }
+  { value: 'student', label: 'OPERADOR', icon: User, description: 'Acesso aos cursos e treinamentos táticos' },
+  { value: 'instructor', label: 'INSTRUTOR TÁTICO', icon: Crown, description: 'Criação e gestão de conteúdo operacional' },
+  { value: 'admin', label: 'COMANDANTE', icon: Shield, description: 'Acesso completo ao comando central' }
 ];
 
 const statuses = [
-  { value: 'active', label: 'ATIVO', description: 'Usuário pode acessar o sistema normalmente' },
-  { value: 'pending', label: 'PENDENTE', description: 'Aguardando confirmação de email' },
-  { value: 'suspended', label: 'SUSPENSO', description: 'Acesso temporariamente bloqueado' },
-  { value: 'inactive', label: 'INATIVO', description: 'Usuário desativado' }
+  { value: 'active', label: 'OPERACIONAL', description: 'Agente pode acessar o sistema normalmente' },
+  { value: 'pending', label: 'STANDBY', description: 'Aguardando confirmação de credenciais' },
+  { value: 'suspended', label: 'SUSPENSO', description: 'Acesso temporariamente restrito' },
+  { value: 'inactive', label: 'FORA DE SERVIÇO', description: 'Agente desativado' }
 ];
 
 export default function NewUser() {
@@ -118,14 +118,14 @@ export default function NewUser() {
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-      toast.error('Corrija os campos com erro', {
-        icon: '⚠️'
+      toast.error('OPERAÇÃO FALHADA: Corrija os campos com erro', {
+        icon: '🚨'
       });
       return;
     }
 
     setIsLoading(true);
-    toast.loading('Criando usuário...', { id: 'create' });
+    toast.loading('PROCESSANDO CADASTRO TÁTICO...', { id: 'create' });
 
     try {
       const userData = {
@@ -140,12 +140,12 @@ export default function NewUser() {
       const response = await userService.createUser(userData);
       
       if (response.success) {
-        toast.success('Usuário criado com sucesso!', { id: 'create' });
+        toast.success('OPERAÇÃO CONCLUÍDA: Agente cadastrado com sucesso!', { id: 'create' });
         
         if (formData.sendWelcomeEmail) {
-          toast.success('Email de boas-vindas enviado', {
+          toast.success('BRIEFING DE BOAS-VINDAS ENVIADO', {
             duration: 3000,
-            icon: '📧'
+            icon: '🎯'
           });
         }
         
@@ -153,10 +153,10 @@ export default function NewUser() {
           navigate('/admin/users');
         }, 1500);
       } else {
-        toast.error(response.message || 'Erro ao criar usuário', { id: 'create' });
+        toast.error(`OPERAÇÃO FALHADA: ${response.message || 'Erro ao cadastrar agente'}`, { id: 'create' });
       }
     } catch (error) {
-      toast.error('Erro ao criar usuário', { id: 'create' });
+      toast.error('OPERAÇÃO FALHADA: Erro ao cadastrar agente', { id: 'create' });
     } finally {
       setIsLoading(false);
     }
@@ -188,16 +188,16 @@ export default function NewUser() {
       
       if (Object.keys(step1Errors).length > 0) {
         setErrors(step1Errors);
-        toast.error('Preencha os campos obrigatórios', { icon: '⚠️' });
+        toast.error('OPERAÇÃO FALHADA: Configure campos obrigatórios', { icon: '🚨' });
         return;
       }
     }
     
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
-      toast.success(`Avançando para etapa ${currentStep + 1}`, {
+      toast.success(`AVANÇANDO PARA FASE TÁTICA ${currentStep + 1}`, {
         duration: 2000,
-        icon: '➡️'
+        icon: '✅'
       });
     }
   };
@@ -221,40 +221,50 @@ export default function NewUser() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
+      {/* Header Militar/Tático */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        className="bg-gradient-to-r from-gray-800 via-[#14242f] to-gray-900 dark:from-gray-900 dark:via-[#14242f] dark:to-black p-8 rounded-lg relative overflow-hidden"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,204,21,0.3) 1px, transparent 0)',
+          backgroundSize: '20px 20px'
+        }}
       >
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/admin/users')}
-            className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            VOLTAR
-          </Button>
-          <div>
-            <h1 className="text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
-              NOVO USUÁRIO
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
-              CADASTRO COMPLETO DE PESSOAL
-            </p>
-          </div>
-        </div>
+        {/* Corner accents */}
+        <div className="absolute top-0 right-0 w-20 h-20 border-t-4 border-r-4 border-accent-500/30" />
+        <div className="absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 border-accent-500/20" />
         
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors disabled:opacity-50"
-          >
-            <Save className="w-4 h-4" />
-            {isLoading ? 'CRIANDO...' : 'CRIAR USUÁRIO'}
-          </Button>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
+          <div className="flex items-center gap-6">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/admin/users')}
+              className="gap-2 font-police-body uppercase tracking-wider hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30 transition-all duration-300"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              RETORNAR À BASE
+            </Button>
+            <div className="border-l-4 border-l-accent-500 pl-6">
+              <h1 className="text-4xl font-police-title font-bold uppercase tracking-wider text-white">
+                NOVA TROPA OPERACIONAL
+              </h1>
+              <p className="text-gray-300 font-police-subtitle uppercase tracking-wider mt-1">
+                CADASTRO DE NOVO AGENTE NO SISTEMA
+              </p>
+            </div>
+          </div>
+        
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-bold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50"
+            >
+              <UserPlus className="w-5 h-5" />
+              {isLoading ? 'PROCESSANDO...' : 'CONFIRMAR OPERAÇÃO'}
+            </Button>
+          </div>
         </div>
       </motion.div>
 
@@ -264,8 +274,12 @@ export default function NewUser() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-          <CardContent className="p-4">
+        <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-xl relative overflow-hidden">
+          {/* Tactical stripes */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 via-accent-400 to-accent-500" />
+          <div className="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-accent-500/20" />
+          
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               {[1, 2, 3].map((step) => (
                 <div key={step} className="flex items-center">
@@ -279,12 +293,12 @@ export default function NewUser() {
                     {step <= currentStep ? <CheckCircle className="w-4 h-4" /> : step}
                   </div>
                   <div className="ml-3">
-                    <p className={`font-police-body font-medium uppercase tracking-wider text-xs ${
+                    <p className={`font-police-subtitle font-semibold uppercase tracking-wider text-xs ${
                       step <= currentStep ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'
                     }`}>
-                      {step === 1 && 'DADOS PESSOAIS'}
-                      {step === 2 && 'CREDENCIAIS E ACESSO'}
-                      {step === 3 && 'REVISÃO E CONFIRMAÇÃO'}
+                      {step === 1 && 'IDENTIFICAÇÃO'}
+                      {step === 2 && 'CREDENCIAIS TÁTICAS'}
+                      {step === 3 && 'CONFIRMAÇÃO OPERACIONAL'}
                     </p>
                   </div>
                   {step < 3 && (

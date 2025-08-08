@@ -107,7 +107,7 @@ export default function NewFlashcard() {
     const template = templates[card.type as keyof typeof templates];
     if (template) {
       setCard({ ...card, ...template });
-      toast.success('Template carregado! Você pode editar os campos.', { icon: '📝' });
+      toast.success('INTEL TÁTICO CARREGADO: Exemplo pronto para edição', { icon: '🎯' });
     }
   };
 
@@ -118,46 +118,46 @@ export default function NewFlashcard() {
   };
 
   const handleSave = () => {
-    // Validação baseada no tipo de cartão
+    // Validação tática baseada no tipo de intel
     if (card.type === 'basic' || card.type === 'basic_reversed') {
       if (!card.front.trim() || !card.back.trim()) {
-        toast.error('Preencha frente e verso do cartão', { icon: '⚠️' });
+        toast.error('OPERAÇÃO FALHADA: Configure briefing e intel de resposta', { icon: '🚨' });
         return;
       }
     } else if (card.type === 'cloze') {
       if (!card.text.trim()) {
-        toast.error('Preencha o texto com lacunas', { icon: '⚠️' });
+        toast.error('OPERAÇÃO FALHADA: Configure texto com lacunas táticas', { icon: '🚨' });
         return;
       }
     } else if (card.type === 'multiple_choice') {
       if (!card.question.trim() || card.options.some(o => !o.trim())) {
-        toast.error('Preencha a pergunta e todas as alternativas', { icon: '⚠️' });
+        toast.error('OPERAÇÃO FALHADA: Configure pergunta e todas as alternativas', { icon: '🚨' });
         return;
       }
     } else if (card.type === 'true_false') {
       if (!card.statement.trim()) {
-        toast.error('Preencha a afirmação', { icon: '⚠️' });
+        toast.error('OPERAÇÃO FALHADA: Configure afirmação para avaliação', { icon: '🚨' });
         return;
       }
     } else if (card.type === 'type_answer') {
       if (!card.question.trim() || !card.answer.toString().trim()) {
-        toast.error('Preencha a pergunta e a resposta', { icon: '⚠️' });
+        toast.error('OPERAÇÃO FALHADA: Configure pergunta e resposta tática', { icon: '🚨' });
         return;
       }
     } else if (card.type === 'image_occlusion') {
       if (!card.image || card.occlusionAreas.length === 0) {
-        toast.error('Configure a imagem e as áreas de oclusão', { icon: '⚠️' });
+        toast.error('OPERAÇÃO FALHADA: Configure imagem e áreas de oclusão', { icon: '🚨' });
         return;
       }
     }
 
-    // Simular salvamento
-    toast.success('Flashcard criado com sucesso!', {
+    // Operação concluída com sucesso
+    toast.success('OPERAÇÃO CONCLUÍDA: Intel tático criado com sucesso!', {
       duration: 3000,
       icon: '✅'
     });
 
-    // Voltar para a página de flashcards individuais
+    // Retornar à base operacional
     navigate('/admin/flashcards/cards');
   };
 
@@ -398,48 +398,58 @@ export default function NewFlashcard() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
+      {/* Header Militar/Tático */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="bg-gradient-to-r from-gray-800 via-[#14242f] to-gray-900 dark:from-gray-900 dark:via-[#14242f] dark:to-black p-8 rounded-lg relative overflow-hidden"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,204,21,0.3) 1px, transparent 0)',
+          backgroundSize: '20px 20px'
+        }}
       >
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/admin/flashcards/cards')}
-            className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            VOLTAR
-          </Button>
-          <div>
-            <h1 className="text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
-              NOVO FLASHCARD TÁTICO
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
-              CRIAÇÃO DE CARTÃO INDIVIDUAL
-            </p>
-          </div>
-        </div>
+        {/* Corner accents */}
+        <div className="absolute top-0 right-0 w-20 h-20 border-t-4 border-r-4 border-accent-500/30" />
+        <div className="absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 border-accent-500/20" />
         
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={() => setShowPreview(!showPreview)}
-            className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
-          >
-            <Eye className="w-4 h-4" />
-            {showPreview ? 'OCULTAR' : 'VISUALIZAR'} PRÉVIA
-          </Button>
-          
-          <Button 
-            onClick={handleSave}
-            className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
-          >
-            <Save className="w-4 h-4" />
-            CRIAR FLASHCARD
-          </Button>
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-6">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/admin/flashcards/cards')}
+              className="gap-2 font-police-body uppercase tracking-wider hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30 transition-all duration-300"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              RETORNAR À BASE
+            </Button>
+            <div className="border-l-4 border-l-accent-500 pl-6">
+              <h1 className="text-4xl font-police-title font-bold uppercase tracking-wider text-white">
+                NOVO INTEL TÁTICO
+              </h1>
+              <p className="text-gray-300 font-police-subtitle uppercase tracking-wider mt-1">
+                OPERAÇÃO DE CRIAÇÃO DE FLASHCARD
+              </p>
+            </div>
+          </div>
+        
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              onClick={() => setShowPreview(!showPreview)}
+              className="gap-2 font-police-body uppercase tracking-wider hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30 transition-all duration-300"
+            >
+              <Eye className="w-5 h-5" />
+              {showPreview ? 'OCULTAR' : 'MOSTRAR'} PREVIEW
+            </Button>
+            
+            <Button 
+              onClick={handleSave}
+              className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-bold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              <CheckCircle className="w-5 h-5" />
+              CONFIRMAR OPERAÇÃO
+            </Button>
+          </div>
         </div>
       </motion.div>
 
@@ -450,22 +460,28 @@ export default function NewFlashcard() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-            <CardHeader>
-              <CardTitle className="font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
-                CONFIGURAÇÃO DO FLASHCARD
+          <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+            {/* Tactical stripes */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 via-accent-400 to-accent-500" />
+            <div className="absolute top-0 right-0 w-20 h-20 border-t-4 border-r-4 border-accent-500/20" />
+            
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b border-accent-500/30">
+              <CardTitle className="font-police-title uppercase tracking-wider text-gray-900 dark:text-white flex items-center gap-3">
+                <Target className="w-6 h-6 text-accent-500" />
+                CONFIGURAÇÃO TÁTICA DO INTEL
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Tipo de Cartão */}
-              <div>
-                <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-                  TIPO DE CARTÃO
+              <div className="relative">
+                <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-accent-500" />
+                  TIPO DE OPERAÇÃO INTEL
                 </label>
                 <select
                   value={card.type}
                   onChange={(e) => setCard({ ...card, type: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 border-2 border-accent-500/30 focus:border-accent-500 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 transition-all duration-300 hover:border-accent-500/50"
                 >
                   {cardTypes.map(type => (
                     <option key={type.value} value={type.value}>
@@ -480,12 +496,11 @@ export default function NewFlashcard() {
                   <Button
                     type="button"
                     size="sm"
-                    variant="outline"
                     onClick={loadTemplate}
-                    className="ml-2 gap-1 font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                    className="ml-2 gap-1 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider text-xs transition-all duration-300 shadow-md hover:shadow-lg"
                   >
                     <Target className="w-3 h-3" />
-                    CARREGAR EXEMPLO
+                    EXEMPLO TÁTICO
                   </Button>
                 </div>
               </div>

@@ -263,13 +263,13 @@ export default function CategoryManager() {
   const getCategoryTypeName = (type: CategoryType) => {
     switch (type) {
       case 'subject':
-        return 'Matérias';
+        return 'ÁREAS TÁTICAS';
       case 'topic':
-        return 'Assuntos';
+        return 'ESPECIALIZAÇÕES';
       case 'exam_board':
-        return 'Bancas';
+        return 'INSTITUIÇÕES';
       case 'year':
-        return 'Anos';
+        return 'PERÍODOS';
     }
   };
 
@@ -283,7 +283,7 @@ export default function CategoryManager() {
         <motion.div
           initial={false}
           animate={{ opacity: 1 }}
-          className={`group hover:bg-primary-50 dark:hover:bg-gray-800 rounded-lg transition-colors ${
+          className={`group hover:bg-accent-500/10 dark:hover:bg-gray-800 rounded-lg transition-colors ${
             level > 0 ? 'ml-8' : ''
           }`}
         >
@@ -292,12 +292,12 @@ export default function CategoryManager() {
               {hasChildren && (
                 <button
                   onClick={() => toggleCategory(category.id)}
-                  className="p-1 hover:bg-primary-100 dark:hover:bg-gray-700 rounded"
+                  className="p-1 hover:bg-accent-500/20 dark:hover:bg-gray-700 rounded"
                 >
                   {isExpanded ? (
-                    <ChevronDown className="w-4 h-4 text-primary-600" />
+                    <ChevronDown className="w-4 h-4 text-accent-500" />
                   ) : (
-                    <ChevronRight className="w-4 h-4 text-primary-600" />
+                    <ChevronRight className="w-4 h-4 text-accent-500" />
                   )}
                 </button>
               )}
@@ -306,22 +306,22 @@ export default function CategoryManager() {
               <div className="flex items-center gap-3 flex-1">
                 <div className={`p-2 rounded-lg ${
                   level === 0 
-                    ? 'bg-primary-100 dark:bg-primary-900/30' 
+                    ? 'bg-accent-500/20 dark:bg-accent-500/10' 
                     : 'bg-gray-100 dark:bg-gray-800'
                 }`}>
                   <Icon className={`w-5 h-5 ${
                     level === 0 
-                      ? 'text-primary-600 dark:text-primary-400' 
+                      ? 'text-accent-500 dark:text-accent-400' 
                       : 'text-gray-600 dark:text-gray-400'
                   }`} />
                 </div>
                 
                 <div className="flex-1">
-                  <h4 className="font-medium text-primary-900 dark:text-white">
+                  <h4 className="font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                     {category.name}
                   </h4>
                   {category.description && (
-                    <p className="text-sm text-primary-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
                       {category.description}
                     </p>
                   )}
@@ -362,13 +362,14 @@ export default function CategoryManager() {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleEditCategory(category)}
+                  className="text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
                 >
                   <Edit className="w-4 h-4" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-red-600 hover:text-red-700"
+                  className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -400,17 +401,20 @@ export default function CategoryManager() {
         className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
-            Gerenciador de Categorias
+          <h1 className="text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
+            CATEGORIAS TÁTICAS
           </h1>
-          <p className="text-primary-600 dark:text-gray-300">
-            Organize o conteúdo por matéria, assunto, banca e ano
+          <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
+            COMANDO DE ORGANIZAÇÃO - ESTRUTURAÇÃO ESTRATÉGICA DE CONTEÚDO
           </p>
         </div>
         
-        <Button onClick={handleCreateCategory} className="gap-2">
+        <Button 
+          onClick={handleCreateCategory} 
+          className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
+        >
           <Plus className="w-4 h-4" />
-          Nova Categoria
+          NOVA CATEGORIA TÁTICA
         </Button>
       </motion.div>
 
@@ -421,14 +425,16 @@ export default function CategoryManager() {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Matérias
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  ÁREAS DE ATUAÇÃO
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {categories.length}
                 </p>
               </div>
@@ -437,14 +443,16 @@ export default function CategoryManager() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Assuntos
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  ESPECIALIZAÇÕES
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {categories.reduce((acc, cat) => 
                     acc + (cat.children?.length || 0) + 
                     (cat.children?.reduce((sum, child) => sum + (child.children?.length || 0), 0) || 0), 0
@@ -456,14 +464,16 @@ export default function CategoryManager() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Bancas
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  INSTITUIÇÕES
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {examBoards.length}
                 </p>
               </div>
@@ -472,14 +482,16 @@ export default function CategoryManager() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary-600 dark:text-gray-400">
-                  Anos
+                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  PERÍODOS
                 </p>
-                <p className="text-2xl font-bold text-primary-900 dark:text-white">
+                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {years.length}
                 </p>
               </div>
@@ -495,7 +507,9 @@ export default function CategoryManager() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Card>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-2 overflow-x-auto">
@@ -506,7 +520,11 @@ export default function CategoryManager() {
                       key={type}
                       variant={activeTab === type ? 'default' : 'outline'}
                       onClick={() => setActiveTab(type)}
-                      className="gap-2 whitespace-nowrap"
+                      className={`gap-2 whitespace-nowrap font-police-body font-semibold uppercase tracking-wider transition-colors ${
+                        activeTab === type 
+                          ? 'bg-accent-500 hover:bg-accent-600 text-black' 
+                          : 'border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500'
+                      }`}
                     >
                       <Icon className="w-4 h-4" />
                       {getCategoryTypeName(type)}
@@ -519,10 +537,10 @@ export default function CategoryManager() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Buscar categorias..."
+                  placeholder="BUSCAR CATEGORIAS TÁTICAS..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white"
+                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                 />
               </div>
             </div>
@@ -534,21 +552,21 @@ export default function CategoryManager() {
                 getFilteredCategories().map(category => renderCategoryTree(category))
               ) : (
                 getFilteredCategories().map(category => (
-                  <div key={category.id} className="group hover:bg-primary-50 dark:hover:bg-gray-800 transition-colors">
+                  <div key={category.id} className="group hover:bg-accent-500/10 dark:hover:bg-gray-800 transition-colors">
                     <div className="flex items-center justify-between p-4">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary-100 dark:bg-primary-900/30">
+                        <div className="p-2 rounded-lg bg-accent-500/20 dark:bg-accent-500/10">
                           {React.createElement(getIcon(category.type), {
-                            className: "w-5 h-5 text-primary-600 dark:text-primary-400"
+                            className: "w-5 h-5 text-accent-500 dark:text-accent-400"
                           })}
                         </div>
                         
                         <div>
-                          <h4 className="font-medium text-primary-900 dark:text-white">
+                          <h4 className="font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                             {category.name}
                           </h4>
                           {category.description && (
-                            <p className="text-sm text-primary-600 dark:text-gray-400">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
                               {category.description}
                             </p>
                           )}
@@ -559,25 +577,25 @@ export default function CategoryManager() {
                         <div className="flex items-center gap-3 text-sm">
                           <div className="flex items-center gap-1">
                             <Brain className="w-4 h-4 text-purple-600" />
-                            <span className="text-primary-700 dark:text-gray-300">
+                            <span className="text-gray-900 dark:text-white font-police-numbers font-bold">
                               {category.contentCount.questions}
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Star className="w-4 h-4 text-yellow-600" />
-                            <span className="text-primary-700 dark:text-gray-300">
+                            <span className="text-gray-900 dark:text-white font-police-numbers font-bold">
                               {category.contentCount.flashcards}
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
                             <FileText className="w-4 h-4 text-blue-600" />
-                            <span className="text-primary-700 dark:text-gray-300">
+                            <span className="text-gray-900 dark:text-white font-police-numbers font-bold">
                               {category.contentCount.summaries}
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
                             <BookOpen className="w-4 h-4 text-green-600" />
-                            <span className="text-primary-700 dark:text-gray-300">
+                            <span className="text-gray-900 dark:text-white font-police-numbers font-bold">
                               {category.contentCount.courses}
                             </span>
                           </div>

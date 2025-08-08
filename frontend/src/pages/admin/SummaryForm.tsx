@@ -25,31 +25,31 @@ import { cn } from '@/utils/cn';
 import RichTextEditor from '@/components/RichTextEditor';
 import toast from 'react-hot-toast';
 
-// Mock data for courses/subjects
+// Dados táticos para cursos/disciplinas
 const materias = [
-  { value: 'DIREITO', label: 'DIREITO' },
-  { value: 'SEGURANÇA PÚBLICA', label: 'SEGURANÇA PÚBLICA' },
-  { value: 'CONHECIMENTOS GERAIS', label: 'CONHECIMENTOS GERAIS' }
+  { value: 'DIREITO', label: 'ÁREA JURÍDICA' },
+  { value: 'SEGURANÇA PÚBLICA', label: 'ÁREA OPERACIONAL' },
+  { value: 'CONHECIMENTOS GERAIS', label: 'ÁREA ESTRATÉGICA' }
 ];
 
 const submaterias = {
   'DIREITO': [
-    { value: 'Direito Constitucional', label: 'DIREITO CONSTITUCIONAL' },
-    { value: 'Direito Penal', label: 'DIREITO PENAL' },
-    { value: 'Direito Administrativo', label: 'DIREITO ADMINISTRATIVO' },
-    { value: 'Direito Processual Penal', label: 'DIREITO PROCESSUAL PENAL' }
+    { value: 'Direito Constitucional', label: 'LEGISLAÇÃO CONSTITUCIONAL TÁTICA' },
+    { value: 'Direito Penal', label: 'CÓDIGO PENAL OPERACIONAL' },
+    { value: 'Direito Administrativo', label: 'NORMAS ADMINISTRATIVAS' },
+    { value: 'Direito Processual Penal', label: 'PROCEDIMENTOS PENAIS TÁTICOS' }
   ],
   'SEGURANÇA PÚBLICA': [
-    { value: 'Inteligência Policial', label: 'INTELIGÊNCIA POLICIAL' },
-    { value: 'Táticas Operacionais', label: 'TÁTICAS OPERACIONAIS' },
-    { value: 'Legislação Especial', label: 'LEGISLAÇÃO ESPECIAL' },
-    { value: 'Criminologia', label: 'CRIMINOLOGIA' }
+    { value: 'Inteligência Policial', label: 'INTELIGÊNCIA TÁTICA' },
+    { value: 'Táticas Operacionais', label: 'OPERAÇÕES ESPECIAIS' },
+    { value: 'Legislação Especial', label: 'LEGISLAÇÃO OPERACIONAL' },
+    { value: 'Criminologia', label: 'ANÁLISE CRIMINAL TÁTICA' }
   ],
   'CONHECIMENTOS GERAIS': [
-    { value: 'Português', label: 'PORTUGUÊS' },
-    { value: 'Matemática', label: 'MATEMÁTICA' },
-    { value: 'História', label: 'HISTÓRIA' },
-    { value: 'Geografia', label: 'GEOGRAFIA' }
+    { value: 'Português', label: 'COMUNICAÇÃO OPERACIONAL' },
+    { value: 'Matemática', label: 'CÁLCULOS TÁTICOS' },
+    { value: 'História', label: 'HISTÓRIA ESTRATÉGICA' },
+    { value: 'Geografia', label: 'GEOGRAFIA TÁTICA' }
   ]
 };
 
@@ -137,7 +137,7 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    toast.success('Arquivo de exemplo baixado! Use-o como base para seus resumos.');
+    toast.success('BRIEFING DE EXEMPLO TRANSFERIDO: Use como base para seus resumos táticos', { icon: '🎯' });
   };
 
   // Handle file import
@@ -147,7 +147,7 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
     
     // Show loading state
     setIsLoading(true);
-    toast.loading('Importando arquivo...', { id: 'import' });
+    toast.loading('PROCESSANDO BRIEFING TÁTICO...', { id: 'import' });
     
     const allowedTypes = [
       'text/plain',
@@ -160,13 +160,13 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
     
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Arquivo muito grande. Tamanho máximo: 5MB', { id: 'import' });
+      toast.error('ARQUIVO EXCEDE LIMITE TÁTICO: Máximo 5MB', { id: 'import' });
       setIsLoading(false);
       return;
     }
     
     if (!allowedTypes.includes(file.type)) {
-      toast.error(`Formato não suportado: ${file.type}. Use TXT, HTML, MD, DOC, DOCX ou PDF`, { id: 'import' });
+      toast.error(`FORMATO NÃO AUTORIZADO: ${file.type}. Use TXT, HTML, MD, DOC, DOCX ou PDF`, { id: 'import' });
       setIsLoading(false);
       return;
     }
@@ -241,7 +241,7 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
               .map(p => p.startsWith('<') ? p : `<p>${p.replace(/\n/g, '<br>')}</p>`)
               .join('');
           } else {
-            toast.error('Processamento para este tipo de arquivo ainda não implementado', { id: 'import' });
+            toast.error('PROCESSAMENTO TÁTICO PARA ESTE FORMATO EM DESENVOLVIMENTO', { id: 'import' });
             setIsLoading(false);
             return;
           }
@@ -249,14 +249,14 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
           // Update content
           if (htmlContent.trim()) {
             setEditorContent(htmlContent);
-            toast.success(`✅ ${file.name} importado com sucesso! (${(file.size / 1024).toFixed(1)}KB)`, { id: 'import' });
+            toast.success(`BRIEFING IMPORTADO: ${file.name} (${(file.size / 1024).toFixed(1)}KB)`, { id: 'import', icon: '🎯' });
           } else {
-            toast.error('Arquivo vazio ou não foi possível processar o conteúdo', { id: 'import' });
+            toast.error('ARQUIVO SEM CONTEÚDO OU NÃO PROCESSADO', { id: 'import' });
           }
           
         } catch (error) {
           console.error('Error processing file:', error);
-          toast.error('Erro ao processar o arquivo', { id: 'import' });
+          toast.error('FALHA NO PROCESSAMENTO DO BRIEFING', { id: 'import' });
         } finally {
           setIsLoading(false);
         }
@@ -327,8 +327,8 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
   };
 
   const tabs = [
-    { id: 'editor', label: 'EDITOR', icon: Edit3 },
-    { id: 'settings', label: 'CONFIGURAÇÕES', icon: Settings }
+    { id: 'editor', label: 'EDITOR TÁTICO', icon: Edit3 },
+    { id: 'settings', label: 'CONFIG. OPERACIONAIS', icon: Settings }
   ];
 
   // Handle fullscreen
@@ -360,33 +360,41 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
         }}
       />
       
-      {/* Header */}
+      {/* Header Militar/Tático */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10"
+        className="bg-gradient-to-r from-gray-800 via-[#14242f] to-gray-900 dark:from-gray-900 dark:via-[#14242f] dark:to-black p-8 rounded-lg relative overflow-hidden mb-6"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,204,21,0.3) 1px, transparent 0)',
+          backgroundSize: '20px 20px'
+        }}
       >
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+        {/* Corner accents */}
+        <div className="absolute top-0 right-0 w-20 h-20 border-t-4 border-r-4 border-accent-500/30" />
+        <div className="absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 border-accent-500/20" />
+        
+        <div className="flex items-center justify-between mb-6 relative z-10">
+          <div className="flex items-center gap-6">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => navigate('/admin/summaries')}
-              className="gap-2 font-police-body"
+              className="gap-2 font-police-body uppercase tracking-wider hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30 transition-all duration-300"
             >
-              <ArrowLeft className="w-4 h-4" />
-              VOLTAR
+              <ArrowLeft className="w-5 h-5" />
+              RETORNAR À BASE
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">
-                {isEditing ? 'EDITAR BRIEFING' : 'NOVO BRIEFING TÁTICO'}
+            <div className="border-l-4 border-l-accent-500 pl-6">
+              <h1 className="text-4xl font-bold text-white font-police-title uppercase tracking-wider">
+                {isEditing ? 'MODIFICAR BRIEFING' : 'NOVO BRIEFING OPERACIONAL'}
               </h1>
-              <p className="text-gray-600 dark:text-gray-300 font-police-body tracking-wider">
-                {isEditing ? 'Modificar resumo operacional existente' : 'Criar novo resumo interativo para estudo'}
+              <p className="text-gray-300 font-police-subtitle uppercase tracking-wider mt-1">
+                {isEditing ? 'Atualizar resumo tático existente' : 'Criar novo documento interativo de apoio'}
               </p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-4">
             <input
               ref={fileInputRef}
               type="file"
@@ -395,27 +403,27 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
               className="hidden"
             />
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
-              className="gap-2 font-police-body"
-              title="Importar arquivo (TXT, HTML, MD, DOC, DOCX, PDF)"
+              className="gap-2 font-police-body uppercase tracking-wider hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30 transition-all duration-300 disabled:opacity-50"
+              title="Importar arquivo tático (TXT, HTML, MD, DOC, DOCX, PDF)"
             >
               {isLoading ? (
-                <div className="w-4 h-4 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-accent-500 border-t-transparent rounded-full animate-spin" />
               ) : (
-                <FileUp className="w-4 h-4" />
+                <FileUp className="w-5 h-5" />
               )}
-              {isLoading ? 'IMPORTANDO...' : 'IMPORTAR'}
+              {isLoading ? 'PROCESSANDO...' : 'IMPORTAR BRIEFING'}
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowImportHelp(true)}
-              className="p-2"
-              title="Ajuda para importação"
+              className="p-2 hover:bg-white/10 text-white hover:text-accent-500 transition-all duration-300"
+              title="Ajuda para importação tática"
             >
-              <HelpCircle className="w-4 h-4" />
+              <HelpCircle className="w-5 h-5" />
             </Button>
             <Button
               variant="outline"

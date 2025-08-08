@@ -263,10 +263,10 @@ export default function CourseEditor() {
       >
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">
-            CENTRO DE TREINAMENTO TÁTICO
+            EDITOR DE OPERAÇÕES TÁTICAS
           </h1>
           <p className="text-gray-600 dark:text-gray-300 font-police-body tracking-wider mt-2">
-            GESTÃO DE CURSOS E OPERAÇÕES DE CAPACITAÇÃO
+            COMANDO CENTRAL - CONFIGURAÇÃO DE MISSÕES E TREINAMENTOS
           </p>
         </div>
         
@@ -294,7 +294,7 @@ export default function CourseEditor() {
             className="gap-2 font-police-body font-semibold transition-all duration-300 uppercase tracking-wider shadow-lg bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black"
           >
             <Plus className="w-4 h-4" />
-            NOVA MISSÃO
+            NOVA OPERAÇÃO
           </Button>
         </div>
       </motion.div>

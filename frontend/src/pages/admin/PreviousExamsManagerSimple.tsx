@@ -73,34 +73,42 @@ export default function PreviousExamsManagerSimple() {
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Gerenciar Provas Anteriores
+        <h1 className="text-2xl md:text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white mb-2">
+          ARQUIVO DE OPERAÇÕES
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Administre o banco de provas de concursos anteriores
+        <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
+          COMANDO DE INTELIGÊNCIA - GESTÃO DE OPERAÇÕES ANTERIORES
         </p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Provas</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{previousExams.length}</p>
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-6 rounded-lg">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+          <h3 className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ARQUIVO TOTAL</h3>
+          <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white mt-1">{previousExams.length}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Questões Cadastradas</h3>
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-6 rounded-lg">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+          <h3 className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ALVOS CATALOGADOS</h3>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {previousExams.reduce((sum, exam) => sum + exam.totalQuestions, 0).toLocaleString()}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Visualizações</h3>
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-6 rounded-lg">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+          <h3 className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ACESSOS TÁTICOS</h3>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {previousExams.reduce((sum, exam) => sum + exam.views, 0).toLocaleString()}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Tentativas</h3>
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-6 rounded-lg">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+          <h3 className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ENGAJAMENTOS</h3>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {previousExams.reduce((sum, exam) => sum + exam.attempts, 0).toLocaleString()}
           </p>
@@ -112,78 +120,80 @@ export default function PreviousExamsManagerSimple() {
         <div className="flex-1">
           <input
             type="text"
-            placeholder="Buscar provas..."
+            placeholder="BUSCAR OPERAÇÕES TÁTICAS..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
           />
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => navigate('/admin/previous-exams/import')}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider py-2 px-4 rounded-md transition-colors"
           >
-            Importar
+            IMPORTAR ARQUIVO
           </button>
           <button
             onClick={() => navigate('/admin/previous-exams/new')}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+            className="bg-gray-800 hover:bg-gray-700 text-white font-police-body font-semibold uppercase tracking-wider py-2 px-4 rounded-md transition-colors"
           >
-            Nova Prova
+            NOVA OPERAÇÃO
           </button>
         </div>
       </div>
 
       {/* Exams Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative rounded-lg overflow-hidden">
+        {/* Corner accents */}
+        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+            <thead className="bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Prova
+                <th className="px-6 py-3 text-left text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
+                  OPERAÇÃO TÁTICA
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Banca
+                <th className="px-6 py-3 text-left text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
+                  INSTITUIÇÃO
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Ano
+                <th className="px-6 py-3 text-center text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
+                  PERÍODO
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Questões
+                <th className="px-6 py-3 text-center text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
+                  ALVOS
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Recursos
+                <th className="px-6 py-3 text-center text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
+                  ARSENAL
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Estatísticas
+                <th className="px-6 py-3 text-center text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
+                  INTEL
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Ações
+                <th className="px-6 py-3 text-right text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
+                  COMANDOS
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredExams.map((exam) => (
-                <tr key={exam.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <tr key={exam.id} className="hover:bg-accent-500/10 dark:hover:bg-gray-700/50 transition-colors">
                   <td className="px-6 py-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      <div className="text-sm font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                         {exam.title}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
                         {exam.organization}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{exam.examBoard}</span>
+                    <span className="text-sm font-police-body font-semibold text-gray-900 dark:text-white uppercase tracking-wider">{exam.examBoard}</span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{exam.year}</span>
+                    <span className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">{exam.year}</span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="text-sm text-gray-900 dark:text-white">{exam.totalQuestions}</span>
+                    <span className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">{exam.totalQuestions}</span>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex items-center justify-center gap-2 text-xs">
@@ -196,21 +206,21 @@ export default function PreviousExamsManagerSimple() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <div className="text-xs">
-                      <div>Views: {exam.views.toLocaleString()}</div>
-                      <div>Tentativas: {exam.attempts.toLocaleString()}</div>
+                    <div className="text-xs font-police-body font-medium">
+                      <div className="text-gray-600 dark:text-gray-400 uppercase tracking-wider">Acessos: <span className="font-police-numbers font-bold text-gray-900 dark:text-white">{exam.views.toLocaleString()}</span></div>
+                      <div className="text-gray-600 dark:text-gray-400 uppercase tracking-wider">Engajamentos: <span className="font-police-numbers font-bold text-gray-900 dark:text-white">{exam.attempts.toLocaleString()}</span></div>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => navigate(`/admin/previous-exams/${exam.id}/edit`)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-sm py-1 px-2 rounded transition-colors"
+                        className="bg-accent-500 hover:bg-accent-600 text-black text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-2 rounded transition-colors"
                       >
-                        Editar
+                        CONFIGURAR
                       </button>
-                      <button className="bg-red-600 hover:bg-red-700 text-white text-sm py-1 px-2 rounded transition-colors">
-                        Excluir
+                      <button className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-2 rounded transition-colors">
+                        DESATIVAR
                       </button>
                     </div>
                   </td>
@@ -222,7 +232,7 @@ export default function PreviousExamsManagerSimple() {
 
         {filteredExams.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">Nenhuma prova encontrada</p>
+            <p className="text-gray-500 dark:text-gray-400 font-police-body uppercase tracking-wider">NENHUMA OPERAÇÃO LOCALIZADA NO ARQUIVO</p>
           </div>
         )}
       </div>

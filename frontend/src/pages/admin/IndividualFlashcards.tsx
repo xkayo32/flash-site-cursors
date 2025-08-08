@@ -396,7 +396,7 @@ export default function IndividualFlashcards() {
         <div>
           <div className="flex items-center gap-4 mb-2">
             <h1 className="text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
-              CENTRAL TÁTICA - FLASHCARDS
+              ARSENAL INTEL INDIVIDUAL
             </h1>
             <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
               <button
@@ -413,7 +413,7 @@ export default function IndividualFlashcards() {
             </div>
           </div>
           <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
-            GESTÃO DE FLASHCARDS INDIVIDUAIS - CARTÕES TÁTICOS AVULSOS
+            COMANDO DE INTELIGÊNCIA - CARTÕES TÁTICOS AVANÇADOS PARA OPERAÇÕES
           </p>
         </div>
         
@@ -448,7 +448,7 @@ export default function IndividualFlashcards() {
             className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
           >
             <Plus className="w-4 h-4" />
-            NOVO FLASHCARD
+            NOVO INTEL
           </Button>
         </div>
       </motion.div>
@@ -460,12 +460,14 @@ export default function IndividualFlashcards() {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  TOTAL DE FLASHCARDS
+                  ARSENAL TOTAL
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {flashcards.length}
@@ -478,12 +480,14 @@ export default function IndividualFlashcards() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  CARTÕES ATIVOS
+                  INTEL OPERACIONAL
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {flashcards.filter(c => c.status === 'active').length}
@@ -496,12 +500,14 @@ export default function IndividualFlashcards() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  REVISÕES TOTAIS
+                  OPERAÇÕES REALIZADAS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {flashcards.reduce((acc, card) => acc + card.reviews, 0)}
@@ -514,12 +520,14 @@ export default function IndividualFlashcards() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  TAXA DE ACERTO
+                  PRECISÃO TÁTICA
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {Math.round(
@@ -542,7 +550,9 @@ export default function IndividualFlashcards() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-6">
             <div className="space-y-4">
               {/* First Row */}
@@ -551,7 +561,7 @@ export default function IndividualFlashcards() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="BUSCAR FLASHCARDS..."
+                    placeholder="BUSCAR NO ARSENAL INTEL..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
@@ -564,7 +574,7 @@ export default function IndividualFlashcards() {
                   className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
                 >
                   <Filter className="w-4 h-4" />
-                  AÇÕES EM LOTE
+                  OPERAÇÕES EM GRUPO
                 </Button>
               </div>
 
@@ -667,7 +677,7 @@ export default function IndividualFlashcards() {
                         className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
                       />
                       <span className="text-sm text-gray-900 dark:text-white font-police-body font-medium uppercase tracking-wider">
-                        SELECIONAR TODOS ({selectedCards.length})
+                        SELECIONAR ARSENAL ({selectedCards.length})
                       </span>
                     </label>
                     
@@ -680,7 +690,7 @@ export default function IndividualFlashcards() {
                           className="gap-1 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
                         >
                           <Play className="w-3 h-3" />
-                          ESTUDAR
+                          EXECUTAR MISSÃO
                         </Button>
                         <Button 
                           variant="outline" 
@@ -689,7 +699,7 @@ export default function IndividualFlashcards() {
                           className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
                         >
                           <Copy className="w-3 h-3" />
-                          DUPLICAR
+                          REPLICAR
                         </Button>
                         <Button 
                           variant="outline" 
@@ -698,7 +708,7 @@ export default function IndividualFlashcards() {
                           className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-gray-600 dark:hover:border-gray-500 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                         >
                           <Trash2 className="w-3 h-3" />
-                          ARQUIVAR
+                          DESARMAR
                         </Button>
                       </div>
                     )}
@@ -719,8 +729,10 @@ export default function IndividualFlashcards() {
       >
         {filteredCards.map((card) => 
           viewMode === 'grid' ? (
-            <Card key={card.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-4">
+            <Card key={card.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+              {/* Corner accents */}
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+              <CardHeader className="pb-4 bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black rounded-t-lg">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -728,7 +740,7 @@ export default function IndividualFlashcards() {
                       {getDifficultyBadge(card.difficulty)}
                       {getStatusBadge(card.status)}
                     </div>
-                    <p className="text-sm text-gray-900 dark:text-white font-police-body font-medium line-clamp-3">
+                    <p className="text-sm text-white font-police-body font-medium line-clamp-3">
                       {getCardPreview(card)}
                     </p>
                   </div>
@@ -760,7 +772,7 @@ export default function IndividualFlashcards() {
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                     <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                      REVISÕES
+                      OPERAÇÕES
                     </p>
                     <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
                       {card.reviews}
@@ -768,7 +780,7 @@ export default function IndividualFlashcards() {
                   </div>
                   <div className="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                     <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                      ACERTOS
+                      ALVOS
                     </p>
                     <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
                       {card.correctCount}
@@ -776,7 +788,7 @@ export default function IndividualFlashcards() {
                   </div>
                   <div className="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                     <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                      TAXA
+                      PRECISÃO
                     </p>
                     <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
                       {card.reviews > 0 ? Math.round((card.correctCount / card.reviews) * 100) : 0}%
@@ -853,7 +865,9 @@ export default function IndividualFlashcards() {
             </Card>
           ) : (
             /* List View */
-            <Card key={card.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+            <Card key={card.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+              {/* Corner accents */}
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
@@ -869,14 +883,16 @@ export default function IndividualFlashcards() {
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            {getTypeBadge(card.type)}
-                            {getDifficultyBadge(card.difficulty)}
-                            {getStatusBadge(card.status)}
+                          <div className="bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black p-3 rounded-lg mb-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              {getTypeBadge(card.type)}
+                              {getDifficultyBadge(card.difficulty)}
+                              {getStatusBadge(card.status)}
+                            </div>
+                            <p className="text-sm text-white font-police-body font-medium">
+                              {getCardPreview(card)}
+                            </p>
                           </div>
-                          <p className="text-sm text-gray-900 dark:text-white font-police-body font-medium">
-                            {getCardPreview(card)}
-                          </p>
                           
                           <div className="flex items-center gap-2 mt-2">
                             <Badge variant="secondary" className="font-police-body font-semibold uppercase tracking-wider bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
@@ -895,7 +911,7 @@ export default function IndividualFlashcards() {
                             {/* Stats */}
                             <div className="text-center">
                               <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                REVISÕES
+                                OPERAÇÕES
                               </p>
                               <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
                                 {card.reviews}
@@ -904,7 +920,7 @@ export default function IndividualFlashcards() {
                             
                             <div className="text-center">
                               <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                ACERTOS
+                                ALVOS
                               </p>
                               <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
                                 {card.correctCount}
@@ -913,7 +929,7 @@ export default function IndividualFlashcards() {
                             
                             <div className="text-center">
                               <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                TAXA
+                                PRECISÃO
                               </p>
                               <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
                                 {card.reviews > 0 ? Math.round((card.correctCount / card.reviews) * 100) : 0}%
@@ -923,7 +939,7 @@ export default function IndividualFlashcards() {
                             {/* Next Review */}
                             <div className="text-center">
                               <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                PRÓXIMA
+                                PRÓXIMA MISSÃO
                               </p>
                               <div className="flex items-center justify-center gap-1">
                                 <Clock className="w-4 h-4 text-gray-500" />
@@ -974,7 +990,7 @@ export default function IndividualFlashcards() {
                             className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
                           >
                             <Eye className="w-3 h-3" />
-                            VER
+                            ANALISAR
                           </Button>
                           
                           <Button
@@ -983,7 +999,7 @@ export default function IndividualFlashcards() {
                             className="gap-1 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
                           >
                             <Play className="w-3 h-3" />
-                            ESTUDAR
+                            EXECUTAR
                           </Button>
                           
                           <button
@@ -1005,14 +1021,14 @@ export default function IndividualFlashcards() {
                                 className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-police-body uppercase tracking-wider flex items-center gap-2"
                               >
                                 <Copy className="w-4 h-4" />
-                                DUPLICAR
+                                REPLICAR
                               </button>
                               <button
                                 onClick={() => handleDeleteCard(card.id)}
                                 className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-police-body uppercase tracking-wider flex items-center gap-2 border-t border-gray-200 dark:border-gray-700"
                               >
                                 <Trash2 className="w-4 h-4" />
-                                ARQUIVAR
+                                DESARMAR
                               </button>
                             </div>
                           </div>
@@ -1036,17 +1052,17 @@ export default function IndividualFlashcards() {
         >
           <Brain className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-2">
-            NENHUM FLASHCARD ENCONTRADO
+            NENHUM INTEL LOCALIZADO
           </h3>
           <p className="text-gray-600 dark:text-gray-400 font-police-body mb-6">
-            Crie seu primeiro flashcard tático individual
+            Crie sua primeira peça de inteligência tática
           </p>
           <Button 
             onClick={handleCreateCard}
             className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
           >
             <Plus className="w-4 h-4" />
-            CRIAR FLASHCARD
+            CRIAR INTEL
           </Button>
         </motion.div>
       )}

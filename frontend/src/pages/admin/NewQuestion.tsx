@@ -97,8 +97,8 @@ export default function NewQuestion() {
 
   const handleSave = (isDraft: boolean = false) => {
     if (!isDraft && !validateForm()) {
-      toast.error('Corrija os campos com erro', {
-        icon: '⚠️'
+      toast.error('OPERAÇÃO FALHADA: Corrija os campos com erro', {
+        icon: '🚨'
       });
       return;
     }
@@ -114,7 +114,7 @@ export default function NewQuestion() {
         status: isDraft ? 'draft' : 'published'
       };
       
-      toast.success(`Questão ${isDraft ? 'salva como rascunho' : 'publicada'} com sucesso!`, { id: 'save' });
+      toast.success(`OPERAÇÃO CONCLUÍDA: Alvo ${isDraft ? 'salvo como rascunho' : 'publicado'} com sucesso!`, { id: 'save' });
       setIsLoading(false);
       
       setTimeout(() => {
@@ -124,9 +124,9 @@ export default function NewQuestion() {
   };
 
   const handlePreview = () => {
-    toast.success('Visualização da questão ativada', {
+    toast.success('PREVIEW TÁTICO ATIVADO: Questão disponível para visualização', {
       duration: 3000,
-      icon: '👁️'
+      icon: '🎯'
     });
   };
 
@@ -134,16 +134,16 @@ export default function NewQuestion() {
     if (currentStep === 1) {
       // Validate step 1 fields
       if (!formData.title.trim() || !formData.topic.trim()) {
-        toast.error('Preencha os campos obrigatórios', { icon: '⚠️' });
+        toast.error('OPERAÇÃO FALHADA: Configure campos obrigatórios', { icon: '🚨' });
         return;
       }
     }
     
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
-      toast.success(`Avançando para etapa ${currentStep + 1}`, {
+      toast.success(`AVANÇANDO PARA FASE TÁTICA ${currentStep + 1}`, {
         duration: 2000,
-        icon: '➡️'
+        icon: '✅'
       });
     }
   };
@@ -165,57 +165,67 @@ export default function NewQuestion() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
+      {/* Header Militar/Tático */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        className="bg-gradient-to-r from-gray-800 via-[#14242f] to-gray-900 dark:from-gray-900 dark:via-[#14242f] dark:to-black p-8 rounded-lg relative overflow-hidden"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,204,21,0.3) 1px, transparent 0)',
+          backgroundSize: '20px 20px'
+        }}
       >
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/admin/questions')}
-            className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            VOLTAR
-          </Button>
-          <div>
-            <h1 className="text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
-              NOVA QUESTÃO TÁTICA
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
-              SISTEMA AVANÇADO DE CRIAÇÃO DE QUESTÕES
-            </p>
-          </div>
-        </div>
+        {/* Corner accents */}
+        <div className="absolute top-0 right-0 w-20 h-20 border-t-4 border-r-4 border-accent-500/30" />
+        <div className="absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 border-accent-500/20" />
         
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={handlePreview}
-            className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
-          >
-            <Eye className="w-4 h-4" />
-            VISUALIZAR
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => handleSave(true)}
-            disabled={isLoading}
-            className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
-          >
-            <Save className="w-4 h-4" />
-            SALVAR RASCUNHO
-          </Button>
-          <Button
-            onClick={() => handleSave(false)}
-            disabled={isLoading}
-            className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors disabled:opacity-50"
-          >
-            <CheckCircle className="w-4 h-4" />
-            {isLoading ? 'PUBLICANDO...' : 'PUBLICAR'}
-          </Button>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
+          <div className="flex items-center gap-6">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/admin/questions')}
+              className="gap-2 font-police-body uppercase tracking-wider hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30 transition-all duration-300"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              RETORNAR À BASE
+            </Button>
+            <div className="border-l-4 border-l-accent-500 pl-6">
+              <h1 className="text-4xl font-police-title font-bold uppercase tracking-wider text-white">
+                NOVO ALVO TÁTICO
+              </h1>
+              <p className="text-gray-300 font-police-subtitle uppercase tracking-wider mt-1">
+                OPERAÇÃO DE CRIAÇÃO DE QUESTÃO
+              </p>
+            </div>
+          </div>
+        
+          <div className="flex flex-wrap items-center gap-4">
+            <Button
+              variant="ghost"
+              onClick={handlePreview}
+              className="gap-2 font-police-body uppercase tracking-wider hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30 transition-all duration-300"
+            >
+              <Eye className="w-5 h-5" />
+              PREVIEW TÁTICO
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => handleSave(true)}
+              disabled={isLoading}
+              className="gap-2 font-police-body uppercase tracking-wider hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30 transition-all duration-300 disabled:opacity-50"
+            >
+              <Save className="w-5 h-5" />
+              SALVAR RASCUNHO
+            </Button>
+            <Button
+              onClick={() => handleSave(false)}
+              disabled={isLoading}
+              className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-bold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50"
+            >
+              <CheckCircle className="w-5 h-5" />
+              {isLoading ? 'PROCESSANDO...' : 'CONFIRMAR OPERAÇÃO'}
+            </Button>
+          </div>
         </div>
       </motion.div>
 
@@ -225,8 +235,12 @@ export default function NewQuestion() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-          <CardContent className="p-4">
+        <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-xl relative overflow-hidden">
+          {/* Tactical stripes */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 via-accent-400 to-accent-500" />
+          <div className="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-accent-500/20" />
+          
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               {[1, 2, 3].map((step) => (
                 <div key={step} className="flex items-center">
@@ -240,12 +254,12 @@ export default function NewQuestion() {
                     {step <= currentStep ? <CheckCircle className="w-4 h-4" /> : step}
                   </div>
                   <div className="ml-3">
-                    <p className={`font-police-body font-medium uppercase tracking-wider text-xs ${
+                    <p className={`font-police-subtitle font-semibold uppercase tracking-wider text-xs ${
                       step <= currentStep ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'
                     }`}>
-                      {step === 1 && 'INFORMAÇÕES BÁSICAS'}
-                      {step === 2 && 'ALTERNATIVAS E RESPOSTA'}
-                      {step === 3 && 'REVISÃO E CONFIRMAÇÃO'}
+                      {step === 1 && 'BRIEFING INICIAL'}
+                      {step === 2 && 'DEFINIÇÃO DO ALVO'}
+                      {step === 3 && 'CONFIRMAÇÃO OPERACIONAL'}
                     </p>
                   </div>
                   {step < 3 && (
@@ -267,11 +281,15 @@ export default function NewQuestion() {
         transition={{ delay: 0.2 }}
       >
         {currentStep === 1 && (
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-            <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+          <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+            {/* Tactical stripes */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 via-accent-400 to-accent-500" />
+            <div className="absolute top-0 right-0 w-20 h-20 border-t-4 border-r-4 border-accent-500/20" />
+            
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b border-accent-500/30">
               <CardTitle className="flex items-center gap-3 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
                 <Target className="w-6 h-6 text-accent-500" />
-                ETAPA 1: INFORMAÇÕES BÁSICAS
+                ETAPA 1: BRIEFING INICIAL
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
@@ -430,11 +448,15 @@ export default function NewQuestion() {
         )}
 
         {currentStep === 2 && (
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-            <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+          <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+            {/* Tactical stripes */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 via-accent-400 to-accent-500" />
+            <div className="absolute top-0 right-0 w-20 h-20 border-t-4 border-r-4 border-accent-500/20" />
+            
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b border-accent-500/30">
               <CardTitle className="flex items-center gap-3 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
                 <BookOpen className="w-6 h-6 text-accent-500" />
-                ETAPA 2: ALTERNATIVAS E RESPOSTA
+                ETAPA 2: DEFINIÇÃO DO ALVO
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
@@ -536,11 +558,15 @@ export default function NewQuestion() {
         )}
 
         {currentStep === 3 && (
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-            <CardHeader className="border-b border-gray-200 dark:border-gray-700">
+          <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+            {/* Tactical stripes */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 via-accent-400 to-accent-500" />
+            <div className="absolute top-0 right-0 w-20 h-20 border-t-4 border-r-4 border-accent-500/20" />
+            
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b border-accent-500/30">
               <CardTitle className="flex items-center gap-3 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
                 <Crosshair className="w-6 h-6 text-accent-500" />
-                ETAPA 3: REVISÃO E CONFIRMAÇÃO
+                ETAPA 3: CONFIRMAÇÃO OPERACIONAL
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">

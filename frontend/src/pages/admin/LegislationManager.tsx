@@ -318,42 +318,52 @@ export default function LegislationManager() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
+      {/* Header Militar/Tático */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        className="bg-gradient-to-r from-gray-800 via-[#14242f] to-gray-900 dark:from-gray-900 dark:via-[#14242f] dark:to-black p-8 rounded-lg relative overflow-hidden mb-6"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,204,21,0.3) 1px, transparent 0)',
+          backgroundSize: '20px 20px'
+        }}
       >
-        <div>
-          <h1 className="text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
-            CENTRAL DE LEGISLAÇÃO
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
-            SISTEMA INTEGRADO DE GESTÃO LEGAL
-          </p>
-        </div>
+        {/* Corner accents */}
+        <div className="absolute top-0 right-0 w-20 h-20 border-t-4 border-r-4 border-accent-500/30" />
+        <div className="absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 border-accent-500/20" />
         
-        <div className="flex items-center gap-3">
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              toast.success('Funcionalidade de importação ativada', {
-                duration: 3000,
-                icon: '📁'
-              });
-            }}
-            className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
-          >
-            <Upload className="w-4 h-4" />
-            IMPORTAR
-          </Button>
-          <Button 
-            onClick={handleCreateLegislation} 
-            className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            NOVA LEGISLAÇÃO
-          </Button>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
+          <div className="border-l-4 border-l-accent-500 pl-6">
+            <h1 className="text-4xl font-police-title font-bold uppercase tracking-wider text-white">
+              CÓDIGOS OPERACIONAIS
+            </h1>
+            <p className="text-gray-300 font-police-subtitle uppercase tracking-wider mt-1">
+              SISTEMA INTEGRADO DE GESTÃO JURÍDICA TÁTICA
+            </p>
+          </div>
+        
+          <div className="flex flex-wrap items-center gap-4">
+            <Button 
+              variant="ghost" 
+              onClick={() => {
+                toast.success('IMPORTAÇÃO TÁTICA DE CÓDIGOS ATIVADA', {
+                  duration: 3000,
+                  icon: '🎯'
+                });
+              }}
+              className="gap-2 font-police-body uppercase tracking-wider hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30 transition-all duration-300"
+            >
+              <Upload className="w-5 h-5" />
+              IMPORTAR CÓDIGOS
+            </Button>
+            <Button 
+              onClick={handleCreateLegislation} 
+              className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-bold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              <Plus className="w-5 h-5" />
+              NOVO CÓDIGO
+            </Button>
+          </div>
         </div>
       </motion.div>
 
@@ -364,55 +374,58 @@ export default function LegislationManager() {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-          <CardContent className="p-4">
+        <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-accent-500" />
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  TOTAL DE LEIS
+                <p className="text-sm font-police-subtitle font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  TOTAL DE CÓDIGOS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {legislations.length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
-                <Scale className="w-6 h-6 text-white" />
+              <div className="w-14 h-14 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg flex items-center justify-center shadow-lg">
+                <Shield className="w-7 h-7 text-accent-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-          <CardContent className="p-4">
+        <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-green-500" />
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  VIGENTES
+                <p className="text-sm font-police-subtitle font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  OPERACIONAIS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {legislations.filter(l => l.status === 'vigente').length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-black" />
+              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg">
+                <Target className="w-7 h-7 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-          <CardContent className="p-4">
+        <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-blue-500" />
+          <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  TOTAL DE ARTIGOS
+                <p className="text-sm font-police-subtitle font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  ARTIGOS TÁTICOS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {legislations.reduce((acc, l) => acc + l.articles, 0)}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                <Crosshair className="w-7 h-7 text-white" />
               </div>
             </div>
           </CardContent>

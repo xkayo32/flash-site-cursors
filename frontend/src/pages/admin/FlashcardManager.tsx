@@ -231,7 +231,7 @@ export default function FlashcardManager() {
         <div>
           <div className="flex items-center gap-4 mb-2">
             <h1 className="text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
-              CENTRAL TÁTICA - FLASHCARDS
+              GESTÃO DO ARSENAL INTEL
             </h1>
             <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
               <button
@@ -248,7 +248,7 @@ export default function FlashcardManager() {
             </div>
           </div>
           <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
-            GESTÃO DE DECKS - COLEÇÕES ORGANIZADAS DE FLASHCARDS
+            COMANDO TÁTICO - GESTÃO CENTRAL DO ARSENAL DE INTELIGÊNCIA
           </p>
         </div>
         
@@ -304,7 +304,9 @@ export default function FlashcardManager() {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -322,7 +324,9 @@ export default function FlashcardManager() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -340,7 +344,9 @@ export default function FlashcardManager() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -361,7 +367,9 @@ export default function FlashcardManager() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -386,7 +394,9 @@ export default function FlashcardManager() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-6">
             <div className="space-y-4">
               {/* First Row */}
@@ -532,14 +542,16 @@ export default function FlashcardManager() {
       >
         {filteredDecks.map((deck) => 
           viewMode === 'grid' ? (
-            <Card key={deck.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-4">
+            <Card key={deck.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+              {/* Corner accents */}
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+              <CardHeader className="pb-4 bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black rounded-t-lg">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-lg font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider line-clamp-2">
+                  <h3 className="text-lg font-police-subtitle font-bold text-white uppercase tracking-wider line-clamp-2">
                     {deck.title}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body mt-1 line-clamp-2">
+                  <p className="text-sm text-gray-300 font-police-body mt-1 line-clamp-2">
                     {deck.description}
                   </p>
                 </div>
@@ -694,7 +706,9 @@ export default function FlashcardManager() {
           </Card>
           ) : (
             /* List View */
-            <Card key={deck.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+            <Card key={deck.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+              {/* Corner accents */}
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
@@ -710,12 +724,14 @@ export default function FlashcardManager() {
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="text-lg font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider">
-                            {deck.title}
-                          </h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body mt-1">
-                            {deck.description}
-                          </p>
+                          <div className="bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black p-3 rounded-lg mb-2">
+                            <h3 className="text-lg font-police-subtitle font-bold text-white uppercase tracking-wider">
+                              {deck.title}
+                            </h3>
+                            <p className="text-sm text-gray-300 font-police-body mt-1">
+                              {deck.description}
+                            </p>
+                          </div>
                           
                           <div className="flex items-center gap-2 mt-2">
                             <Badge variant="secondary" className="font-police-body font-semibold uppercase tracking-wider bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300">

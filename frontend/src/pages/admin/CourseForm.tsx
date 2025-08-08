@@ -59,15 +59,15 @@ interface LessonData {
 }
 
 const difficultyOptions = [
-  { value: 'INICIANTE', label: 'INICIANTE', color: 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' },
-  { value: 'INTERMEDIÁRIO', label: 'INTERMEDIÁRIO', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' },
-  { value: 'AVANÇADO', label: 'AVANÇADO', color: 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' }
+  { value: 'INICIANTE', label: 'RECRUTA', color: 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' },
+  { value: 'INTERMEDIÁRIO', label: 'OPERADOR', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' },
+  { value: 'AVANÇADO', label: 'ESPECIALISTA', color: 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' }
 ];
 
 const levelOptions = [
-  { value: 'OPERACIONAL', label: 'OPERACIONAL', icon: Shield },
-  { value: 'TÁTICO', label: 'TÁTICO', icon: Target },
-  { value: 'COMANDO', label: 'COMANDO', icon: Award }
+  { value: 'OPERACIONAL', label: 'NÍVEL OPERACIONAL', icon: Shield },
+  { value: 'TÁTICO', label: 'NÍVEL TÁTICO', icon: Target },
+  { value: 'COMANDO', label: 'NÍVEL COMANDO', icon: Award }
 ];
 
 const lessonTypes = [
@@ -177,13 +177,13 @@ export default function CourseForm() {
     if (file) {
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
-        toast.error('Formato de imagem não permitido. Use: JPEG, PNG, GIF ou WebP');
+        toast.error('FORMATO DE IMAGEM NÃO AUTORIZADO: Use JPEG, PNG, GIF ou WebP', { icon: '🚨' });
         return;
       }
       
       const maxSize = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSize) {
-        toast.error('Imagem muito grande. Tamanho máximo: 5MB');
+        toast.error('IMAGEM EXCEDE LIMITE TÁTICO: Máximo 5MB', { icon: '🚨' });
         return;
       }
       
@@ -329,7 +329,7 @@ export default function CourseForm() {
   // Save course
   const handleSave = async () => {
     if (!formData.title || !formData.category) {
-      toast.error('Título e categoria são obrigatórios');
+      toast.error('OPERAÇÃO FALHADA: Configure identificação e área operacional', { icon: '🚨' });
       return;
     }
 
@@ -363,11 +363,11 @@ export default function CourseForm() {
         thumbnail: imagePreview || formData.thumbnail
       };
       
-      toast.success(isEditing ? 'Curso atualizado com sucesso!' : 'Curso criado com sucesso!');
+      toast.success(isEditing ? 'OPERAÇÃO CONCLUÍDA: Treinamento atualizado com sucesso!' : 'OPERAÇÃO CONCLUÍDA: Treinamento criado com sucesso!', { icon: '✅' });
       navigate('/admin/courses');
       
     } catch (error) {
-      toast.error('Erro ao salvar curso');
+      toast.error('OPERAÇÃO FALHADA: Erro ao processar treinamento', { icon: '🚨' });
     } finally {
       setIsLoading(false);
     }
@@ -402,28 +402,36 @@ export default function CourseForm() {
         }}
       />
       
-      {/* Header */}
+      {/* Header Militar/Tático */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10"
+        className="bg-gradient-to-r from-gray-800 via-[#14242f] to-gray-900 dark:from-gray-900 dark:via-[#14242f] dark:to-black p-8 rounded-lg relative overflow-hidden mb-6"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,204,21,0.3) 1px, transparent 0)',
+          backgroundSize: '20px 20px'
+        }}
       >
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+        {/* Corner accents */}
+        <div className="absolute top-0 right-0 w-20 h-20 border-t-4 border-r-4 border-accent-500/30" />
+        <div className="absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 border-accent-500/20" />
+        
+        <div className="flex items-center justify-between mb-6 relative z-10">
+          <div className="flex items-center gap-6">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => navigate('/admin/courses')}
-              className="gap-2 font-police-body"
+              className="gap-2 font-police-body uppercase tracking-wider hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30 transition-all duration-300"
             >
-              <ArrowLeft className="w-4 h-4" />
-              VOLTAR
+              <ArrowLeft className="w-5 h-5" />
+              RETORNAR À BASE
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">
-                {isEditing ? 'EDITAR MISSÃO' : 'NOVA MISSÃO'}
+            <div className="border-l-4 border-l-accent-500 pl-6">
+              <h1 className="text-4xl font-bold text-white font-police-title uppercase tracking-wider">
+                {isEditing ? 'MODIFICAR OPERAÇÃO' : 'NOVA OPERAÇÃO TÁTICA'}
               </h1>
-              <p className="text-gray-600 dark:text-gray-300 font-police-body tracking-wider">
-                {isEditing ? 'Modificar treinamento existente' : 'Criar novo treinamento tático'}
+              <p className="text-gray-300 font-police-subtitle uppercase tracking-wider mt-1">
+                {isEditing ? 'Atualizar treinamento operacional' : 'Criar novo programa de treinamento'}
               </p>
             </div>
           </div>
@@ -431,15 +439,16 @@ export default function CourseForm() {
           <Button
             onClick={handleSave}
             disabled={isLoading}
-            className="gap-2 font-police-body font-semibold bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black px-8"
+            className="gap-2 font-police-body font-bold bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black px-8 py-3 uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50"
           >
-            <Save className="w-4 h-4" />
-            {isLoading ? 'SALVANDO...' : (isEditing ? 'ATUALIZAR' : 'CRIAR')}
+            <Save className="w-5 h-5" />
+            {isLoading ? 'PROCESSANDO...' : (isEditing ? 'CONFIRMAR ATUALIZAÇÃO' : 'CONFIRMAR OPERAÇÃO')}
           </Button>
         </div>
         
         {/* Tabs */}
-        <div className="flex space-x-1 bg-gray-200 dark:bg-gray-800 p-1 rounded-lg">
+        {/* Tactical Tabs */}
+        <div className="flex space-x-1 bg-gray-900/50 backdrop-blur-sm p-1 rounded-lg border border-accent-500/20 relative z-10">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -447,14 +456,17 @@ export default function CourseForm() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={cn(
-                  'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-police-subtitle font-semibold text-sm uppercase tracking-wider transition-all duration-200',
+                  'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-police-subtitle font-semibold text-sm uppercase tracking-wider transition-all duration-300 relative',
                   activeTab === tab.id
-                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'bg-accent-500 text-black shadow-lg hover:shadow-xl'
+                    : 'text-white hover:text-accent-500 hover:bg-white/10'
                 )}
               >
                 <Icon className="w-4 h-4" />
                 {tab.label}
+                {activeTab === tab.id && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-500" />
+                )}
               </button>
             );
           })}
@@ -473,28 +485,37 @@ export default function CourseForm() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Info */}
             <div className="lg:col-span-2 space-y-6">
-              <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="font-police-title uppercase tracking-wider">Informações Gerais</CardTitle>
+              <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+                {/* Tactical stripes */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 via-accent-400 to-accent-500" />
+                <div className="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-accent-500/20" />
+                
+                <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b border-accent-500/30">
+                  <CardTitle className="font-police-title uppercase tracking-wider text-gray-900 dark:text-white flex items-center gap-3">
+                    <Settings className="w-6 h-6 text-accent-500" />
+                    CONFIGURAÇÕES OPERACIONAIS
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase tracking-wider">
-                      Título da Missão *
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 font-police-subtitle uppercase tracking-wider flex items-center gap-2">
+                      <Target className="w-4 h-4 text-accent-500" />
+                      IDENTIFICAÇÃO DA OPERAÇÃO *
                     </label>
                     <input
                       type="text"
                       value={formData.title || ''}
                       onChange={(e) => handleInputChange('title', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
-                      placeholder="Ex: CURSO COMPLETO POLÍCIA FEDERAL - AGENTE"
+                      className="w-full px-4 py-3 border-2 border-accent-500/30 focus:border-accent-500 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:uppercase placeholder:tracking-wider placeholder:text-gray-400 focus:ring-2 focus:ring-accent-500/30 transition-all duration-300 hover:border-accent-500/50"
+                      placeholder="Ex: TREINAMENTO COMPLETO POLÍCIA FEDERAL - AGENTE TÁTICO"
                     />
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-body uppercase tracking-wider">
-                        Categoria *
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 font-police-subtitle uppercase tracking-wider flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-accent-500" />
+                        ÁREA OPERACIONAL *
                       </label>
                       <select
                         value={formData.category || ''}

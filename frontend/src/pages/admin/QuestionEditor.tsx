@@ -264,10 +264,10 @@ export default function QuestionEditor() {
       >
         <div>
           <h1 className="text-3xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
-            CENTRAL DE OPERAÇÕES - BANCO DE QUESTÕES
+            EDITOR DE ALVOS TÁTICOS
           </h1>
           <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
-            SISTEMA INTEGRADO DE GESTÃO TÁTICA DE QUESTÕES
+            COMANDO CENTRAL - CONFIGURAÇÃO DE ALVOS PARA OPERAÇÕES
           </p>
         </div>
         
@@ -291,7 +291,7 @@ export default function QuestionEditor() {
             className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
           >
             <Target className="w-4 h-4" />
-            NOVA QUESTÃO
+            NOVO ALVO
           </Button>
         </div>
       </motion.div>
@@ -303,12 +303,14 @@ export default function QuestionEditor() {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                  TOTAL DE QUESTÕES
+                  ARSENAL DE ALVOS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {questions.length}
@@ -321,7 +323,9 @@ export default function QuestionEditor() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -339,7 +343,9 @@ export default function QuestionEditor() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -357,7 +363,9 @@ export default function QuestionEditor() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -382,7 +390,9 @@ export default function QuestionEditor() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-6">
             <div className="space-y-4">
               {/* First Row - Search and Actions */}
@@ -391,7 +401,7 @@ export default function QuestionEditor() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="BUSCAR QUESTÕES TÁTICAS..."
+                    placeholder="BUSCAR ALVOS TÁTICOS..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
@@ -484,7 +494,7 @@ export default function QuestionEditor() {
                           className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
                         />
                         <span className="text-sm text-gray-900 dark:text-white font-police-body font-medium uppercase tracking-wider">
-                          SELECIONAR TODAS ({selectedQuestions.length})
+                          SELECIONAR ARSENAL ({selectedQuestions.length})
                         </span>
                       </label>
                     </div>
@@ -497,7 +507,7 @@ export default function QuestionEditor() {
                           className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
                         >
                           <CheckCircle className="w-3 h-3" />
-                          PUBLICAR
+                          ATIVAR ALVO
                         </Button>
                         <Button 
                           variant="outline" 
@@ -505,7 +515,7 @@ export default function QuestionEditor() {
                           className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
                         >
                           <Copy className="w-3 h-3" />
-                          DUPLICAR
+                          REPLICAR
                         </Button>
                         <Button 
                           variant="outline" 
@@ -513,7 +523,7 @@ export default function QuestionEditor() {
                           className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-gray-600 dark:hover:border-gray-500 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                         >
                           <Trash2 className="w-3 h-3" />
-                          ARQUIVAR
+                          DESATIVAR
                         </Button>
                       </div>
                     )}
@@ -531,11 +541,13 @@ export default function QuestionEditor() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+          {/* Corner accents */}
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-100 dark:bg-gray-800/80">
+                <thead className="bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black">
                   <tr>
                     {showBulkActions && (
                       <th className="text-left py-4 px-6">
@@ -547,23 +559,23 @@ export default function QuestionEditor() {
                         />
                       </th>
                     )}
-                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
-                      QUESTÃO
+                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
+                      ALVO TÁTICO
                     </th>
-                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
-                      MATÉRIA
+                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
+                      ÁREA OPERACIONAL
                     </th>
-                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
                       DIFICULDADE
                     </th>
-                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
                       STATUS
                     </th>
-                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
-                      MÉTRICAS
+                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
+                      EFICÁCIA
                     </th>
-                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
-                      AÇÕES
+                    <th className="text-left py-4 px-6 text-xs font-police-subtitle font-semibold text-white uppercase tracking-wider">
+                      OPERAÇÕES
                     </th>
                   </tr>
                 </thead>
@@ -571,7 +583,7 @@ export default function QuestionEditor() {
                   {filteredQuestions.map((question) => (
                     <tr
                       key={question.id}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-b border-gray-200 dark:border-gray-700"
+                      className="hover:bg-accent-500/10 dark:hover:bg-gray-800/50 transition-colors border-b border-gray-200 dark:border-gray-700"
                     >
                       {showBulkActions && (
                         <td className="py-4 px-6">
@@ -616,7 +628,7 @@ export default function QuestionEditor() {
                         <div className="space-y-1">
                           <div className="flex items-center gap-4 text-sm">
                             <span className="text-gray-600 dark:text-gray-400 font-police-body font-medium uppercase tracking-wider">
-                              {question.timesAnswered} RESPOSTAS
+                              {question.timesAnswered} ENGAJAMENTOS
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -627,7 +639,7 @@ export default function QuestionEditor() {
                               />
                             </div>
                             <span className="text-xs text-gray-600 dark:text-gray-400 font-police-numbers font-semibold">
-                              {question.correctRate}% ACERTOS
+                              {question.correctRate}% PRECISÃO
                             </span>
                           </div>
                         </div>
