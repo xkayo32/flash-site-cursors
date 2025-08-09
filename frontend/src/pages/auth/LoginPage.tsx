@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/store/authStore';
 import { StudyProLogo } from '@/components/ui/StudyProLogo';
-import toast from 'react-hot-toast';
+import { useToast, ToastContainer } from '@/components/ui/Toast';
 import { API_ENDPOINTS } from '@/config/api';
 import { useTheme } from '@/contexts/ThemeContext';
 import '../../styles/police-fonts.css';
@@ -34,6 +34,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
   const { setTheme, resolvedTheme } = useTheme();
+  const { toasts, success, error, warning, removeToast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -70,16 +71,15 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const params = new URLSearchParams();
-      params.append('email', formData.email);
-      params.append('password', formData.password);
-
       const response = await fetch(API_ENDPOINTS.auth.login, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
-        body: params.toString(),
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
       });
 
       const data = await response.json();
@@ -101,31 +101,33 @@ export default function LoginPage() {
           data.token
         );
 
-        toast.success('Login realizado com sucesso!');
+        success('Login realizado com sucesso!', 'Redirecionando...');
         
-        if (data.user.role === 'admin') {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/dashboard');
-        }
+        setTimeout(() => {
+          if (data.user.role === 'admin') {
+            navigate('/admin/dashboard');
+          } else {
+            navigate('/dashboard');
+          }
+        }, 1000);
       } else {
         if (process.env.NODE_ENV === 'development') {
           console.error('Login failed:', data);
         }
-        toast.error(data.message || 'Email ou senha inválidos');
+        error('Login falhou', data.message || 'Email ou senha inválidos');
       }
-    } catch (error) {
+    } catch (err) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Login error:', error);
+        console.error('Login error:', err);
       }
-      toast.error('Erro ao fazer login. Verifique sua conexão.');
+      error('Erro de conexão', 'Não foi possível conectar ao servidor. Verifique sua conexão.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSocialLogin = (provider: string) => {
-    toast.error(`Login com ${provider} em desenvolvimento`);
+    warning('Em desenvolvimento', `Login com ${provider} será disponibilizado em breve`);
   };
 
   return (
@@ -478,6 +480,9 @@ export default function LoginPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }

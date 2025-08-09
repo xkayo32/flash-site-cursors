@@ -17,24 +17,21 @@ services:
     networks:
       - estudos-network
 
-  # Backend PHP
+  # Backend Rust
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
-    container_name: estudos-backend
+      context: ./backend-rust-minimal
+      dockerfile: Dockerfile
+    container_name: estudos-backend-rust
     ports:
-      - "8180:8000"  # Porta diferente (8180) para evitar conflitos
-    volumes:
-      - ./backend:/var/www/html
+      - "8180:8180"
     environment:
-      - APP_ENV=local
-      - APP_DEBUG=true
-      - DB_HOST=db
-      - DB_PORT=5532
-      - DB_DATABASE=estudos_db
-      - DB_USERNAME=estudos_user
-      - DB_PASSWORD=estudos_pass
+      - RUST_ENV=development
+      - RUST_LOG=info
+      - DATABASE_URL=postgresql://estudos_user:estudos_pass@postgres:5432/estudos_db
+      - JWT_SECRET=your-jwt-secret-change-in-production
+      - PORT=8180
+      - HOST=0.0.0.0
     depends_on:
       - postgres
     networks:

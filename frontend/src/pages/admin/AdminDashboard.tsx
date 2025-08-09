@@ -570,9 +570,9 @@ export default function AdminDashboard() {
                       key={content.id}
                       className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 group relative"
                     >
-                      {/* Table Row Tactical Hover */}
-                      <div className="absolute left-0 top-0 w-1 h-full bg-accent-500/0 group-hover:bg-accent-500/40 transition-all duration-300" />
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 relative">
+                        {/* Table Row Tactical Hover */}
+                        <div className="absolute left-0 top-0 w-1 h-full bg-accent-500/0 group-hover:bg-accent-500/40 transition-all duration-300" />
                         <div className="flex items-center gap-2">
                           {getTypeIcon(content.type)}
                           <span className="text-gray-900 dark:text-white font-medium font-police-body">

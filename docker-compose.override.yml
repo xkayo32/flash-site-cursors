@@ -3,5 +3,5 @@ version: '3.8'
 services:
   frontend:
     environment:
-      - VITE_API_URL=http://localhost:8180
-      - VITE_APP_URL=http://localhost:5273
+      - VITE_API_URL=http://173.208.151.106:8180
+      - VITE_APP_URL=http://173.208.151.106:5273

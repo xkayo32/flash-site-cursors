@@ -1,0 +1,15 @@
+# Simple Dockerfile for Rust backend
+FROM rust:1.79
+
+WORKDIR /app
+
+# Copy the simplified files
+COPY Cargo.simple.toml ./Cargo.toml
+COPY src/main_simple.rs ./src/main.rs
+
+# Build the application
+RUN cargo build --release
+
+EXPOSE 8180
+
+CMD ["cargo", "run", "--release"]

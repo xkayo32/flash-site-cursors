@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import Router from './Router';
+import { ToastProvider } from './contexts/ToastContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -14,14 +15,16 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <Router />
-      </BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <Router />
+        </BrowserRouter>
+      </ToastProvider>
     </QueryClientProvider>
   );
 }

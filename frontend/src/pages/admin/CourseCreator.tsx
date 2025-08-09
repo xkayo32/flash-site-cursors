@@ -180,7 +180,7 @@ export default function CourseCreator() {
               // Construct full URL if needed
               const imageUrl = uploadResponse.data.image_url.startsWith('http') 
                 ? uploadResponse.data.image_url 
-                : `${import.meta.env.VITE_API_URL || 'http://localhost:8180'}${uploadResponse.data.image_url}`;
+                : `${import.meta.env.VITE_API_URL || 'http://173.208.151.106:8180'}${uploadResponse.data.image_url}`;
               createdCourse.thumbnail = imageUrl;
             }
           } else {
