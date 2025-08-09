@@ -27,6 +27,15 @@ interface ProfileStore {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8180';
 
+// Helper function to build full avatar URL
+const buildAvatarUrl = (avatar: string | undefined): string | undefined => {
+  if (!avatar) return undefined;
+  if (avatar.startsWith('data:') || avatar.startsWith('http')) {
+    return avatar;
+  }
+  return `${API_BASE_URL}${avatar}`;
+};
+
 export const useProfileStore = create<ProfileStore>()(
   persist(
     (set, get) => ({
@@ -48,6 +57,10 @@ export const useProfileStore = create<ProfileStore>()(
           }
 
           const data = await response.json();
+          // Build full avatar URL if needed
+          if (data.avatar) {
+            data.avatar = buildAvatarUrl(data.avatar);
+          }
           set({ profile: data, isLoading: false });
         } catch (error) {
           set({ 
@@ -78,8 +91,14 @@ export const useProfileStore = create<ProfileStore>()(
           // Update local state
           const currentProfile = get().profile;
           if (currentProfile && result.profile) {
+            // Build full avatar URL if avatar is present
+            const updatedProfile = { ...result.profile };
+            if (updatedProfile.avatar) {
+              updatedProfile.avatar = buildAvatarUrl(updatedProfile.avatar);
+            }
+            
             set({
-              profile: { ...currentProfile, ...result.profile },
+              profile: { ...currentProfile, ...updatedProfile },
               isLoading: false
             });
           }
@@ -112,17 +131,21 @@ export const useProfileStore = create<ProfileStore>()(
 
           const result = await response.json();
           
+          // Build full avatar URL
+          const fullAvatarUrl = buildAvatarUrl(result.url);
+          
           // Update the avatar in the current profile
           const currentProfile = get().profile;
           if (currentProfile && result.url) {
             set({
-              profile: { ...currentProfile, avatar: result.url },
+              profile: { ...currentProfile, avatar: fullAvatarUrl },
               isLoading: false
             });
           }
           
           set({ isLoading: false });
-          return result.url;
+          // Return full URL for consistency
+          return fullAvatarUrl || result.url;
         } catch (error) {
           set({ 
             error: error instanceof Error ? error.message : 'Failed to upload avatar',

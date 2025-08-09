@@ -139,13 +139,38 @@ export default function AdminSettings() {
 
   useEffect(() => {
     if (profile) {
-      setProfileSettings({
-        name: profile.name || '',
-        email: profile.email || '',
-        password: '',
-        phone: profile.phone || '',
-        bio: profile.bio || '',
-        avatar: profile.avatar || ''
+      setProfileSettings(prev => {
+        // Only update if profile data actually changed
+        const shouldUpdate = (
+          prev.name !== (profile.name || '') ||
+          prev.email !== (profile.email || '') ||
+          prev.phone !== (profile.phone || '') ||
+          prev.bio !== (profile.bio || '') ||
+          (!prev.avatar || (!prev.avatar.startsWith('data:') && prev.avatar !== profile.avatar))
+        );
+        
+        if (!shouldUpdate) {
+          return prev; // Don't trigger re-render if nothing changed
+        }
+        
+        const newAvatar = (prev.avatar && prev.avatar.startsWith('data:')) 
+          ? prev.avatar 
+          : profile.avatar || '';
+        
+        console.log('Profile update needed:', {
+          prevAvatar: prev.avatar?.substring(0, 30) + '...',
+          profileAvatar: profile.avatar?.substring(0, 30) + '...',
+          newAvatar: newAvatar?.substring(0, 30) + '...'
+        });
+        
+        return {
+          name: profile.name || '',
+          email: profile.email || '',
+          password: prev.password, // Keep existing password
+          phone: profile.phone || '',
+          bio: profile.bio || '',
+          avatar: newAvatar
+        };
       });
     }
   }, [profile]);
@@ -234,23 +259,28 @@ export default function AdminSettings() {
       return;
     }
 
+    console.log('Starting avatar upload...');
+
     // Create local preview immediately
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
+      console.log('Local preview created:', result.substring(0, 50) + '...');
       setProfileSettings(prev => ({ ...prev, avatar: result }));
       setHasChanges(true);
     };
     reader.readAsDataURL(file);
 
     try {
-      // Upload in background (for backend persistence)
+      // Upload to backend and get server URL
       const url = await uploadAvatar(file);
+      console.log('Avatar uploaded successfully, URL:', url?.substring(0, 50) + '...');
       showToast('success', 'Sucesso', 'Avatar atualizado com sucesso!');
       
-      // Note: We keep the local preview (base64) for immediate visual feedback
-      // In a real implementation, you'd update with the server URL once available
+      // Keep the local preview - the server URL will be used when profile is refreshed
+      // Don't immediately switch to server URL to avoid flicker
     } catch (error) {
+      console.error('Avatar upload failed:', error);
       showToast('error', 'Erro', 'Falha ao fazer upload do avatar');
       
       // Revert to previous avatar on error
@@ -268,6 +298,7 @@ export default function AdminSettings() {
         phone: profileSettings.phone,
         bio: profileSettings.bio,
         ...(profileSettings.password && { password: profileSettings.password })
+        // Note: Avatar is handled separately via uploadAvatar, not in profile update
       };
 
       await updateProfile(dataToSave);
@@ -380,7 +411,13 @@ export default function AdminSettings() {
                 <div className="flex items-center gap-6">
                   <div className="relative">
                     <img
-                      src={profileSettings.avatar || 'http://173.208.151.106:8180/default-avatar.png'}
+                      src={
+                        profileSettings.avatar 
+                          ? profileSettings.avatar.startsWith('data:') || profileSettings.avatar.startsWith('http')
+                            ? profileSettings.avatar
+                            : `http://173.208.151.106:8180${profileSettings.avatar}`
+                          : 'http://173.208.151.106:8180/default-avatar.png'
+                      }
                       alt="Avatar"
                       className="w-24 h-24 rounded-full object-cover border-2 border-accent-500"
                       onError={(e) => {
