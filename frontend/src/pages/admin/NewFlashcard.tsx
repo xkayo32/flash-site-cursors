@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -18,12 +18,15 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
 import ImageOcclusionEditor from '@/components/ImageOcclusionEditor';
+import { flashcardService, type CreateFlashcardData } from '../../services/flashcardService';
 
 export default function NewFlashcard() {
   const navigate = useNavigate();
   const [showPreview, setShowPreview] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
   const [showImageOcclusionEditor, setShowImageOcclusionEditor] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [categories, setCategories] = useState<{ [key: string]: string[] }>({});
   
   const [card, setCard] = useState({
     type: 'basic',
@@ -111,13 +114,44 @@ export default function NewFlashcard() {
     }
   };
 
-  const categories = {
-    'DIREITO': ['Geral', 'Constitucional', 'Administrativo', 'Penal', 'Processual Penal', 'Processual Civil'],
-    'SEGURANÇA PÚBLICA': ['Operações Táticas', 'Procedimentos', 'Hierarquia', 'Legislação Policial'],
-    'CONHECIMENTOS GERAIS': ['História', 'Geografia', 'Atualidades', 'Informática']
-  };
+  // Load categories from API
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await flashcardService.getFilterOptions();
+        if (response.success) {
+          // Group subcategories by main categories for now
+          // In a real implementation, this should come from a proper category hierarchy
+          const categoriesMap: { [key: string]: string[] } = {
+            'DIREITO': ['Geral', 'Constitucional', 'Administrativo', 'Penal', 'Processual Penal', 'Processual Civil', 'Penal Militar'],
+            'SEGURANÇA PÚBLICA': ['Operações Táticas', 'Procedimentos', 'Hierarquia', 'Legislação Policial'],
+            'CONHECIMENTOS GERAIS': ['História', 'Geografia', 'Atualidades', 'Informática']
+          };
+          
+          // Add any new categories from API
+          response.data.categories.forEach(cat => {
+            if (!categoriesMap[cat]) {
+              categoriesMap[cat] = response.data.subcategories || ['Geral'];
+            }
+          });
+          
+          setCategories(categoriesMap);
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error);
+        // Use fallback categories
+        setCategories({
+          'DIREITO': ['Geral', 'Constitucional', 'Administrativo', 'Penal', 'Processual Penal', 'Processual Civil'],
+          'SEGURANÇA PÚBLICA': ['Operações Táticas', 'Procedimentos', 'Hierarquia', 'Legislação Policial'],
+          'CONHECIMENTOS GERAIS': ['História', 'Geografia', 'Atualidades', 'Informática']
+        });
+      }
+    };
+    
+    loadCategories();
+  }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validação tática baseada no tipo de intel
     if (card.type === 'basic' || card.type === 'basic_reversed') {
       if (!card.front.trim() || !card.back.trim()) {
@@ -151,14 +185,59 @@ export default function NewFlashcard() {
       }
     }
 
-    // Operação concluída com sucesso
-    toast.success('OPERAÇÃO CONCLUÍDA: Intel tático criado com sucesso!', {
-      duration: 3000,
-      icon: '✅'
-    });
-
-    // Retornar à base operacional
-    navigate('/admin/flashcards/cards');
+    // Prepare data for API
+    setIsLoading(true);
+    toast.loading('SALVANDO INTEL TÁTICO...', { id: 'save' });
+    
+    try {
+      const flashcardData: CreateFlashcardData = {
+        type: card.type as any,
+        difficulty: card.difficulty as any,
+        category: card.category,
+        subcategory: card.subcategory,
+        tags: card.tags ? card.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+        status: 'published',
+        // Type-specific fields
+        front: card.front,
+        back: card.back,
+        extra: card.extra,
+        text: card.text,
+        question: card.question,
+        options: card.options,
+        correct: card.correct,
+        explanation: card.explanation,
+        statement: card.statement,
+        answer: card.answer,
+        hint: card.hint,
+        image: card.image,
+        occlusionAreas: card.occlusionAreas
+      };
+      
+      const response = await flashcardService.createFlashcard(flashcardData);
+      
+      if (response.success) {
+        toast.success('OPERAÇÃO CONCLUÍDA: Intel tático criado com sucesso!', {
+          id: 'save',
+          duration: 3000,
+          icon: '✅'
+        });
+        
+        // Retornar à base operacional
+        setTimeout(() => {
+          navigate('/admin/flashcards/cards');
+        }, 1000);
+      } else {
+        throw new Error('Falha ao salvar flashcard');
+      }
+    } catch (error) {
+      console.error('Error saving flashcard:', error);
+      toast.error('OPERAÇÃO FALHADA: Erro ao salvar intel tático', {
+        id: 'save',
+        icon: '🚨'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderPreview = () => {
@@ -444,10 +523,11 @@ export default function NewFlashcard() {
             
             <Button 
               onClick={handleSave}
-              className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-bold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl"
+              disabled={isLoading}
+              className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-bold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CheckCircle className="w-5 h-5" />
-              CONFIRMAR OPERAÇÃO
+              {isLoading ? 'SALVANDO...' : 'CONFIRMAR OPERAÇÃO'}
             </Button>
           </div>
         </div>

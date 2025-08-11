@@ -385,6 +385,39 @@ The project follows conventional commit format:
 
 ## Recent Updates
 
+### **2025-08-11**: Backend Node.js com Sistema de Flashcards
+- **Migração completa do backend de Rust para Node.js + TypeScript + Express**
+- **Sistema de Flashcards com algoritmo SM-2 de repetição espaçada implementado**
+- **API RESTful completa com autenticação JWT funcional**
+- **Integração do NewFlashcard.tsx com backend (100% funcional)**
+
+#### **Backend Node.js Implementado:**
+- **Arquitetura**: Express + TypeScript com modularização por rotas
+- **Autenticação**: JWT com middleware de proteção de rotas
+- **Persistência**: JSON files para consistência com outros sistemas
+- **Endpoints Flashcards**:
+  - `GET /api/v1/flashcards` - Listar com filtros e paginação
+  - `GET /api/v1/flashcards/stats` - Estatísticas agregadas
+  - `GET /api/v1/flashcards/filters` - Opções de filtros
+  - `GET /api/v1/flashcards/:id` - Buscar flashcard específico
+  - `POST /api/v1/flashcards` - Criar novo flashcard (admin)
+  - `PUT /api/v1/flashcards/:id` - Atualizar flashcard (admin)
+  - `DELETE /api/v1/flashcards/:id` - Excluir flashcard (admin)
+  - `POST /api/v1/flashcards/:id/study` - Registrar sessão de estudo
+  - `POST /api/v1/flashcards/bulk-import` - Importação em lote (admin)
+
+#### **Algoritmo SM-2 Implementado:**
+- **Ease Factor**: Ajustado baseado na qualidade da resposta (0-5)
+- **Interval**: Calculado dinamicamente (1, 6, n*ease_factor dias)
+- **Next Review**: Data calculada automaticamente
+- **Correct Rate**: Taxa de acerto atualizada a cada estudo
+
+#### **Integração Frontend Concluída:**
+- ✅ `flashcardService.ts` - Serviço completo com 406 linhas
+- ✅ `NewFlashcard.tsx` - Integrado com API (criação funcional)
+- ✅ Validações tipo-específicas implementadas
+- ✅ Teste completo da API executado com sucesso
+
 ### **2025-08-05**: Sistema de Provas Anteriores Militares
 - Nova página: `PreviousExamsMilitary.tsx` com tema militar/tático completo
 - Interface com terminologia militar: "OPERAÇÕES", "ARSENAIS", "COMANDO"
