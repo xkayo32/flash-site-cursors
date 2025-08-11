@@ -140,6 +140,8 @@ interface CreateCourseData {
   target_audience?: string;
   certification_available?: boolean;
   instructor_id?: string;
+  instructor_name?: string;
+  instructor_rank?: string;
 }
 
 interface UpdateCourseData {
@@ -220,6 +222,24 @@ class CourseService {
     return headers;
   }
 
+  private handleApiResponse = async (response: Response): Promise<any> => {
+    const contentType = response.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        data = { success: false, message: text || 'Erro desconhecido', raw_response: text };
+      }
+    }
+    
+    return data;
+  };
+
   // =================== COURSES ===================
 
   async listCourses(params?: {
@@ -228,6 +248,7 @@ class CourseService {
     search?: string;
     status?: string;
     category?: string;
+    instructor?: string;
   }): Promise<CoursesResponse> {
     try {
       const queryParams = new URLSearchParams();
@@ -236,13 +257,14 @@ class CourseService {
       if (params?.search) queryParams.append('search', params.search);
       if (params?.status) queryParams.append('status', params.status);
       if (params?.category) queryParams.append('category', params.category);
+      if (params?.instructor) queryParams.append('instructor', params.instructor);
 
       const response = await fetch(`${API_ENDPOINTS.courses.list}?${queryParams}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error listing courses:', error);
@@ -257,11 +279,26 @@ class CourseService {
         headers: this.getAuthHeaders(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error getting course:', error);
       return { success: false, message: 'Erro ao buscar curso' };
+    }
+  }
+
+  async getCourseStats(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.courses.list}/stats`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      const data = await this.handleApiResponse(response);
+      return data;
+    } catch (error) {
+      console.error('Error getting course stats:', error);
+      return { success: false, message: 'Erro ao buscar estatísticas' };
     }
   }
 
@@ -293,20 +330,8 @@ class CourseService {
         body: body,
       });
 
-      const responseText = await response.text();
-      
-      try {
-        const data = JSON.parse(responseText);
-        return data;
-      } catch (parseError) {
-        console.error('JSON parse error in create:', parseError);
-        console.error('Response text:', responseText);
-        return { 
-          success: false, 
-          message: 'Erro no servidor: resposta inválida',
-          raw_response: responseText
-        };
-      }
+      const data = await this.handleApiResponse(response);
+      return data;
     } catch (error) {
       console.error('Error creating course:', error);
       return { success: false, message: 'Erro ao criar curso' };
@@ -341,20 +366,8 @@ class CourseService {
         body: body,
       });
 
-      const responseText = await response.text();
-      
-      try {
-        const data = JSON.parse(responseText);
-        return data;
-      } catch (parseError) {
-        console.error('JSON parse error:', parseError);
-        console.error('Response text:', responseText);
-        return { 
-          success: false, 
-          message: 'Erro no servidor: resposta inválida',
-          raw_response: responseText
-        };
-      }
+      const data = await this.handleApiResponse(response);
+      return data;
     } catch (error) {
       console.error('Error updating course:', error);
       return { success: false, message: 'Erro ao atualizar curso' };
@@ -368,7 +381,7 @@ class CourseService {
         headers: this.getAuthHeaders(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error deleting course:', error);
@@ -376,32 +389,35 @@ class CourseService {
     }
   }
 
-  async uploadCourseImage(id: string, formData: FormData): Promise<{ success: boolean; message?: string; data?: any }> {
+  async uploadImage(id: string, imageFile: File): Promise<{ success: boolean; message?: string; data?: any }> {
     try {
-      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('thumbnail', imageFile);
       
-      const response = await fetch(API_ENDPOINTS.courses.uploadImage(id), {
+      const response = await fetch(`${API_ENDPOINTS.courses.get(id)}/thumbnail`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        headers: this.getAuthHeaders(true),
         body: formData,
       });
 
-      const data = await response.json();
-      
-      if (data.success) {
-        return {
-          success: true,
-          data: data.data,
-          message: data.message
-        };
-      } else {
-        return {
-          success: false,
-          message: data.message || 'Erro ao enviar imagem'
-        };
-      }
+      const data = await this.handleApiResponse(response);
+      return data;
+    } catch (error) {
+      console.error('Error uploading course image:', error);
+      return { success: false, message: 'Erro ao enviar imagem do curso' };
+    }
+  }
+
+  async uploadCourseImage(id: string, formData: FormData): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.courses.get(id)}/thumbnail`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(true),
+        body: formData,
+      });
+
+      const data = await this.handleApiResponse(response);
+      return data;
     } catch (error) {
       console.error('Error uploading course image:', error);
       return { success: false, message: 'Erro ao enviar imagem do curso' };
@@ -417,7 +433,7 @@ class CourseService {
         headers: this.getAuthHeaders(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error listing modules:', error);
@@ -432,7 +448,7 @@ class CourseService {
         headers: this.getAuthHeaders(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error getting module:', error);
@@ -455,7 +471,7 @@ class CourseService {
         body: params.toString(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error creating module:', error);
@@ -478,7 +494,7 @@ class CourseService {
         body: params.toString(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error updating module:', error);
@@ -493,7 +509,7 @@ class CourseService {
         headers: this.getAuthHeaders(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error deleting module:', error);
@@ -512,7 +528,7 @@ class CourseService {
         body: params.toString(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error reordering modules:', error);
@@ -529,7 +545,7 @@ class CourseService {
         headers: this.getAuthHeaders(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error listing lessons:', error);
@@ -544,7 +560,7 @@ class CourseService {
         headers: this.getAuthHeaders(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error getting lesson:', error);
@@ -567,7 +583,7 @@ class CourseService {
         body: params.toString(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error creating lesson:', error);
@@ -590,7 +606,7 @@ class CourseService {
         body: params.toString(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error updating lesson:', error);
@@ -605,7 +621,7 @@ class CourseService {
         headers: this.getAuthHeaders(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error deleting lesson:', error);
@@ -624,7 +640,7 @@ class CourseService {
         body: params.toString(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error reordering lessons:', error);
@@ -647,14 +663,66 @@ class CourseService {
         body: params.toString(),
       });
 
-      const data = await response.json();
+      const data = await this.handleApiResponse(response);
       return data;
     } catch (error) {
       console.error('Error adding lesson resource:', error);
       return { success: false, message: 'Erro ao adicionar recurso' };
     }
   }
+
+  // =================== ENROLLMENT ENDPOINTS ===================
+
+  async enrollInCourse(courseId: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.courses.get(courseId)}/enroll`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: new URLSearchParams(),
+      });
+
+      const data = await this.handleApiResponse(response);
+      return data;
+    } catch (error) {
+      console.error('Error enrolling in course:', error);
+      return { success: false, message: 'Erro ao realizar matrícula' };
+    }
+  }
+
+  async markLessonComplete(courseId: string, lessonId: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.courses.get(courseId)}/lessons/${lessonId}/complete`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: new URLSearchParams(),
+      });
+
+      const data = await this.handleApiResponse(response);
+      return data;
+    } catch (error) {
+      console.error('Error marking lesson as complete:', error);
+      return { success: false, message: 'Erro ao marcar aula como concluída' };
+    }
+  }
 }
 
 export const courseService = new CourseService();
-export type { Course, CourseModule, Lesson, LessonResource, CreateCourseData, UpdateCourseData };
+export type { 
+  Course, 
+  CourseModule, 
+  Lesson, 
+  LessonResource, 
+  CreateCourseData, 
+  UpdateCourseData,
+  CreateModuleData,
+  UpdateModuleData,
+  CreateLessonData,
+  UpdateLessonData,
+  CreateResourceData,
+  CoursesResponse,
+  CourseResponse,
+  ModulesResponse,
+  ModuleResponse,
+  LessonsResponse,
+  LessonResponse
+};

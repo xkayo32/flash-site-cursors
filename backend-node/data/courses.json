@@ -1,0 +1,42 @@
+[
+  {
+    "id": "88c9efca-98ae-43e7-848c-091f38703915",
+    "title": "Direito Constitucional Completo",
+    "description": "Curso completo de Direito Constitucional para concursos públicos militares e civis",
+    "category": "DIREITO",
+    "thumbnail": null,
+    "price": 297,
+    "instructor": {
+      "id": "9d41f4b3-d4c5-4a80-bf61-f68ce8d19778",
+      "name": "Dr. Carlos Silva",
+      "avatar": null
+    },
+    "difficulty_level": "intermediate",
+    "duration_hours": 40,
+    "duration_months": 3,
+    "status": "published",
+    "visibility": "public",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Dedicação de 2h por dia"
+    ],
+    "objectives": [
+      "Dominar os princípios constitucionais",
+      "Resolver questões de concursos"
+    ],
+    "tags": [
+      "CONCURSO",
+      "FEDERAL",
+      "DIREITO"
+    ],
+    "created_at": "2025-08-11T23:28:03.194Z",
+    "updated_at": "2025-08-11T23:28:03.194Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  }
+]
