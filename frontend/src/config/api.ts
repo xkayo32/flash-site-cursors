@@ -54,4 +54,11 @@ export const API_ENDPOINTS = {
   health: {
     check: `${API_BASE_URL}/api/v1/health`,
   },
+  categories: {
+    list: `${API_BASE_URL}/api/v1/categories`,
+    get: (id: string) => `${API_BASE_URL}/api/v1/categories/${id}`,
+    create: `${API_BASE_URL}/api/v1/categories`,
+    update: (id: string) => `${API_BASE_URL}/api/v1/categories/${id}`,
+    delete: (id: string) => `${API_BASE_URL}/api/v1/categories/${id}`,
+  },
 };
