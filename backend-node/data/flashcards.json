@@ -310,5 +310,30 @@
     "author_id": "1",
     "created_at": "2025-08-11T22:35:05.679Z",
     "updated_at": "2025-08-11T22:35:05.679Z"
+  },
+  {
+    "id": "fc_1754952958169_654",
+    "type": "basic",
+    "difficulty": "medium",
+    "category": "TESTE INTEGRAÇÃO",
+    "subcategory": "Automático",
+    "tags": [
+      "TESTE",
+      "INTEGRAÇÃO",
+      "API"
+    ],
+    "status": "published",
+    "front": "Teste de Integração Frontend-Backend",
+    "back": "Este flashcard foi criado automaticamente para testar a integração",
+    "occlusionAreas": [],
+    "times_studied": 1,
+    "times_correct": 1,
+    "correct_rate": 100,
+    "ease_factor": 2.5,
+    "interval": 1,
+    "next_review": "2025-08-12T22:55:58.233Z",
+    "author_id": "1",
+    "created_at": "2025-08-11T22:55:58.169Z",
+    "updated_at": "2025-08-11T22:55:58.233Z"
   }
 ]

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -23,7 +23,8 @@ import {
   Brain,
   CheckCircle,
   AlertCircle,
-  Clock
+  Clock,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -31,102 +32,8 @@ import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
 import FlashcardPreviewModal from '@/components/FlashcardPreviewModal';
 import FlashcardStudyModal from '@/components/FlashcardStudyModal';
+import { flashcardService, type Flashcard, type FlashcardStats } from '@/services/flashcardService';
 
-// Mock data para flashcards individuais (será gerenciado via estado)
-const initialFlashcards = [
-  {
-    id: 1,
-    type: 'basic',
-    front: 'Art. 121 do Código Penal',
-    back: 'Matar alguém: Pena - reclusão, de seis a vinte anos.',
-    category: 'DIREITO',
-    subcategory: 'Penal',
-    tags: ['CP', 'HOMICÍDIO', 'ARTIGO'],
-    difficulty: 'medium',
-    author: 'Major Silva',
-    createdAt: '2024-01-20',
-    lastReview: '2024-01-22',
-    reviews: 15,
-    correctCount: 12,
-    nextReview: '2024-01-25',
-    status: 'active'
-  },
-  {
-    id: 2,
-    type: 'multiple_choice',
-    question: 'Qual o prazo para oferecimento de denúncia com réu preso?',
-    options: ['3 dias', '5 dias', '10 dias', '15 dias'],
-    correct: 1,
-    explanation: 'Art. 46 do CPP - 5 dias quando o réu estiver preso.',
-    category: 'DIREITO',
-    subcategory: 'Processual Penal',
-    tags: ['CPP', 'DENÚNCIA', 'PRAZO'],
-    difficulty: 'hard',
-    author: 'Capitão Costa',
-    createdAt: '2024-01-18',
-    lastReview: '2024-01-21',
-    reviews: 8,
-    correctCount: 6,
-    nextReview: '2024-01-24',
-    status: 'active'
-  },
-  {
-    id: 3,
-    type: 'true_false',
-    statement: 'A prisão em flagrante pode ser realizada por qualquer pessoa.',
-    answer: true,
-    explanation: 'Art. 301 do CPP - Qualquer do povo poderá e as autoridades policiais e seus agentes deverão prender quem quer que seja encontrado em flagrante delito.',
-    category: 'DIREITO',
-    subcategory: 'Processual Penal',
-    tags: ['CPP', 'FLAGRANTE', 'PRISÃO'],
-    difficulty: 'easy',
-    author: 'Tenente Oliveira',
-    createdAt: '2024-01-16',
-    lastReview: null,
-    reviews: 0,
-    correctCount: 0,
-    nextReview: '2024-01-23',
-    status: 'pending'
-  },
-  {
-    id: 4,
-    type: 'image_occlusion',
-    image: '/api/placeholder/800/600',
-    occlusionAreas: [
-      { id: 'area-1', x: 100, y: 50, width: 150, height: 40, answer: 'Coronel', shape: 'rectangle' },
-      { id: 'area-2', x: 100, y: 120, width: 150, height: 40, answer: 'Tenente-Coronel', shape: 'rectangle' }
-    ],
-    extra: 'Hierarquia Militar - Oficiais Superiores',
-    category: 'SEGURANÇA PÚBLICA',
-    subcategory: 'Hierarquia',
-    tags: ['HIERARQUIA', 'MILITAR', 'OFICIAIS'],
-    difficulty: 'medium',
-    author: 'Major Santos',
-    createdAt: '2024-01-22',
-    lastReview: '2024-01-23',
-    reviews: 3,
-    correctCount: 3,
-    nextReview: '2024-01-26',
-    status: 'active'
-  },
-  {
-    id: 5,
-    type: 'cloze',
-    text: 'Art. 155 CP - Subtrair, para si ou para outrem, coisa {{c1::alheia}} {{c2::móvel}}: Pena - reclusão, de {{c3::um a quatro anos}}, e multa.',
-    extra: 'Crime de Furto - Código Penal',
-    category: 'DIREITO',
-    subcategory: 'Penal',
-    tags: ['CP', 'FURTO', 'PATRIMÔNIO'],
-    difficulty: 'medium',
-    author: 'Delegado Lima',
-    createdAt: '2024-01-19',
-    lastReview: '2024-01-20',
-    reviews: 12,
-    correctCount: 9,
-    nextReview: '2024-01-25',
-    status: 'active'
-  }
-];
 
 // Categorias e filtros
 const materias: { [key: string]: string[] } = {
@@ -148,35 +55,66 @@ export default function IndividualFlashcards() {
   const [selectedDifficulty, setSelectedDifficulty] = useState('Todos');
   const [selectedStatus, setSelectedStatus] = useState('Todos');
   const [selectedType, setSelectedType] = useState('Todos');
-  const [selectedCards, setSelectedCards] = useState<number[]>([]);
+  const [selectedCards, setSelectedCards] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showStudyModal, setShowStudyModal] = useState(false);
-  const [selectedCard, setSelectedCard] = useState<any>(null);
-  const [studyCards, setStudyCards] = useState<any[]>([]);
-  const [flashcards, setFlashcards] = useState(initialFlashcards);
+  const [selectedCard, setSelectedCard] = useState<Flashcard | null>(null);
+  const [studyCards, setStudyCards] = useState<Flashcard[]>([]);
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<FlashcardStats | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Load flashcards from API
+  useEffect(() => {
+    loadFlashcards();
+    loadStats();
+  }, [currentPage, selectedCategory, selectedSubcategory, selectedDifficulty, selectedStatus, selectedType, searchTerm]);
+
+  const loadFlashcards = async () => {
+    try {
+      setIsLoading(true);
+      const filters = {
+        page: currentPage,
+        limit: 20,
+        search: searchTerm || undefined,
+        category: selectedCategory !== 'Todos' ? selectedCategory : undefined,
+        subcategory: selectedSubcategory !== 'Todas' ? selectedSubcategory : undefined,
+        difficulty: selectedDifficulty !== 'Todos' ? selectedDifficulty as any : undefined,
+        type: selectedType !== 'Todos' ? selectedType as any : undefined,
+        status: selectedStatus !== 'Todos' ? selectedStatus as any : undefined
+      };
+
+      const response = await flashcardService.getFlashcards(filters);
+      setFlashcards(response.data);
+      setTotalPages(response.pagination.pages);
+    } catch (error) {
+      console.error('Error loading flashcards:', error);
+      toast.error('Erro ao carregar flashcards');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const statsResponse = await flashcardService.getStats();
+      setStats(statsResponse.data);
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
     setSelectedSubcategory('Todas');
   };
 
-  const filteredCards = flashcards.filter(card => {
-    const matchesSearch = card.front?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         card.back?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         card.question?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         card.statement?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         card.text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         card.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = selectedCategory === 'Todos' || card.category === selectedCategory;
-    const matchesSubcategory = selectedSubcategory === 'Todas' || card.subcategory === selectedSubcategory;
-    const matchesDifficulty = selectedDifficulty === 'Todos' || card.difficulty === selectedDifficulty;
-    const matchesStatus = selectedStatus === 'Todos' || card.status === selectedStatus;
-    const matchesType = selectedType === 'Todos' || card.type === selectedType;
-    
-    return matchesSearch && matchesCategory && matchesSubcategory && matchesDifficulty && matchesStatus && matchesType;
-  });
+  // Filtering is now done by API, so we use flashcards directly
+  const filteredCards = flashcards;
 
   const getDifficultyBadge = (difficulty: string) => {
     const config = {
@@ -217,12 +155,12 @@ export default function IndividualFlashcards() {
 
   const getStatusBadge = (status: string) => {
     const config = {
-      active: { label: 'ATIVO', color: 'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-300' },
-      pending: { label: 'PENDENTE', color: 'bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' },
-      archived: { label: 'ARQUIVADO', color: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300' }
+      draft: { label: 'RASCUNHO', color: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
+      published: { label: 'PUBLICADO', color: 'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-300' },
+      archived: { label: 'ARQUIVADO', color: 'bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-300' }
     };
     
-    const statusConfig = config[status as keyof typeof config];
+    const statusConfig = config[status as keyof typeof config] || config.draft;
     return (
       <Badge className={`${statusConfig.color} font-police-body font-semibold uppercase tracking-wider`}>
         {statusConfig.label}
@@ -234,66 +172,53 @@ export default function IndividualFlashcards() {
     navigate('/admin/flashcards/cards/new');
   };
 
-  const handleEditCard = (cardId: number) => {
-    // Implementar edição inline ou modal
-    const card = flashcards.find(c => c.id === cardId);
-    if (card) {
-      const newFront = prompt('Editar pergunta:', card.front || card.question || card.statement || card.text);
-      if (newFront !== null) {
-        const newBack = prompt('Editar resposta:', card.back || card.answer?.toString() || 'Nova resposta');
-        if (newBack !== null) {
-          setFlashcards(flashcards.map(c => 
-            c.id === cardId 
-              ? { ...c, front: newFront, back: newBack, question: newFront, answer: newBack }
-              : c
-          ));
-          toast.success('Flashcard atualizado com sucesso!', {
-            duration: 3000,
-            icon: '✏️'
-          });
-        }
+  const handleEditCard = async (cardId: string) => {
+    navigate(`/admin/flashcards/cards/${cardId}/edit`);
+  };
+
+  const handleDeleteCard = async (cardId: string) => {
+    if (confirm('Tem certeza que deseja excluir este flashcard?')) {
+      try {
+        await flashcardService.deleteFlashcard(cardId);
+        toast.success('Flashcard excluído com sucesso', {
+          duration: 3000,
+          icon: '✅'
+        });
+        loadFlashcards();
+      } catch (error) {
+        toast.error('Erro ao excluir flashcard');
       }
     }
   };
 
-  const handleDeleteCard = (cardId: number) => {
-    if (confirm('Tem certeza que deseja arquivar este flashcard?')) {
-      setFlashcards(flashcards.map(card => 
-        card.id === cardId ? { ...card, status: 'archived' } : card
-      ));
-      toast.success('Flashcard arquivado com sucesso', {
-        duration: 3000,
-        icon: '📦'
-      });
-    }
-  };
-
-  const handleDuplicateCard = (cardId: number) => {
+  const handleDuplicateCard = async (cardId: string) => {
     const originalCard = flashcards.find(c => c.id === cardId);
     if (originalCard) {
-      const duplicatedCard = {
-        ...originalCard,
-        id: Math.max(...flashcards.map(c => c.id)) + 1,
-        front: originalCard.front ? `${originalCard.front} (CÓPIA)` : originalCard.front,
-        question: originalCard.question ? `${originalCard.question} (CÓPIA)` : originalCard.question,
-        statement: originalCard.statement ? `${originalCard.statement} (CÓPIA)` : originalCard.statement,
-        createdAt: new Date().toISOString().split('T')[0],
-        lastReview: null,
-        reviews: 0,
-        correctCount: 0,
-        status: 'pending',
-        nextReview: new Date(Date.now() + 86400000).toISOString().split('T')[0]
-      };
-      
-      setFlashcards([...flashcards, duplicatedCard]);
-      toast.success(`Flashcard "${getCardPreview(originalCard).substring(0, 30)}..." duplicado com sucesso`, {
-        duration: 3000,
-        icon: '📋'
-      });
+      try {
+        const duplicatedData = {
+          ...originalCard,
+          front: originalCard.front ? `${originalCard.front} (CÓPIA)` : originalCard.front,
+          question: originalCard.question ? `${originalCard.question} (CÓPIA)` : originalCard.question,
+          statement: originalCard.statement ? `${originalCard.statement} (CÓPIA)` : originalCard.statement,
+          status: 'draft' as const
+        };
+        
+        // Remove id and audit fields
+        const { id, author_id, author_name, created_at, updated_at, times_studied, times_correct, correct_rate, ease_factor, interval, next_review, ...createData } = duplicatedData;
+        
+        await flashcardService.createFlashcard(createData as any);
+        toast.success(`Flashcard duplicado com sucesso`, {
+          duration: 3000,
+          icon: '📋'
+        });
+        loadFlashcards();
+      } catch (error) {
+        toast.error('Erro ao duplicar flashcard');
+      }
     }
   };
 
-  const handleStudyCard = (cardId: number) => {
+  const handleStudyCard = (cardId: string) => {
     const card = flashcards.find(c => c.id === cardId);
     if (card) {
       setStudyCards([card]);
@@ -301,7 +226,7 @@ export default function IndividualFlashcards() {
     }
   };
 
-  const handlePreviewCard = (cardId: number) => {
+  const handlePreviewCard = (cardId: string) => {
     const card = flashcards.find(c => c.id === cardId);
     if (card) {
       setSelectedCard(card);
@@ -309,12 +234,16 @@ export default function IndividualFlashcards() {
     }
   };
 
-  const handleStudyComplete = (results: any) => {
+  const handleStudyComplete = async (results: any) => {
     console.log('Study session completed:', results);
     toast.success(`Sessão concluída! ${results.correct}/${results.totalCards} acertos (${results.accuracy}%)`, {
       duration: 4000,
       icon: '🎯'
     });
+    
+    // Reload to update stats
+    loadFlashcards();
+    loadStats();
   };
 
   const handleBulkStudy = () => {
@@ -327,29 +256,39 @@ export default function IndividualFlashcards() {
     }
   };
 
-  const handleBulkDuplicate = () => {
+  const handleBulkDuplicate = async () => {
     if (selectedCards.length > 0) {
-      selectedCards.forEach(cardId => handleDuplicateCard(cardId));
+      for (const cardId of selectedCards) {
+        await handleDuplicateCard(cardId);
+      }
       setSelectedCards([]);
       setShowBulkActions(false);
     }
   };
 
-  const handleBulkArchive = () => {
+  const handleBulkArchive = async () => {
     if (selectedCards.length > 0 && confirm(`Tem certeza que deseja arquivar ${selectedCards.length} flashcards?`)) {
-      setFlashcards(flashcards.map(card => 
-        selectedCards.includes(card.id) ? { ...card, status: 'archived' } : card
-      ));
-      toast.success(`${selectedCards.length} flashcards arquivados com sucesso`, {
-        duration: 3000,
-        icon: '📦'
-      });
-      setSelectedCards([]);
-      setShowBulkActions(false);
+      try {
+        for (const cardId of selectedCards) {
+          const card = flashcards.find(c => c.id === cardId);
+          if (card) {
+            await flashcardService.updateFlashcard(cardId, { status: 'archived' });
+          }
+        }
+        toast.success(`${selectedCards.length} flashcards arquivados com sucesso`, {
+          duration: 3000,
+          icon: '📦'
+        });
+        setSelectedCards([]);
+        setShowBulkActions(false);
+        loadFlashcards();
+      } catch (error) {
+        toast.error('Erro ao arquivar flashcards');
+      }
     }
   };
 
-  const handleSelectCard = (id: number) => {
+  const handleSelectCard = (id: string) => {
     setSelectedCards(prev => 
       prev.includes(id) 
         ? prev.filter(c => c !== id)
@@ -365,19 +304,19 @@ export default function IndividualFlashcards() {
     );
   };
 
-  const getCardPreview = (card: any) => {
+  const getCardPreview = (card: Flashcard) => {
     switch (card.type) {
       case 'basic':
       case 'basic_reversed':
-        return card.front;
+        return card.front || '';
       case 'multiple_choice':
-        return card.question;
+        return card.question || '';
       case 'true_false':
-        return card.statement;
+        return card.statement || '';
       case 'cloze':
-        return card.text.replace(/{{c\d+::(.*?)}}/g, '[$1]');
+        return card.text?.replace(/{{c\d+::(.*?)}}/g, '[$1]') || '';
       case 'type_answer':
-        return card.question;
+        return card.question || '';
       case 'image_occlusion':
         return `Imagem com ${card.occlusionAreas?.length || 0} áreas de oclusão`;
       default:
@@ -470,7 +409,7 @@ export default function IndividualFlashcards() {
                   ARSENAL TOTAL
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {flashcards.length}
+                  {stats?.total || 0}
                 </p>
               </div>
               <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
@@ -490,7 +429,7 @@ export default function IndividualFlashcards() {
                   INTEL OPERACIONAL
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {flashcards.filter(c => c.status === 'active').length}
+                  {stats?.published || 0}
                 </p>
               </div>
               <div className="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center">
@@ -510,7 +449,7 @@ export default function IndividualFlashcards() {
                   OPERAÇÕES REALIZADAS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {flashcards.reduce((acc, card) => acc + card.reviews, 0)}
+                  {stats?.totalStudies || 0}
                 </p>
               </div>
               <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
@@ -530,10 +469,7 @@ export default function IndividualFlashcards() {
                   PRECISÃO TÁTICA
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {Math.round(
-                    (flashcards.reduce((acc, card) => acc + card.correctCount, 0) / 
-                     flashcards.reduce((acc, card) => acc + card.reviews, 0)) * 100
-                  ) || 0}%
+                  {Math.round(stats?.avgCorrectRate || 0)}%
                 </p>
               </div>
               <div className="w-12 h-12 bg-gray-600 rounded-lg flex items-center justify-center">
@@ -721,6 +657,11 @@ export default function IndividualFlashcards() {
       </motion.div>
 
       {/* Cards Grid/List */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 text-accent-500 animate-spin" />
+        </div>
+      ) : (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -775,7 +716,7 @@ export default function IndividualFlashcards() {
                       OPERAÇÕES
                     </p>
                     <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
-                      {card.reviews}
+                      {card.times_studied}
                     </p>
                   </div>
                   <div className="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
@@ -783,7 +724,7 @@ export default function IndividualFlashcards() {
                       ALVOS
                     </p>
                     <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
-                      {card.correctCount}
+                      {card.times_correct}
                     </p>
                   </div>
                   <div className="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
@@ -791,7 +732,7 @@ export default function IndividualFlashcards() {
                       PRECISÃO
                     </p>
                     <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
-                      {card.reviews > 0 ? Math.round((card.correctCount / card.reviews) * 100) : 0}%
+                      {Math.round(card.correct_rate || 0)}%
                     </p>
                   </div>
                 </div>
@@ -814,11 +755,11 @@ export default function IndividualFlashcards() {
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="text-xs text-gray-500 dark:text-gray-400 font-police-body">
-                    <p className="uppercase tracking-wider">{card.author}</p>
-                    {card.lastReview && (
+                    <p className="uppercase tracking-wider">{card.author_name}</p>
+                    {card.next_review && (
                       <p className="flex items-center gap-1 mt-1">
                         <Calendar className="w-3 h-3" />
-                        {new Date(card.lastReview).toLocaleDateString('pt-BR')}
+                        {new Date(card.next_review).toLocaleDateString('pt-BR')}
                       </p>
                     )}
                   </div>
@@ -956,11 +897,11 @@ export default function IndividualFlashcards() {
                       <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                         <div className="flex items-center gap-4">
                           <div className="text-xs text-gray-500 dark:text-gray-400 font-police-body">
-                            <span className="uppercase tracking-wider">{card.author}</span>
-                            {card.lastReview && (
+                            <span className="uppercase tracking-wider">{card.author_name}</span>
+                            {card.next_review && (
                               <span className="flex items-center gap-1 mt-1">
                                 <Calendar className="w-3 h-3" />
-                                {new Date(card.lastReview).toLocaleDateString('pt-BR')}
+                                {new Date(card.next_review).toLocaleDateString('pt-BR')}
                               </span>
                             )}
                           </div>
@@ -1042,9 +983,10 @@ export default function IndividualFlashcards() {
           )
         )}
       </motion.div>
+      )}
 
       {/* Empty State */}
-      {filteredCards.length === 0 && (
+      {!isLoading && filteredCards.length === 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
