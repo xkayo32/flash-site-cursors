@@ -105,7 +105,7 @@ export const useSettingsStore = create<SettingsStore>()(
           }
 
           const data = await response.json();
-          console.log('Settings received:', data);
+          console.log('Settings received:', JSON.stringify(data, null, 2));
           set({ settings: data, isLoading: false });
         } catch (error) {
           console.error('Error fetching settings:', error);
@@ -131,6 +131,8 @@ export const useSettingsStore = create<SettingsStore>()(
             ...currentSettings,
             [section]: { ...currentSettings[section], ...data }
           };
+          
+          console.log(`Updating ${section} settings with payload:`, JSON.stringify(payload, null, 2));
           
           const response = await fetch(`${API_BASE_URL}/api/v1/settings`, {
             method: 'POST',

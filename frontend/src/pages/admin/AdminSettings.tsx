@@ -136,11 +136,16 @@ export default function AdminSettings() {
         brand: settings.brand || {},
         social: settings.social || {}
       });
-      console.log('FormData updated:', {
+      const newFormData = {
         general: settings.general || {},
         company: settings.company || {},
         brand: settings.brand || {},
         social: settings.social || {}
+      };
+      console.log('FormData updated with values:', {
+        site_name: newFormData.general?.site_name,
+        company_name: newFormData.company?.company_name,
+        brand_primary_color: newFormData.brand?.brand_primary_color
       });
     }
   }, [settings]);
@@ -210,6 +215,7 @@ export default function AdminSettings() {
 
   const handleSave = async (section: string) => {
     try {
+      console.log(`Saving ${section} settings:`, formData[section as keyof typeof formData]);
       switch (section) {
         case 'general':
           await updateGeneralSettings(formData.general);
