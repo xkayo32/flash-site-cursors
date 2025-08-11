@@ -1,0 +1,108 @@
+[
+  {
+    "id": 1,
+    "name": "Admin User",
+    "email": "admin@studypro.com",
+    "password": "$2a$10$EJ.w1nfT1SsuRQ8RmCEVBu1bO/FXq6N7x1M5Pw0S3GX1CvuBkT7mS",
+    "role": "admin",
+    "status": "active",
+    "phone": "(11) 98765-4321",
+    "avatar": "/uploads/avatars/admin-avatar.jpg",
+    "emailVerified": true,
+    "subscription": {
+      "plan": "COMANDO SUPREMO",
+      "status": "active",
+      "expiresAt": "2025-12-31T23:59:59Z"
+    },
+    "createdAt": "2024-01-01T00:00:00Z",
+    "lastLogin": "2025-08-11T12:00:00Z",
+    "updated_at": "2025-08-11T12:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "Aluno Teste",
+    "email": "aluno@example.com",
+    "password": "$2a$10$7mjZ1K1Dd5pqQ7aH5mSXZ.sRgJQnJf3P/lKKU1LZKSEPHQhN7L8Fy",
+    "role": "student",
+    "status": "active",
+    "phone": "(11) 91234-5678",
+    "avatar": "/uploads/avatars/default-avatar.jpg",
+    "emailVerified": true,
+    "subscription": {
+      "plan": "RECRUTA",
+      "status": "active",
+      "expiresAt": "2025-06-30T23:59:59Z"
+    },
+    "createdAt": "2024-01-02T00:00:00Z",
+    "lastLogin": "2025-08-10T15:30:00Z",
+    "updated_at": "2025-08-10T15:30:00Z"
+  },
+  {
+    "id": 3,
+    "name": "João Silva Atualizado",
+    "email": "joao@example.com",
+    "password": "$2a$10$PZ7lW6JJsY2Kgzp3aQFPQ.Uu0YxNQtGHUKTyWXKyqwRqhcDO5AJZ6",
+    "role": "student",
+    "status": "suspended",
+    "phone": "(21) 98888-7777",
+    "avatar": null,
+    "emailVerified": false,
+    "subscription": {
+      "plan": "ESPECIALISTA",
+      "status": "active",
+      "expiresAt": "2025-09-15T23:59:59Z"
+    },
+    "createdAt": "2024-01-03T00:00:00Z",
+    "lastLogin": "2025-08-09T10:15:00Z",
+    "updated_at": "2025-08-11T17:31:45.489Z"
+  },
+  {
+    "id": 4,
+    "name": "Maria Santos",
+    "email": "maria@example.com",
+    "password": "$2a$10$8xJBKJP43MQuH9n0CEJjh.Pq.tTmz5NMZMfhBXgRVCMqRK1qlGbGO",
+    "role": "student",
+    "status": "suspended",
+    "phone": "(31) 97777-6666",
+    "avatar": null,
+    "emailVerified": true,
+    "subscription": {
+      "plan": "ELITE",
+      "status": "expired",
+      "expiresAt": "2025-07-01T23:59:59Z"
+    },
+    "createdAt": "2024-02-15T00:00:00Z",
+    "lastLogin": "2025-07-01T18:20:00Z",
+    "updated_at": "2025-07-01T18:20:00Z"
+  },
+  {
+    "id": 5,
+    "name": "Pedro Costa",
+    "email": "pedro@example.com",
+    "password": "$2a$10$MOCK_HASH",
+    "role": "instructor",
+    "status": "active",
+    "phone": "(41) 96666-5555",
+    "avatar": null,
+    "emailVerified": true,
+    "subscription": null,
+    "createdAt": "2024-03-10T00:00:00Z",
+    "lastLogin": "2025-08-11T08:00:00Z",
+    "updated_at": "2025-08-11T08:00:00Z"
+  },
+  {
+    "id": 6,
+    "name": "Novo Teste",
+    "email": "novo@teste.com",
+    "password": "$2a$10$AZU.JiIUkt8827kKhtSkMuZ1GgD8Y9qGfV7Q1pPhQG52faeGqA.4O",
+    "role": "student",
+    "status": "active",
+    "phone": "(11) 95555-4444",
+    "avatar": null,
+    "emailVerified": false,
+    "subscription": null,
+    "createdAt": "2025-08-11T17:31:45.460Z",
+    "lastLogin": null,
+    "updated_at": "2025-08-11T17:31:45.460Z"
+  }
+]

@@ -61,7 +61,7 @@ class UserService {
     const token = useAuthStore.getState().token;
     return {
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
     };
   }
 
@@ -112,17 +112,10 @@ class UserService {
 
   async createUser(userData: CreateUserData): Promise<UserResponse> {
     try {
-      const params = new URLSearchParams();
-      Object.entries(userData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          params.append(key, value.toString());
-        }
-      });
-
       const response = await fetch(API_ENDPOINTS.users.create, {
         method: 'POST',
         headers: this.getAuthHeaders(),
-        body: params.toString(),
+        body: JSON.stringify(userData),
       });
 
       const data = await response.json();
@@ -135,17 +128,10 @@ class UserService {
 
   async updateUser(id: string, userData: UpdateUserData): Promise<UserResponse> {
     try {
-      const params = new URLSearchParams();
-      Object.entries(userData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          params.append(key, value.toString());
-        }
-      });
-
       const response = await fetch(API_ENDPOINTS.users.update(id), {
         method: 'PUT',
         headers: this.getAuthHeaders(),
-        body: params.toString(),
+        body: JSON.stringify(userData),
       });
 
       const data = await response.json();
