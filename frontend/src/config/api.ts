@@ -61,4 +61,9 @@ export const API_ENDPOINTS = {
     update: (id: string) => `${API_BASE_URL}/api/v1/categories/${id}`,
     delete: (id: string) => `${API_BASE_URL}/api/v1/categories/${id}`,
   },
+  dashboard: {
+    stats: `${API_BASE_URL}/api/v1/dashboard/stats`,
+    activities: `${API_BASE_URL}/api/v1/dashboard/activities`,
+    performance: `${API_BASE_URL}/api/v1/dashboard/performance`,
+  },
 };

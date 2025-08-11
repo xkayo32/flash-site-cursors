@@ -13,6 +13,7 @@ import healthRoutes from './routes/health.routes';
 import coursesRoutes from './routes/courses.routes';
 import usersRoutes from './routes/users.routes';
 import categoriesRoutes from './routes/categories.routes';
+import dashboardRoutes from './routes/dashboard.routes';
 
 // Load environment variables
 dotenv.config();
@@ -49,6 +50,7 @@ app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/courses', coursesRoutes);
 app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/categories', categoriesRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 // Root endpoint
 app.get('/', (_req, res) => {
@@ -63,7 +65,8 @@ app.get('/', (_req, res) => {
       '/api/v1/profile': 'User profile management',
       '/api/v1/courses': 'Courses management',
       '/api/v1/users': 'Users management',
-      '/api/v1/categories': 'Categories management'
+      '/api/v1/categories': 'Categories management',
+      '/api/v1/dashboard': 'Dashboard statistics'
     }
   });
 });
