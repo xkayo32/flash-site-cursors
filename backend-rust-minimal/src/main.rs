@@ -14,6 +14,53 @@ struct UserProfile {
     role: String,
 }
 
+#[derive(Clone)]
+struct GeneralSettings {
+    site_name: String,
+    site_tagline: String,
+    site_description: String,
+    maintenance_mode: bool,
+}
+
+#[derive(Clone)]
+struct CompanySettings {
+    company_name: String,
+    company_cnpj: String,
+    company_address: String,
+    company_city: String,
+    company_state: String,
+    company_zip: String,
+    company_phone: String,
+    company_email: String,
+    company_whatsapp: String,
+}
+
+#[derive(Clone)]
+struct BrandSettings {
+    brand_primary_color: String,
+    brand_secondary_color: String,
+    brand_logo_light: String,
+    brand_logo_dark: String,
+    brand_favicon: String,
+}
+
+#[derive(Clone)]
+struct SocialSettings {
+    facebook: String,
+    instagram: String,
+    twitter: String,
+    linkedin: String,
+    youtube: String,
+}
+
+#[derive(Clone)]
+struct SystemSettings {
+    general: GeneralSettings,
+    company: CompanySettings,
+    brand: BrandSettings,
+    social: SocialSettings,
+}
+
 impl UserProfile {
     fn to_json(&self) -> String {
         format!(
@@ -23,9 +70,53 @@ impl UserProfile {
     }
 }
 
-type ProfileStore = Arc<Mutex<UserProfile>>;
+impl SystemSettings {
+    fn to_json(&self) -> String {
+        let json = format!(
+            "{{\"general\":{{\"site_name\":\"{}\",\"site_tagline\":\"{}\",\"site_description\":\"{}\",\"maintenance_mode\":{}}},\"company\":{{\"company_name\":\"{}\",\"company_cnpj\":\"{}\",\"company_address\":\"{}\",\"company_city\":\"{}\",\"company_state\":\"{}\",\"company_zip\":\"{}\",\"company_phone\":\"{}\",\"company_email\":\"{}\",\"company_whatsapp\":\"{}\"}},\"brand\":{{\"brand_primary_color\":\"{}\",\"brand_secondary_color\":\"{}\",\"brand_logo_light\":\"{}\",\"brand_logo_dark\":\"{}\",\"brand_favicon\":\"{}\"}},\"social\":{{\"facebook\":\"{}\",\"instagram\":\"{}\",\"twitter\":\"{}\",\"linkedin\":\"{}\",\"youtube\":\"{}\"}}}}",
+            self.general.site_name,
+            self.general.site_tagline,
+            self.general.site_description,
+            self.general.maintenance_mode,
+            self.company.company_name,
+            self.company.company_cnpj,
+            self.company.company_address,
+            self.company.company_city,
+            self.company.company_state,
+            self.company.company_zip,
+            self.company.company_phone,
+            self.company.company_email,
+            self.company.company_whatsapp,
+            self.brand.brand_primary_color,
+            self.brand.brand_secondary_color,
+            self.brand.brand_logo_light,
+            self.brand.brand_logo_dark,
+            self.brand.brand_favicon,
+            self.social.facebook,
+            self.social.instagram,
+            self.social.twitter,
+            self.social.linkedin,
+            self.social.youtube
+        );
+        json
+    }
+}
 
-fn handle_client(mut stream: TcpStream, profile_store: ProfileStore) {
+type ProfileStore = Arc<Mutex<UserProfile>>;
+type SettingsStore = Arc<Mutex<SystemSettings>>;
+
+// Helper function to extract JSON values
+fn extract_json_value(body: &str, key: &str) -> Option<String> {
+    if let Some(start) = body.find(key) {
+        let value_start = start + key.len();
+        if let Some(end) = body[value_start..].find('"') {
+            return Some(body[value_start..value_start + end].to_string());
+        }
+    }
+    None
+}
+
+fn handle_client(mut stream: TcpStream, profile_store: ProfileStore, settings_store: SettingsStore) {
     let mut buffer = [0; 4096];
     stream.read(&mut buffer).unwrap();
     
@@ -37,6 +128,7 @@ fn handle_client(mut stream: TcpStream, profile_store: ProfileStore) {
     
     let (status, content_type, body) = if path.starts_with("OPTIONS") {
         // Handle CORS preflight requests for any OPTIONS request
+        println!("Matched OPTIONS preflight");
         ("200 OK", "text/plain", "".to_string())
     } else if path.contains("OPTIONS") {
         // Fallback for any other OPTIONS variation
@@ -70,11 +162,109 @@ fn handle_client(mut stream: TcpStream, profile_store: ProfileStore) {
     } else if path.contains("GET /api/v1/users") {
         ("200 OK", "application/json", r#"[{"id":1,"name":"Admin User","email":"admin@studypro.com","role":"admin"},{"id":2,"name":"Aluno Teste","email":"aluno@example.com","role":"student"}]"#.to_string())
     } else if path.contains("GET /api/v1/settings") {
-        // Return settings - simplified without problematic characters
-        ("200 OK", "application/json", r#"{"general":{"site_name":"StudyPro","site_tagline":"Sua aprovação começa aqui","site_description":"A plataforma mais completa para concursos públicos","maintenance_mode":false},"company":{"company_name":"StudyPro Educação Ltda","company_cnpj":"00.000.000/0001-00","company_address":"Rua Principal, 123 - Centro","company_city":"São Paulo","company_state":"SP","company_zip":"01000-000","company_phone":"(11) 1234-5678","company_email":"contato@studypro.com","company_whatsapp":"(11) 91234-5678"},"brand":{"brand_primary_color":"rgb(250, 204, 21)","brand_secondary_color":"rgb(20, 36, 47)","brand_logo_light":"/logo.png","brand_logo_dark":"/logo.png","brand_favicon":"/logo.png"},"social":{"facebook":"https://facebook.com/studypro","instagram":"https://instagram.com/studypro","twitter":"https://twitter.com/studypro","linkedin":"https://linkedin.com/company/studypro","youtube":"https://youtube.com/studypro"}}"#.to_string())
+        // Return current settings from store
+        let settings = settings_store.lock().unwrap();
+        let json = settings.to_json();
+        drop(settings);
+        ("200 OK", "application/json", json)
     } else if path.contains("PUT /api/v1/settings") || path.contains("POST /api/v1/settings") {
-        // Save settings (mock response)
-        println!("Settings update received");
+        // Update settings with real data parsing
+        let body_start = request.find("\r\n\r\n").unwrap_or(0) + 4;
+        let body = &request[body_start..];
+        println!("Settings update received: {}", body);
+        
+        let mut settings = settings_store.lock().unwrap();
+        
+        // Parse and update general settings
+        if body.contains(r#""general":"#) {
+            if let Some(site_name) = extract_json_value(body, r#""site_name":""#) {
+                println!("Updated site_name to: {}", site_name);
+                settings.general.site_name = site_name;
+            }
+            if let Some(site_tagline) = extract_json_value(body, r#""site_tagline":""#) {
+                settings.general.site_tagline = site_tagline;
+            }
+            if let Some(site_description) = extract_json_value(body, r#""site_description":""#) {
+                settings.general.site_description = site_description;
+            }
+            if body.contains(r#""maintenance_mode":true"#) {
+                settings.general.maintenance_mode = true;
+            } else if body.contains(r#""maintenance_mode":false"#) {
+                settings.general.maintenance_mode = false;
+            }
+        }
+        
+        // Parse and update company settings
+        if body.contains(r#""company":"#) {
+            if let Some(company_name) = extract_json_value(body, r#""company_name":""#) {
+                settings.company.company_name = company_name;
+            }
+            if let Some(company_cnpj) = extract_json_value(body, r#""company_cnpj":""#) {
+                settings.company.company_cnpj = company_cnpj;
+            }
+            if let Some(company_address) = extract_json_value(body, r#""company_address":""#) {
+                settings.company.company_address = company_address;
+            }
+            if let Some(company_city) = extract_json_value(body, r#""company_city":""#) {
+                settings.company.company_city = company_city;
+            }
+            if let Some(company_state) = extract_json_value(body, r#""company_state":""#) {
+                settings.company.company_state = company_state;
+            }
+            if let Some(company_zip) = extract_json_value(body, r#""company_zip":""#) {
+                settings.company.company_zip = company_zip;
+            }
+            if let Some(company_phone) = extract_json_value(body, r#""company_phone":""#) {
+                settings.company.company_phone = company_phone;
+            }
+            if let Some(company_email) = extract_json_value(body, r#""company_email":""#) {
+                settings.company.company_email = company_email;
+            }
+            if let Some(company_whatsapp) = extract_json_value(body, r#""company_whatsapp":""#) {
+                settings.company.company_whatsapp = company_whatsapp;
+            }
+        }
+        
+        // Parse and update brand settings
+        if body.contains(r#""brand":"#) {
+            if let Some(brand_primary_color) = extract_json_value(body, r#""brand_primary_color":""#) {
+                settings.brand.brand_primary_color = brand_primary_color;
+            }
+            if let Some(brand_secondary_color) = extract_json_value(body, r#""brand_secondary_color":""#) {
+                settings.brand.brand_secondary_color = brand_secondary_color;
+            }
+            if let Some(brand_logo_light) = extract_json_value(body, r#""brand_logo_light":""#) {
+                settings.brand.brand_logo_light = brand_logo_light;
+            }
+            if let Some(brand_logo_dark) = extract_json_value(body, r#""brand_logo_dark":""#) {
+                settings.brand.brand_logo_dark = brand_logo_dark;
+            }
+            if let Some(brand_favicon) = extract_json_value(body, r#""brand_favicon":""#) {
+                settings.brand.brand_favicon = brand_favicon;
+            }
+        }
+        
+        // Parse and update social settings
+        if body.contains(r#""social":"#) {
+            if let Some(facebook) = extract_json_value(body, r#""facebook":""#) {
+                settings.social.facebook = facebook;
+            }
+            if let Some(instagram) = extract_json_value(body, r#""instagram":""#) {
+                settings.social.instagram = instagram;
+            }
+            if let Some(twitter) = extract_json_value(body, r#""twitter":""#) {
+                settings.social.twitter = twitter;
+            }
+            if let Some(linkedin) = extract_json_value(body, r#""linkedin":""#) {
+                settings.social.linkedin = linkedin;
+            }
+            if let Some(youtube) = extract_json_value(body, r#""youtube":""#) {
+                settings.social.youtube = youtube;
+            }
+        }
+        
+        drop(settings);
+        
         ("200 OK", "application/json", r#"{"success":true,"message":"Configurações salvas com sucesso"}"#.to_string())
     } else if path.contains("POST /api/v1/settings/logo") {
         // Upload logo (mock response)
@@ -179,6 +369,7 @@ fn handle_client(mut stream: TcpStream, profile_store: ProfileStore) {
         
         ("200 OK", "application/json", response_json)
     } else {
+        println!("No match found for path: '{}'", path);
         ("404 Not Found", "application/json", r#"{"error":"Endpoint not found"}"#.to_string())
     };
     
@@ -208,7 +399,43 @@ fn main() {
         role: "admin".to_string(),
     };
     
+    // Initialize default settings
+    let default_settings = SystemSettings {
+        general: GeneralSettings {
+            site_name: "StudyPro".to_string(),
+            site_tagline: "Sua aprovação começa aqui".to_string(),
+            site_description: "A plataforma mais completa para concursos públicos".to_string(),
+            maintenance_mode: false,
+        },
+        company: CompanySettings {
+            company_name: "StudyPro Educação Ltda".to_string(),
+            company_cnpj: "00.000.000/0001-00".to_string(),
+            company_address: "Rua Principal, 123 - Centro".to_string(),
+            company_city: "São Paulo".to_string(),
+            company_state: "SP".to_string(),
+            company_zip: "01000-000".to_string(),
+            company_phone: "(11) 1234-5678".to_string(),
+            company_email: "contato@studypro.com".to_string(),
+            company_whatsapp: "(11) 91234-5678".to_string(),
+        },
+        brand: BrandSettings {
+            brand_primary_color: "rgb(250, 204, 21)".to_string(),
+            brand_secondary_color: "rgb(20, 36, 47)".to_string(),
+            brand_logo_light: "/logo.png".to_string(),
+            brand_logo_dark: "/logo.png".to_string(),
+            brand_favicon: "/logo.png".to_string(),
+        },
+        social: SocialSettings {
+            facebook: "https://facebook.com/studypro".to_string(),
+            instagram: "https://instagram.com/studypro".to_string(),
+            twitter: "https://twitter.com/studypro".to_string(),
+            linkedin: "https://linkedin.com/company/studypro".to_string(),
+            youtube: "https://youtube.com/studypro".to_string(),
+        },
+    };
+    
     let profile_store: ProfileStore = Arc::new(Mutex::new(default_profile));
+    let settings_store: SettingsStore = Arc::new(Mutex::new(default_settings));
     
     let listener = TcpListener::bind("0.0.0.0:8180").unwrap();
     println!("📡 Server listening on http://0.0.0.0:8180");
@@ -216,9 +443,10 @@ fn main() {
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                let store_clone = Arc::clone(&profile_store);
+                let profile_clone = Arc::clone(&profile_store);
+                let settings_clone = Arc::clone(&settings_store);
                 thread::spawn(move || {
-                    handle_client(stream, store_clone);
+                    handle_client(stream, profile_clone, settings_clone);
                 });
             }
             Err(e) => {

@@ -2,11 +2,10 @@ FROM rust:1.79-slim
 
 WORKDIR /app
 
-COPY Cargo.toml ./
 COPY src ./src
 
-RUN cargo build --release
+RUN rustc -O src/main.rs -o estudos-backend
 
 EXPOSE 8180
 
-CMD ["./target/release/estudos-backend"]
+CMD ["./estudos-backend"]

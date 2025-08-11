@@ -108,13 +108,26 @@ export const useSettingsStore = create<SettingsStore>()(
       updateSettings: async (section, data) => {
         set({ isLoading: true, error: null });
         try {
+          // Build the payload matching backend expectations
+          const currentSettings = get().settings || {
+            general: {},
+            company: {},
+            brand: {},
+            social: {}
+          };
+          
+          const payload = {
+            ...currentSettings,
+            [section]: { ...currentSettings[section], ...data }
+          };
+          
           const response = await fetch(`${API_BASE_URL}/api/v1/settings`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
             },
-            body: JSON.stringify({ section, data }),
+            body: JSON.stringify(payload),
           });
 
           if (!response.ok) {
@@ -124,16 +137,10 @@ export const useSettingsStore = create<SettingsStore>()(
           const result = await response.json();
           
           // Update local state
-          const currentSettings = get().settings;
-          if (currentSettings) {
-            set({
-              settings: {
-                ...currentSettings,
-                [section]: { ...currentSettings[section], ...data }
-              },
-              isLoading: false
-            });
-          }
+          set({
+            settings: payload,
+            isLoading: false
+          });
         } catch (error) {
           set({ 
             error: error instanceof Error ? error.message : 'Failed to update settings',
