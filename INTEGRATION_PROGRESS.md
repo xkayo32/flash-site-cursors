@@ -204,19 +204,53 @@ Documento de acompanhamento da migração e integração do sistema de PHP para 
 
 ---
 
+---
+
+### 7. Sistema de Questões ✅
+**Data**: 11/08/2025  
+**Arquivos Backend**:
+- `/backend-node/src/routes/questions.routes.ts`
+- `/backend-node/data/questions.json`
+
+**Arquivos Frontend**:
+- `/frontend/src/services/questionService.ts`
+
+**Endpoints**:
+- `GET /api/v1/questions` ✅ (com filtros e paginação)
+- `GET /api/v1/questions/stats` ✅ (estatísticas admin)
+- `GET /api/v1/questions/filters` ✅ (opções de filtros)
+- `GET /api/v1/questions/:id` ✅ (questão específica)
+- `POST /api/v1/questions` ✅ (criar questão - admin)
+- `PUT /api/v1/questions/:id` ✅ (atualizar questão - admin)
+- `DELETE /api/v1/questions/:id` ✅ (excluir questão - admin)
+- `POST /api/v1/questions/:id/answer` ✅ (registrar resposta)
+- `POST /api/v1/questions/bulk-import` ✅ (importação lote - admin)
+
+**Funcionalidades**:
+- 4 tipos de questão completos ✅
+  - multiple_choice (Múltipla Escolha)
+  - true_false (Verdadeiro/Falso) 
+  - fill_blank (Completar Lacunas)
+  - essay (Dissertativa)
+- Filtros avançados (matéria, tópico, dificuldade, tipo, banca, autor) ✅
+- Paginação completa ✅
+- Sistema de estatísticas (taxa de acerto, total respondidas) ✅
+- Busca textual em título, conteúdo, tags ✅
+- Validação específica por tipo de questão ✅
+- Importação em lote com relatório de erros ✅
+- Proteção admin para CRUD operations ✅
+- Sistema de tags e categorização ✅
+- Metadados completos (banca, ano, referência) ✅
+
+**Frontend Pendente**:
+- `/frontend/src/pages/admin/QuestionEditor.tsx` (integração)
+- `/frontend/src/pages/admin/NewQuestion.tsx` (integração)
+
+**Status**: 90% Funcional (API completa, frontend pendente)
+
+---
+
 ## 📝 COMPONENTES NÃO INTEGRADOS
-
-### 8. Sistema de Questões ❌
-**Frontend Existente**:
-- `/frontend/src/pages/admin/QuestionEditor.tsx`
-- `/frontend/src/pages/admin/NewQuestion.tsx`
-
-**Necessário**:
-- [ ] Criar API de questões
-- [ ] Sistema de categorização
-- [ ] Banco de questões
-- [ ] Importação/exportação
-- [ ] Estatísticas de acerto
 
 ### 9. Sistema de Flashcards ❌
 **Frontend Existente**:
@@ -314,13 +348,15 @@ Documento de acompanhamento da migração e integração do sistema de PHP para 
 ### Estatísticas Gerais
 - **Total de Páginas Admin**: 27
 - **Páginas Integradas**: 6 (22%)
-- **Páginas Parciais**: 1 (4%)
-- **Páginas Pendentes**: 20 (74%)
+- **Páginas Quase Completas**: 1 (4%) - Questions System (90%)
+- **Páginas Parciais**: 1 (4%) - Courses System (30%)
+- **Páginas Pendentes**: 19 (70%)
 
 ### APIs Implementadas
-- **Total de Endpoints**: 29
-- **Endpoints Funcionais**: 29
+- **Total de Endpoints**: 38
+- **Endpoints Funcionais**: 38
 - **Cobertura de Testes**: Scripts bash criados
+- **Novos Endpoints Questions**: 9 endpoints completos
 
 ---
 
@@ -364,6 +400,7 @@ Documento de acompanhamento da migração e integração do sistema de PHP para 
 - `test-dashboard-api.sh` - Testa estatísticas do dashboard
 - `test-settings-functionality.sh` - Testa configurações
 - `test-endpoints-node.sh` - Testa endpoints gerais
+- `test-questions-api.sh` - Testa sistema completo de questões ✅
 
 ### Comando Docker
 ```bash
@@ -389,6 +426,7 @@ docker compose exec backend sh
 | 11/08/2025 | UserManager | ✅ | CRUD completo com paginação |
 | 11/08/2025 | CategoryManager | ✅ | Hierarquia e validações |
 | 11/08/2025 | AdminDashboard | ✅ | Estatísticas em tempo real |
+| 11/08/2025 | Sistema de Questões | ✅ | API completa com 4 tipos, filtros, estatísticas |
 
 ---
 
