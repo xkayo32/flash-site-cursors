@@ -260,24 +260,54 @@ Documento de acompanhamento da migração e integração do sistema de PHP para 
 
 **Status**: 100% Completo e Funcional ✅
 
+### 8. Sistema de Flashcards ✅
+**Data**: 11/08/2025  
+**Arquivos Backend**:
+- `/backend-node/src/routes/flashcards.routes.ts`
+- `/backend-node/data/flashcards.json`
+
+**Arquivos Frontend**:
+- `/frontend/src/services/flashcardService.ts`
+- `/frontend/src/pages/admin/NewFlashcard.tsx` ✅
+- `/frontend/src/pages/admin/IndividualFlashcards.tsx` ✅
+
+**Endpoints**:
+- `GET /api/v1/flashcards` ✅ (listagem com filtros e paginação)
+- `GET /api/v1/flashcards/stats` ✅ (estatísticas agregadas - admin)
+- `GET /api/v1/flashcards/filters` ✅ (opções de filtros)
+- `GET /api/v1/flashcards/:id` ✅ (flashcard específico)
+- `POST /api/v1/flashcards` ✅ (criar flashcard - admin)
+- `PUT /api/v1/flashcards/:id` ✅ (atualizar flashcard - admin)
+- `DELETE /api/v1/flashcards/:id` ✅ (excluir flashcard - admin)
+- `POST /api/v1/flashcards/:id/study` ✅ (registrar sessão de estudo)
+- `POST /api/v1/flashcards/bulk-import` ✅ (importação em lote - admin)
+
+**Funcionalidades**:
+- 7 tipos de flashcard completos ✅
+  - basic (Frente/Verso)
+  - basic_reversed (Com cartão reverso)
+  - cloze (Lacunas com {{c1::texto}})
+  - multiple_choice (Múltipla escolha)
+  - true_false (Verdadeiro/Falso)
+  - type_answer (Digite a resposta)
+  - image_occlusion (Oclusão de imagem)
+- Algoritmo SM-2 de repetição espaçada implementado ✅
+- Cálculo automático de próxima revisão ✅
+- Taxa de acerto e estatísticas por flashcard ✅
+- Filtros avançados (categoria, tipo, dificuldade, status) ✅
+- Sistema de tags e categorização ✅
+- Proteção admin para CRUD operations ✅
+- Registro de sessões de estudo com qualidade (0-5) ✅
+
+**Frontend Integrado**:
+- `NewFlashcard.tsx` - Criação com 7 tipos, preview, validação ✅
+- `IndividualFlashcards.tsx` - Lista, filtros, CRUD, estatísticas ✅
+
+**Status**: 100% Funcional ✅
+
 ---
 
 ## 📝 COMPONENTES NÃO INTEGRADOS
-
-### 9. Sistema de Flashcards ❌
-**Frontend Existente**:
-- `/frontend/src/pages/admin/FlashcardManager.tsx`
-- `/frontend/src/pages/admin/FlashcardEditor.tsx`
-- `/frontend/src/pages/admin/IndividualFlashcards.tsx`
-- `/frontend/src/pages/admin/NewFlashcard.tsx`
-- `/frontend/src/pages/admin/NewFlashcardDeck.tsx`
-
-**Necessário**:
-- [ ] Criar API de flashcards
-- [ ] Sistema de decks
-- [ ] Algoritmo de repetição espaçada
-- [ ] 7 tipos de flashcard
-- [ ] Sistema de revisão
 
 ### 10. Sistema de Resumos ❌
 **Frontend Existente**:
@@ -352,22 +382,23 @@ Documento de acompanhamento da migração e integração do sistema de PHP para 
 - **Categorias**: 100% ✅
 - **Dashboard**: 100% ✅
 - **Questões**: 100% ✅
+- **Flashcards**: 100% ✅
 - **Cursos**: 30% ⚠️
-- **Flashcards**: 0% ❌
 - **Simulados**: 0% ❌
 - **Outros**: 0% ❌
 
 ### Estatísticas Gerais
 - **Total de Páginas Admin**: 27
-- **Páginas Integradas**: 8 (30%) - Auth, Settings, Profile, Users, Categories, Dashboard, Questions (2 páginas)
+- **Páginas Integradas**: 10 (37%) - Auth, Settings, Profile, Users, Categories, Dashboard, Questions (2), Flashcards (2)
 - **Páginas Parciais**: 1 (4%) - Courses System (30%)
-- **Páginas Pendentes**: 18 (66%)
+- **Páginas Pendentes**: 16 (59%)
 
 ### APIs Implementadas
-- **Total de Endpoints**: 38
-- **Endpoints Funcionais**: 38
+- **Total de Endpoints**: 47
+- **Endpoints Funcionais**: 47
 - **Cobertura de Testes**: Scripts bash criados
 - **Novos Endpoints Questions**: 9 endpoints completos
+- **Novos Endpoints Flashcards**: 9 endpoints completos
 
 ---
 
@@ -412,6 +443,8 @@ Documento de acompanhamento da migração e integração do sistema de PHP para 
 - `test-settings-functionality.sh` - Testa configurações
 - `test-endpoints-node.sh` - Testa endpoints gerais
 - `test-questions-api.sh` - Testa sistema completo de questões ✅
+- `test-flashcards-api.sh` - Testa sistema completo de flashcards ✅
+- `test-flashcards-integration.sh` - Testa integração frontend-backend flashcards ✅
 
 ### Comando Docker
 ```bash
@@ -438,6 +471,7 @@ docker compose exec backend sh
 | 11/08/2025 | CategoryManager | ✅ | Hierarquia e validações |
 | 11/08/2025 | AdminDashboard | ✅ | Estatísticas em tempo real |
 | 11/08/2025 | Sistema de Questões | ✅ | API completa com 4 tipos, filtros, estatísticas |
+| 11/08/2025 | Sistema de Flashcards | ✅ | API completa com 7 tipos, SM-2 algorithm, integração frontend |
 
 ---
 
@@ -453,4 +487,4 @@ docker compose exec backend sh
 
 ---
 
-*Última atualização: 11/08/2025 - 18:30*
+*Última atualização: 11/08/2025 - 19:57*
