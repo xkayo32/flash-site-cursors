@@ -1,0 +1,36 @@
+{
+  "general": {
+    "site_name": "Teste Payload Parcial 123",
+    "site_tagline": "Só a seção general",
+    "site_description": "A plataforma mais completa para concursos públicos",
+    "site_keywords": "",
+    "maintenance_mode": true
+  },
+  "company": {
+    "company_name": "StudyPro Node.js Corporation 123",
+    "company_cnpj": "00.000.000/0001-00",
+    "company_address": "Rua Principal, 123 - Centro",
+    "company_city": "São Paulo",
+    "company_state": "SP",
+    "company_zip": "01000-000",
+    "company_phone": "(11) 99999-8888",
+    "company_email": "teste@studypro-node.com",
+    "company_whatsapp": "(11) 91234-5678"
+  },
+  "brand": {
+    "brand_primary_color": "rgb(255, 0, 0)",
+    "brand_secondary_color": "rgb(0, 255, 0)",
+    "brand_logo_light": "/logo-test.png",
+    "brand_logo_dark": "/logo.png",
+    "brand_favicon": "/logo.png",
+    "brand_font_primary": "",
+    "brand_font_secondary": ""
+  },
+  "social": {
+    "facebook": "https://facebook.com/studypro123",
+    "instagram": "https://instagram.com/studypro",
+    "twitter": "https://twitter.com/studypro",
+    "linkedin": "https://linkedin.com/company/studypro",
+    "youtube": "https://youtube.com/studypro"
+  }
+}

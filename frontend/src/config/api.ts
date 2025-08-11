@@ -41,4 +41,17 @@ export const API_ENDPOINTS = {
       addResource: (moduleId: string, lessonId: string) => `${API_BASE_URL}/api/v1/modules/${moduleId}/lessons/${lessonId}/resources`,
     },
   },
+  settings: {
+    get: `${API_BASE_URL}/api/v1/settings`,
+    update: `${API_BASE_URL}/api/v1/settings`,
+    uploadLogo: `${API_BASE_URL}/api/v1/settings/logo`,
+  },
+  profile: {
+    get: `${API_BASE_URL}/api/v1/profile`,
+    update: `${API_BASE_URL}/api/v1/profile`,
+    uploadAvatar: `${API_BASE_URL}/api/v1/profile/avatar`,
+  },
+  health: {
+    check: `${API_BASE_URL}/api/v1/health`,
+  },
 };

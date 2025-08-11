@@ -1,0 +1,23 @@
+# Node.js 18 Alpine
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install all dependencies (including dev)
+RUN npm ci
+
+# Create uploads directory
+RUN mkdir -p uploads/avatars
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 8180
+
+# Start development server with hot reload
+CMD ["npm", "run", "dev"]

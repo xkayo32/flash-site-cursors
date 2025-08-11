@@ -117,22 +117,17 @@ export const useSettingsStore = create<SettingsStore>()(
       },
 
       updateSettings: async (section, data) => {
+        console.log(`🚀 Starting update for ${section}...`);
         set({ isLoading: true, error: null });
+        
         try {
-          // Build the payload matching backend expectations
-          const currentSettings = get().settings || {
-            general: {},
-            company: {},
-            brand: {},
-            social: {}
-          };
-          
+          // Send only the section being updated (simpler approach)
           const payload = {
-            ...currentSettings,
-            [section]: { ...currentSettings[section], ...data }
+            [section]: data
           };
           
-          console.log(`Updating ${section} settings with payload:`, JSON.stringify(payload, null, 2));
+          console.log(`📤 Sending ${section} settings:`, JSON.stringify(payload, null, 2));
+          console.log(`📍 API URL: ${API_BASE_URL}/api/v1/settings`);
           
           const response = await fetch(`${API_BASE_URL}/api/v1/settings`, {
             method: 'POST',
@@ -143,22 +138,33 @@ export const useSettingsStore = create<SettingsStore>()(
             body: JSON.stringify(payload),
           });
 
+          console.log(`📥 Response status: ${response.status}`);
+
           if (!response.ok) {
-            throw new Error('Failed to update settings');
+            const errorText = await response.text();
+            console.error('❌ Response not ok:', errorText);
+            throw new Error(`Failed to update settings: ${response.status}`);
           }
 
           const result = await response.json();
+          console.log('✅ Update response:', result);
           
-          // Update local state
+          // Update local state with the response from server
+          console.log('🔄 Updating local state...');
           set({
-            settings: payload,
+            settings: result.settings,
             isLoading: false
           });
+          
+          console.log('✅ Settings update completed successfully!');
+          
         } catch (error) {
+          console.error('❌ Error updating settings:', error);
           set({ 
             error: error instanceof Error ? error.message : 'Failed to update settings',
             isLoading: false 
           });
+          throw error; // Re-throw so handleSave can catch it
         }
       },
 

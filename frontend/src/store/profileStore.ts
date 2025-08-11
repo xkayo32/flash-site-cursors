@@ -71,6 +71,10 @@ export const useProfileStore = create<ProfileStore>()(
       },
 
       updateProfile: async (data: Partial<UserProfile>) => {
+        console.log('🚀 ProfileStore: Starting updateProfile...');
+        console.log('📤 Data to update:', JSON.stringify(data, null, 2));
+        console.log('📍 API URL:', `${API_BASE_URL}/api/v1/profile`);
+        
         set({ isLoading: true, error: null });
         try {
           const response = await fetch(`${API_BASE_URL}/api/v1/profile`, {
@@ -82,11 +86,16 @@ export const useProfileStore = create<ProfileStore>()(
             body: JSON.stringify(data),
           });
 
+          console.log('📥 Response status:', response.status);
+
           if (!response.ok) {
-            throw new Error('Failed to update profile');
+            const errorText = await response.text();
+            console.error('❌ Response not ok:', errorText);
+            throw new Error(`Failed to update profile: ${response.status}`);
           }
 
           const result = await response.json();
+          console.log('✅ Update response:', result);
           
           // Update local state
           const currentProfile = get().profile;
@@ -97,12 +106,16 @@ export const useProfileStore = create<ProfileStore>()(
               updatedProfile.avatar = buildAvatarUrl(updatedProfile.avatar);
             }
             
+            console.log('🔄 Updating local profile state...');
             set({
               profile: { ...currentProfile, ...updatedProfile },
               isLoading: false
             });
+            
+            console.log('✅ Profile update completed successfully!');
           }
         } catch (error) {
+          console.error('❌ Error updating profile:', error);
           set({ 
             error: error instanceof Error ? error.message : 'Failed to update profile',
             isLoading: false 

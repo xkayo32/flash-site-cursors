@@ -14,22 +14,25 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - VITE_API_URL=http://173.208.151.106:8180
     networks:
       - estudos-network
 
-  # Backend Rust
+  # Backend Node.js
   backend:
     build:
-      context: ./backend-rust-minimal
-      dockerfile: Dockerfile
-    container_name: estudos-backend-rust
+      context: ./backend-node
+      dockerfile: Dockerfile.dev
+    container_name: estudos-backend-node
     ports:
       - "8180:8180"
+    volumes:
+      - ./backend-node:/app
+      - /app/node_modules
     environment:
-      - RUST_ENV=development
-      - RUST_LOG=info
-      - DATABASE_URL=postgresql://estudos_user:estudos_pass@postgres:5432/estudos_db
+      - NODE_ENV=development
       - JWT_SECRET=your-jwt-secret-change-in-production
+      - JWT_EXPIRES_IN=24h
       - PORT=8180
       - HOST=0.0.0.0
     depends_on:

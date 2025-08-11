@@ -215,29 +215,40 @@ export default function AdminSettings() {
 
   const handleSave = async (section: string) => {
     try {
-      console.log(`Saving ${section} settings:`, formData[section as keyof typeof formData]);
+      console.log(`🎯 handleSave called for section: ${section}`);
+      console.log(`📋 FormData for ${section}:`, formData[section as keyof typeof formData]);
+      
       switch (section) {
         case 'general':
+          console.log('🔄 Calling updateGeneralSettings...');
           await updateGeneralSettings(formData.general);
           break;
         case 'company':
+          console.log('🔄 Calling updateCompanySettings...');
           await updateCompanySettings(formData.company);
           break;
         case 'brand':
+          console.log('🔄 Calling updateBrandSettings...');
           await updateBrandSettings(formData.brand);
           break;
         case 'social':
+          console.log('🔄 Calling updateSocialSettings...');
           await updateSocialSettings(formData.social);
           break;
         default:
+          console.log('⚠️ Unknown section, saving locally only');
           showToast('success', 'Sucesso', 'Configurações salvas localmente!');
           setHasChanges(false);
           return;
       }
+      
+      console.log(`✅ ${section} settings saved successfully!`);
       showToast('success', 'Sucesso', `Configurações de ${section} salvas com sucesso!`);
       setHasChanges(false);
+      
     } catch (error) {
-      showToast('error', 'Erro', 'Falha ao salvar configurações');
+      console.error(`❌ Error saving ${section} settings:`, error);
+      showToast('error', 'Erro', `Falha ao salvar configurações: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
   };
 
@@ -306,6 +317,9 @@ export default function AdminSettings() {
 
   const handleProfileSave = async () => {
     try {
+      console.log('🎯 handleProfileSave called');
+      console.log('📋 Profile settings to save:', profileSettings);
+      
       const dataToSave = {
         name: profileSettings.name,
         email: profileSettings.email,
@@ -315,13 +329,17 @@ export default function AdminSettings() {
         // Note: Avatar is handled separately via uploadAvatar, not in profile update
       };
 
+      console.log('🔄 Calling updateProfile with:', dataToSave);
       await updateProfile(dataToSave);
+      
+      console.log('✅ Profile saved successfully!');
       showToast('success', 'Sucesso', 'Perfil atualizado com sucesso!');
       setHasChanges(false);
       
       // Clear password field after save
       setProfileSettings(prev => ({ ...prev, password: '' }));
     } catch (error) {
+      console.error('❌ Error saving profile:', error);
       showToast('error', 'Erro', 'Falha ao salvar perfil');
     }
   };
@@ -565,7 +583,10 @@ export default function AdminSettings() {
                 </div>
                 <div className="flex justify-end">
                   <Button 
-                    onClick={handleProfileSave}
+                    onClick={() => {
+                      console.log('🔴 BUTTON CLICKED - Profile Save');
+                      handleProfileSave();
+                    }}
                     disabled={profileLoading}
                     className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body uppercase tracking-wider transition-colors"
                   >
@@ -649,7 +670,10 @@ export default function AdminSettings() {
                     </span>
                   </label>
                   <Button
-                    onClick={() => handleSave('general')}
+                    onClick={() => {
+                      console.log('🔴 BUTTON CLICKED - General Save');
+                      handleSave('general');
+                    }}
                     disabled={isLoading}
                     className="bg-accent-500 hover:bg-accent-600 text-black"
                   >
@@ -790,7 +814,10 @@ export default function AdminSettings() {
                 </div>
                 <div className="flex justify-end">
                   <Button
-                    onClick={() => handleSave('company')}
+                    onClick={() => {
+                      console.log('🔴 BUTTON CLICKED - Company Save');
+                      handleSave('company');
+                    }}
                     disabled={isLoading}
                     className="bg-accent-500 hover:bg-accent-600 text-black"
                   >
@@ -956,7 +983,10 @@ export default function AdminSettings() {
 
                 <div className="flex justify-end">
                   <Button
-                    onClick={() => handleSave('brand')}
+                    onClick={() => {
+                      console.log('🔴 BUTTON CLICKED - Brand Save');
+                      handleSave('brand');
+                    }}
                     disabled={isLoading}
                     className="bg-accent-500 hover:bg-accent-600 text-black"
                   >
@@ -1320,7 +1350,10 @@ export default function AdminSettings() {
                 </div>
                 <div className="flex justify-end">
                   <Button
-                    onClick={() => handleSave('social')}
+                    onClick={() => {
+                      console.log('🔴 BUTTON CLICKED - Social Save');
+                      handleSave('social');
+                    }}
                     disabled={isLoading}
                     className="bg-accent-500 hover:bg-accent-600 text-black"
                   >

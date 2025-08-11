@@ -2,6 +2,8 @@ use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 use std::thread;
 use std::sync::{Arc, Mutex};
+use std::fs;
+use std::path::Path;
 
 #[derive(Clone)]
 struct UserProfile {
@@ -162,16 +164,37 @@ fn handle_client(mut stream: TcpStream, profile_store: ProfileStore, settings_st
     } else if path.contains("GET /api/v1/users") {
         ("200 OK", "application/json", r#"[{"id":1,"name":"Admin User","email":"admin@studypro.com","role":"admin"},{"id":2,"name":"Aluno Teste","email":"aluno@example.com","role":"student"}]"#.to_string())
     } else if path.contains("GET /api/v1/settings") {
-        // Return settings - simplified to avoid mutex issues
-        let json = r#"{"general":{"site_name":"StudyPro","site_tagline":"Sua aprovação começa aqui","site_description":"A plataforma mais completa para concursos públicos","maintenance_mode":false},"company":{"company_name":"StudyPro Educação Ltda","company_cnpj":"00.000.000/0001-00","company_address":"Rua Principal, 123 - Centro","company_city":"São Paulo","company_state":"SP","company_zip":"01000-000","company_phone":"(11) 1234-5678","company_email":"contato@studypro.com","company_whatsapp":"(11) 91234-5678"},"brand":{"brand_primary_color":"rgb(250, 204, 21)","brand_secondary_color":"rgb(20, 36, 47)","brand_logo_light":"/logo.png","brand_logo_dark":"/logo.png","brand_favicon":"/logo.png"},"social":{"facebook":"https://facebook.com/studypro","instagram":"https://instagram.com/studypro","twitter":"https://twitter.com/studypro","linkedin":"https://linkedin.com/company/studypro","youtube":"https://youtube.com/studypro"}}"#.to_string();
+        // Read settings from file if exists, otherwise return default
+        let settings_path = Path::new("/tmp/settings.json");
+        let json = if settings_path.exists() {
+            fs::read_to_string(settings_path).unwrap_or_else(|_| {
+                r#"{"general":{"site_name":"StudyPro","site_tagline":"Sua aprovação começa aqui","site_description":"A plataforma mais completa para concursos públicos","maintenance_mode":false},"company":{"company_name":"StudyPro Educação Ltda","company_cnpj":"00.000.000/0001-00","company_address":"Rua Principal, 123 - Centro","company_city":"São Paulo","company_state":"SP","company_zip":"01000-000","company_phone":"(11) 1234-5678","company_email":"contato@studypro.com","company_whatsapp":"(11) 91234-5678"},"brand":{"brand_primary_color":"rgb(250, 204, 21)","brand_secondary_color":"rgb(20, 36, 47)","brand_logo_light":"/logo.png","brand_logo_dark":"/logo.png","brand_favicon":"/logo.png"},"social":{"facebook":"https://facebook.com/studypro","instagram":"https://instagram.com/studypro","twitter":"https://twitter.com/studypro","linkedin":"https://linkedin.com/company/studypro","youtube":"https://youtube.com/studypro"}}"#.to_string()
+            })
+        } else {
+            r#"{"general":{"site_name":"StudyPro","site_tagline":"Sua aprovação começa aqui","site_description":"A plataforma mais completa para concursos públicos","maintenance_mode":false},"company":{"company_name":"StudyPro Educação Ltda","company_cnpj":"00.000.000/0001-00","company_address":"Rua Principal, 123 - Centro","company_city":"São Paulo","company_state":"SP","company_zip":"01000-000","company_phone":"(11) 1234-5678","company_email":"contato@studypro.com","company_whatsapp":"(11) 91234-5678"},"brand":{"brand_primary_color":"rgb(250, 204, 21)","brand_secondary_color":"rgb(20, 36, 47)","brand_logo_light":"/logo.png","brand_logo_dark":"/logo.png","brand_favicon":"/logo.png"},"social":{"facebook":"https://facebook.com/studypro","instagram":"https://instagram.com/studypro","twitter":"https://twitter.com/studypro","linkedin":"https://linkedin.com/company/studypro","youtube":"https://youtube.com/studypro"}}"#.to_string()
+        };
         ("200 OK", "application/json", json)
     } else if path.contains("PUT /api/v1/settings") || path.contains("POST /api/v1/settings") {
-        // Update settings with real data parsing
+        // Update settings - save to file
         let body_start = request.find("\r\n\r\n").unwrap_or(0) + 4;
-        let body = &request[body_start..];
-        println!("Settings update received: {}", body);
+        let body_str = &request[body_start..];
         
+        // Find the end of JSON (remove any null bytes)
+        let json_end = body_str.find('\0').unwrap_or(body_str.len());
+        let json_body = &body_str[..json_end];
+        
+        println!("Settings update received, saving to file...");
+        
+        // Save to file
+        let settings_path = Path::new("/tmp/settings.json");
+        match fs::write(settings_path, json_body) {
+            Ok(_) => println!("Settings saved successfully"),
+            Err(e) => println!("Error saving settings: {}", e),
+        }
+        
+        // Still update in-memory store for compatibility
         let mut settings = settings_store.lock().unwrap();
+        let body = json_body; // Use json_body for parsing
         
         // Parse and update general settings
         if body.contains(r#""general":"#) {
