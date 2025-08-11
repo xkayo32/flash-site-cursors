@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -16,38 +16,103 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
+import { questionService, type CreateQuestionData, type DifficultyLevel, type QuestionStatus } from '../../services/questionService';
+import { categoryService } from '../../services/categoryService';
 
-// Matérias e submatérias organizadas hierarquicamente
-const materias: { [key: string]: string[] } = {
-  'DIREITO': ['Constitucional', 'Administrativo', 'Penal', 'Civil', 'Trabalhista', 'Tributário'],
-  'SEGURANÇA PÚBLICA': ['Legislação Policial', 'Direitos Humanos', 'Criminologia', 'Investigação Criminal', 'Uso da Força'],
-  'CONHECIMENTOS GERAIS': ['História do Brasil', 'Geografia', 'Atualidades', 'Informática', 'Raciocínio Lógico']
-};
-
-const difficulties = ['easy', 'medium', 'hard'];
+const difficulties: DifficultyLevel[] = ['easy', 'medium', 'hard'];
 const examBoards = ['CESPE', 'ENEM', 'FCC', 'VUNESP', 'FGV', 'IBFC', 'FUNCAB', 'IDECAN'];
+
+interface Category {
+  id: string;
+  name: string;
+  type: string;
+  parent_id?: string;
+  children?: Category[];
+}
+
+interface SubjectTopics {
+  [subject: string]: string[];
+}
 
 export default function NewQuestion() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
+  
+  // Data from API
+  const [subjects, setSubjects] = useState<string[]>([]);
+  const [topics, setTopics] = useState<string[]>([]);
+  const [subjectTopics, setSubjectTopics] = useState<SubjectTopics>({});
   const [formData, setFormData] = useState({
     title: '',
-    materia: 'DIREITO',
-    submateria: 'Constitucional',
+    subject: '',
     topic: '',
-    difficulty: 'medium',
+    difficulty: 'medium' as DifficultyLevel,
     type: 'multiple_choice',
     options: ['', '', '', ''],
     correctAnswer: 0,
+    correct_boolean: false,
+    expected_answer: '',
     explanation: '',
     examBoard: 'CESPE',
     examYear: '2024',
+    examName: '',
+    reference: '',
     tags: '',
-    status: 'draft'
+    status: 'draft' as QuestionStatus
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Load data from API
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoadingData(true);
+        
+        // Load filter options from questions API
+        const filterResponse = await questionService.getFilterOptions();
+        if (filterResponse.success) {
+          const { subjects: apiSubjects, topics: apiTopics } = filterResponse.data;
+          setSubjects(apiSubjects);
+          setTopics(apiTopics);
+          
+          // Group topics by subject - simplified mapping
+          const subjectTopicMap: SubjectTopics = {};
+          apiSubjects.forEach(subject => {
+            // For now, all topics are available for all subjects
+            // Later this can be enhanced with proper categorization
+            subjectTopicMap[subject] = apiTopics;
+          });
+          setSubjectTopics(subjectTopicMap);
+          
+          // Set first subject as default
+          if (apiSubjects.length > 0) {
+            setFormData(prev => ({
+              ...prev,
+              subject: apiSubjects[0],
+              topic: apiTopics.length > 0 ? apiTopics[0] : ''
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        toast.error('Erro ao carregar dados. Usando valores padrão.');
+        
+        // Set fallback data
+        const fallbackSubjects = ['Direito Constitucional', 'Direito Administrativo'];
+        const fallbackTopics = ['Princípios Fundamentais', 'Direitos e Garantias'];
+        setSubjects(fallbackSubjects);
+        setTopics(fallbackTopics);
+        setFormData(prev => ({ ...prev, subject: fallbackSubjects[0], topic: fallbackTopics[0] }));
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    
+    loadData();
+  }, []);
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -57,9 +122,10 @@ export default function NewQuestion() {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
 
-    // Reset submatéria when matéria changes
-    if (field === 'materia') {
-      setFormData(prev => ({ ...prev, submateria: materias[value as string][0] }));
+    // Reset topic when subject changes
+    if (field === 'subject') {
+      const availableTopics = subjectTopics[value as string] || topics;
+      setFormData(prev => ({ ...prev, topic: availableTopics.length > 0 ? availableTopics[0] : '' }));
     }
   };
 
@@ -76,16 +142,34 @@ export default function NewQuestion() {
       newErrors.title = 'O enunciado é obrigatório';
     }
 
+    if (!formData.subject.trim()) {
+      newErrors.subject = 'A matéria é obrigatória';
+    }
+
     if (!formData.topic.trim()) {
       newErrors.topic = 'O tópico é obrigatório';
     }
 
-    // Validate options
-    formData.options.forEach((option, index) => {
-      if (!option.trim()) {
-        newErrors[`option_${index}`] = `A alternativa ${String.fromCharCode(65 + index)} é obrigatória`;
+    // Type-specific validations
+    if (formData.type === 'multiple_choice') {
+      formData.options.forEach((option, index) => {
+        if (!option.trim()) {
+          newErrors[`option_${index}`] = `A alternativa ${String.fromCharCode(65 + index)} é obrigatória`;
+        }
+      });
+      
+      if (formData.correctAnswer < 0 || formData.correctAnswer >= formData.options.length) {
+        newErrors.correctAnswer = 'Selecione uma alternativa correta';
       }
-    });
+    }
+    
+    if (formData.type === 'true_false' && formData.correct_boolean === undefined) {
+      newErrors.correct_boolean = 'Selecione verdadeiro ou falso';
+    }
+    
+    if ((formData.type === 'essay' || formData.type === 'fill_blank') && !formData.expected_answer.trim()) {
+      newErrors.expected_answer = 'A resposta esperada é obrigatória';
+    }
 
     if (!formData.explanation.trim()) {
       newErrors.explanation = 'A explicação é obrigatória';
@@ -95,7 +179,7 @@ export default function NewQuestion() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = (isDraft: boolean = false) => {
+  const handleSave = async (isDraft: boolean = false) => {
     if (!isDraft && !validateForm()) {
       toast.error('OPERAÇÃO FALHADA: Corrija os campos com erro', {
         icon: '🚨'
@@ -107,20 +191,50 @@ export default function NewQuestion() {
     const action = isDraft ? 'salvando rascunho' : 'publicando questão';
     toast.loading(`${action.charAt(0).toUpperCase() + action.slice(1)}...`, { id: 'save' });
 
-    // Simular salvamento
-    setTimeout(() => {
-      const finalFormData = {
-        ...formData,
+    try {
+      // Prepare data for API
+      const questionData: CreateQuestionData = {
+        title: formData.title,
+        type: formData.type as any,
+        subject: formData.subject,
+        topic: formData.topic,
+        difficulty: formData.difficulty,
+        explanation: formData.explanation,
+        exam_board: formData.examBoard,
+        exam_year: formData.examYear,
+        exam_name: formData.examName,
+        reference: formData.reference,
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
         status: isDraft ? 'draft' : 'published'
       };
+
+      // Add type-specific fields
+      if (formData.type === 'multiple_choice') {
+        questionData.options = formData.options;
+        questionData.correct_answer = formData.correctAnswer;
+      } else if (formData.type === 'true_false') {
+        questionData.correct_boolean = formData.correct_boolean;
+      } else if (formData.type === 'essay' || formData.type === 'fill_blank') {
+        questionData.expected_answer = formData.expected_answer;
+      }
+
+      const response = await questionService.createQuestion(questionData);
       
-      toast.success(`OPERAÇÃO CONCLUÍDA: Alvo ${isDraft ? 'salvo como rascunho' : 'publicado'} com sucesso!`, { id: 'save' });
+      if (response.success) {
+        toast.success(`OPERAÇÃO CONCLUÍDA: Alvo ${isDraft ? 'salvo como rascunho' : 'publicado'} com sucesso!`, { id: 'save' });
+        
+        setTimeout(() => {
+          navigate('/admin/questions');
+        }, 1500);
+      } else {
+        throw new Error('Falha ao salvar questão');
+      }
+    } catch (error) {
+      console.error('Error saving question:', error);
+      toast.error('OPERAÇÃO FALHADA: Erro ao salvar questão', { id: 'save' });
+    } finally {
       setIsLoading(false);
-      
-      setTimeout(() => {
-        navigate('/admin/questions');
-      }, 1500);
-    }, 2000);
+    }
   };
 
   const handlePreview = () => {
@@ -133,7 +247,7 @@ export default function NewQuestion() {
   const nextStep = () => {
     if (currentStep === 1) {
       // Validate step 1 fields
-      if (!formData.title.trim() || !formData.topic.trim()) {
+      if (!formData.title.trim() || !formData.subject.trim() || !formData.topic.trim()) {
         toast.error('OPERAÇÃO FALHADA: Configure campos obrigatórios', { icon: '🚨' });
         return;
       }
@@ -314,39 +428,71 @@ export default function NewQuestion() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                    TIPO DE QUESTÃO *
+                  </label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => handleInputChange('type', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                  >
+                    <option value="multiple_choice">MÚLTIPLA ESCOLHA</option>
+                    <option value="true_false">VERDADEIRO/FALSO</option>
+                    <option value="fill_blank">COMPLETAR LACUNAS</option>
+                    <option value="essay">DISSERTATIVA</option>
+                  </select>
+                </div>
+                
                 <div>
                   <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
                     MATÉRIA *
                   </label>
                   <select
-                    value={formData.materia}
-                    onChange={(e) => handleInputChange('materia', e.target.value)}
+                    value={formData.subject}
+                    onChange={(e) => handleInputChange('subject', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                    disabled={loadingData}
                   >
-                    {Object.keys(materias).map(materia => (
-                      <option key={materia} value={materia}>
-                        {materia}
-                      </option>
-                    ))}
+                    {loadingData ? (
+                      <option>Carregando...</option>
+                    ) : (
+                      subjects.map(subject => (
+                        <option key={subject} value={subject}>
+                          {subject.toUpperCase()}
+                        </option>
+                      ))
+                    )}
                   </select>
+                  {errors.subject && (
+                    <p className="text-red-500 text-sm mt-1 font-police-body">{errors.subject}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-                    SUBMATÉRIA *
+                    TÓPICO *
                   </label>
                   <select
-                    value={formData.submateria}
-                    onChange={(e) => handleInputChange('submateria', e.target.value)}
+                    value={formData.topic}
+                    onChange={(e) => handleInputChange('topic', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                    disabled={loadingData || !formData.subject}
                   >
-                    {materias[formData.materia].map(submateria => (
-                      <option key={submateria} value={submateria}>
-                        {submateria.toUpperCase()}
-                      </option>
-                    ))}
+                    {loadingData ? (
+                      <option>Carregando...</option>
+                    ) : (
+                      (subjectTopics[formData.subject] || topics).map(topic => (
+                        <option key={topic} value={topic}>
+                          {topic.toUpperCase()}
+                        </option>
+                      ))
+                    )}
                   </select>
+                  {errors.topic && (
+                    <p className="text-red-500 text-sm mt-1 font-police-body">{errors.topic}</p>
+                  )}
                 </div>
 
                 <div>
@@ -583,11 +729,11 @@ export default function NewQuestion() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
                         <p className="font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">MATÉRIA</p>
-                        <p className="font-police-body text-gray-900 dark:text-white uppercase">{formData.materia}</p>
+                        <p className="font-police-body text-gray-900 dark:text-white uppercase">{formData.subject}</p>
                       </div>
                       <div>
-                        <p className="font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">SUBMATÉRIA</p>
-                        <p className="font-police-body text-gray-900 dark:text-white uppercase">{formData.submateria}</p>
+                        <p className="font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">TÓPICO</p>
+                        <p className="font-police-body text-gray-900 dark:text-white uppercase">{formData.topic}</p>
                       </div>
                       <div>
                         <p className="font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">TÓPICO</p>

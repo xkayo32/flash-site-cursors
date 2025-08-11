@@ -242,11 +242,23 @@ Documento de acompanhamento da migração e integração do sistema de PHP para 
 - Sistema de tags e categorização ✅
 - Metadados completos (banca, ano, referência) ✅
 
-**Frontend Pendente**:
-- `/frontend/src/pages/admin/QuestionEditor.tsx` (integração)
-- `/frontend/src/pages/admin/NewQuestion.tsx` (integração)
+**Frontend Integrado**:
+- `/frontend/src/pages/admin/QuestionEditor.tsx` ✅ (lista, filtros, CRUD, paginação)
+- `/frontend/src/pages/admin/NewQuestion.tsx` ✅ (criação com 4 tipos de questão)
 
-**Status**: 90% Funcional (API completa, frontend pendente)
+**Funcionalidades Frontend**:
+- Lista dinâmica com filtros em tempo real ✅
+- Paginação completa (navegação, contadores) ✅
+- Busca textual com debounce ✅
+- Filtros por matéria, tópico, tipo, dificuldade, status, banca ✅
+- CRUD completo: visualizar, editar, duplicar, excluir ✅
+- Loading states e tratamento de erros ✅
+- Interface militar/tática consistente ✅
+- Badges coloridos por tipo/dificuldade/status ✅
+- Estatísticas em tempo real (total, taxa acerto) ✅
+- Seleção múltipla e ações em lote ✅
+
+**Status**: 100% Completo e Funcional ✅
 
 ---
 
@@ -339,18 +351,17 @@ Documento de acompanhamento da migração e integração do sistema de PHP para 
 - **Usuários**: 100% ✅
 - **Categorias**: 100% ✅
 - **Dashboard**: 100% ✅
+- **Questões**: 100% ✅
 - **Cursos**: 30% ⚠️
-- **Questões**: 0% ❌
 - **Flashcards**: 0% ❌
 - **Simulados**: 0% ❌
 - **Outros**: 0% ❌
 
 ### Estatísticas Gerais
 - **Total de Páginas Admin**: 27
-- **Páginas Integradas**: 6 (22%)
-- **Páginas Quase Completas**: 1 (4%) - Questions System (90%)
+- **Páginas Integradas**: 8 (30%) - Auth, Settings, Profile, Users, Categories, Dashboard, Questions (2 páginas)
 - **Páginas Parciais**: 1 (4%) - Courses System (30%)
-- **Páginas Pendentes**: 19 (70%)
+- **Páginas Pendentes**: 18 (66%)
 
 ### APIs Implementadas
 - **Total de Endpoints**: 38
