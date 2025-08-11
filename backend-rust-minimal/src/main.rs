@@ -162,10 +162,9 @@ fn handle_client(mut stream: TcpStream, profile_store: ProfileStore, settings_st
     } else if path.contains("GET /api/v1/users") {
         ("200 OK", "application/json", r#"[{"id":1,"name":"Admin User","email":"admin@studypro.com","role":"admin"},{"id":2,"name":"Aluno Teste","email":"aluno@example.com","role":"student"}]"#.to_string())
     } else if path.contains("GET /api/v1/settings") {
-        // Return current settings from store
-        let settings = settings_store.lock().unwrap();
-        let json = settings.to_json();
-        drop(settings);
+        // Return settings - using static JSON for now to avoid lock issues
+        println!("Returning settings (static for debugging)");
+        let json = r#"{"general":{"site_name":"StudyPro","site_tagline":"Sua aprovação começa aqui","site_description":"A plataforma mais completa para concursos públicos","maintenance_mode":false},"company":{"company_name":"StudyPro Educação Ltda","company_cnpj":"00.000.000/0001-00","company_address":"Rua Principal, 123 - Centro","company_city":"São Paulo","company_state":"SP","company_zip":"01000-000","company_phone":"(11) 1234-5678","company_email":"contato@studypro.com","company_whatsapp":"(11) 91234-5678"},"brand":{"brand_primary_color":"rgb(250, 204, 21)","brand_secondary_color":"rgb(20, 36, 47)","brand_logo_light":"/logo.png","brand_logo_dark":"/logo.png","brand_favicon":"/logo.png"},"social":{"facebook":"https://facebook.com/studypro","instagram":"https://instagram.com/studypro","twitter":"https://twitter.com/studypro","linkedin":"https://linkedin.com/company/studypro","youtube":"https://youtube.com/studypro"}}"#.to_string();
         ("200 OK", "application/json", json)
     } else if path.contains("PUT /api/v1/settings") || path.contains("POST /api/v1/settings") {
         // Update settings with real data parsing
@@ -381,8 +380,15 @@ fn handle_client(mut stream: TcpStream, profile_store: ProfileStore, settings_st
         body
     );
     
-    stream.write(response.as_bytes()).unwrap();
-    stream.flush().unwrap();
+    println!("Sending response: {} bytes, status: {}", response.len(), status);
+    match stream.write(response.as_bytes()) {
+        Ok(bytes) => println!("Wrote {} bytes", bytes),
+        Err(e) => println!("Write error: {}", e),
+    }
+    match stream.flush() {
+        Ok(_) => println!("Response flushed successfully"),
+        Err(e) => println!("Flush error: {}", e),
+    }
 }
 
 fn main() {

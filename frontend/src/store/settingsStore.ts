@@ -85,19 +85,30 @@ export const useSettingsStore = create<SettingsStore>()(
       fetchSettings: async () => {
         set({ isLoading: true, error: null });
         try {
+          console.log('Fetching settings from:', `${API_BASE_URL}/api/v1/settings`);
+          
+          // Add timeout to prevent hanging
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+          
           const response = await fetch(`${API_BASE_URL}/api/v1/settings`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
             },
+            signal: controller.signal
           });
+          
+          clearTimeout(timeoutId);
 
           if (!response.ok) {
             throw new Error('Failed to fetch settings');
           }
 
           const data = await response.json();
+          console.log('Settings received:', data);
           set({ settings: data, isLoading: false });
         } catch (error) {
+          console.error('Error fetching settings:', error);
           set({ 
             error: error instanceof Error ? error.message : 'Failed to fetch settings',
             isLoading: false 

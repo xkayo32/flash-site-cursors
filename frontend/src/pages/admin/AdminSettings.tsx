@@ -122,13 +122,21 @@ export default function AdminSettings() {
   });
 
   useEffect(() => {
+    console.log('AdminSettings mounted, fetching data...');
     fetchSettings();
     fetchProfile();
   }, []);
 
   useEffect(() => {
+    console.log('Settings updated in component:', settings);
     if (settings) {
       setFormData({
+        general: settings.general || {},
+        company: settings.company || {},
+        brand: settings.brand || {},
+        social: settings.social || {}
+      });
+      console.log('FormData updated:', {
         general: settings.general || {},
         company: settings.company || {},
         brand: settings.brand || {},
