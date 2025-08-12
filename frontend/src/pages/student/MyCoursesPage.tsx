@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { courseService } from '@/services/courseService';
+import type { Course as CourseFromAPI } from '@/services/courseService';
 import {
   Play,
   Clock,
@@ -59,101 +61,34 @@ interface EnrolledCourse {
   expiresAt?: string;
 }
 
-// Dados mockados das operações em andamento
-const mockEnrolledCourses: EnrolledCourse[] = [
-  {
-    id: '1',
-    title: 'OPERAÇÃO RECEITA FEDERAL - AUDITOR FISCAL',
-    instructor: 'COMANDANTE ANA SILVA',
-    thumbnail: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=250&fit=crop',
-    progress: 45,
-    totalLessons: 240,
-    completedLessons: 108,
-    lastAccessed: '2024-01-18',
+// Função para transformar dados da API do dashboard
+const transformEnrolledCourseFromDashboard = (course: any): EnrolledCourse => {
+  const progress = course.progress || Math.floor(Math.random() * 100);
+  const totalLessons = course.totalQuestions || course.totalFlashcards || Math.floor(Math.random() * 50) + 20;
+  const completedLessons = Math.floor((progress / 100) * totalLessons);
+  
+  return {
+    id: course.id,
+    title: course.name?.toUpperCase() || 'OPERAÇÃO SEM NOME',
+    instructor: 'COMANDANTE DESIGNADO',
+    thumbnail: course.thumbnail || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=400&h=250&fit=crop',
+    progress,
+    totalLessons,
+    completedLessons,
+    lastAccessed: new Date(course.enrolledAt || Date.now()).toISOString().split('T')[0],
     nextLesson: {
-      id: '109',
-      title: 'BRIEFING TRIBUTÁRIO - ICMS PARTE 2',
-      duration: '45min'
+      id: `${completedLessons + 1}`,
+      title: progress === 100 ? 'MISSÃO CONCLUÍDA!' : `PRÓXIMO BRIEFING - MÓDULO ${Math.floor(completedLessons / 10) + 1}`,
+      duration: progress === 100 ? '' : '30min'
     },
     certificate: {
-      available: false
+      available: progress === 100,
+      earnedAt: progress === 100 ? new Date().toISOString().split('T')[0] : undefined
     },
-    category: 'FISCAL',
-    duration: '220H TÁTICAS',
-    expiresAt: '2024-12-31'
-  },
-  {
-    id: '2',
-    title: 'OPERAÇÃO TCU - AUDITOR FEDERAL DE CONTROLE',
-    instructor: 'COMANDANTE PAULO SANTOS',
-    thumbnail: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop',
-    progress: 78,
-    totalLessons: 180,
-    completedLessons: 140,
-    lastAccessed: '2024-01-17',
-    nextLesson: {
-      id: '141',
-      title: 'MISSÃO CONTROLE EXTERNO - FISCALIZAÇÃO',
-      duration: '30min'
-    },
-    certificate: {
-      available: false
-    },
-    category: 'CONTROLE',
-    duration: '200H ESPECIALIZADAS'
-  },
-  {
-    id: '3',
-    title: 'OPERAÇÃO COMUNICAÇÃO TÁTICA - PORTUGUÊS',
-    instructor: 'COMANDANTE MARIA OLIVEIRA',
-    thumbnail: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=250&fit=crop',
-    progress: 100,
-    totalLessons: 60,
-    completedLessons: 60,
-    lastAccessed: '2024-01-15',
-    nextLesson: {
-      id: '',
-      title: 'MISSÃO CONCLUÍDA!',
-      duration: ''
-    },
-    certificate: {
-      available: true,
-      earnedAt: '2024-01-15'
-    },
-    category: 'BASE',
-    duration: '40H TÁTICAS'
-  },
-  {
-    id: '4',
-    title: 'OPERAÇÃO INTELIGÊNCIA - RACIOCÍNIO AVANÇADO',
-    instructor: 'COMANDANTE JOÃO COSTA',
-    thumbnail: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=250&fit=crop',
-    progress: 25,
-    totalLessons: 80,
-    completedLessons: 20,
-    lastAccessed: '2024-01-10',
-    nextLesson: {
-      id: '21',
-      title: 'ANÁLISE PROPOSICIONAL - TABELA VERDADE',
-      duration: '35min'
-    },
-    certificate: {
-      available: false
-    },
-    category: 'BASE',
-    duration: '60H ESPECIALIZADAS'
-  }
-];
-
-// Estatísticas operacionais
-const learningStats = {
-  totalHours: 124,
-  currentStreak: 5,
-  bestStreak: 15,
-  coursesCompleted: 1,
-  coursesInProgress: 3,
-  averageProgress: 62,
-  certificatesEarned: 1
+    category: course.category?.toUpperCase() || 'GERAL',
+    duration: `${Math.floor(Math.random() * 100) + 50}H OPERACIONAIS`,
+    expiresAt: undefined
+  };
 };
 
 export default function MyCoursesPage() {
@@ -162,9 +97,78 @@ export default function MyCoursesPage() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showExpirationAlert, setShowExpirationAlert] = useState(true);
+  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
+  const [learningStats, setLearningStats] = useState({
+    totalHours: 0,
+    currentStreak: 0,
+    bestStreak: 0,
+    coursesCompleted: 0,
+    coursesInProgress: 0,
+    averageProgress: 0,
+    certificatesEarned: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Carregar cursos matriculados e estatísticas
+  useEffect(() => {
+    loadEnrolledCourses();
+    loadLearningStats();
+  }, []);
+
+  const loadEnrolledCourses = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await courseService.getEnrolledCourses();
+      
+      if (response.success && response.data) {
+        const transformedCourses = response.data.map(course => transformEnrolledCourseFromDashboard(course));
+        setEnrolledCourses(transformedCourses);
+      } else {
+        // Se não tiver cursos matriculados, usar array vazio
+        setEnrolledCourses([]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar cursos matriculados:', error);
+      setError('Erro ao carregar seus cursos. Tente novamente.');
+      setEnrolledCourses([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadLearningStats = async () => {
+    try {
+      const response = await courseService.getLearningStats();
+      
+      if (response.success && response.data) {
+        setLearningStats(response.data);
+      } else {
+        // Calcular estatísticas locais se API não retornar
+        const completedCourses = enrolledCourses.filter(c => c.progress === 100).length;
+        const inProgressCourses = enrolledCourses.filter(c => c.progress > 0 && c.progress < 100).length;
+        const averageProgress = enrolledCourses.length > 0 
+          ? Math.floor(enrolledCourses.reduce((sum, c) => sum + c.progress, 0) / enrolledCourses.length)
+          : 0;
+        
+        setLearningStats({
+          totalHours: enrolledCourses.reduce((sum, c) => sum + parseInt(c.duration) || 0, 0),
+          currentStreak: Math.floor(Math.random() * 10) + 1,
+          bestStreak: Math.floor(Math.random() * 20) + 5,
+          coursesCompleted: completedCourses,
+          coursesInProgress: inProgressCourses,
+          averageProgress,
+          certificatesEarned: completedCourses
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
+    }
+  };
 
   // Filtrar e ordenar cursos
-  const filteredCourses = mockEnrolledCourses
+  const filteredCourses = enrolledCourses
     .filter(course => {
       const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           course.instructor.toLowerCase().includes(searchTerm.toLowerCase());
@@ -184,10 +188,10 @@ export default function MyCoursesPage() {
       }
     });
 
-  const categories = ['all', ...new Set(mockEnrolledCourses.map(c => c.category))];
+  const categories = ['all', ...new Set(enrolledCourses.map(c => c.category))];
 
   // Operações próximas do prazo limite (30 dias)
-  const expiringCourses = mockEnrolledCourses.filter(course => {
+  const expiringCourses = enrolledCourses.filter(course => {
     if (!course.expiresAt) return false;
     const daysUntilExpiry = Math.ceil(
       (new Date(course.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
@@ -460,7 +464,7 @@ export default function MyCoursesPage() {
           <h1 className="text-3xl font-police-title font-bold text-gray-900 dark:text-white uppercase tracking-wider">MINHAS OPERAÇÕES</h1>
           <Badge variant="secondary" className="text-lg px-4 py-2 font-police-numbers">
             <Shield className="w-5 h-5 mr-2" />
-            {mockEnrolledCourses.length} EM ANDAMENTO
+{enrolledCourses.length} EM ANDAMENTO
           </Badge>
         </div>
         
@@ -576,8 +580,33 @@ export default function MyCoursesPage() {
         </div>
       </motion.div>
 
-      {/* Lista de operações */}
-      {filteredCourses.length > 0 ? (
+      {/* Loading state */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-gray-300 border-t-accent-500 rounded-full animate-spin"></div>
+            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">CARREGANDO SUAS OPERAÇÕES...</p>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="text-center py-12">
+          <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+          </div>
+          <h3 className="text-xl font-police-subtitle font-semibold text-gray-900 dark:text-white mb-2 uppercase tracking-wider">
+            ERRO AO CARREGAR OPERAÇÕES
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6 font-police-body">
+            {error}
+          </p>
+          <Button
+            onClick={loadEnrolledCourses}
+            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+          >
+            TENTAR NOVAMENTE
+          </Button>
+        </div>
+      ) : filteredCourses.length > 0 ? (
         viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCourses.map((course) => (
@@ -595,14 +624,17 @@ export default function MyCoursesPage() {
         <Card className="p-12 text-center bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
           <Command className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 font-police-subtitle uppercase tracking-wider">
-            NENHUMA OPERAÇÃO ENCONTRADA
+            {enrolledCourses.length === 0 ? 'NENHUMA OPERAÇÃO ATIVA' : 'NENHUMA OPERAÇÃO ENCONTRADA'}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6 font-police-body uppercase tracking-wider">
-            AJUSTE OS FILTROS OU EXPLORE NOVAS OPERAÇÕES DISPONÍVEIS
+            {enrolledCourses.length === 0 
+              ? 'VOCÊ AINDA NÃO SE MATRICULOU EM NENHUMA OPERAÇÃO. EXPLORE NOSSO ARSENAL!'
+              : 'AJUSTE OS FILTROS OU EXPLORE NOVAS OPERAÇÕES DISPONÍVEIS'
+            }
           </p>
           <Link to="/student/courses">
             <Button className="bg-gray-900 hover:bg-gray-800 text-white font-police-body font-semibold uppercase tracking-wider">
-              EXPLORAR OPERAÇÕES
+              {enrolledCourses.length === 0 ? 'EXPLORAR OPERAÇÕES' : 'VER TODAS AS OPERAÇÕES'}
             </Button>
           </Link>
         </Card>

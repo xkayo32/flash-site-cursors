@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { legislationService, Legislation } from '@/services/legislationService';
+import toast from 'react-hot-toast';
 import {
   Scale,
   Search,
@@ -42,12 +44,11 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 
-// Tipos
-interface Legislation {
-  id: string;
-  title: string;
-  number: string;
-  type: 'LEI' | 'DECRETO' | 'MEDIDA PROVISÓRIA' | 'CONSTITUIÇÃO' | 'CÓDIGO' | 'ESTATUTO';
+// Tipos de estado local
+interface LocalLegislation extends Legislation {
+  isFavorite?: boolean;
+  lastViewed?: string;
+  readingProgress?: number;
   category: string;
   date: string;
   status: 'ATIVO' | 'REVOGADO' | 'ALTERADO';
@@ -106,92 +107,16 @@ interface Highlight {
 }
 
 // Dados mockados
-const mockLegislations: Legislation[] = [
-  {
-    id: '1',
-    title: 'CONSTITUIÇÃO FEDERAL - BASE TÁTICA',
-    number: 'CF/1988',
-    type: 'CONSTITUIÇÃO',
-    category: 'DIREITO CONSTITUCIONAL TÁTICO',
-    date: '1988-10-05',
-    status: 'ATIVO',
-    summary: 'CONSTITUIÇÃO DA REPÚBLICA FEDERATIVA - MANUAL BÁSICO OPERACIONAL',
-    articles: 250,
-    lastUpdate: '2023-12-15',
-    relatedExams: ['OPERAÇÃO PF', 'OPERAÇÃO RF', 'OPERAÇÕES TRIBUNAIS'],
-    tags: ['CF/88', 'CONSTITUIÇÃO', 'BASE JURÍDICA'],
-    views: 15678,
-    isFavorite: true
-  },
-  {
-    id: '2',
-    title: 'CÓDIGO PENAL - MANUAL OPERACIONAL',
-    number: 'Decreto-Lei nº 2.848/1940',
-    type: 'CÓDIGO',
-    category: 'DIREITO PENAL OPERACIONAL',
-    date: '1940-12-07',
-    status: 'ATIVO',
-    summary: 'CÓDIGO PENAL BRASILEIRO - MANUAL DE OPERAÇÕES',
-    articles: 361,
-    lastUpdate: '2024-01-10',
-    relatedExams: ['OPERAÇÃO PF', 'OPERAÇÃO PC', 'OPERAÇÃO MP'],
-    tags: ['CP', 'CÓDIGO PENAL', 'OPERAÇÕES PENAIS'],
-    views: 12456,
-    isFavorite: true
-  },
-  {
-    id: '3',
-    title: 'LEI DE LICITAÇÕES - MANUAL TÁTICO',
-    number: 'Lei nº 14.133/2021',
-    type: 'LEI',
-    category: 'DIREITO ADMINISTRATIVO',
-    date: '2021-04-01',
-    status: 'ATIVO',
-    summary: 'Nova Lei de Licitações e Contratos Administrativos',
-    articles: 194,
-    lastUpdate: '2023-07-20',
-    relatedExams: ['TCU', 'CGU', 'Tribunais'],
-    tags: ['Licitações', 'Contratos', 'Nova Lei'],
-    views: 8934
-  },
-  {
-    id: '4',
-    title: 'ESTATUTO DOS OPERADORES PÚBLICOS',
-    number: 'Lei nº 8.112/1990',
-    type: 'ESTATUTO',
-    category: 'DIREITO ADMINISTRATIVO',
-    date: '1990-12-11',
-    status: 'ATIVO',
-    summary: 'Regime jurídico dos servidores públicos civis da União',
-    articles: 253,
-    lastUpdate: '2023-11-05',
-    relatedExams: ['Todos os concursos federais'],
-    tags: ['Servidor Público', 'RJU', 'Lei 8.112'],
-    views: 10234
-  },
-  {
-    id: '5',
-    title: 'LEI DE IMPROBIDADE - PROTOCOLO TÁTICO',
-    number: 'Lei nº 8.429/1992',
-    type: 'LEI',
-    category: 'DIREITO ADMINISTRATIVO',
-    date: '1992-06-02',
-    status: 'ATIVO',
-    summary: 'Dispõe sobre as sanções aplicáveis em virtude da prática de atos de improbidade administrativa',
-    articles: 25,
-    lastUpdate: '2021-10-26',
-    relatedExams: ['MP', 'Magistratura', 'Procuradorias'],
-    tags: ['Improbidade', 'Administração Pública', 'Sanções'],
-    views: 6789
-  }
-];
+const categories = ['Todos', 'Direito Constitucional', 'Direito Penal', 'Direito Administrativo', 'Direito Civil', 'Direito do Trabalho'];
+const types = ['Todos', 'Lei', 'Decreto', 'Medida Provisória', 'Constituição', 'Código', 'Estatuto'];
+const statuses = ['Todos', 'Vigente', 'Revogada', 'Alterada'];
 
-// Exemplo de capítulos e artigos
-const exampleChapters: Chapter[] = [
-  {
-    id: '1',
-    number: 'I',
-    title: 'Dos Princípios Fundamentais',
+export default function LegislationPage() {
+  // Estados principais
+  useEffect(() => {
+    // TODO: Implementar carregamento da API
+    console.log('LegislationPage: Integração com API em desenvolvimento');
+  }, []);
     articles: [
       {
         id: '1',
@@ -342,7 +267,11 @@ const highlightColors = [
 ];
 
 export default function LegislationPage() {
-  const [selectedLegislation, setSelectedLegislation] = useState<Legislation | null>(null);
+  const [legislations, setLegislations] = useState<LocalLegislation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalLegislations, setTotalLegislations] = useState(0);
+  const [selectedLegislation, setSelectedLegislation] = useState<LocalLegislation | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'reading'>('list');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');

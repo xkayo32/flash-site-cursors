@@ -479,7 +479,7 @@ export const studentPreviousExamService = {
     page?: number;
     limit?: number;
   }): Promise<PaginatedResponse<PreviousExam>> {
-    const response = await api.get('/previousexams/available', { params });
+    const response = await api.get('/api/v1/previousexams', { params });
     return response.data;
   },
 

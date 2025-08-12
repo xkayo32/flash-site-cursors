@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { questionService, Question } from '@/services/questionService';
 import {
   FileQuestion,
   Search,
@@ -33,25 +34,8 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 
-// Tipos
-interface Question {
-  id: string;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation?: string;
-  subject: string;
-  topic: string;
-  subtopic?: string;
-  year: number;
-  exam: string;
-  difficulty: 'Fácil' | 'Médio' | 'Difícil';
-  tags: string[];
-  stats: {
-    totalAttempts: number;
-    correctAttempts: number;
-    avgTime: number; // em segundos
-  };
+// Tipos de estado local
+interface LocalQuestion extends Question {
   userAnswer?: number;
   isAnswered?: boolean;
   isCorrect?: boolean;
@@ -77,157 +61,17 @@ interface StudySession {
   progress: number;
 }
 
-// Dados mockados
-const mockQuestions: Question[] = [
-  {
-    id: '1',
-    question: 'Segundo a Constituição Federal de 1988, são direitos sociais, EXCETO:',
-    options: [
-      'Educação, saúde e alimentação',
-      'Trabalho, moradia e lazer',
-      'Propriedade privada dos meios de produção',
-      'Segurança, previdência social e proteção à maternidade'
-    ],
-    correctAnswer: 2,
-    explanation: 'A propriedade privada dos meios de produção não é um direito social previsto no art. 6º da CF/88. Os direitos sociais são: educação, saúde, alimentação, trabalho, moradia, transporte, lazer, segurança, previdência social, proteção à maternidade e à infância, e assistência aos desamparados.',
-    subject: 'Direito Constitucional',
-    topic: 'Direitos e Garantias Fundamentais',
-    subtopic: 'Direitos Sociais',
-    year: 2023,
-    exam: 'FGV',
-    difficulty: 'Médio',
-    tags: ['CF/88', 'Art. 6º', 'Direitos Sociais'],
-    stats: {
-      totalAttempts: 3456,
-      correctAttempts: 2145,
-      avgTime: 45
-    },
-    isAnswered: true,
-    userAnswer: 2,
-    isCorrect: true,
-    timeSpent: 38
-  },
-  {
-    id: '2',
-    question: 'O crime de corrupção passiva, previsto no art. 317 do Código Penal, caracteriza-se quando o funcionário público:',
-    options: [
-      'Oferece vantagem indevida a outro funcionário',
-      'Solicita ou recebe vantagem indevida em razão da função',
-      'Apropria-se de dinheiro público',
-      'Facilita a fuga de pessoa presa'
-    ],
-    correctAnswer: 1,
-    explanation: 'A corrupção passiva (art. 317, CP) ocorre quando o funcionário público solicita ou recebe, para si ou para outrem, direta ou indiretamente, ainda que fora da função ou antes de assumi-la, mas em razão dela, vantagem indevida, ou aceita promessa de tal vantagem.',
-    subject: 'Direito Penal',
-    topic: 'Crimes contra a Administração Pública',
-    subtopic: 'Corrupção Passiva',
-    year: 2023,
-    exam: 'CESPE',
-    difficulty: 'Difícil',
-    tags: ['Código Penal', 'Art. 317', 'Corrupção'],
-    stats: {
-      totalAttempts: 2890,
-      correctAttempts: 1567,
-      avgTime: 62
-    },
-    isAnswered: true,
-    userAnswer: 0,
-    isCorrect: false,
-    timeSpent: 55
-  },
-  {
-    id: '3',
-    question: 'Em relação aos princípios da Administração Pública, assinale a alternativa correta:',
-    options: [
-      'O princípio da eficiência foi incluído pela EC 19/1998',
-      'O princípio da moralidade não tem previsão constitucional',
-      'O princípio da publicidade é absoluto, sem exceções',
-      'O princípio da impessoalidade permite privilégios pessoais'
-    ],
-    correctAnswer: 0,
-    explanation: 'O princípio da eficiência foi incluído no art. 37 da CF/88 pela Emenda Constitucional nº 19/1998. Os demais princípios (legalidade, impessoalidade, moralidade e publicidade) já constavam no texto original.',
-    subject: 'Direito Administrativo',
-    topic: 'Princípios da Administração Pública',
-    year: 2024,
-    exam: 'FCC',
-    difficulty: 'Fácil',
-    tags: ['Princípios', 'LIMPE', 'EC 19/98'],
-    stats: {
-      totalAttempts: 4123,
-      correctAttempts: 3456,
-      avgTime: 35
-    },
-    isFavorite: true
-  },
-  {
-    id: '4',
-    question: 'Qual comando Linux é usado para listar arquivos e diretórios com detalhes?',
-    options: [
-      'ls -la',
-      'dir /all',
-      'list --verbose',
-      'show files'
-    ],
-    correctAnswer: 0,
-    explanation: 'O comando "ls -la" lista todos os arquivos e diretórios (incluindo ocultos) com detalhes como permissões, proprietário, tamanho e data de modificação.',
-    subject: 'Informática',
-    topic: 'Sistemas Operacionais',
-    subtopic: 'Linux',
-    year: 2023,
-    exam: 'IBFC',
-    difficulty: 'Fácil',
-    tags: ['Linux', 'Comandos', 'Terminal'],
-    stats: {
-      totalAttempts: 1876,
-      correctAttempts: 1654,
-      avgTime: 28
-    }
-  },
-  {
-    id: '5',
-    question: 'A concordância verbal está INCORRETA em:',
-    options: [
-      'Fazem dois anos que não o vejo',
-      'A maioria dos alunos compareceu à aula',
-      'Vossa Excelência está enganado',
-      'Mais de um candidato foi aprovado'
-    ],
-    correctAnswer: 0,
-    explanation: 'O verbo "fazer", quando indica tempo decorrido, é impessoal e deve permanecer na 3ª pessoa do singular. O correto é "Faz dois anos que não o vejo".',
-    subject: 'Português',
-    topic: 'Gramática',
-    subtopic: 'Concordância Verbal',
-    year: 2024,
-    exam: 'CESPE',
-    difficulty: 'Médio',
-    tags: ['Concordância', 'Verbos Impessoais'],
-    stats: {
-      totalAttempts: 3234,
-      correctAttempts: 1987,
-      avgTime: 42
-    }
-  }
-];
-
 const subjects = ['Todos', 'Direito Constitucional', 'Direito Penal', 'Direito Administrativo', 'Informática', 'Português'];
 const exams = ['Todos', 'CESPE', 'FCC', 'FGV', 'IBFC', 'VUNESP'];
 const years = ['Todos', 2024, 2023, 2022, 2021, 2020];
 const difficulties = ['Todas', 'Fácil', 'Médio', 'Difícil'];
 
-// Estatísticas gerais
-const generalStats = {
-  totalQuestions: 15678,
-  answeredQuestions: 3456,
-  correctAnswers: 2567,
-  totalTime: 4320, // minutos
-  averageAccuracy: 74.3,
-  strongSubjects: ['Direito Administrativo', 'Informática'],
-  weakSubjects: ['Direito Penal', 'Raciocínio Lógico']
-};
-
 export default function QuestionsPage() {
-  const [questions, setQuestions] = useState(mockQuestions);
-  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [questions, setQuestions] = useState<LocalQuestion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [selectedQuestion, setSelectedQuestion] = useState<LocalQuestion | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'study'>('list');
@@ -247,11 +91,53 @@ export default function QuestionsPage() {
   const [notebookName, setNotebookName] = useState('');
   const [notebookDescription, setNotebookDescription] = useState('');
 
+  // Carregamento inicial das questões
+  useEffect(() => {
+    loadQuestions();
+  }, [searchTerm, selectedFilters]);
+
+  const loadQuestions = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const filters = {
+        search: searchTerm || undefined,
+        subject: selectedFilters.subjects.length > 0 ? selectedFilters.subjects[0] : undefined,
+        difficulty: selectedFilters.difficulties.length > 0 ? selectedFilters.difficulties[0].toLowerCase() : undefined,
+        exam_board: selectedFilters.exams.length > 0 ? selectedFilters.exams[0] : undefined,
+        status: 'published' as const,
+        limit: 20,
+        offset: 0
+      };
+      
+      const response = await questionService.list(filters);
+      
+      const localQuestions: LocalQuestion[] = response.questions.map(q => ({
+        ...q,
+        userAnswer: undefined,
+        isAnswered: false,
+        isCorrect: false,
+        isFavorite: false,
+        timeSpent: undefined
+      }));
+      
+      setQuestions(localQuestions);
+      setTotalQuestions(response.total);
+    } catch (err) {
+      console.error('Erro ao carregar questões:', err);
+      setError('Erro ao carregar questões. Tente novamente.');
+      toast.error('ERRO AO CARREGAR QUESTÕES!', { icon: '❌' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Função para responder questão
   const handleAnswer = (questionId: string, answerIndex: number) => {
     setQuestions(prev => prev.map(q => {
       if (q.id === questionId) {
-        const isCorrect = answerIndex === q.correctAnswer;
+        const isCorrect = answerIndex === q.correct_answer;
         return {
           ...q,
           userAnswer: answerIndex,
@@ -309,27 +195,11 @@ export default function QuestionsPage() {
     setShowCreateNotebook(false);
   };
 
-  // Filtrar questões
-  const filteredQuestions = questions.filter(q => {
-    const matchesSearch = q.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         q.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesSubject = selectedFilters.subjects.length === 0 || selectedFilters.subjects.includes(q.subject);
-    const matchesExam = selectedFilters.exams.length === 0 || selectedFilters.exams.includes(q.exam);
-    const matchesDifficulty = selectedFilters.difficulties.length === 0 || selectedFilters.difficulties.includes(q.difficulty);
-    
-    let matchesAnswered = true;
-    if (selectedFilters.answered === 'answered') matchesAnswered = q.isAnswered === true;
-    if (selectedFilters.answered === 'unanswered') matchesAnswered = !q.isAnswered;
-    
-    let matchesPerformance = true;
-    if (selectedFilters.performance === 'correct') matchesPerformance = q.isCorrect === true;
-    if (selectedFilters.performance === 'incorrect') matchesPerformance = q.isCorrect === false;
-    
-    return matchesSearch && matchesSubject && matchesExam && matchesDifficulty && matchesAnswered && matchesPerformance;
-  });
+  // As questões já vêm filtradas da API
+  const filteredQuestions = questions;
 
   // Componente de questão
-  const QuestionCard = ({ question }: { question: Question }) => (
+  const QuestionCard = ({ question }: { question: LocalQuestion }) => (
     <Card className="border-2 border-gray-200 dark:border-gray-800 hover:border-accent-500/50 transition-all relative overflow-hidden">
       {/* Tactical stripe */}
       <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
@@ -353,15 +223,18 @@ export default function QuestionsPage() {
                 <Badge 
                   className={cn(
                     "font-police-subtitle tracking-wider border-2 border-current",
-                    question.difficulty === 'Fácil' && "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400",
-                    question.difficulty === 'Médio' && "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400",
-                    question.difficulty === 'Difícil' && "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400"
+                    question.difficulty === 'easy' && "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400",
+                    question.difficulty === 'medium' && "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400",
+                    question.difficulty === 'hard' && "bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400"
                   )}
                 >
-                  {question.difficulty}
+                  {question.difficulty === 'easy' ? 'FÁCIL' : 
+                   question.difficulty === 'medium' ? 'MÉDIO' : 
+                   question.difficulty === 'hard' ? 'DIFÍCIL' : 
+                   question.difficulty.toUpperCase()}
                 </Badge>
                 <span className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
-                  {question.exam} • {question.year}
+                  {question.exam_board} • {question.exam_year}
                 </span>
               </div>
               
@@ -401,32 +274,33 @@ export default function QuestionsPage() {
 
         {/* Enunciado */}
         <p className="text-gray-900 dark:text-white mb-4 font-medium font-police-body">
-          {question.question}
+          {question.title}
         </p>
 
         {/* Opções */}
-        <div className="space-y-2 mb-4">
-          {question.options.map((option, index) => (
-            <button
-              key={index}
-              onClick={() => handleAnswer(question.id, index)}
-              disabled={question.isAnswered}
-              className={cn(
-                "w-full text-left p-3 rounded-lg border-2 transition-all",
-                !question.isAnswered && "hover:border-accent-500/50 hover:bg-accent-500/5 dark:hover:bg-accent-500/10",
-                question.isAnswered && index === question.correctAnswer && "border-green-500 bg-green-50 dark:bg-green-900/20",
-                question.isAnswered && index === question.userAnswer && index !== question.correctAnswer && "border-red-500 bg-red-50 dark:bg-red-900/20",
-                !question.isAnswered && "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <span className="font-medium text-gray-700 dark:text-gray-300 font-police-subtitle">
-                  {String.fromCharCode(65 + index)})
-                </span>
-                <span className={cn(
-                  "font-police-body",
-                  question.isAnswered && index === question.correctAnswer && "text-green-700 dark:text-green-400 font-medium",
-                  question.isAnswered && index === question.userAnswer && index !== question.correctAnswer && "text-red-700 dark:text-red-400",
+        {question.options && (
+          <div className="space-y-2 mb-4">
+            {question.options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => handleAnswer(question.id, index)}
+                disabled={question.isAnswered}
+                className={cn(
+                  "w-full text-left p-3 rounded-lg border-2 transition-all",
+                  !question.isAnswered && "hover:border-accent-500/50 hover:bg-accent-500/5 dark:hover:bg-accent-500/10",
+                  question.isAnswered && index === question.correct_answer && "border-green-500 bg-green-50 dark:bg-green-900/20",
+                  question.isAnswered && index === question.userAnswer && index !== question.correct_answer && "border-red-500 bg-red-50 dark:bg-red-900/20",
+                  !question.isAnswered && "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-gray-700 dark:text-gray-300 font-police-subtitle">
+                    {String.fromCharCode(65 + index)})
+                  </span>
+                  <span className={cn(
+                    "font-police-body",
+                    question.isAnswered && index === question.correct_answer && "text-green-700 dark:text-green-400 font-medium",
+                    question.isAnswered && index === question.userAnswer && index !== question.correct_answer && "text-red-700 dark:text-red-400",
                   !question.isAnswered && "text-gray-800 dark:text-gray-200"
                 )}>
                   {option}
@@ -458,11 +332,11 @@ export default function QuestionsPage() {
           <div className="flex items-center gap-4 text-gray-600 dark:text-gray-400">
             <span className="flex items-center gap-1 font-police-body">
               <BarChart3 className="w-4 h-4 text-accent-500" />
-              <span className="font-police-numbers">{Math.round((question.stats.correctAttempts / question.stats.totalAttempts) * 100)}%</span> PRECISÃO
+              <span className="font-police-numbers">{Math.round(question.correct_rate)}%</span> PRECISÃO
             </span>
             <span className="flex items-center gap-1 font-police-body">
               <Clock className="w-4 h-4 text-accent-500" />
-              <span className="font-police-numbers">{question.stats.avgTime}s</span> TEMPO MÉDIO
+              <span className="font-police-numbers">{question.times_answered}</span> TENTATIVAS
             </span>
             {question.timeSpent && (
               <span className="flex items-center gap-1 font-police-body">
@@ -539,7 +413,7 @@ export default function QuestionsPage() {
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="text-lg px-4 py-2 font-police-numbers border-2 border-accent-500 text-accent-500">
               <FileQuestion className="w-5 h-5 mr-2" />
-              {generalStats.totalQuestions.toLocaleString()} ALVOS DISPONÍVEIS
+              {totalQuestions.toLocaleString()} ALVOS DISPONÍVEIS
             </Badge>
           </div>
         </div>
@@ -556,7 +430,7 @@ export default function QuestionsPage() {
                     ALVOS ELIMINADOS
                   </p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                    {generalStats.answeredQuestions.toLocaleString()}
+                    {questions.filter(q => q.isAnswered).length.toLocaleString()}
                   </p>
                 </div>
                 <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
@@ -576,7 +450,8 @@ export default function QuestionsPage() {
                     TAXA DE PRECISÃO
                   </p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                    {generalStats.averageAccuracy}%
+                    {questions.filter(q => q.isAnswered).length > 0 ? 
+                      Math.round((questions.filter(q => q.isCorrect).length / questions.filter(q => q.isAnswered).length) * 100) : 0}%
                   </p>
                 </div>
                 <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
@@ -596,7 +471,7 @@ export default function QuestionsPage() {
                     TEMPO OPERACIONAL
                   </p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                    {Math.floor(generalStats.totalTime / 60)}h
+                    {Math.floor((questions.filter(q => q.timeSpent).reduce((acc, q) => acc + (q.timeSpent || 0), 0)) / 3600) || 0}h
                   </p>
                 </div>
                 <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center">
@@ -616,7 +491,7 @@ export default function QuestionsPage() {
                     SETOR FORTE
                   </p>
                   <p className="text-sm font-bold text-green-600 dark:text-green-400 font-police-body uppercase">
-                    {generalStats.strongSubjects[0]}
+                    DIREITO CONSTITUCIONAL
                   </p>
                 </div>
                 <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
@@ -636,7 +511,7 @@ export default function QuestionsPage() {
                     REFORÇO NECESSÁRIO
                   </p>
                   <p className="text-sm font-bold text-red-600 dark:text-red-400 font-police-body uppercase">
-                    {generalStats.weakSubjects[0]}
+                    RACIOCÍNIO LÓGICO
                   </p>
                 </div>
                 <div className="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
@@ -843,7 +718,30 @@ export default function QuestionsPage() {
 
       {/* Lista de questões */}
       <div className="space-y-4">
-        {filteredQuestions.length > 0 ? (
+        {isLoading ? (
+          <Card className="p-12 text-center border-2 border-gray-200 dark:border-gray-800">
+            <div className="animate-spin w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+              CARREGANDO QUESTÕES TÁTICAS...
+            </p>
+          </Card>
+        ) : error ? (
+          <Card className="p-12 text-center border-2 border-red-200 dark:border-red-800">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-red-900 dark:text-red-100 mb-2 font-police-title uppercase">
+              ERRO NA OPERAÇÃO
+            </h3>
+            <p className="text-red-600 dark:text-red-400 mb-6 font-police-body">
+              {error}
+            </p>
+            <Button 
+              onClick={loadQuestions} 
+              className="bg-accent-500 hover:bg-accent-600 text-black font-police-body uppercase tracking-wider"
+            >
+              TENTAR NOVAMENTE
+            </Button>
+          </Card>
+        ) : filteredQuestions.length > 0 ? (
           filteredQuestions.map((question) => (
             <QuestionCard key={question.id} question={question} />
           ))
@@ -862,6 +760,15 @@ export default function QuestionsPage() {
               variant="outline" 
               onClick={() => {
                 setSearchTerm('');
+                setSelectedFilters({
+                  subjects: [],
+                  topics: [],
+                  exams: [],
+                  years: [],
+                  difficulties: [],
+                  answered: 'all',
+                  performance: 'all'
+                });
                 setShowFilters(false);
               }}
               className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"

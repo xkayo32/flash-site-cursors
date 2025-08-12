@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -9,14 +9,17 @@ import {
   Shield, 
   Play,
   Filter,
-  ChevronRight
+  ChevronRight,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { mockExamService, type MockExam as MockExamAPI, type DifficultyLevel } from '@/services/mockExamService';
 
-interface MockExam {
-  id: number;
+interface MockExamDisplay {
+  id: string;
   title: string;
   organization: string;
   totalQuestions: number;
@@ -25,40 +28,48 @@ interface MockExam {
   isActive: boolean;
 }
 
-const mockExams: MockExam[] = [
-  {
-    id: 1,
-    title: 'SIMULAÇÃO TÁTICA PF - AGENTE',
-    organization: 'COMANDO PF',
-    totalQuestions: 120,
-    timeLimitMinutes: 240,
-    difficulty: 'SARGENTO',
-    isActive: true
-  },
-  {
-    id: 2,
-    title: 'SIMULAÇÃO TÁTICA PRF - POLICIAL',
-    organization: 'COMANDO PRF',
-    totalQuestions: 120,
-    timeLimitMinutes: 240,
-    difficulty: 'SARGENTO',
-    isActive: true
-  },
-  {
-    id: 3,
-    title: 'SIMULAÇÃO TÁTICA PC - ESCRIVÃO',
-    organization: 'COMANDO PC SP',
-    totalQuestions: 100,
-    timeLimitMinutes: 180,
-    difficulty: 'CABO',
-    isActive: true
-  }
-];
-
 export default function MockExamsPageSimple() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('TODOS');
+  const [mockExams, setMockExams] = useState<MockExamDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load mock exams from API
+  useEffect(() => {
+    loadMockExams();
+  }, []);
+
+  const loadMockExams = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await mockExamService.getAvailableExams();
+      
+      if (response.success && response.data) {
+        // Transform API data to display format
+        const transformedExams: MockExamDisplay[] = response.data.map((exam: MockExamAPI) => ({
+          id: exam.id,
+          title: exam.title.toUpperCase(),
+          organization: `COMANDO ${exam.description ? exam.description.split(' ')[0] : 'GERAL'}`,
+          totalQuestions: exam.total_questions,
+          timeLimitMinutes: exam.duration,
+          difficulty: exam.difficulty,
+          isActive: exam.status === 'published'
+        }));
+        
+        setMockExams(transformedExams);
+      } else {
+        throw new Error('Falha ao carregar simulados');
+      }
+    } catch (err: any) {
+      console.error('Erro ao carregar simulados:', err);
+      setError(err.message || 'Erro ao carregar simulados. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredExams = mockExams.filter(exam => {
     const matchesSearch = exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -148,53 +159,93 @@ export default function MockExamsPageSimple() {
       </motion.div>
 
       {/* Stats Cards */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4"
-      >
-        {[
-          { icon: Target, label: 'SIMULAÇÕES ATIVAS', value: mockExams.filter(e => e.isActive).length, color: 'text-green-600' },
-          { icon: Clock, label: 'TEMPO MÉDIO', value: '240 MIN', color: 'text-amber-600' },
-          { icon: Shield, label: 'APROVEITAMENTO', value: '87%', color: 'text-accent-500' }
-        ].map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={index} className="bg-white/90 dark:bg-gray-900/90 border-2 border-gray-200 dark:border-gray-800 backdrop-blur-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                  <Icon className={`w-5 h-5 ${stat.color}`} />
-                </div>
-                <div>
-                  <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
-                    {stat.label}
-                  </p>
-                  <p className="text-lg font-bold font-police-numbers text-gray-900 dark:text-white">
-                    {stat.value}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </motion.div>
+      {!loading && !error && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4"
+        >
+          {[
+            { icon: Target, label: 'SIMULAÇÕES ATIVAS', value: mockExams.filter(e => e.isActive).length, color: 'text-green-600' },
+            { icon: Clock, label: 'TEMPO MÉDIO', value: mockExams.length > 0 ? `${Math.round(mockExams.reduce((acc, exam) => acc + exam.timeLimitMinutes, 0) / mockExams.length)} MIN` : '0 MIN', color: 'text-amber-600' },
+            { icon: Shield, label: 'TOTAL DISPONÍVEL', value: mockExams.length, color: 'text-accent-500' }
+          ].map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={index} className="bg-white/90 dark:bg-gray-900/90 border-2 border-gray-200 dark:border-gray-800 backdrop-blur-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                    <Icon className={`w-5 h-5 ${stat.color}`} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
+                      {stat.label}
+                    </p>
+                    <p className="text-lg font-bold font-police-numbers text-gray-900 dark:text-white">
+                      {stat.value}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </motion.div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Card className="bg-white/90 dark:bg-gray-900/90 border-2 border-gray-200 dark:border-gray-800 p-8 relative overflow-hidden backdrop-blur-sm">
+            <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-6 h-6 text-accent-500 animate-spin" />
+              <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                CARREGANDO SIMULAÇÕES TÁTICAS...
+              </p>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="flex items-center justify-center py-12">
+          <Card className="bg-white/90 dark:bg-gray-900/90 border-2 border-red-200 dark:border-red-800 p-8 relative overflow-hidden backdrop-blur-sm">
+            <div className="absolute top-0 right-0 w-1 h-full bg-red-500" />
+            <div className="text-center">
+              <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              <p className="text-red-600 dark:text-red-400 font-police-body uppercase tracking-wider mb-4">
+                {error}
+              </p>
+              <Button
+                onClick={loadMockExams}
+                variant="outline"
+                className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
+              >
+                TENTAR NOVAMENTE
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Simulados Grid */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        {filteredExams.map((exam, index) => (
-          <motion.div
-            key={exam.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 * index }}
-          >
+      {!loading && !error && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {filteredExams.map((exam, index) => (
+            <motion.div
+              key={exam.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * index }}
+            >
             <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white/90 dark:bg-gray-900/90 shadow-lg hover:shadow-xl relative overflow-hidden backdrop-blur-sm group">
               {/* Tactical stripe */}
               <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
@@ -255,12 +306,13 @@ export default function MockExamsPageSimple() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
-        ))}
-      </motion.div>
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
 
       {/* Empty State */}
-      {filteredExams.length === 0 && (
+      {!loading && !error && filteredExams.length === 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

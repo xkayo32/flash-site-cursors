@@ -77,6 +77,107 @@ export interface PerformanceMetrics {
   }>;
 }
 
+export interface StudentUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  role: string;
+  subscription: {
+    plan: string;
+    expiresAt: string;
+  };
+}
+
+export interface StudentStatistics {
+  questionsAnswered: number;
+  correctAnswers: number;
+  accuracyRate: number;
+  flashcardsReviewed: number;
+  studyStreak: number;
+  totalStudyTime: number;
+}
+
+export interface StudentCourse {
+  id: string;
+  name: string;
+  category: string;
+  progress: number;
+  totalQuestions: number;
+  totalFlashcards: number;
+  enrolledAt: string;
+  thumbnail?: string;
+}
+
+export interface RecentActivity {
+  id: number;
+  type: string;
+  title: string;
+  timestamp: string;
+  score: number;
+  icon: string;
+}
+
+export interface DailyGoal {
+  id: number;
+  task: string;
+  completed: number;
+  total: number;
+  type: string;
+}
+
+export interface SubjectPerformance {
+  subject: string;
+  accuracy: number;
+  questions: number;
+}
+
+export interface UpcomingEvent {
+  id: number;
+  title: string;
+  date: string;
+  daysLeft: number;
+  type: string;
+  progress: number;
+}
+
+export interface EditalProgress {
+  materia: string;
+  total: number;
+  concluido: number;
+  porcentagem: number;
+}
+
+export interface UserGroup {
+  id: string;
+  name: string;
+  members: number;
+  role: string;
+  badge: string;
+  progress: number;
+  nextActivity: string;
+  instructor: string;
+  rank: number;
+}
+
+export interface StudentDashboardData {
+  user: StudentUser;
+  statistics: StudentStatistics;
+  courses: StudentCourse[];
+  recentActivities: RecentActivity[];
+  dailyGoals: DailyGoal[];
+  subjectPerformance: SubjectPerformance[];
+  upcomingEvents: UpcomingEvent[];
+  studyTips: string[];
+  editalProgress: EditalProgress[];
+  userGroups: UserGroup[];
+  weakSubjects: Array<{
+    name: string;
+    accuracy: number;
+    questions: number;
+  }>;
+}
+
 class DashboardService {
   private getAuthHeaders() {
     const token = useAuthStore.getState().token;
@@ -128,6 +229,21 @@ class DashboardService {
     } catch (error) {
       console.error('Error fetching performance metrics:', error);
       return { success: false, message: 'Erro ao buscar métricas' };
+    }
+  }
+
+  async getStudentDashboard(): Promise<{ success: boolean; data?: StudentDashboardData; message?: string }> {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.dashboard.student}`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching student dashboard:', error);
+      return { success: false, message: 'Erro ao buscar dados do painel do estudante' };
     }
   }
 }

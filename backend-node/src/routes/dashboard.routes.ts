@@ -305,4 +305,256 @@ router.get('/performance', authMiddleware, (req: AuthRequest, res: Response): vo
   }
 });
 
+// Get student dashboard
+router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void => {
+  try {
+    // Check if user is student or admin
+    if (!req.user || (req.user.role !== 'student' && req.user.role !== 'admin')) {
+      res.status(403).json({ 
+        success: false,
+        message: 'Acesso negado - apenas estudantes e administradores' 
+      });
+      return;
+    }
+
+    // Load data files
+    const usersPath = path.join(__dirname, '../../data/users.json');
+    const coursesPath = path.join(__dirname, '../../data/courses.json');
+    const questionsPath = path.join(__dirname, '../../data/questions.json');
+    const flashcardsPath = path.join(__dirname, '../../data/flashcards.json');
+    const examAttemptsPath = path.join(__dirname, '../../data/exam-attempts.json');
+
+    const users = loadData(usersPath, []);
+    const courses = loadData(coursesPath, []);
+    const questions = loadData(questionsPath, []);
+    const flashcards = loadData(flashcardsPath, []);
+    const examAttempts = loadData(examAttemptsPath, []);
+
+    // Get current user data
+    const currentUser = users.find((u: any) => u.id === req.user?.id);
+    
+    if (!currentUser) {
+      res.status(404).json({ 
+        success: false,
+        message: 'Usuário não encontrado' 
+      });
+      return;
+    }
+
+    // Calculate user statistics
+    const userQuestions = questions.filter((q: any) => 
+      q.userId === currentUser.id || q.answeredBy?.includes(currentUser.id)
+    );
+    const userFlashcards = flashcards.filter((f: any) => 
+      f.userId === currentUser.id || f.studiedBy?.includes(currentUser.id)
+    );
+    const userExamAttempts = examAttempts.filter((e: any) => e.userId === currentUser.id);
+
+    // Calculate stats
+    const questionsAnswered = userQuestions.length;
+    const correctAnswers = userQuestions.filter((q: any) => q.correct === true).length;
+    const accuracyRate = questionsAnswered > 0 ? Math.round((correctAnswers / questionsAnswered) * 100) : 0;
+    const flashcardsReviewed = userFlashcards.reduce((total: number, f: any) => total + (f.reviews || 0), 0);
+
+    // Calculate study streak (mock for now)
+    const studyStreak = Math.floor(Math.random() * 30) + 1;
+
+    // Get enrolled courses
+    const enrolledCourses = courses.filter((c: any) => 
+      c.enrolledStudents?.includes(currentUser.id) || c.createdBy === currentUser.id
+    ).map((course: any) => ({
+      id: course.id,
+      name: course.name,
+      category: course.category || 'Geral',
+      progress: Math.floor(Math.random() * 100), // Mock progress
+      totalQuestions: questions.filter((q: any) => q.courseId === course.id).length,
+      totalFlashcards: flashcards.filter((f: any) => f.courseId === course.id).length,
+      enrolledAt: course.createdAt || new Date().toISOString(),
+      thumbnail: course.thumbnail || null
+    }));
+
+    // Recent activities
+    const recentActivities = [
+      {
+        id: 1,
+        type: 'questions',
+        title: 'Completou 25 exercícios de Direito Constitucional',
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        score: accuracyRate,
+        icon: 'crosshair'
+      },
+      {
+        id: 2,
+        type: 'flashcards',
+        title: 'Revisou 30 cartões táticos de Português',
+        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+        score: 100,
+        icon: 'brain'
+      },
+      {
+        id: 3,
+        type: 'exam',
+        title: 'Completou simulação de Direito Penal',
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        score: 85,
+        icon: 'trophy'
+      }
+    ];
+
+    // Daily goals
+    const dailyGoals = [
+      {
+        id: 1,
+        task: 'COMPLETAR 50 EXERCÍCIOS TÁTICOS',
+        completed: Math.min(questionsAnswered, 50),
+        total: 50,
+        type: 'questions'
+      },
+      {
+        id: 2,
+        task: 'REVISAR 30 CARTÕES TÁTICOS',
+        completed: Math.min(flashcardsReviewed, 30),
+        total: 30,
+        type: 'flashcards'
+      },
+      {
+        id: 3,
+        task: 'TREINAR POR 4 HORAS',
+        completed: Math.random() * 4,
+        total: 4,
+        type: 'study_time'
+      },
+      {
+        id: 4,
+        task: 'EXECUTAR 1 SIMULAÇÃO TÁTICA',
+        completed: userExamAttempts.length > 0 ? 1 : 0,
+        total: 1,
+        type: 'simulation'
+      }
+    ];
+
+    // Subject performance
+    const subjectPerformance = [
+      { subject: 'DIREITO CONSTITUCIONAL', accuracy: Math.floor(Math.random() * 40) + 60, questions: Math.floor(Math.random() * 200) + 50 },
+      { subject: 'DIREITO ADMINISTRATIVO', accuracy: Math.floor(Math.random() * 40) + 60, questions: Math.floor(Math.random() * 200) + 50 },
+      { subject: 'DIREITO PENAL', accuracy: Math.floor(Math.random() * 40) + 50, questions: Math.floor(Math.random() * 200) + 50 },
+      { subject: 'PORTUGUÊS TÁTICO', accuracy: Math.floor(Math.random() * 40) + 70, questions: Math.floor(Math.random() * 200) + 50 },
+      { subject: 'RACIOCÍNIO LÓGICO', accuracy: Math.floor(Math.random() * 40) + 55, questions: Math.floor(Math.random() * 200) + 50 }
+    ];
+
+    // Upcoming events
+    const upcomingEvents = [
+      {
+        id: 1,
+        title: 'OPERAÇÃO POLÍCIA FEDERAL - AGENTE',
+        date: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(),
+        daysLeft: 45,
+        type: 'exam',
+        progress: Math.floor(Math.random() * 40) + 60
+      },
+      {
+        id: 2,
+        title: 'SIMULAÇÃO TÁTICA SEMANAL - PF',
+        date: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000).toISOString(),
+        daysLeft: 12,
+        type: 'simulation',
+        progress: 100
+      },
+      {
+        id: 3,
+        title: 'REVISÃO CÓDIGO PENAL MILITAR',
+        date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        daysLeft: 7,
+        type: 'study',
+        progress: 45
+      }
+    ];
+
+    // Study tips
+    const studyTips = [
+      'USE A TÉCNICA POMODORO: 25MIN OPERAÇÃO + 5MIN DESCANSO TÁTICO',
+      'REVISE CARTÕES TÁTICOS ANTES DO DESCANSO NOTURNO',
+      'EXECUTE EXERCÍCIOS DE OPERAÇÕES ANTERIORES DA MESMA BANCA',
+      'MANTENHA CRONOGRAMA OPERACIONAL CONSISTENTE'
+    ];
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: currentUser.id,
+          name: currentUser.name,
+          email: currentUser.email,
+          avatar: currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=14242f&color=fff`,
+          role: currentUser.role,
+          subscription: currentUser.subscription || { plan: 'BÁSICO', expiresAt: '30 DIAS' }
+        },
+        statistics: {
+          questionsAnswered,
+          correctAnswers,
+          accuracyRate,
+          flashcardsReviewed,
+          studyStreak,
+          totalStudyTime: Math.floor(Math.random() * 5000) + 1000, // minutes
+        },
+        courses: enrolledCourses,
+        recentActivities,
+        dailyGoals,
+        subjectPerformance,
+        upcomingEvents,
+        studyTips,
+        // Additional progress data
+        editalProgress: [
+          { materia: 'DIREITO CONSTITUCIONAL', total: 120, concluido: Math.floor(Math.random() * 60) + 60, porcentagem: 74 },
+          { materia: 'DIREITO ADMINISTRATIVO', total: 95, concluido: Math.floor(Math.random() * 50) + 45, porcentagem: 71 },
+          { materia: 'DIREITO PENAL', total: 110, concluido: Math.floor(Math.random() * 70) + 40, porcentagem: 53 },
+          { materia: 'PORTUGUÊS TÁTICO', total: 80, concluido: Math.floor(Math.random() * 20) + 60, porcentagem: 90 },
+          { materia: 'RACIOCÍNIO LÓGICO', total: 60, concluido: Math.floor(Math.random() * 30) + 30, porcentagem: 63 }
+        ],
+        // User groups (esquadrões)
+        userGroups: [
+          {
+            id: '1',
+            name: 'ESQUADRÃO ELITE PF 2024',
+            members: 127,
+            role: 'OPERADOR',
+            badge: '🎯',
+            progress: 78,
+            nextActivity: 'SIMULAÇÃO TÁTICA ÀS 19H',
+            instructor: 'COMANDANTE CARLOS SILVA',
+            rank: 12
+          },
+          {
+            id: '2',
+            name: 'FORÇA TÁTICA - CONSTITUCIONAL',
+            members: 42,
+            role: 'LÍDER DE ESQUADRÃO',
+            badge: '⚡',
+            progress: 85,
+            nextActivity: 'REVISÃO OPERACIONAL AMANHÃ',
+            instructor: 'CAP. ANA SANTOS',
+            rank: 3
+          }
+        ],
+        // Weak subjects that need attention
+        weakSubjects: subjectPerformance
+          .filter(s => s.accuracy < 75)
+          .sort((a, b) => a.accuracy - b.accuracy)
+          .slice(0, 3)
+          .map(s => ({
+            name: s.subject,
+            accuracy: s.accuracy,
+            questions: s.questions
+          }))
+      }
+    });
+  } catch (error) {
+    console.error('Error getting student dashboard:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erro ao buscar dados do painel do estudante' 
+    });
+  }
+});
+
 export default router;

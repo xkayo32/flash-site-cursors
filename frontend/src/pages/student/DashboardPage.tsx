@@ -44,7 +44,7 @@ import {
   Command,
   Crosshair
 } from 'lucide-react';
-import { mockStatistics, mockCourses } from '@/lib/mockData';
+import { dashboardService, type StudentDashboardData } from '@/services/dashboardService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
@@ -74,22 +74,40 @@ const itemVariants = {
 export default function DashboardPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const stats = mockStatistics;
   
-  // Estados de loading
+  // Estados de loading e dados
+  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [error, setError] = useState<string | null>(null);
   
   // Estados para calendário
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Simular carregamento inicial
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  // Carregar dados do dashboard
+  const loadDashboardData = async () => {
+    try {
+      setError(null);
+      const response = await dashboardService.getStudentDashboard();
+      
+      if (response.success && response.data) {
+        setDashboardData(response.data);
+      } else {
+        setError(response.message || 'Erro ao carregar dados do painel');
+      }
+    } catch (error) {
+      console.error('Error loading dashboard:', error);
+      setError('Erro de conexão. Verifique sua internet.');
+    } finally {
       setIsLoading(false);
-    }, 1200);
+    }
+  };
+
+  // Carregamento inicial
+  useEffect(() => {
+    loadDashboardData();
 
     // Listener para status online/offline
     const handleOnline = () => setIsOnline(true);
@@ -99,7 +117,6 @@ export default function DashboardPage() {
     window.addEventListener('offline', handleOffline);
 
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
@@ -109,8 +126,7 @@ export default function DashboardPage() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      // Simular carregamento de dados
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await loadDashboardData();
       toast.success('DADOS TÁTICOS ATUALIZADOS!', {
         icon: '🎯',
         duration: 3000
@@ -131,6 +147,45 @@ export default function DashboardPage() {
     return 'BOA NOITE';
   };
 
+  // Se não tem dados ainda, mostrar loading
+  if (isLoading || !dashboardData) {
+    return (
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <StatCardSkeleton key={i} />
+          ))}
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Se houve erro, mostrar mensagem
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="p-6 text-center">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-police-title uppercase tracking-wider text-gray-900 dark:text-white mb-2">
+            FALHA NA COMUNICAÇÃO TÁTICA
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+          <Button onClick={handleRefresh} className="gap-2">
+            <RefreshCw className="w-4 h-4" />
+            TENTAR NOVAMENTE
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  const stats = dashboardData.statistics;
+  
   const statsCards = [
     {
       title: 'EXERCÍCIOS TÁTICOS COMPLETADOS',
@@ -138,19 +193,19 @@ export default function DashboardPage() {
       icon: Crosshair,
       color: 'text-accent-500',
       bgColor: 'bg-blue-100',
-      progress: Math.round((stats.correctAnswers / stats.questionsAnswered) * 100),
+      progress: stats.accuracyRate,
       change: '+12%',
-      trend: 'up',
+      trend: 'up' as const,
     },
     {
       title: 'TAXA DE PRECISÃO',
-      value: `${Math.round((stats.correctAnswers / stats.questionsAnswered) * 100)}%`,
+      value: `${stats.accuracyRate}%`,
       icon: Target,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
-      progress: Math.round((stats.correctAnswers / stats.questionsAnswered) * 100),
+      progress: stats.accuracyRate,
       change: '+5%',
-      trend: 'up',
+      trend: 'up' as const,
     },
     {
       title: 'CARTÕES TÁTICOS REVISADOS',
@@ -160,7 +215,7 @@ export default function DashboardPage() {
       bgColor: 'bg-purple-100',
       progress: 85,
       change: '-2%',
-      trend: 'down',
+      trend: 'down' as const,
     },
     {
       title: 'SEQUÊNCIA OPERACIONAL',
@@ -170,113 +225,69 @@ export default function DashboardPage() {
       bgColor: 'bg-orange-100',
       progress: (stats.studyStreak / 30) * 100,
       change: '+1',
-      trend: 'up',
+      trend: 'up' as const,
     },
   ];
 
-  const dailyGoals = [
-    { 
-      task: 'COMPLETAR 50 EXERCÍCIOS TÁTICOS', 
-      completed: 32, 
-      total: 50, 
-      icon: Crosshair,
-      color: 'blue',
-      bgGradient: 'from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30',
-      borderColor: 'border-blue-200 dark:border-blue-700',
-      iconBg: 'bg-blue-100 dark:bg-blue-800/50',
-      iconColor: 'text-accent-500 dark:text-accent-400',
-      progressGradient: 'from-blue-400 to-blue-600'
-    },
-    { 
-      task: 'REVISAR 30 CARTÕES TÁTICOS', 
-      completed: 30, 
-      total: 30, 
-      icon: Brain,
-      color: 'purple',
-      bgGradient: 'from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30',
-      borderColor: 'border-purple-200 dark:border-purple-700',
-      iconBg: 'bg-purple-100 dark:bg-purple-800/50',
-      iconColor: 'text-purple-600 dark:text-purple-400',
-      progressGradient: 'from-purple-400 to-purple-600'
-    },
-    { 
-      task: 'TREINAR POR 4 HORAS', 
-      completed: 2.5, 
-      total: 4, 
-      icon: Clock,
-      color: 'amber',
-      bgGradient: 'from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30',
-      borderColor: 'border-amber-200 dark:border-amber-700',
-      iconBg: 'bg-amber-100 dark:bg-amber-800/50',
-      iconColor: 'text-amber-600 dark:text-amber-400',
-      progressGradient: 'from-amber-400 to-amber-600'
-    },
-    { 
-      task: 'EXECUTAR 1 SIMULAÇÃO TÁTICA', 
-      completed: 0, 
-      total: 1, 
-      icon: Trophy,
-      color: 'green',
-      bgGradient: 'from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30',
-      borderColor: 'border-green-200 dark:border-green-700',
-      iconBg: 'bg-green-100 dark:bg-green-800/50',
-      iconColor: 'text-green-600 dark:text-green-400',
-      progressGradient: 'from-green-400 to-green-600'
-    },
-  ];
+  // Mapear dados da API para o formato esperado pelos componentes visuais
+  const dailyGoals = dashboardData.dailyGoals.map((goal, index) => {
+    const colorConfigs = [
+      {
+        color: 'blue',
+        icon: Crosshair,
+        bgGradient: 'from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30',
+        borderColor: 'border-blue-200 dark:border-blue-700',
+        iconBg: 'bg-blue-100 dark:bg-blue-800/50',
+        iconColor: 'text-accent-500 dark:text-accent-400',
+        progressGradient: 'from-blue-400 to-blue-600'
+      },
+      {
+        color: 'purple',
+        icon: Brain,
+        bgGradient: 'from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30',
+        borderColor: 'border-purple-200 dark:border-purple-700',
+        iconBg: 'bg-purple-100 dark:bg-purple-800/50',
+        iconColor: 'text-purple-600 dark:text-purple-400',
+        progressGradient: 'from-purple-400 to-purple-600'
+      },
+      {
+        color: 'amber',
+        icon: Clock,
+        bgGradient: 'from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30',
+        borderColor: 'border-amber-200 dark:border-amber-700',
+        iconBg: 'bg-amber-100 dark:bg-amber-800/50',
+        iconColor: 'text-amber-600 dark:text-amber-400',
+        progressGradient: 'from-amber-400 to-amber-600'
+      },
+      {
+        color: 'green',
+        icon: Trophy,
+        bgGradient: 'from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30',
+        borderColor: 'border-green-200 dark:border-green-700',
+        iconBg: 'bg-green-100 dark:bg-green-800/50',
+        iconColor: 'text-green-600 dark:text-green-400',
+        progressGradient: 'from-green-400 to-green-600'
+      }
+    ];
+    
+    const config = colorConfigs[index] || colorConfigs[0];
+    
+    return {
+      ...goal,
+      ...config
+    };
+  });
 
-  const upcomingEvents = [
-    { title: 'OPERAÇÃO POLÍCIA FEDERAL - AGENTE', date: '2024-03-15', daysLeft: 45, type: 'exam', progress: 68 },
-    { title: 'SIMULAÇÃO TÁTICA SEMANAL - PF', date: '2024-02-10', daysLeft: 12, type: 'simulation', progress: 100 },
-    { title: 'REVISÃO CÓDIGO PENAL MILITAR', date: '2024-02-05', daysLeft: 7, type: 'study', progress: 45 },
-  ];
+  const upcomingEvents = dashboardData.upcomingEvents;
 
-  const editalProgress = [
-    { materia: 'DIREITO CONSTITUCIONAL', total: 120, concluido: 89, porcentagem: 74 },
-    { materia: 'DIREITO ADMINISTRATIVO', total: 95, concluido: 67, porcentagem: 71 },
-    { materia: 'DIREITO PENAL', total: 110, concluido: 58, porcentagem: 53 },
-    { materia: 'PORTUGUÊS TÁTICO', total: 80, concluido: 72, porcentagem: 90 },
-    { materia: 'RACIOCÍNIO LÓGICO', total: 60, concluido: 38, porcentagem: 63 },
-  ];
+  const editalProgress = dashboardData.editalProgress;
 
-  const studyTips = [
-    'USE A TÉCNICA POMODORO: 25MIN OPERAÇÃO + 5MIN DESCANSO TÁTICO',
-    'REVISE CARTÕES TÁTICOS ANTES DO DESCANSO NOTURNO',
-    'EXECUTE EXERCÍCIOS DE OPERAÇÕES ANTERIORES DA MESMA BANCA',
-    'MANTENHA CRONOGRAMA OPERACIONAL CONSISTENTE',
-  ];
+  const studyTips = dashboardData.studyTips;
 
-  const weakSubjects = [
-    { name: 'DIREITO PENAL', accuracy: 65, questions: 150 },
-    { name: 'RACIOCÍNIO LÓGICO', accuracy: 72, questions: 98 },
-    { name: 'INFORMÁTICA FORENSE', accuracy: 78, questions: 87 },
-  ];
+  const weakSubjects = dashboardData.weakSubjects;
 
   // Dados dos esquadrões (antigas turmas)
-  const userGroups = [
-    {
-      id: '1',
-      name: 'ESQUADRÃO ELITE PF 2024',
-      members: 127,
-      role: 'OPERADOR',
-      badge: '🎯',
-      progress: 78,
-      nextActivity: 'SIMULAÇÃO TÁTICA ÀS 19H',
-      instructor: 'COMANDANTE CARLOS SILVA',
-      rank: 12
-    },
-    {
-      id: '2',
-      name: 'FORÇA TÁTICA - CONSTITUCIONAL',
-      members: 42,
-      role: 'LÍDER DE ESQUADRÃO',
-      badge: '⚡',
-      progress: 85,
-      nextActivity: 'REVISÃO OPERACIONAL AMANHÃ',
-      instructor: 'CAP. ANA SANTOS',
-      rank: 3
-    }
-  ];
+  const userGroups = dashboardData.userGroups;
 
   // Eventos do calendário
   const calendarEvents = {
@@ -381,7 +392,7 @@ export default function DashboardPage() {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-2xl lg:text-3xl font-police-title font-bold uppercase tracking-wider text-white">
-                  {getCurrentTime()}, OPERADOR {user?.name?.split(' ')[0]?.toUpperCase() || 'RECRUTA'}! 
+                  {getCurrentTime()}, OPERADOR {dashboardData.user?.name?.split(' ')[0]?.toUpperCase() || 'RECRUTA'}! 
                 </h1>
                 <Command className="w-6 h-6 text-accent-500" />
                 <div className="flex items-center gap-2">
@@ -421,10 +432,10 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <p className="text-sm font-police-body font-medium text-white uppercase tracking-wider">
-                      CLEARANCE {user?.subscription?.plan?.toUpperCase() || 'BÁSICO'}
+                      CLEARANCE {dashboardData.user?.subscription?.plan?.toUpperCase() || 'BÁSICO'}
                     </p>
                     <p className="text-xs text-gray-300 font-police-numbers">
-                      EXPIRA EM {user?.subscription?.expiresAt || '30 DIAS'}
+                      EXPIRA EM {dashboardData.user?.subscription?.expiresAt || '30 DIAS'}
                     </p>
                   </div>
                 </div>
@@ -433,8 +444,8 @@ export default function DashboardPage() {
               {/* Avatar do usuário */}
               <div className="relative">
                 <img
-                  src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=14242f&color=fff`}
-                  alt={user?.name || 'Usuário'}
+                  src={dashboardData.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(dashboardData.user?.name || 'User')}&background=14242f&color=fff`}
+                  alt={dashboardData.user?.name || 'Usuário'}
                   className="w-12 h-12 lg:w-14 lg:h-14 rounded-full border-2 border-accent-500 hover:border-accent-600 transition-colors cursor-pointer shadow-lg"
                   onClick={() => navigate('/student/settings')}
                 />
@@ -446,122 +457,79 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Estatísticas principais com tendências */}
-      <AnimatePresence mode="wait">
-        {isLoading ? (
-          <motion.div
-            key="stats-loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {[1, 2, 3, 4].map((i) => (
-              <StatCardSkeleton key={i} />
-            ))}
-          </motion.div>
-        ) : (
-          <motion.div 
-            key="stats-loaded"
-            variants={itemVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {statsCards.map((stat, index) => {
-              const Icon = stat.icon;
-              const TrendIcon = stat.trend === 'up' ? ArrowUp : ArrowDown;
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ y: -4, shadow: "0 10px 25px -3px rgba(0, 0, 0, 0.1)" }}
-                >
-                  <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent-500 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm relative overflow-hidden">
-                    {/* Tactical corner elements */}
-                    <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
-                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-accent-500/20" />
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`p-3 rounded-xl ${stat.bgColor} shadow-sm`}>
-                          <Icon className={`w-6 h-6 ${stat.color}`} />
-                        </div>
-                        <div className={`flex items-center gap-1 text-sm font-police-numbers font-medium px-2 py-1 rounded-full ${
-                          stat.trend === 'up' 
-                            ? 'text-green-700 bg-green-100 dark:bg-green-900/50 dark:text-green-400' 
-                            : 'text-red-700 bg-red-100 dark:bg-red-900/50 dark:text-red-400'
-                        }`}>
-                          <TrendIcon className="w-3 h-3" />
-                          {stat.change}
-                        </div>
-                      </div>
-                      <h3 className="text-2xl lg:text-3xl font-police-numbers font-bold text-gray-900 dark:text-white mb-1">
-                        {stat.value}
-                      </h3>
-                      <p className="text-sm font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-4">{stat.title}</p>
-                      
-                      {/* Progress Bar melhorada */}
-                      <div className="relative">
-                        <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${stat.progress}%` }}
-                            transition={{ duration: 1.5, delay: 0.5 + index * 0.15, ease: "easeOut" }}
-                            className={`h-full rounded-full bg-gradient-to-r ${
-                              stat.progress >= 75 
-                                ? 'from-green-400 to-green-600' 
-                                : stat.progress >= 50 
-                                ? 'from-yellow-400 to-yellow-600' 
-                                : 'from-red-400 to-red-600'
-                            }`}
-                          />
-                        </div>
-                        <span className="absolute right-0 -top-6 text-xs font-police-numbers font-medium text-gray-700 dark:text-gray-300">
-                          {stat.progress}%
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <motion.div 
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+      >
+        {statsCards.map((stat, index) => {
+          const Icon = stat.icon;
+          const TrendIcon = stat.trend === 'up' ? ArrowUp : ArrowDown;
+          return (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ y: -4, shadow: "0 10px 25px -3px rgba(0, 0, 0, 0.1)" }}
+            >
+              <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent-500 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm relative overflow-hidden">
+                {/* Tactical corner elements */}
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-accent-500/20" />
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`p-3 rounded-xl ${stat.bgColor} shadow-sm`}>
+                      <Icon className={`w-6 h-6 ${stat.color}`} />
+                    </div>
+                    <div className={`flex items-center gap-1 text-sm font-police-numbers font-medium px-2 py-1 rounded-full ${
+                      stat.trend === 'up' 
+                        ? 'text-green-700 bg-green-100 dark:bg-green-900/50 dark:text-green-400' 
+                        : 'text-red-700 bg-red-100 dark:bg-red-900/50 dark:text-red-400'
+                    }`}>
+                      <TrendIcon className="w-3 h-3" />
+                      {stat.change}
+                    </div>
+                  </div>
+                  <h3 className="text-2xl lg:text-3xl font-police-numbers font-bold text-gray-900 dark:text-white mb-1">
+                    {stat.value}
+                  </h3>
+                  <p className="text-sm font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-4">{stat.title}</p>
+                  
+                  {/* Progress Bar melhorada */}
+                  <div className="relative">
+                    <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${stat.progress}%` }}
+                        transition={{ duration: 1.5, delay: 0.5 + index * 0.15, ease: "easeOut" }}
+                        className={`h-full rounded-full bg-gradient-to-r ${
+                          stat.progress >= 75 
+                            ? 'from-green-400 to-green-600' 
+                            : stat.progress >= 50 
+                            ? 'from-yellow-400 to-yellow-600' 
+                            : 'from-red-400 to-red-600'
+                        }`}
+                      />
+                    </div>
+                    <span className="absolute right-0 -top-6 text-xs font-police-numbers font-medium text-gray-700 dark:text-gray-300">
+                      {stat.progress}%
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </motion.div>
 
       {/* Objetivos da Missão (antigas Metas Diárias) */}
-      <AnimatePresence mode="wait">
-        {isLoading ? (
-          <motion.div
-            key="goals-loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <Skeleton className="w-32 h-6" />
-                  <Skeleton className="w-16 h-4" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[1, 2, 3, 4].map((i) => (
-                    <GoalCardSkeleton key={i} />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ) : (
-          <motion.div 
-            key="goals-loaded"
-            variants={itemVariants}
-            initial="hidden"
-            animate="visible"
-          >
+      <motion.div 
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
+      >
             <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700 relative overflow-hidden">
               {/* Tactical stripes */}
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 via-transparent to-accent-500 opacity-50" />
@@ -691,9 +659,7 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </motion.div>
 
       {/* Progresso no Edital - Inspirado no Painel Tático */}
       <motion.div variants={itemVariants}>
@@ -1234,7 +1200,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {mockCourses.map((course) => (
+            {dashboardData.courses.map((course) => (
               <div
                 key={course.id}
                 className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-accent-500 dark:hover:border-accent-500 transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
@@ -1280,48 +1246,46 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { 
-                  icon: Crosshair, 
-                  text: 'COMPLETOU 25 EXERCÍCIOS DE DIREITO CONSTITUCIONAL', 
-                  time: '2 HORAS ATRÁS',
-                  score: '+78%',
-                  type: 'questions'
-                },
-                { 
-                  icon: Brain, 
-                  text: 'REVISOU 30 CARTÕES TÁTICOS DE PORTUGUÊS', 
-                  time: '4 HORAS ATRÁS',
-                  score: '100%',
-                  type: 'flashcards'
-                },
-                { 
-                  icon: Trophy, 
-                  text: 'COMPLETOU SIMULAÇÃO DE DIREITO PENAL', 
-                  time: 'ONTEM',
-                  score: '+85%',
-                  type: 'simulation'
-                },
-                { 
-                  icon: Flame, 
-                  text: 'ATINGIU SEQUÊNCIA OPERACIONAL DE 15 DIAS', 
-                  time: 'ONTEM',
-                  score: '🎯',
-                  type: 'streak'
-                },
-              ].map((activity, index) => {
-                const Icon = activity.icon;
+              {dashboardData.recentActivities.map((activity, index) => {
+                const getIcon = (iconName: string) => {
+                  switch (iconName) {
+                    case 'crosshair': return Crosshair;
+                    case 'brain': return Brain;
+                    case 'trophy': return Trophy;
+                    case 'flame': return Flame;
+                    default: return Activity;
+                  }
+                };
+                const Icon = getIcon(activity.icon);
+                
+                const formatTime = (timestamp: string) => {
+                  const date = new Date(timestamp);
+                  const now = new Date();
+                  const diffMs = now.getTime() - date.getTime();
+                  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                  
+                  if (diffHours < 1) return 'AGORA';
+                  if (diffHours < 24) return `${diffHours} HORAS ATRÁS`;
+                  if (diffDays === 1) return 'ONTEM';
+                  return `${diffDays} DIAS ATRÁS`;
+                };
+                
                 return (
-                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                     <div className="p-2 bg-accent-100 dark:bg-accent-900/30 rounded-lg">
                       <Icon className="w-4 h-4 text-accent-600 dark:text-accent-400" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-police-body font-medium text-gray-900 dark:text-white uppercase tracking-wider">{activity.text}</p>
-                        <span className="text-sm font-police-numbers font-medium text-green-600 dark:text-green-400">{activity.score}</span>
+                        <p className="text-sm font-police-body font-medium text-gray-900 dark:text-white uppercase tracking-wider">{activity.title}</p>
+                        <span className="text-sm font-police-numbers font-medium text-green-600 dark:text-green-400">
+                          {activity.type === 'questions' ? `+${activity.score}%` : 
+                           activity.type === 'flashcards' ? `${activity.score}%` :
+                           activity.type === 'exam' ? `+${activity.score}%` : '🎯'}
+                        </span>
                       </div>
-                      <p className="text-xs font-police-body text-gray-500 dark:text-gray-400 mt-0.5">{activity.time}</p>
+                      <p className="text-xs font-police-body text-gray-500 dark:text-gray-400 mt-0.5">{formatTime(activity.timestamp)}</p>
                     </div>
                   </div>
                 );

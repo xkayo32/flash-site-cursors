@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { summaryService, Summary } from '@/services/summaryService';
+import toast from 'react-hot-toast';
 import {
   FileText,
   Search,
@@ -41,44 +43,18 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 
-// Tipos
-interface Summary {
-  id: string;
-  title: string;
-  description: string;
-  subject: string;
-  topic: string;
-  author: string;
-  readingTime: number; // em minutos
-  difficulty: 'RECRUTA' | 'CABO' | 'SARGENTO';
-  tags: string[];
-  stats: {
+// Tipos de estado local
+interface LocalSummary extends Summary {
+  progress?: number;
+  isFavorite?: boolean;
+  stats?: {
     views: number;
     rating: number;
     flashcards: number;
     questions: number;
   };
-  lastUpdated: string;
-  progress?: number;
-  isFavorite?: boolean;
-  content?: {
-    sections: SummarySection[];
-  };
 }
 
-interface SummarySection {
-  id: string;
-  title: string;
-  content: string;
-  embeddedItems?: EmbeddedItem[];
-}
-
-interface EmbeddedItem {
-  id: string;
-  type: 'flashcard' | 'question';
-  position: number; // posição no texto
-  data: any; // dados do flashcard ou questão
-}
 
 interface Comment {
   id: string;
@@ -95,228 +71,16 @@ interface Comment {
   isReplyTo?: string;
 }
 
-// Dados mockados
-const mockSummaries: Summary[] = [
-  {
-    id: '1',
-    title: 'Direitos Fundamentais - Teoria Geral e Classificação',
-    description: 'Resumo completo sobre a teoria geral dos direitos fundamentais, suas gerações, características e aplicabilidade.',
-    subject: 'DIREITO CONSTITUCIONAL TÁTICO',
-    topic: 'Direitos e Garantias Fundamentais',
-    author: 'Prof. Carlos Mendez',
-    readingTime: 25,
-    difficulty: 'CABO',
-    tags: ['CF/88', 'Direitos Fundamentais', 'Gerações de Direitos'],
-    stats: {
-      views: 3456,
-      rating: 4.8,
-      flashcards: 15,
-      questions: 12
-    },
-    lastUpdated: '2024-01-15',
-    progress: 65,
-    isFavorite: true
-  },
-  {
-    id: '2',
-    title: 'Crimes contra a Administração Pública',
-    description: 'Análise detalhada dos crimes funcionais, incluindo corrupção, peculato, concussão e prevaricação.',
-    subject: 'DIREITO PENAL OPERACIONAL',
-    topic: 'Parte Especial',
-    author: 'Prof. Ana Silva',
-    readingTime: 30,
-    difficulty: 'SARGENTO',
-    tags: ['Código Penal', 'Crimes Funcionais', 'Administração Pública'],
-    stats: {
-      views: 2890,
-      rating: 4.9,
-      flashcards: 20,
-      questions: 18
-    },
-    lastUpdated: '2024-01-18',
-    progress: 30
-  },
-  {
-    id: '3',
-    title: 'Princípios da Administração Pública - LIMPE',
-    description: 'Estudo aprofundado dos princípios constitucionais da administração pública com exemplos práticos.',
-    subject: 'DIREITO ADMINISTRATIVO',
-    topic: 'Princípios Administrativos',
-    author: 'Prof. Roberto Lima',
-    readingTime: 20,
-    difficulty: 'RECRUTA',
-    tags: ['LIMPE', 'Art. 37 CF', 'Princípios'],
-    stats: {
-      views: 5123,
-      rating: 4.7,
-      flashcards: 10,
-      questions: 8
-    },
-    lastUpdated: '2024-01-20',
-    progress: 100,
-    isFavorite: true
-  },
-  {
-    id: '4',
-    title: 'Segurança da Informação - Conceitos e Práticas',
-    description: 'Resumo sobre os pilares da segurança da informação, criptografia, protocolos e melhores práticas.',
-    subject: 'Informática',
-    topic: 'Segurança',
-    author: 'Prof. Tech Masters',
-    readingTime: 35,
-    difficulty: 'CABO',
-    tags: ['Criptografia', 'Protocolos', 'Firewall', 'VPN'],
-    stats: {
-      views: 1876,
-      rating: 4.6,
-      flashcards: 25,
-      questions: 15
-    },
-    lastUpdated: '2024-01-12'
-  },
-  {
-    id: '5',
-    title: 'Concordância Verbal e Nominal - Regras e Exceções',
-    description: 'Guia completo sobre concordância verbal e nominal com casos especiais e pegadinhas de concursos.',
-    subject: 'Português',
-    topic: 'Gramática',
-    author: 'Prof. Maria Santos',
-    readingTime: 40,
-    difficulty: 'CABO',
-    tags: ['Concordância', 'Gramática', 'Sintaxe'],
-    stats: {
-      views: 4321,
-      rating: 4.8,
-      flashcards: 30,
-      questions: 22
-    },
-    lastUpdated: '2024-01-19'
-  }
-];
-
-// Conteúdo de exemplo para um resumo
-const exampleContent: SummarySection[] = [
-  {
-    id: '1',
-    title: 'Introdução aos Direitos Fundamentais',
-    content: `Os direitos fundamentais são prerrogativas básicas que garantem a dignidade da pessoa humana e limitam o poder estatal. 
-    
-    São características dos direitos fundamentais:
-    • Universalidade: aplicam-se a todos
-    • Inalienabilidade: não podem ser vendidos
-    • Imprescritibilidade: não se perdem com o tempo
-    • Irrenunciabilidade: não se pode abrir mão deles`,
-    embeddedItems: [
-      {
-        id: 'f1',
-        type: 'flashcard',
-        position: 1,
-        data: {
-          front: 'O que são direitos fundamentais?',
-          back: 'Prerrogativas básicas que garantem a dignidade humana e limitam o poder estatal.'
-        }
-      }
-    ]
-  },
-  {
-    id: '2',
-    title: 'Gerações dos Direitos Fundamentais',
-    content: `A doutrina classifica os direitos fundamentais em gerações:
-
-    1ª Geração - Liberdade: Direitos civis e políticos
-    2ª Geração - Igualdade: Direitos sociais, econômicos e culturais
-    3ª Geração - Fraternidade: Direitos difusos e coletivos`,
-    embeddedItems: [
-      {
-        id: 'q1',
-        type: 'question',
-        position: 2,
-        data: {
-          question: 'Qual geração de direitos fundamentais está relacionada aos direitos sociais?',
-          options: ['1ª Geração', '2ª Geração', '3ª Geração', '4ª Geração'],
-          correct: 1
-        }
-      }
-    ]
-  }
-];
-
+// Dados das matérias
 const subjects = ['Todos', 'Direito Constitucional', 'Direito Penal', 'Direito Administrativo', 'Informática', 'Português'];
 const difficulties = ['Todos', 'Básico', 'Intermediário', 'Avançado'];
 
-// Comentários mockados
-const mockComments: Comment[] = [
-  {
-    id: '1',
-    userId: 'user1',
-    userName: 'AGENTE SILVA',
-    userRole: 'student',
-    content: 'Excelente resumo! As explicações sobre as gerações de direitos fundamentais ficaram muito claras. Os flashcards ajudaram bastante na fixação.',
-    timestamp: '2024-01-20T10:30:00Z',
-    likes: 12,
-    dislikes: 0,
-    isLiked: true,
-    replies: [
-      {
-        id: '1-1',
-        userId: 'instructor1',
-        userName: 'COMANDANTE SANTOS',
-        userRole: 'instructor',
-        content: 'Fico feliz que tenha gostado! Continue praticando com os flashcards para consolidar o conhecimento.',
-        timestamp: '2024-01-20T11:00:00Z',
-        likes: 5,
-        dislikes: 0,
-        isReplyTo: '1'
-      }
-    ]
-  },
-  {
-    id: '2',
-    userId: 'user2',
-    userName: 'OPERADOR COSTA',
-    userRole: 'student',
-    content: 'Seria interessante adicionar mais exemplos práticos sobre a aplicação dos direitos fundamentais. Talvez alguns casos concretos do STF?',
-    timestamp: '2024-01-19T15:45:00Z',
-    likes: 8,
-    dislikes: 2,
-    replies: [
-      {
-        id: '2-1',
-        userId: 'admin1',
-        userName: 'COMANDO TÁTICO',
-        userRole: 'admin',
-        content: 'Ótima sugestão! Vamos incluir jurisprudências relevantes na próxima atualização do material.',
-        timestamp: '2024-01-19T16:30:00Z',
-        likes: 15,
-        dislikes: 0,
-        isReplyTo: '2'
-      }
-    ]
-  },
-  {
-    id: '3',
-    userId: 'user3',
-    userName: 'SOLDADO OLIVEIRA',
-    userRole: 'student',
-    content: 'Dúvida sobre a 3ª geração de direitos: o direito ao meio ambiente equilibrado se encaixa nesta categoria mesmo sendo um direito individual também?',
-    timestamp: '2024-01-18T09:20:00Z',
-    likes: 3,
-    dislikes: 0
-  },
-  {
-    id: '4',
-    userId: 'user4',
-    userName: 'CABO FERREIRA',
-    userRole: 'student',
-    content: 'Material muito didático! Consegui entender conceitos que antes estavam confusos. Recomendo para todos os colegas da equipe.',
-    timestamp: '2024-01-17T14:10:00Z',
-    likes: 7,
-    dislikes: 0
-  }
-];
-
 export default function SummariesPage() {
-  const [selectedSummary, setSelectedSummary] = useState<Summary | null>(null);
+  const [summaries, setSummaries] = useState<LocalSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalSummaries, setTotalSummaries] = useState(0);
+  const [selectedSummary, setSelectedSummary] = useState<LocalSummary | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('Todos');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Todos');
@@ -324,21 +88,58 @@ export default function SummariesPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'reading'>('grid');
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [showFlashcardAnswers, setShowFlashcardAnswers] = useState<{ [key: string]: boolean }>({});
-  const [comments, setComments] = useState<Comment[]>(mockComments);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
 
-  // Filtrar resumos
-  const filteredSummaries = mockSummaries.filter(summary => {
-    const matchesSearch = summary.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         summary.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         summary.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesSubject = selectedSubject === 'Todos' || summary.subject === selectedSubject;
-    const matchesDifficulty = selectedDifficulty === 'Todos' || summary.difficulty === selectedDifficulty;
-    
-    return matchesSearch && matchesSubject && matchesDifficulty;
-  });
+  // Carregamento inicial dos resumos
+  useEffect(() => {
+    loadSummaries();
+  }, [searchTerm, selectedSubject, selectedDifficulty]);
+
+  const loadSummaries = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const filters = {
+        search: searchTerm || undefined,
+        subject: selectedSubject !== 'Todos' ? selectedSubject : undefined,
+        difficulty: selectedDifficulty !== 'Todos' ? selectedDifficulty.toLowerCase() : undefined,
+        status: 'published' as const,
+        visibility: 'public' as const,
+        limit: 20,
+        offset: 0
+      };
+      
+      const response = await summaryService.list(filters);
+      
+      const localSummaries: LocalSummary[] = response.summaries.map(s => ({
+        ...s,
+        progress: Math.floor(Math.random() * 100), // Progress simulado
+        isFavorite: Math.random() > 0.7, // Favoritos simulados
+        stats: {
+          views: Math.floor(Math.random() * 5000) + 100,
+          rating: Math.round((Math.random() * 2 + 3) * 10) / 10, // 3.0 - 5.0
+          flashcards: Math.floor(Math.random() * 30) + 5,
+          questions: Math.floor(Math.random() * 25) + 3
+        }
+      }));
+      
+      setSummaries(localSummaries);
+      setTotalSummaries(response.total);
+    } catch (err) {
+      console.error('Erro ao carregar resumos:', err);
+      setError('Erro ao carregar resumos. Tente novamente.');
+      toast.error('ERRO AO CARREGAR ARSENAL TÁTICO!', { icon: '❌' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // As questões já vêm filtradas da API
+  const filteredSummaries = summaries;
 
   // Toggle seção expandida
   const toggleSection = (sectionId: string) => {
@@ -708,12 +509,15 @@ export default function SummariesPage() {
                 <Badge variant="secondary">{summary.subject}</Badge>
                 <Badge 
                   className={cn(
-                    summary.difficulty === 'Básico' && "bg-green-100 text-green-700",
-                    summary.difficulty === 'Intermediário' && "bg-yellow-100 text-yellow-700",
-                    summary.difficulty === 'Avançado' && "bg-red-100 text-red-700"
+                    summary.difficulty === 'basic' && "bg-green-100 text-green-700",
+                    summary.difficulty === 'intermediate' && "bg-yellow-100 text-yellow-700",
+                    summary.difficulty === 'advanced' && "bg-red-100 text-red-700"
                   )}
                 >
-                  {summary.difficulty}
+                  {summary.difficulty === 'basic' ? 'BÁSICO' : 
+                   summary.difficulty === 'intermediate' ? 'INTERMEDIÁRIO' : 
+                   summary.difficulty === 'advanced' ? 'AVANÇADO' : 
+                   summary.difficulty.toUpperCase()}
                 </Badge>
               </div>
               
@@ -739,14 +543,14 @@ export default function SummariesPage() {
 
           {/* Descrição */}
           <p className="text-sm text-primary-600 mb-4 line-clamp-2">
-            {summary.description}
+            {summary.content.substring(0, 150)}...
           </p>
 
           {/* Metadados */}
           <div className="flex items-center gap-4 text-sm text-primary-600 mb-4">
             <span className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
-              {summary.readingTime} min
+              {summary.estimated_reading_time} min
             </span>
             <span className="flex items-center gap-1">
               <Eye className="w-4 h-4" />
@@ -819,8 +623,8 @@ export default function SummariesPage() {
 
           {/* Autor e data */}
           <div className="mt-4 pt-4 border-t flex items-center justify-between text-xs text-primary-500">
-            <span>{summary.author}</span>
-            <span>Atualizado em {new Date(summary.lastUpdated).toLocaleDateString('pt-BR')}</span>
+            <span>{summary.created_by}</span>
+            <span>Atualizado em {new Date(summary.updated_at).toLocaleDateString('pt-BR')}</span>
           </div>
         </CardContent>
       </Card>
@@ -850,12 +654,15 @@ export default function SummariesPage() {
                 <Badge>{summary.topic}</Badge>
                 <Badge 
                   className={cn(
-                    summary.difficulty === 'Básico' && "bg-green-100 text-green-700",
-                    summary.difficulty === 'Intermediário' && "bg-yellow-100 text-yellow-700",
-                    summary.difficulty === 'Avançado' && "bg-red-100 text-red-700"
+                    summary.difficulty === 'basic' && "bg-green-100 text-green-700",
+                    summary.difficulty === 'intermediate' && "bg-yellow-100 text-yellow-700",
+                    summary.difficulty === 'advanced' && "bg-red-100 text-red-700"
                   )}
                 >
-                  {summary.difficulty}
+                  {summary.difficulty === 'basic' ? 'BÁSICO' : 
+                   summary.difficulty === 'intermediate' ? 'INTERMEDIÁRIO' : 
+                   summary.difficulty === 'advanced' ? 'AVANÇADO' : 
+                   summary.difficulty.toUpperCase()}
                 </Badge>
               </div>
               
@@ -870,10 +677,10 @@ export default function SummariesPage() {
               <div className="flex items-center gap-6 text-sm text-primary-600">
                 <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
-                  {summary.readingTime} min de leitura
+                  {summary.estimated_reading_time} min de leitura
                 </span>
-                <span>{summary.author}</span>
-                <span>Atualizado em {new Date(summary.lastUpdated).toLocaleDateString('pt-BR')}</span>
+                <span>{summary.created_by}</span>
+                <span>Atualizado em {new Date(summary.updated_at).toLocaleDateString('pt-BR')}</span>
               </div>
             </div>
             
@@ -1055,7 +862,32 @@ export default function SummariesPage() {
 
   return (
     <div className="p-6">
-      {viewMode === 'grid' ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+              CARREGANDO BRIEFINGS TÁTICOS...
+            </p>
+          </div>
+        </div>
+      ) : error ? (
+        <Card className="p-12 text-center border-2 border-red-200 dark:border-red-800">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-red-900 dark:text-red-100 mb-2 font-police-title uppercase">
+            ERRO NA OPERAÇÃO
+          </h3>
+          <p className="text-red-600 dark:text-red-400 mb-6 font-police-body">
+            {error}
+          </p>
+          <Button 
+            onClick={loadSummaries} 
+            className="bg-accent-500 hover:bg-accent-600 text-black font-police-body uppercase tracking-wider"
+          >
+            TENTAR NOVAMENTE
+          </Button>
+        </Card>
+      ) : viewMode === 'grid' ? (
         <>
           {/* Header */}
           <motion.div
@@ -1073,7 +905,7 @@ export default function SummariesPage() {
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-lg px-4 py-2">
                   <FileText className="w-5 h-5 mr-2" />
-                  {mockSummaries.length} resumos
+                  {totalSummaries} resumos
                 </Badge>
               </div>
             </div>

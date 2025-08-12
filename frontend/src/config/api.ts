@@ -65,5 +65,6 @@ export const API_ENDPOINTS = {
     stats: `${API_BASE_URL}/api/v1/dashboard/stats`,
     activities: `${API_BASE_URL}/api/v1/dashboard/activities`,
     performance: `${API_BASE_URL}/api/v1/dashboard/performance`,
+    student: `${API_BASE_URL}/api/v1/dashboard/student`,
   },
 };

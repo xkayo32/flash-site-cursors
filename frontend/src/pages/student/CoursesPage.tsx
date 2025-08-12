@@ -1,5 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { courseService } from '@/services/courseService';
+import type { Course as CourseFromAPI } from '@/services/courseService';
 import {
   Search,
   Filter,
@@ -40,15 +42,15 @@ interface Course {
   description: string;
   instructor: string;
   category: string;
-  subcategory: string;
+  subcategory?: string;
   duration: string;
   students: number;
   rating: number;
-  reviews: number;
+  reviews?: number;
   price: number;
   originalPrice?: number;
   modules: number;
-  questions: number;
+  questions?: number;
   lastUpdated: string;
   level: 'BÁSICO' | 'INTERMEDIÁRIO' | 'AVANÇADO';
   features: string[];
@@ -61,141 +63,41 @@ interface Course {
   enrolled?: boolean;
 }
 
-// Dados mockados de cursos
-const mockCourses: Course[] = [
-  {
-    id: '1',
-    title: 'OPERAÇÃO POLÍCIA FEDERAL 2024 - AGENTE',
-    description: 'Preparação tática completa para ingresso na PF. Material atualizado com simulações operacionais, exercícios práticos e briefings especializados.',
-    instructor: 'COMANDANTE CARLOS MENDEZ',
-    category: 'POLÍCIA',
-    subcategory: 'FEDERAL',
-    duration: '180H TÁTICAS',
-    students: 2341,
-    rating: 4.9,
-    reviews: 487,
-    price: 197,
-    originalPrice: 397,
-    modules: 18,
-    questions: 8500,
-    lastUpdated: '2024-01-15',
-    level: 'INTERMEDIÁRIO',
-    features: ['VIDEOAULAS TÁTICAS', 'MANUAIS ATUALIZADOS', 'EXERCÍCIOS COMENTADOS', 'SIMULAÇÕES OPERACIONAIS'],
-    image: 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=400&h=250&fit=crop',
-    badge: {
-      text: 'NOVA OPERAÇÃO',
+// Função para transformar dados da API em formato do componente
+const transformCourseFromAPI = (course: CourseFromAPI): Course => {
+  const difficultyMap: { [key: string]: 'BÁSICO' | 'INTERMEDIÁRIO' | 'AVANÇADO' } = {
+    'beginner': 'BÁSICO',
+    'intermediate': 'INTERMEDIÁRIO', 
+    'advanced': 'AVANÇADO'
+  };
+
+  return {
+    id: course.id,
+    title: course.title.toUpperCase(),
+    description: course.description,
+    instructor: course.instructor?.name?.toUpperCase() || 'INSTRUTOR NÃO INFORMADO',
+    category: course.category?.toUpperCase() || 'GERAL',
+    subcategory: course.category?.toUpperCase(),
+    duration: `${course.duration?.hours || 0}H OPERACIONAIS`,
+    students: course.stats?.enrollments || 0,
+    rating: course.stats?.rating || 0,
+    reviews: course.stats?.enrollments || 0,
+    price: course.price || 0,
+    originalPrice: undefined,
+    modules: course.stats?.modules || 0,
+    questions: course.stats?.lessons || 0,
+    lastUpdated: new Date(course.updatedAt).toISOString().split('T')[0],
+    level: difficultyMap[course.difficulty || ''] || 'BÁSICO',
+    features: course.objectives?.slice(0, 4).map(obj => obj.toUpperCase()) || ['CONTEÚDO ATUALIZADO'],
+    image: course.thumbnail || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=400&h=250&fit=crop',
+    badge: course.status === 'published' ? {
+      text: 'ATIVA',
       color: 'bg-green-500'
-    }
-  },
-  {
-    id: '2',
-    title: 'OPERAÇÃO RECEITA FEDERAL - AUDITOR FISCAL',
-    description: 'Missão especializada para Auditor Fiscal da RFB. Estratégias avançadas com material constantemente atualizado e técnicas operacionais.',
-    instructor: 'COMANDANTE ANA SILVA',
-    category: 'FISCAL',
-    subcategory: 'FEDERAL',
-    duration: '220H OPERACIONAIS',
-    students: 1856,
-    rating: 4.8,
-    reviews: 342,
-    price: 297,
-    modules: 22,
-    questions: 12300,
-    lastUpdated: '2024-01-10',
-    level: 'AVANÇADO',
-    features: ['LEGISLAÇÃO ATUALIZADA', 'CASOS OPERACIONAIS', 'MENTORIA ESPECIALIZADA', 'GRUPO ELITE'],
-    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=250&fit=crop',
-    badge: {
-      text: 'ATUALIZADA',
-      color: 'bg-blue-500'
-    },
-    enrolled: true,
-    progress: 45
-  },
-  {
-    id: '3',
-    title: 'OPERAÇÃO TRIBUNAIS - TRT/TRF ANALISTA',
-    description: 'Missão focada nos principais tribunais do país. Treinamento direcionado para analista judiciário com técnicas especializadas.',
-    instructor: 'COMANDANTE ROBERTO LIMA',
-    category: 'TRIBUNAIS',
-    subcategory: 'ANALISTA',
-    duration: '150H TÁTICAS',
-    students: 987,
-    rating: 4.7,
-    reviews: 198,
-    price: 197,
-    modules: 15,
-    questions: 6700,
-    lastUpdated: '2023-12-20',
-    level: 'INTERMEDIÁRIO',
-    features: ['JURISPRUDÊNCIA ATUALIZADA', 'REDAÇÃO OPERACIONAL', 'CORREÇÃO DETALHADA'],
-    image: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&h=250&fit=crop',
-    badge: {
-      text: 'EM MISSÃO',
-      color: 'bg-orange-500'
-    }
-  },
-  {
-    id: '4',
-    title: 'OPERAÇÃO BANCO DO BRASIL - ESCRITURÁRIO',
-    description: 'Preparação tática completa para o BB. Inclui matemática operacional, conhecimentos bancários e inteligência de mercado.',
-    instructor: 'COMANDANTE MARINA COSTA',
-    category: 'BANCÁRIOS',
-    subcategory: 'ESCRITURÁRIO',
-    duration: '120H OPERACIONAIS',
-    students: 3421,
-    rating: 4.9,
-    reviews: 623,
-    price: 147,
-    modules: 12,
-    questions: 5400,
-    lastUpdated: '2024-01-05',
-    level: 'BÁSICO',
-    features: ['MATEMÁTICA TÁTICA', 'INTELIGÊNCIA DE MERCADO', 'SIMULAÇÕES SEMANAIS'],
-    image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop'
-  },
-  {
-    id: '5',
-    title: 'OPERAÇÃO TCU - AUDITOR FEDERAL DE CONTROLE',
-    description: 'A operação mais complexa para o TCU. Comandantes especialistas e material direcionado para a banca CESPE com técnicas avançadas.',
-    instructor: 'COMANDANTE PAULO SANTOS',
-    category: 'CONTROLE',
-    subcategory: 'FEDERAL',
-    duration: '200H ESPECIALIZADAS',
-    students: 654,
-    rating: 4.8,
-    reviews: 89,
-    price: 347,
-    originalPrice: 497,
-    modules: 20,
-    questions: 9800,
-    lastUpdated: '2023-11-30',
-    level: 'AVANÇADO',
-    features: ['AUDITORIA OPERACIONAL', 'CONTROLE EXTERNO', 'AFO AVANÇADA'],
-    image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop',
-    enrolled: true,
-    progress: 78
-  },
-  {
-    id: '6',
-    title: 'OPERAÇÃO INSS - TÉCNICO DO SEGURO SOCIAL',
-    description: 'Operação atualizada para o INSS com foco em direito previdenciário e legislação específica com técnicas operacionais.',
-    instructor: 'COMANDANTE JULIANA MARTINS',
-    category: 'PREVIDÊNCIA',
-    subcategory: 'TÉCNICO',
-    duration: '100H TÁTICAS',
-    students: 4532,
-    rating: 4.6,
-    reviews: 876,
-    price: 127,
-    modules: 10,
-    questions: 4300,
-    lastUpdated: '2024-01-08',
-    level: 'BÁSICO',
-    features: ['DIREITO PREVIDENCIÁRIO', 'ÉTICA OPERACIONAL', 'INFORMÁTICA TÁTICA'],
-    image: 'https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=400&h=250&fit=crop'
-  }
-];
+    } : undefined,
+    progress: undefined,
+    enrolled: false
+  };
+};
 
 // Categorias disponíveis
 const categories = [
@@ -234,18 +136,44 @@ export default function CoursesPage() {
   const [showOnlyEnrolled, setShowOnlyEnrolled] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isLoading, setIsLoading] = useState(true);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [totalCourses, setTotalCourses] = useState(0);
 
-  // Simular carregamento inicial
-  useState(() => {
-    const timer = setTimeout(() => {
+  // Carregar cursos da API
+  useEffect(() => {
+    loadCourses();
+  }, []);
+
+  const loadCourses = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await courseService.listCourses({
+        status: 'published',
+        limit: 100
+      });
+      
+      if (response.success && response.data) {
+        const transformedCourses = response.data.map(transformCourseFromAPI);
+        setCourses(transformedCourses);
+        setTotalCourses(transformedCourses.length);
+      } else {
+        setError(response.message || 'Erro ao carregar cursos');
+        setCourses([]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar cursos:', error);
+      setError('Erro ao carregar cursos. Tente novamente.');
+      setCourses([]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  });
+    }
+  };
 
   // Filtrar e ordenar cursos
   const filteredCourses = useMemo(() => {
-    let filtered = [...mockCourses];
+    let filtered = [...courses];
 
     // Filtrar por busca
     if (searchTerm) {
@@ -567,7 +495,7 @@ export default function CoursesPage() {
           </h1>
           <Badge variant="secondary" className="text-lg px-4 py-2 font-police-numbers">
             <Shield className="w-5 h-5 mr-2" />
-            {mockCourses.length} OPERAÇÕES ATIVAS
+{totalCourses} OPERAÇÕES ATIVAS
           </Badge>
         </div>
         <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
@@ -713,8 +641,33 @@ export default function CoursesPage() {
         )}
       </motion.div>
 
-      {/* Lista de cursos */}
-      {filteredCourses.length > 0 ? (
+      {/* Loading state */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-gray-300 border-t-accent-500 rounded-full animate-spin"></div>
+            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">CARREGANDO OPERAÇÕES...</p>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="text-center py-12">
+          <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-400" />
+          </div>
+          <h3 className="text-xl font-police-subtitle font-semibold text-gray-900 dark:text-white mb-2 uppercase tracking-wider">
+            ERRO AO CARREGAR OPERAÇÕES
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6 font-police-body">
+            {error}
+          </p>
+          <Button
+            onClick={loadCourses}
+            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+          >
+            TENTAR NOVAMENTE
+          </Button>
+        </div>
+      ) : filteredCourses.length > 0 ? (
         viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCourses.map((course, index) => (

@@ -28,7 +28,9 @@ import {
   AlertTriangle,
   AlertCircle,
   Info,
-  Command
+  Command,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
@@ -36,30 +38,31 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 import { StudyProLogo } from '@/components/ui/StudyProLogo';
+import flashcardService, { Flashcard as APIFlashcard, FlashcardType } from '@/services/flashcardService';
 
-// Tipos
+// Tipos locais (compatíveis com a API)
 interface Flashcard {
   id: string;
-  type: 'basic' | 'basic_inverted' | 'cloze' | 'multiple_choice' | 'true_false' | 'type_answer' | 'image_occlusion';
-  front: string;
-  back: string;
-  subject: string;
+  type: FlashcardType;
+  // Campos básicos
+  front?: string;
+  back?: string;
+  category: string;
+  subcategory?: string;
   tags: string[];
-  difficulty: 'Fácil' | 'Médio' | 'Difícil';
-  createdAt: string;
-  // Campos específicos para tipos avançados
-  clozeText?: string;
-  clozeAnswers?: string[];
-  multipleChoiceOptions?: {
-    id: string;
-    text: string;
-    isCorrect: boolean;
-  }[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  created_at: string;
+  
+  // Campos específicos para tipos avançados (compatível com API)
+  text?: string; // Para cloze
+  question?: string; // Para multiple choice
+  options?: string[]; // Para multiple choice
+  correct?: number; // Índice da resposta correta
   explanation?: string;
-  truefalseStatement?: string;
-  typeAnswerHint?: string;
-  correctAnswer?: string;
-  imageUrl?: string;
+  statement?: string; // Para true/false
+  answer?: string; // Para true/false
+  hint?: string; // Para type_answer
+  image?: string; // Para image_occlusion
   occlusionAreas?: {
     id: string;
     x: number;
@@ -67,21 +70,21 @@ interface Flashcard {
     width: number;
     height: number;
     answer: string;
+    shape: 'rectangle' | 'circle';
   }[];
-  srsData: {
-    interval: number; // dias até próxima revisão
-    repetitions: number; // número de repetições
-    easeFactor: number; // fator de facilidade (1.3 - 2.5)
-    nextReview: string; // data da próxima revisão
-    lastReviewed?: string;
-    quality?: number; // última qualidade da resposta (0-5)
-  };
-  stats: {
-    totalReviews: number;
-    correctReviews: number;
-    streak: number;
-    averageTime: number; // em segundos
-  };
+  
+  // Dados SRS (compatível com API)
+  interval: number;
+  ease_factor: number;
+  next_review: string;
+  times_studied: number;
+  times_correct: number;
+  correct_rate: number;
+  
+  // Metadados da API
+  author_id: string;
+  author_name: string;
+  status: 'draft' | 'published' | 'archived';
 }
 
 interface FlashcardDeck {
@@ -108,488 +111,21 @@ interface StudySession {
   isActive: boolean;
 }
 
-// Dados mockados
-const mockDecks: FlashcardDeck[] = [
-  // DECK ESPECIAL: Guia dos Tipos de Flashcards
-  {
-    id: 'guide-flashcard-types',
-    name: 'GUIA TÁTICO - TIPOS DE FLASHCARDS',
-    description: 'Aprenda todos os 6 tipos de flashcards disponíveis para criação. Deck educativo com exemplos práticos de cada tipo.',
-    subject: 'Tutorial/Guia',
-    totalCards: 6,
-    dueCards: 6,
-    newCards: 6,
-    color: 'bg-gradient-to-r from-purple-500 to-pink-500',
-    createdAt: '2024-01-01',
-    isUserDeck: false,
-    author: 'SISTEMA TÁTICO'
-  },
-  {
-    id: '1',
-    name: 'OPERAÇÃO CONSTITUCIONAL - Direitos Fundamentais',
-    description: 'Flashcards sobre os direitos e garantias fundamentais da CF/88',
-    subject: 'Direito Constitucional',
-    totalCards: 156,
-    dueCards: 23,
-    newCards: 12,
-    color: 'bg-blue-500',
-    createdAt: '2024-01-10',
-    lastStudied: '2024-01-18',
-    isUserDeck: false,
-    author: 'COMANDANTE CARLOS MENDEZ'
-  },
-  {
-    id: '2',
-    name: 'OPERAÇÃO PENAL - Crimes contra a Administração',
-    description: 'Conceitos e tipificações dos crimes contra a administração pública',
-    subject: 'Direito Penal',
-    totalCards: 89,
-    dueCards: 15,
-    newCards: 8,
-    color: 'bg-red-500',
-    createdAt: '2024-01-08',
-    lastStudied: '2024-01-17',
-    isUserDeck: false,
-    author: 'COMANDANTE ANA SILVA'
-  },
-  {
-    id: '3',
-    name: 'INTELIGÊNCIA DIGITAL - Segurança da Informação',
-    description: 'Conceitos fundamentais de segurança da informação',
-    subject: 'Informática',
-    totalCards: 67,
-    dueCards: 31,
-    newCards: 5,
-    color: 'bg-green-500',
-    createdAt: '2024-01-05',
-    lastStudied: '2024-01-16',
-    isUserDeck: false,
-    author: 'ESQUADRÃO STUDYPRO'
-  },
-  {
-    id: '4',
-    name: 'COMUNICAÇÃO TÁTICA - Concordância Verbal',
-    description: 'Regras de concordância verbal e casos especiais',
-    subject: 'Português',
-    totalCards: 45,
-    dueCards: 8,
-    newCards: 18,
-    color: 'bg-purple-500',
-    createdAt: '2024-01-12',
-    isUserDeck: false,
-    author: 'COMANDANTE MARIA SANTOS'
-  },
-  {
-    id: '5',
-    name: 'ARSENAL PESSOAL - Direito Administrativo',
-    description: 'Cards pessoais sobre princípios e atos administrativos',
-    subject: 'Direito Administrativo',
-    totalCards: 32,
-    dueCards: 5,
-    newCards: 0,
-    color: 'bg-orange-500',
-    createdAt: '2024-01-15',
-    lastStudied: '2024-01-18',
-    isUserDeck: true,
-    author: 'Você'
-  }
-];
+// Estados para dados da API
+type LoadingState = 'idle' | 'loading' | 'success' | 'error';
 
-const mockFlashcards: Flashcard[] = [
-  // ===== DECK GUIA: TIPOS DE FLASHCARDS =====
-  
-  // 1. EXEMPLO: Flashcard BÁSICO
-  {
-    id: 'guide-basic-1',
-    type: 'basic',
-    front: '🔵 FLASHCARD BÁSICO\n\nEste é um exemplo de flashcard básico. É o tipo mais simples - uma pergunta na frente e a resposta no verso.\n\nPERGUNTA: Qual é a capital do Brasil?',
-    back: 'RESPOSTA: Brasília\n\n💡 DICA DE USO:\n• Ideal para definições simples\n• Fatos e conceitos diretos\n• Vocabulário e traduções\n• Datas históricas',
-    subject: 'Tutorial/Guia',
-    tags: ['tutorial', 'tipo básico', 'exemplo'],
-    difficulty: 'Fácil',
-    createdAt: '2024-01-01',
-    srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
-    stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
-  },
+// Interface para estatísticas agregadas
+interface StudyStats {
+  totalCards: number;
+  dueToday: number;
+  newCards: number;
+  dailyStreak: number;
+  totalStudyTime: number; // minutos
+  averageAccuracy: number;
+  cardsStudiedToday: number;
+  timeStudiedToday: number; // minutos
+}
 
-  // 2. EXEMPLO: Flashcard BÁSICO INVERTIDO
-  {
-    id: 'guide-basic-inverted-1',
-    type: 'basic_inverted',
-    front: '🟢 FLASHCARD BÁSICO INVERTIDO\n\nEste tipo cria DOIS cartões automaticamente - um normal e outro invertido.\n\nPERGUNTA: Qual órgão é responsável pela fiscalização constitucional no Brasil?',
-    back: 'RESPOSTA: Supremo Tribunal Federal (STF)\n\n✨ CARTÃO INVERTIDO AUTOMÁTICO:\n• Pergunta: "Supremo Tribunal Federal (STF)"\n• Resposta: "Órgão responsável pela fiscalização constitucional"\n\n💡 IDEAL PARA: Associações bidirecionais',
-    subject: 'Tutorial/Guia',
-    tags: ['tutorial', 'básico invertido', 'automático'],
-    difficulty: 'Fácil',
-    explanation: 'Este tipo é perfeito quando você precisa lembrar da associação nos dois sentidos: pergunta→resposta e resposta→pergunta.',
-    createdAt: '2024-01-01',
-    srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
-    stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
-  },
-
-  // 3. EXEMPLO: Flashcard CLOZE (Lacunas)
-  {
-    id: 'guide-cloze-1',
-    type: 'cloze',
-    front: '🟡 FLASHCARD LACUNAS (CLOZE)\n\nEste tipo permite que você teste o preenchimento de lacunas no texto. Clique nas lacunas para revelar as respostas uma por vez.\n\nCOMPLETE O TEXTO ABAIXO:',
-    back: 'A Constituição Federal de 1988 é conhecida como {{c1::Constituição Cidadã}} porque {{c2::ampliou significativamente os direitos e garantias fundamentais}} dos brasileiros, estabelecendo uma base sólida para a {{c3::democracia}} moderna.',
-    subject: 'Tutorial/Guia',
-    tags: ['tutorial', 'cloze', 'lacunas', 'completar'],
-    difficulty: 'Médio',
-    clozeText: 'A Constituição Federal de 1988 é conhecida como {{c1::Constituição Cidadã}} porque {{c2::ampliou significativamente os direitos e garantias fundamentais}} dos brasileiros, estabelecendo uma base sólida para a {{c3::democracia}} moderna.',
-    clozeAnswers: ['Constituição Cidadã', 'ampliou significativamente os direitos e garantias fundamentais', 'democracia'],
-    explanation: '💡 DICA DE USO: Flashcards tipo CLOZE são ideais para: • Memorizar textos legais • Completar definições • Fixar conceitos em contexto • Estudar artigos de lei',
-    createdAt: '2024-01-01',
-    srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
-    stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
-  },
-
-  // 4. EXEMPLO: Flashcard MÚLTIPLA ESCOLHA
-  {
-    id: 'guide-multiple-choice-1',
-    type: 'multiple_choice',
-    front: '🟣 FLASHCARD MÚLTIPLA ESCOLHA\n\nApresenta uma pergunta com 4 alternativas.\n\nQual dos poderes abaixo NÃO existe na estrutura constitucional brasileira?',
-    back: 'A) Poder Executivo\nB) Poder Legislativo\nC) Poder Judiciário\nD) Poder Moderador ✓\n\nRESPOSTA CORRETA: D',
-    subject: 'Tutorial/Guia',
-    tags: ['tutorial', 'múltipla escolha', 'alternativas'],
-    difficulty: 'Médio',
-    multipleChoiceOptions: [
-      { id: 'a', text: 'Poder Executivo', isCorrect: false },
-      { id: 'b', text: 'Poder Legislativo', isCorrect: false },
-      { id: 'c', text: 'Poder Judiciário', isCorrect: false },
-      { id: 'd', text: 'Poder Moderador', isCorrect: true }
-    ],
-    explanation: '💡 O Poder Moderador existiu apenas no Brasil Império (1822-1889). A atual Constituição prevê apenas 3 poderes: Executivo, Legislativo e Judiciário.',
-    createdAt: '2024-01-01',
-    srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
-    stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
-  },
-
-  // 5. EXEMPLO: Flashcard VERDADEIRO/FALSO
-  {
-    id: 'guide-true-false-1',
-    type: 'true_false',
-    front: '🔴 FLASHCARD VERDADEIRO/FALSO\n\nAvalie se a afirmação está correta ou incorreta.\n\nAFIRMAÇÃO:\n"O Presidente da República pode ser reeleito quantas vezes quiser."',
-    back: '❌ FALSO\n\nEXPLICAÇÃO:\nO Presidente da República pode ser reeleito apenas UMA vez para o período subsequente (reeleição consecutiva). Após cumprir dois mandatos seguidos, deve aguardar um período antes de poder concorrer novamente.',
-    subject: 'Tutorial/Guia',
-    tags: ['tutorial', 'verdadeiro falso', 'avaliação'],
-    difficulty: 'Médio',
-    truefalseStatement: 'O Presidente da República pode ser reeleito quantas vezes quiser.',
-    explanation: 'Segundo o art. 14, §5º da CF/88, é permitida a reeleição para apenas UM período subsequente.',
-    createdAt: '2024-01-01',
-    srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
-    stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
-  },
-
-  // 6. EXEMPLO: Flashcard DIGITAR RESPOSTA
-  {
-    id: 'guide-type-answer-1',
-    type: 'type_answer',
-    front: '🟦 FLASHCARD DIGITAR RESPOSTA\n\nVocê deve digitar a resposta exata no campo de texto.\n\nPERGUNTA:\nQuem foi o primeiro Presidente da República do Brasil?',
-    back: 'RESPOSTA ESPERADA: Deodoro da Fonseca\n\n💡 DICAS DE USO:\n• Nomes próprios e termos específicos\n• Fórmulas e códigos\n• Números e estatísticas\n• Citações textuais',
-    subject: 'Tutorial/Guia',
-    tags: ['tutorial', 'digitar resposta', 'texto livre'],
-    difficulty: 'Médio',
-    correctAnswer: 'Deodoro da Fonseca',
-    typeAnswerHint: 'Marechal que proclamou a República em 1889',
-    createdAt: '2024-01-01',
-    srsData: { interval: 1, repetitions: 0, easeFactor: 2.5, nextReview: '2024-01-19', quality: 0 },
-    stats: { totalReviews: 0, correctReviews: 0, streak: 0, averageTime: 0 }
-  },
-
-  // ===== FLASHCARDS ORIGINAIS =====
-  // 1. BASIC - Cartão Básico Tradicional
-  {
-    id: '1',
-    type: 'basic',
-    front: 'O que são direitos fundamentais de primeira geração?',
-    back: 'São os direitos civis e políticos, também chamados de direitos de liberdade. Incluem direito à vida, liberdade, propriedade, liberdade de expressão, direito ao voto, etc. Surgiram no século XVIII com as revoluções liberais.',
-    subject: 'Direito Constitucional',
-    tags: ['direitos fundamentais', 'gerações de direitos', 'liberdades'],
-    difficulty: 'Médio',
-    createdAt: '2024-01-10',
-    srsData: {
-      interval: 3,
-      repetitions: 2,
-      easeFactor: 2.2,
-      nextReview: '2024-01-19',
-      lastReviewed: '2024-01-18',
-      quality: 4
-    },
-    stats: {
-      totalReviews: 5,
-      correctReviews: 4,
-      streak: 2,
-      averageTime: 12
-    }
-  },
-  // 2. BASIC INVERTED - Cartão com Informação Extra e Reverso
-  {
-    id: '2',
-    type: 'basic_inverted',
-    front: 'Crime de Corrupção Passiva - Art. 317 CP',
-    back: 'Solicitar ou receber vantagem indevida em razão da função pública. Pena: reclusão de 2 a 12 anos e multa.',
-    subject: 'Direito Penal',
-    tags: ['corrupção passiva', 'crimes contra administração'],
-    difficulty: 'Difícil',
-    explanation: 'Também gera cartão reverso: "Qual crime: solicitar vantagem indevida como funcionário público?" → "Corrupção Passiva"',
-    createdAt: '2024-01-08',
-    srsData: {
-      interval: 1,
-      repetitions: 1,
-      easeFactor: 1.8,
-      nextReview: '2024-01-19',
-      lastReviewed: '2024-01-18',
-      quality: 2
-    },
-    stats: {
-      totalReviews: 3,
-      correctReviews: 1,
-      streak: 0,
-      averageTime: 18
-    }
-  },
-  // 3. CLOZE - Lacunas (Fill-in-the-blank)
-  {
-    id: '3',
-    type: 'cloze',
-    front: 'Preencha as lacunas sobre os Princípios da Administração Pública',
-    back: 'Art. 37 da CF/88 estabelece os princípios: Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência',
-    clozeText: 'Art. 37 da CF/88 estabelece os princípios: {{c1::Legalidade}}, {{c2::Impessoalidade}}, {{c3::Moralidade}}, {{c4::Publicidade}} e {{c5::Eficiência}}',
-    clozeAnswers: ['Legalidade', 'Impessoalidade', 'Moralidade', 'Publicidade', 'Eficiência'],
-    subject: 'Direito Constitucional',
-    tags: ['administração pública', 'princípios', 'LIMPE'],
-    difficulty: 'Fácil',
-    createdAt: '2024-01-15',
-    srsData: {
-      interval: 1,
-      repetitions: 0,
-      easeFactor: 2.5,
-      nextReview: '2024-01-19',
-      lastReviewed: '2024-01-18',
-      quality: 1
-    },
-    stats: {
-      totalReviews: 1,
-      correctReviews: 0,
-      streak: 0,
-      averageTime: 20
-    }
-  },
-  // 4. MULTIPLE CHOICE - Múltipla Escolha
-  {
-    id: '4',
-    type: 'multiple_choice',
-    front: 'Qual é a função principal de um firewall em segurança da informação?',
-    back: 'Monitorar e controlar o tráfego de rede baseado em regras de segurança',
-    multipleChoiceOptions: [
-      { id: 'a', text: 'Criptografar todos os dados da rede', isCorrect: false },
-      { id: 'b', text: 'Monitorar e controlar o tráfego de rede baseado em regras de segurança', isCorrect: true },
-      { id: 'c', text: 'Fazer backup automático dos sistemas', isCorrect: false },
-      { id: 'd', text: 'Detectar vírus em arquivos executáveis', isCorrect: false }
-    ],
-    explanation: 'Firewall atua como uma barreira entre redes confiáveis e não confiáveis, filtrando o tráfego conforme regras estabelecidas.',
-    subject: 'Informática',
-    tags: ['firewall', 'segurança', 'rede'],
-    difficulty: 'Fácil',
-    createdAt: '2024-01-12',
-    srsData: {
-      interval: 7,
-      repetitions: 3,
-      easeFactor: 2.5,
-      nextReview: '2024-01-20',
-      lastReviewed: '2024-01-13',
-      quality: 5
-    },
-    stats: {
-      totalReviews: 4,
-      correctReviews: 4,
-      streak: 4,
-      averageTime: 8
-    }
-  },
-  // 5. TRUE/FALSE - Verdadeiro ou Falso
-  {
-    id: '5',
-    type: 'true_false',
-    front: 'Avalie a afirmação sobre concordância verbal',
-    back: 'FALSO - A regra pode variar conforme a posição do sujeito composto',
-    truefalseStatement: 'Com sujeito composto, o verbo SEMPRE deve ir para o plural, independentemente da posição.',
-    correctAnswer: 'false',
-    explanation: 'FALSO: Com sujeito composto anteposto, o verbo vai para o plural. Com sujeito posposto, pode concordar com o núcleo mais próximo OU ir para o plural. Ex: "Chegou João e Maria" (singular) ou "Chegaram João e Maria" (plural).',
-    subject: 'Português',
-    tags: ['concordância verbal', 'sujeito composto', 'gramática'],
-    difficulty: 'Médio',
-    createdAt: '2024-01-14',
-    srsData: {
-      interval: 2,
-      repetitions: 1,
-      easeFactor: 2.0,
-      nextReview: '2024-01-21',
-      lastReviewed: '2024-01-19',
-      quality: 3
-    },
-    stats: {
-      totalReviews: 2,
-      correctReviews: 1,
-      streak: 1,
-      averageTime: 15
-    }
-  },
-  // 6. TYPE ANSWER - Digite a Resposta
-  {
-    id: '6',
-    type: 'type_answer',
-    front: 'Digite o nome do princípio constitucional que determina que todos devem ser tratados de forma igual perante a lei',
-    back: 'ISONOMIA (ou IGUALDADE)',
-    correctAnswer: 'isonomia',
-    typeAnswerHint: 'Dica: Começa com "I" e é sinônimo de igualdade',
-    explanation: 'O princípio da isonomia (ou igualdade) está previsto no caput do art. 5º da CF/88: "Todos são iguais perante a lei".',
-    subject: 'Direito Constitucional',
-    tags: ['princípios constitucionais', 'isonomia', 'igualdade'],
-    difficulty: 'Médio',
-    createdAt: '2024-01-16',
-    srsData: {
-      interval: 4,
-      repetitions: 2,
-      easeFactor: 2.3,
-      nextReview: '2024-01-22',
-      lastReviewed: '2024-01-18',
-      quality: 4
-    },
-    stats: {
-      totalReviews: 3,
-      correctReviews: 2,
-      streak: 2,
-      averageTime: 25
-    }
-  },
-  // 7. IMAGE OCCLUSION - Oclusão de Imagem
-  {
-    id: '7',
-    type: 'image_occlusion',
-    front: 'Identifique as partes ocultas da estrutura hierárquica dos poderes',
-    back: 'Poder Executivo, Poder Legislativo, Poder Judiciário',
-    imageUrl: '/images/poderes-republica.jpg', // Imagem exemplo
-    occlusionAreas: [
-      { id: '1', x: 50, y: 100, width: 120, height: 40, answer: 'Poder Executivo' },
-      { id: '2', x: 200, y: 100, width: 120, height: 40, answer: 'Poder Legislativo' },
-      { id: '3', x: 350, y: 100, width: 120, height: 40, answer: 'Poder Judiciário' }
-    ],
-    explanation: 'A separação dos poderes é um princípio fundamental da República Federativa do Brasil, estabelecido no art. 2º da CF/88.',
-    subject: 'Direito Constitucional',
-    tags: ['separação de poderes', 'estrutura estatal', 'constituição'],
-    difficulty: 'Fácil',
-    createdAt: '2024-01-17',
-    srsData: {
-      interval: 1,
-      repetitions: 0,
-      easeFactor: 2.5,
-      nextReview: '2024-01-20',
-      lastReviewed: '2024-01-19',
-      quality: 3
-    },
-    stats: {
-      totalReviews: 1,
-      correctReviews: 1,
-      streak: 1,
-      averageTime: 30
-    }
-  },
-  // Cartões adicionais para demonstrar variedade
-  {
-    id: '8',
-    type: 'basic',
-    front: 'O que significa o princípio da legalidade na Administração Pública?',
-    back: 'A Administração só pode fazer o que a lei permite ou autoriza. Enquanto o particular pode fazer tudo que a lei não proíbe, o administrador público só pode agir com base em lei.',
-    subject: 'Direito Administrativo',
-    tags: ['legalidade', 'administração pública', 'princípios'],
-    difficulty: 'Médio',
-    createdAt: '2024-01-18',
-    srsData: {
-      interval: 2,
-      repetitions: 1,
-      easeFactor: 2.1,
-      nextReview: '2024-01-21',
-      lastReviewed: '2024-01-19',
-      quality: 3
-    },
-    stats: {
-      totalReviews: 2,
-      correctReviews: 1,
-      streak: 1,
-      averageTime: 14
-    }
-  },
-  {
-    id: '9',
-    type: 'cloze',
-    front: 'Complete a frase sobre criptografia',
-    back: 'A criptografia simétrica usa a mesma chave para cifrar e decifrar',
-    clozeText: 'A criptografia {{c1::simétrica}} usa a {{c2::mesma}} chave para {{c3::cifrar}} e {{c4::decifrar}}',
-    clozeAnswers: ['simétrica', 'mesma', 'cifrar', 'decifrar'],
-    subject: 'Informática',
-    tags: ['criptografia', 'segurança', 'simétrica'],
-    difficulty: 'Médio',
-    createdAt: '2024-01-19',
-    srsData: {
-      interval: 1,
-      repetitions: 0,
-      easeFactor: 2.5,
-      nextReview: '2024-01-21',
-      quality: 0
-    },
-    stats: {
-      totalReviews: 1,
-      correctReviews: 0,
-      streak: 0,
-      averageTime: 22
-    }
-  },
-  {
-    id: '10',
-    type: 'multiple_choice',
-    front: 'Qual é a pena para o crime de corrupção passiva?',
-    back: 'Reclusão de 2 a 12 anos e multa',
-    multipleChoiceOptions: [
-      { id: 'a', text: 'Detenção de 6 meses a 2 anos', isCorrect: false },
-      { id: 'b', text: 'Reclusão de 2 a 12 anos e multa', isCorrect: true },
-      { id: 'c', text: 'Reclusão de 1 a 4 anos', isCorrect: false },
-      { id: 'd', text: 'Multa apenas', isCorrect: false }
-    ],
-    explanation: 'Art. 317 do Código Penal estabelece pena de reclusão de 2 a 12 anos e multa para corrupção passiva.',
-    subject: 'Direito Penal',
-    tags: ['corrupção passiva', 'penas', 'código penal'],
-    difficulty: 'Difícil',
-    createdAt: '2024-01-20',
-    srsData: {
-      interval: 3,
-      repetitions: 2,
-      easeFactor: 1.9,
-      nextReview: '2024-01-23',
-      lastReviewed: '2024-01-20',
-      quality: 3
-    },
-    stats: {
-      totalReviews: 3,
-      correctReviews: 2,
-      streak: 1,
-      averageTime: 16
-    }
-  }
-];
-
-// Estatísticas gerais
-const studyStats = {
-  totalCards: 487,
-  dueToday: 89,
-  newCards: 56,
-  dailyStreak: 12,
-  totalStudyTime: 1548, // minutos
-  averageAccuracy: 82.3,
-  cardsStudiedToday: 73,
-  timeStudiedToday: 42 // minutos
-};
 
 export default function FlashcardsPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'study' | 'create' | 'create-card' | 'stats'>('overview');
@@ -623,18 +159,183 @@ export default function FlashcardsPage() {
   const [newCardHint, setNewCardHint] = useState('');
   const [showDeckSelector, setShowDeckSelector] = useState(false);
 
-  // Filtrar decks
-  const filteredDecks = mockDecks.filter(deck => {
-    const matchesSearch = deck.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         deck.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSubject = filterSubject === 'all' || deck.subject === filterSubject;
-    const matchesOrigin = deckFilter === 'all' || 
-                         (deckFilter === 'my' && deck.isUserDeck) || 
-                         (deckFilter === 'system' && !deck.isUserDeck);
-    return matchesSearch && matchesSubject && matchesOrigin;
+  // Estados para integração com API
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const [studyStats, setStudyStats] = useState<StudyStats>({
+    totalCards: 0,
+    dueToday: 0,
+    newCards: 0,
+    dailyStreak: 0,
+    totalStudyTime: 0,
+    averageAccuracy: 0,
+    cardsStudiedToday: 0,
+    timeStudiedToday: 0
+  });
+  const [loadingState, setLoadingState] = useState<LoadingState>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loadingStats, setLoadingStats] = useState<LoadingState>('idle');
+
+  // Funções de API
+  const loadFlashcards = async () => {
+    try {
+      setLoadingState('loading');
+      setErrorMessage(null);
+      
+      const response = await flashcardService.getFlashcards({
+        page: 1,
+        limit: 100, // Carregar muitos para demonstração
+        search: searchTerm || undefined,
+        category: filterSubject === 'all' ? undefined : filterSubject
+      });
+      
+      // Mapear dados da API para o formato local
+      const mappedFlashcards: Flashcard[] = response.data.flashcards.map((apiCard: APIFlashcard) => ({
+        id: apiCard.id,
+        type: apiCard.type,
+        front: apiCard.front || apiCard.question || '',
+        back: apiCard.back || '', 
+        category: apiCard.category,
+        subcategory: apiCard.subcategory,
+        tags: apiCard.tags,
+        difficulty: apiCard.difficulty,
+        created_at: apiCard.created_at,
+        // Campos específicos
+        text: apiCard.text,
+        question: apiCard.question,
+        options: apiCard.options,
+        correct: apiCard.correct,
+        explanation: apiCard.explanation,
+        statement: apiCard.statement,
+        answer: apiCard.answer,
+        hint: apiCard.hint,
+        image: apiCard.image,
+        occlusionAreas: apiCard.occlusionAreas,
+        // Dados SRS
+        interval: apiCard.interval,
+        ease_factor: apiCard.ease_factor,
+        next_review: apiCard.next_review,
+        times_studied: apiCard.times_studied,
+        times_correct: apiCard.times_correct,
+        correct_rate: apiCard.correct_rate,
+        // Metadados
+        author_id: apiCard.author_id,
+        author_name: apiCard.author_name,
+        status: apiCard.status
+      }));
+      
+      setFlashcards(mappedFlashcards);
+      setLoadingState('success');
+    } catch (error) {
+      console.error('Erro ao carregar flashcards:', error);
+      setErrorMessage('Falha ao carregar flashcards. Tente novamente.');
+      setLoadingState('error');
+      toast.error('Erro ao carregar flashcards');
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      setLoadingStats('loading');
+      
+      const response = await flashcardService.getStats();
+      
+      // Mapear estatísticas da API para o formato local
+      setStudyStats({
+        totalCards: response.data.total_flashcards || 0,
+        dueToday: Math.floor(response.data.total_flashcards * 0.2) || 0, // Simulação
+        newCards: Math.floor(response.data.total_flashcards * 0.1) || 0,
+        dailyStreak: 12, // Valor fixo por enquanto
+        totalStudyTime: 1548, // Valor fixo por enquanto  
+        averageAccuracy: response.data.average_correct_rate || 0,
+        cardsStudiedToday: 73, // Valor fixo por enquanto
+        timeStudiedToday: 42 // Valor fixo por enquanto
+      });
+      
+      setLoadingStats('success');
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
+      setLoadingStats('error');
+    }
+  };
+
+  // useEffect para carregar dados iniciais
+  useEffect(() => {
+    loadFlashcards();
+    loadStats();
+  }, []);
+
+  // useEffect para recarregar quando filtros mudam
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      loadFlashcards();
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm, filterSubject]);
+
+  // Função para gravar sessão de estudo
+  const recordStudy = async (flashcardId: string, isCorrect: boolean, quality: number = 3) => {
+    try {
+      await flashcardService.recordStudySession(flashcardId, isCorrect, quality);
+      // Recarregar dados após gravação
+      loadFlashcards();
+      loadStats();
+    } catch (error) {
+      console.error('Erro ao gravar sessão de estudo:', error);
+      toast.error('Erro ao gravar sessão de estudo');
+    }
+  };
+
+  // Filtrar flashcards localmente (agora usando dados da API)
+  const filteredFlashcards = flashcards.filter(card => {
+    const matchesSearch = !searchTerm || 
+      card.front?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      card.back?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      card.category.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesSubject = filterSubject === 'all' || card.category === filterSubject;
+    
+    return matchesSearch && matchesSubject;
   });
 
-  const subjects = ['all', ...new Set(mockDecks.map(deck => deck.subject))];
+  // Organizar flashcards por categoria (similar ao conceito de decks)
+  const flashcardsByCategory = filteredFlashcards.reduce((acc, card) => {
+    const category = card.category || 'Outros';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(card);
+    return acc;
+  }, {} as Record<string, Flashcard[]>);
+
+  const filteredDecks = Object.entries(flashcardsByCategory).map(([category, cards]) => ({
+    id: category.toLowerCase().replace(/\s+/g, '-'),
+    name: `ARSENAL TÁTICO - ${category}`,
+    description: `Flashcards sobre ${category.toLowerCase()}`,
+    subject: category,
+    totalCards: cards.length,
+    dueCards: cards.filter(card => {
+      const nextReview = new Date(card.next_review);
+      const today = new Date();
+      return nextReview <= today;
+    }).length,
+    newCards: cards.filter(card => card.times_studied === 0).length,
+    color: 'bg-blue-500', // Cor padrão
+    createdAt: cards[0]?.created_at || new Date().toISOString(),
+    isUserDeck: false,
+    author: 'SISTEMA TÁTICO'
+  }));
+
+  // Lista de matérias/categorias disponíveis 
+  const subjects = ['all', ...new Set(flashcards.map(card => card.category))];
+
+  // Aplicar filtros de origem nos decks
+  const finalFilteredDecks = filteredDecks.filter(deck => {
+    const matchesOrigin = deckFilter === 'all' || 
+                           (deckFilter === 'my' && deck.isUserDeck) || 
+                           (deckFilter === 'system' && !deck.isUserDeck);
+    return matchesOrigin;
+  });
 
   // Handle card selection
   const handleCardSelection = (cardId: string) => {
@@ -683,13 +384,14 @@ export default function FlashcardsPage() {
       }
     };
 
-    // Adicionar ao mockFlashcards (simulação)
-    mockFlashcards.push(newCard);
-    
+    // Criar flashcard via API (funcionalidade futura)
     toast.success('CARTÃO TÁTICO CRIADO COM SUCESSO!', {
       icon: '🎯',
       duration: 3000
     });
+    
+    // Recarregar dados após criação
+    loadFlashcards();
 
     // Limpar formulário
     setNewCardFront('');
@@ -738,7 +440,9 @@ export default function FlashcardsPage() {
 
   // Algoritmo SM-2 (SuperMemo 2) - Implementação completa como no Anki
   const calculateNextReview = (quality: number, card: Flashcard) => {
-    const { interval, repetitions, easeFactor } = card.srsData;
+    const interval = card.interval || 1;
+    const repetitions = card.times_studied || 0;
+    const easeFactor = card.ease_factor || 2.5;
     
     let newInterval = interval;
     let newRepetitions = repetitions;
@@ -825,7 +529,7 @@ export default function FlashcardsPage() {
     };
   };
 
-  const handleAnswer = (quality: number) => {
+  const handleAnswer = async (quality: number) => {
     if (!currentCard || !studySession) return;
 
     // Atualiza estatísticas da sessão
@@ -836,21 +540,32 @@ export default function FlashcardsPage() {
       total: prev.total + 1
     }));
 
-    // Simula atualização do card com SRS
+    // Gravar sessão de estudo na API
+    try {
+      await recordStudy(currentCard.id, isCorrect, quality);
+      
+      // Mostrar feedback positivo
+      toast.success(isCorrect ? 'RESPOSTA CORRETA! 🎯' : 'RESPOSTA INCORRETA. CONTINUE TREINANDO! 💪', {
+        duration: 2000
+      });
+    } catch (error) {
+      console.error('Erro ao gravar resposta:', error);
+      toast.error('Erro ao gravar resposta, mas continuando o estudo');
+    }
+
+    // Simulação local do SRS para mostrar progressão imediata
     const updatedSRS = calculateNextReview(quality, currentCard);
-    // Atualiza o card atual com novos dados SRS
     const updatedCard = {
       ...currentCard,
-      srsData: updatedSRS,
-      stats: {
-        ...currentCard.stats,
-        totalReviews: currentCard.stats.totalReviews + 1,
-        correctReviews: currentCard.stats.correctReviews + (isCorrect ? 1 : 0),
-        streak: isCorrect ? currentCard.stats.streak + 1 : 0
-      }
+      interval: updatedSRS.interval,
+      ease_factor: updatedSRS.easeFactor,
+      next_review: updatedSRS.nextReview,
+      times_studied: currentCard.times_studied + 1,
+      times_correct: currentCard.times_correct + (isCorrect ? 1 : 0),
+      correct_rate: ((currentCard.times_correct + (isCorrect ? 1 : 0)) / (currentCard.times_studied + 1)) * 100
     };
 
-    // Atualiza o array de cards
+    // Atualiza o array de cards localmente
     const newStudyCards = [...studyCards];
     newStudyCards[currentCardIndex] = updatedCard;
     setStudyCards(newStudyCards);
@@ -898,11 +613,8 @@ export default function FlashcardsPage() {
 
   // Função para trocar de deck durante o estudo
   const switchDeck = (newDeck: FlashcardDeck) => {
-    const newCards = mockFlashcards.filter(card => {
-      if (newDeck.id === 'guide-flashcard-types') {
-        return card.id.startsWith('guide-');
-      }
-      return card.subject === newDeck.subject;
+    const newCards = flashcards.filter(card => {
+      return card.category === newDeck.subject;
     }).slice(0, newDeck.totalCards);
 
     setSelectedDeck(newDeck);
@@ -933,13 +645,13 @@ export default function FlashcardsPage() {
   };
 
   const startStudySession = (deck: FlashcardDeck) => {
-    // Filtra cards do deck selecionado + alguns cards exemplo
-    const deckCards = [...mockFlashcards]; // Em produção, filtraria por deck.id
+    // Filtra cards do deck selecionado
+    const deckCards = flashcards.filter(card => card.category === deck.subject);
     
     // Ordena cards por prioridade SRS (cards vencidos primeiro)
     const sortedCards = deckCards.sort((a, b) => {
-      const aDate = new Date(a.srsData.nextReview);
-      const bDate = new Date(b.srsData.nextReview);
+      const aDate = new Date(a.next_review);
+      const bDate = new Date(b.next_review);
       return aDate.getTime() - bDate.getTime();
     });
 
@@ -1579,15 +1291,43 @@ export default function FlashcardsPage() {
               <p className="text-gray-600 dark:text-gray-400 mb-4 font-police-body">
                 NOSSO SISTEMA SUPORTA 7 TIPOS DIFERENTES DE FLASHCARDS PARA MAXIMIZAR SEU APRENDIZADO:
               </p>
+              
+              {/* Loading e Error States */}
+              {loadingState === 'loading' && (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin text-accent-500" />
+                  <span className="ml-2 text-accent-500 font-police-body uppercase tracking-wider">CARREGANDO ARSENAL...</span>
+                </div>
+              )}
+              
+              {errorMessage && (
+                <div className="bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg p-4 mb-4">
+                  <div className="flex items-center">
+                    <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
+                    <span className="text-red-700 dark:text-red-400 font-police-body">{errorMessage}</span>
+                    <Button 
+                      onClick={() => {
+                        loadFlashcards();
+                        loadStats();
+                      }}
+                      className="ml-auto bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-1" />
+                      TENTAR NOVAMENTE
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
-                  { type: 'basic', name: 'BÁSICO', desc: 'Pergunta e resposta tradicional', count: mockFlashcards.filter(c => c.type === 'basic').length, color: 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' },
-                  { type: 'basic_inverted', name: 'BÁSICO INVERTIDO', desc: 'Com cartão reverso automático', count: mockFlashcards.filter(c => c.type === 'basic_inverted').length, color: 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' },
-                  { type: 'cloze', name: 'LACUNAS', desc: 'Preencher espaços em branco', count: mockFlashcards.filter(c => c.type === 'cloze').length, color: 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' },
-                  { type: 'multiple_choice', name: 'MÚLTIPLA ESCOLHA', desc: '4 alternativas com explicação', count: mockFlashcards.filter(c => c.type === 'multiple_choice').length, color: 'bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400' },
-                  { type: 'true_false', name: 'VERDADEIRO/FALSO', desc: 'Avaliação de afirmações', count: mockFlashcards.filter(c => c.type === 'true_false').length, color: 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400' },
-                  { type: 'type_answer', name: 'DIGITE RESPOSTA', desc: 'Campo de texto com dica', count: mockFlashcards.filter(c => c.type === 'type_answer').length, color: 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400' },
-                  { type: 'image_occlusion', name: 'OCLUSÃO IMAGEM', desc: 'Áreas ocultas em imagens', count: mockFlashcards.filter(c => c.type === 'image_occlusion').length, color: 'bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400' }
+                  { type: 'basic', name: 'BÁSICO', desc: 'Pergunta e resposta tradicional', count: flashcards.filter(c => c.type === 'basic').length, color: 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' },
+                  { type: 'basic_reversed', name: 'BÁSICO INVERTIDO', desc: 'Com cartão reverso automático', count: flashcards.filter(c => c.type === 'basic_reversed').length, color: 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' },
+                  { type: 'cloze', name: 'LACUNAS', desc: 'Preencher espaços em branco', count: flashcards.filter(c => c.type === 'cloze').length, color: 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' },
+                  { type: 'multiple_choice', name: 'MÚLTIPLA ESCOLHA', desc: '4 alternativas com explicação', count: flashcards.filter(c => c.type === 'multiple_choice').length, color: 'bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400' },
+                  { type: 'true_false', name: 'VERDADEIRO/FALSO', desc: 'Avaliação de afirmações', count: flashcards.filter(c => c.type === 'true_false').length, color: 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400' },
+                  { type: 'type_answer', name: 'DIGITE RESPOSTA', desc: 'Campo de texto com dica', count: flashcards.filter(c => c.type === 'type_answer').length, color: 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400' },
+                  { type: 'image_occlusion', name: 'OCLUSÃO IMAGEM', desc: 'Áreas ocultas em imagens', count: flashcards.filter(c => c.type === 'image_occlusion').length, color: 'bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400' }
                 ].map((cardType, index) => (
                   <div key={cardType.type} className={cn("p-3 rounded-lg border-2", cardType.color)}>
                     <div className="flex items-center justify-between mb-1">
@@ -1656,22 +1396,24 @@ export default function FlashcardsPage() {
                     <div className="flex gap-3">
                       <Button 
                         onClick={() => {
-                          const guideDeck = mockDecks.find(d => d.id === 'guide-flashcard-types');
-                          if (guideDeck) {
-                            const guideCards = mockFlashcards.filter(card => card.id.startsWith('guide-'));
-                            setStudyCards(guideCards);
-                            setCurrentCard(guideCards[0]);
+                          // Iniciar estudo com todos os flashcards disponíveis
+                          if (flashcards.length > 0) {
+                            const studyCards = flashcards.slice(0, 10); // Limitar para demonstração
+                            setStudyCards(studyCards);
+                            setCurrentCard(studyCards[0]);
                             setCurrentCardIndex(0);
                             setShowAnswer(false);
                             setStudySession({
-                              deckName: guideDeck.name,
-                              totalCards: guideCards.length,
+                              deckName: 'ARSENAL TÁTICO - TODOS OS TIPOS',
+                              totalCards: studyCards.length,
                               cardsStudied: 0,
                               accuracy: 0,
                               startTime: Date.now(),
                               isActive: true
                             });
                             setActiveTab('study');
+                          } else {
+                            toast.error('Nenhum flashcard disponível para estudo');
                           }
                         }}
                         className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-police-body font-semibold uppercase tracking-wider"
@@ -1694,9 +1436,9 @@ export default function FlashcardsPage() {
             </div>
 
             {/* Grid de decks */}
-            {filteredDecks.length > 0 ? (
+            {finalFilteredDecks.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredDecks.map((deck) => (
+                {finalFilteredDecks.map((deck) => (
                   <DeckCard key={deck.id} deck={deck} />
                 ))}
               </div>
@@ -1741,11 +1483,10 @@ export default function FlashcardsPage() {
                 </Button>
               </div>
               
-              {/* Grid de flashcards individuais criados pelo usuário */}
-              {mockFlashcards.filter(card => card.id.startsWith('card-')).length > 0 ? (
+              {/* Grid de flashcards individuais */}
+              {flashcards.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {mockFlashcards
-                    .filter(card => card.id.startsWith('card-'))
+                  {flashcards
                     .slice(0, 6)
                     .map((card) => (
                     <motion.div
@@ -1895,7 +1636,7 @@ export default function FlashcardsPage() {
                                         SELECIONAR ARSENAL:
                                       </h4>
                                       <div className="max-h-60 overflow-y-auto space-y-2">
-                                        {mockDecks.map((deck) => (
+                                        {finalFilteredDecks.map((deck) => (
                                           <button
                                             key={deck.id}
                                             onClick={() => switchDeck(deck)}
@@ -2169,7 +1910,7 @@ export default function FlashcardsPage() {
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
-                        {mockFlashcards.length} CARTÕES DISPONÍVEIS - TODOS OS 7 TIPOS IMPLEMENTADOS
+                        {flashcards.length} CARTÕES DISPONÍVEIS - TODOS OS 7 TIPOS IMPLEMENTADOS
                       </p>
                       <p className="text-sm font-medium text-gray-900 dark:text-white font-police-numbers">
                         {selectedCards.length} SELECIONADO{selectedCards.length !== 1 ? 'S' : ''}
@@ -2214,7 +1955,7 @@ export default function FlashcardsPage() {
                     </div>
                     
                     <div className="border border-gray-200 dark:border-gray-700 rounded-lg max-h-96 overflow-y-auto bg-white dark:bg-gray-900">
-                      {mockFlashcards.map((card) => {
+                      {flashcards.map((card) => {
                         const getTypeColor = (type: string) => {
                           switch (type) {
                             case 'basic': return 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-300';
