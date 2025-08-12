@@ -1,1 +1,31 @@
-[]
+[
+  {
+    "id": "sm_1754975225142_468",
+    "title": "Princípios Fundamentais",
+    "subject": "Direito Constitucional",
+    "content": "Teste de conteúdo",
+    "summary_type": "text",
+    "difficulty": "basic",
+    "estimated_reading_time": 1,
+    "tags": [
+      "teste"
+    ],
+    "sections": [],
+    "references": [],
+    "visibility": "public",
+    "shared_with": [],
+    "statistics": {
+      "views": 0,
+      "likes": 0,
+      "shares": 0,
+      "study_sessions": 0,
+      "average_rating": 0,
+      "total_ratings": 0
+    },
+    "status": "published",
+    "created_by": "1",
+    "created_at": "2025-08-12T05:07:05.142Z",
+    "updated_at": "2025-08-12T05:07:18.017Z",
+    "published_at": "2025-08-12T05:07:18.017Z"
+  }
+]
