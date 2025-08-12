@@ -1,0 +1,652 @@
+[
+  {
+    "id": "leg_001",
+    "title": "Constituição Federal de 1988",
+    "type": "constitution",
+    "number": "CF/88",
+    "year": 1988,
+    "subject_area": "Direito Constitucional",
+    "description": "Constituição da República Federativa do Brasil de 1988, também conhecida como Constituição Cidadã.",
+    "full_text": "Texto completo da Constituição Federal de 1988...",
+    "articles": [
+      {
+        "id": "art_001_001",
+        "number": "Art. 1º",
+        "title": "Fundamentos da República",
+        "content": "A República Federativa do Brasil, formada pela união indissolúvel dos Estados e Municípios e do Distrito Federal, constitui-se em Estado Democrático de Direito e tem como fundamentos:",
+        "paragraphs": [
+          {
+            "id": "par_001_001",
+            "number": "I",
+            "content": "a soberania;",
+            "items": []
+          },
+          {
+            "id": "par_001_002",
+            "number": "II",
+            "content": "a cidadania;",
+            "items": []
+          },
+          {
+            "id": "par_001_003",
+            "number": "III",
+            "content": "a dignidade da pessoa humana;",
+            "items": []
+          },
+          {
+            "id": "par_001_004",
+            "number": "IV",
+            "content": "os valores sociais do trabalho e da livre iniciativa;",
+            "items": []
+          },
+          {
+            "id": "par_001_005",
+            "number": "V",
+            "content": "o pluralismo político.",
+            "items": []
+          }
+        ],
+        "comments": "Artigo fundamental que estabelece os pilares da República brasileira.",
+        "jurisprudence": [
+          "STF - ADI 2135",
+          "STF - ADPF 54"
+        ]
+      },
+      {
+        "id": "art_001_005",
+        "number": "Art. 5º",
+        "title": "Direitos e Deveres Individuais e Coletivos",
+        "content": "Todos são iguais perante a lei, sem distinção de qualquer natureza, garantindo-se aos brasileiros e aos estrangeiros residentes no País a inviolabilidade do direito à vida, à liberdade, à igualdade, à segurança e à propriedade, nos termos seguintes:",
+        "paragraphs": [
+          {
+            "id": "par_005_001",
+            "number": "I",
+            "content": "homens e mulheres são iguais em direitos e obrigações, nos termos desta Constituição;",
+            "items": []
+          },
+          {
+            "id": "par_005_002",
+            "number": "II",
+            "content": "ninguém será obrigado a fazer ou deixar de fazer alguma coisa senão em virtude de lei;",
+            "items": []
+          },
+          {
+            "id": "par_005_003",
+            "number": "III",
+            "content": "ninguém será submetido à tortura nem a tratamento desumano ou degradante;",
+            "items": []
+          }
+        ],
+        "comments": "Artigo mais importante sobre direitos fundamentais no Brasil.",
+        "jurisprudence": [
+          "STF - HC 82424",
+          "STF - RE 466343"
+        ]
+      }
+    ],
+    "keywords": [
+      "constituição",
+      "direitos fundamentais",
+      "república",
+      "democracia",
+      "estado de direito"
+    ],
+    "related_laws": [
+      "leg_002",
+      "leg_003"
+    ],
+    "status": "active",
+    "publication_date": "1988-10-05",
+    "effective_date": "1988-10-05",
+    "source_url": "http://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm",
+    "summary": "A Constituição Federal de 1988 é a lei fundamental e suprema do Brasil, estabelecendo a organização do Estado e os direitos fundamentais dos cidadãos.",
+    "key_changes": [
+      "Redemocratização",
+      "Direitos sociais ampliados",
+      "Sistema federativo"
+    ],
+    "affected_groups": [
+      "Todos os cidadãos brasileiros",
+      "Estrangeiros residentes"
+    ],
+    "penalties": [],
+    "statistics": {
+      "views": 15425,
+      "searches": 8930,
+      "bookmarks": 2340
+    },
+    "created_by": "system",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2025-08-12T04:36:22.235Z"
+  },
+  {
+    "id": "leg_002",
+    "title": "Código Penal Brasileiro",
+    "type": "law",
+    "number": "Decreto-Lei 2.848/40",
+    "year": 1940,
+    "subject_area": "Direito Penal",
+    "description": "Código Penal Brasileiro, que define crimes e contravenções penais.",
+    "full_text": "Texto completo do Código Penal...",
+    "articles": [
+      {
+        "id": "art_002_001",
+        "number": "Art. 1º",
+        "title": "Não há crime sem lei anterior que o defina",
+        "content": "Não há crime sem lei anterior que o defina. Não há pena sem prévia cominação legal.",
+        "paragraphs": [],
+        "comments": "Princípio da legalidade penal (nullum crimen, nulla poena sine lege).",
+        "jurisprudence": [
+          "STF - HC 104410",
+          "STJ - HC 195463"
+        ]
+      },
+      {
+        "id": "art_002_121",
+        "number": "Art. 121",
+        "title": "Homicídio",
+        "content": "Matar alguem:",
+        "paragraphs": [
+          {
+            "id": "par_121_001",
+            "number": "Pena",
+            "content": "reclusão, de seis a vinte anos.",
+            "items": []
+          },
+          {
+            "id": "par_121_002",
+            "number": "§ 1º",
+            "content": "Se o agente comete o crime impelido por motivo de relevante valor social ou moral, ou sob o domínio de violenta emoção, logo em seguida a injusta provocação da vítima, o juiz pode reduzir a pena de um sexto a um terço.",
+            "items": []
+          },
+          {
+            "id": "par_121_003",
+            "number": "§ 2º",
+            "content": "Se o homicídio é cometido:",
+            "items": [
+              {
+                "id": "item_121_001",
+                "number": "I",
+                "content": "mediante paga ou promessa de recompensa, ou por outro motivo torpe;",
+                "subitems": []
+              },
+              {
+                "id": "item_121_002",
+                "number": "II",
+                "content": "por motivo fútil;",
+                "subitems": []
+              },
+              {
+                "id": "item_121_003",
+                "number": "III",
+                "content": "com emprego de veneno, fogo, explosivo, asfixia, tortura ou outro meio insidioso ou cruel, ou de que possa resultar perigo comum;",
+                "subitems": []
+              }
+            ]
+          }
+        ],
+        "comments": "Crime contra a vida, competência do Tribunal do Júri.",
+        "jurisprudence": [
+          "STF - HC 96820",
+          "STJ - REsp 1416580"
+        ]
+      }
+    ],
+    "keywords": [
+      "crime",
+      "pena",
+      "homicídio",
+      "furto",
+      "roubo",
+      "código penal"
+    ],
+    "related_laws": [
+      "leg_003",
+      "leg_004"
+    ],
+    "status": "active",
+    "publication_date": "1940-12-07",
+    "effective_date": "1942-01-01",
+    "source_url": "http://www.planalto.gov.br/ccivil_03/decreto-lei/del2848.htm",
+    "summary": "Define crimes e contravenções penais, estabelecendo as bases do direito penal brasileiro.",
+    "key_changes": [
+      "Reforma de 1984",
+      "Lei 13.964/2019 (Pacote Anticrime)"
+    ],
+    "affected_groups": [
+      "Todos os cidadãos",
+      "Sistema de justiça criminal"
+    ],
+    "penalties": [
+      "Reclusão",
+      "Detenção",
+      "Multa",
+      "Medidas de segurança"
+    ],
+    "statistics": {
+      "views": 12854,
+      "searches": 7121,
+      "bookmarks": 1890
+    },
+    "created_by": "system",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2025-08-12T04:36:22.304Z"
+  },
+  {
+    "id": "leg_003",
+    "title": "Código de Processo Penal",
+    "type": "law",
+    "number": "Decreto-Lei 3.689/41",
+    "year": 1941,
+    "subject_area": "Direito Processual Penal",
+    "description": "Código de Processo Penal brasileiro, que regula o processo criminal.",
+    "full_text": "Texto completo do Código de Processo Penal...",
+    "articles": [
+      {
+        "id": "art_003_001",
+        "number": "Art. 1º",
+        "title": "Aplicação do processo penal",
+        "content": "O processo penal reger-se-á, em todo o território brasileiro, por este Código, ressalvados:",
+        "paragraphs": [
+          {
+            "id": "par_003_001",
+            "number": "I",
+            "content": "os tratados, as convenções e regras de direito internacional;",
+            "items": []
+          },
+          {
+            "id": "par_003_002",
+            "number": "II",
+            "content": "as prerrogativas constitucionais do Presidente da República, dos ministros de Estado, nos crimes conexos com os do Presidente da República, e dos ministros do Supremo Tribunal Federal, nos crimes de responsabilidade;",
+            "items": []
+          }
+        ],
+        "comments": "Define a aplicação territorial do CPP.",
+        "jurisprudence": [
+          "STF - HC 89837",
+          "STJ - RHC 32732"
+        ]
+      },
+      {
+        "id": "art_003_302",
+        "number": "Art. 302",
+        "title": "Flagrante delito",
+        "content": "Considera-se em flagrante delito quem:",
+        "paragraphs": [
+          {
+            "id": "par_302_001",
+            "number": "I",
+            "content": "está cometendo a infração penal;",
+            "items": []
+          },
+          {
+            "id": "par_302_002",
+            "number": "II",
+            "content": "acaba de cometê-la;",
+            "items": []
+          },
+          {
+            "id": "par_302_003",
+            "number": "III",
+            "content": "é perseguido, logo após, pela autoridade, pelo ofendido ou por qualquer pessoa, em situação que faça presumir ser autor da infração;",
+            "items": []
+          },
+          {
+            "id": "par_302_004",
+            "number": "IV",
+            "content": "é encontrado, logo depois, com instrumentos, armas, objetos ou papéis que façam presumir ser ele autor da infração.",
+            "items": []
+          }
+        ],
+        "comments": "Define as modalidades de flagrante delito, fundamental para a atividade policial.",
+        "jurisprudence": [
+          "STF - HC 95009",
+          "STJ - HC 205566"
+        ]
+      }
+    ],
+    "keywords": [
+      "processo penal",
+      "flagrante",
+      "prisão",
+      "inquérito",
+      "prova"
+    ],
+    "related_laws": [
+      "leg_002",
+      "leg_009"
+    ],
+    "status": "active",
+    "publication_date": "1941-10-03",
+    "effective_date": "1942-01-01",
+    "source_url": "http://www.planalto.gov.br/ccivil_03/decreto-lei/del3689.htm",
+    "summary": "Regulamenta o processo penal brasileiro, estabelecendo procedimentos para investigação e julgamento de crimes.",
+    "key_changes": [
+      "Lei 11.690/2008",
+      "Lei 12.403/2011",
+      "Lei 13.964/2019"
+    ],
+    "affected_groups": [
+      "Magistrados",
+      "Ministério Público",
+      "Polícias",
+      "Advogados"
+    ],
+    "penalties": [],
+    "statistics": {
+      "views": 9750,
+      "searches": 5421,
+      "bookmarks": 1230
+    },
+    "created_by": "system",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2025-08-12T04:25:21.863Z"
+  },
+  {
+    "id": "leg_004",
+    "title": "Lei de Drogas",
+    "type": "law",
+    "number": "Lei 11.343/06",
+    "year": 2006,
+    "subject_area": "Direito Penal Especial",
+    "description": "Lei que institui o Sistema Nacional de Políticas Públicas sobre Drogas e prescreve medidas para prevenção do uso indevido, atenção e reinserção social de usuários e dependentes de drogas.",
+    "full_text": "Texto completo da Lei de Drogas...",
+    "articles": [
+      {
+        "id": "art_004_028",
+        "number": "Art. 28",
+        "title": "Porte para consumo pessoal",
+        "content": "Quem adquirir, guardar, tiver em depósito, transportar ou trouxer consigo, para consumo pessoal, drogas sem autorização ou em desacordo com determinação legal ou regulamentar será submetido às seguintes penas:",
+        "paragraphs": [
+          {
+            "id": "par_028_001",
+            "number": "I",
+            "content": "advertência sobre os efeitos das drogas;",
+            "items": []
+          },
+          {
+            "id": "par_028_002",
+            "number": "II",
+            "content": "prestação de serviços à comunidade;",
+            "items": []
+          },
+          {
+            "id": "par_028_003",
+            "number": "III",
+            "content": "medida educativa de comparecimento a programa ou curso educativo.",
+            "items": []
+          }
+        ],
+        "comments": "Despenalização do uso de drogas, não configurando crime.",
+        "jurisprudence": [
+          "STF - RE 635659",
+          "STJ - HC 152482"
+        ]
+      },
+      {
+        "id": "art_004_033",
+        "number": "Art. 33",
+        "title": "Tráfico de drogas",
+        "content": "Importar, exportar, remeter, preparar, produzir, fabricar, adquirir, vender, expor à venda, oferecer, ter em depósito, transportar, trazer consigo, guardar, prescrever, ministrar, entregar a consumo ou fornecer drogas, ainda que gratuitamente, sem autorização ou em desacordo com determinação legal ou regulamentar:",
+        "paragraphs": [
+          {
+            "id": "par_033_001",
+            "number": "Pena",
+            "content": "reclusão de 5 (cinco) a 15 (quinze) anos e pagamento de 500 (quinhentos) a 1.500 (mil e quinhentos) dias-multa.",
+            "items": []
+          },
+          {
+            "id": "par_033_002",
+            "number": "§ 1º",
+            "content": "Nas mesmas penas incorre quem:",
+            "items": [
+              {
+                "id": "item_033_001",
+                "number": "I",
+                "content": "importa, exporta, remete, produz, fabrica, adquire, vende, expõe à venda, oferece, fornece, tem em depósito, transporta, traz consigo ou guarda, ainda que gratuitamente, sem autorização ou em desacordo com determinação legal ou regulamentar, matéria-prima, insumo ou produto químico destinado à preparação de drogas;",
+                "subitems": []
+              }
+            ]
+          }
+        ],
+        "comments": "Crime de tráfico de drogas, crime hediondo.",
+        "jurisprudence": [
+          "STF - HC 102367",
+          "STJ - REsp 1565020"
+        ]
+      }
+    ],
+    "keywords": [
+      "drogas",
+      "tráfico",
+      "usuário",
+      "dependente",
+      "prevenção"
+    ],
+    "related_laws": [
+      "leg_002",
+      "leg_003"
+    ],
+    "status": "active",
+    "publication_date": "2006-08-23",
+    "effective_date": "2006-10-08",
+    "source_url": "http://www.planalto.gov.br/ccivil_03/_ato2004-2006/2006/lei/l11343.htm",
+    "summary": "Estabelece o sistema nacional antidrogas, diferenciando usuário de traficante e criando medidas de prevenção e tratamento.",
+    "key_changes": [
+      "Lei 13.840/2019 (internação involuntária)"
+    ],
+    "affected_groups": [
+      "Usuários de drogas",
+      "Dependentes químicos",
+      "Traficantes",
+      "Polícias"
+    ],
+    "penalties": [
+      "Advertência",
+      "Prestação de serviços",
+      "Medida educativa",
+      "Reclusão"
+    ],
+    "statistics": {
+      "views": 8920,
+      "searches": 4680,
+      "bookmarks": 1120
+    },
+    "created_by": "system",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "leg_005",
+    "title": "Estatuto do Desarmamento",
+    "type": "law",
+    "number": "Lei 10.826/03",
+    "year": 2003,
+    "subject_area": "Direito Penal Especial",
+    "description": "Lei que dispõe sobre registro, posse e comercialização de armas de fogo e munição, sobre o Sistema Nacional de Armas e define crimes.",
+    "full_text": "Texto completo do Estatuto do Desarmamento...",
+    "articles": [
+      {
+        "id": "art_005_012",
+        "number": "Art. 12",
+        "title": "Posse irregular de arma de fogo",
+        "content": "Possuir ou manter sob sua guarda arma de fogo, acessório ou munição, de uso permitido, em desacordo com determinação legal ou regulamentar, no interior de sua residência ou dependência desta, ou, ainda no seu local de trabalho, desde que seja o titular ou o responsável legal do estabelecimento ou empresa:",
+        "paragraphs": [
+          {
+            "id": "par_012_001",
+            "number": "Pena",
+            "content": "detenção, de 1 (um) a 3 (três) anos, e multa.",
+            "items": []
+          }
+        ],
+        "comments": "Crime de posse irregular de arma de fogo.",
+        "jurisprudence": [
+          "STF - HC 104410",
+          "STJ - AgRg no REsp 1308997"
+        ]
+      },
+      {
+        "id": "art_005_014",
+        "number": "Art. 14",
+        "title": "Porte ilegal de arma de fogo",
+        "content": "Portar, deter, adquirir, fornecer, receber, ter em depósito, transportar, ceder, ainda que gratuitamente, emprestar, remeter, empregar, manter sob guarda ou ocultar arma de fogo, acessório ou munição, de uso permitido, sem autorização e em desacordo com determinação legal ou regulamentar:",
+        "paragraphs": [
+          {
+            "id": "par_014_001",
+            "number": "Pena",
+            "content": "reclusão, de 2 (dois) a 4 (quatro) anos, e multa.",
+            "items": []
+          }
+        ],
+        "comments": "Crime de porte ilegal de arma de fogo, diferente da posse.",
+        "jurisprudence": [
+          "STF - HC 96759",
+          "STJ - HC 123761"
+        ]
+      }
+    ],
+    "keywords": [
+      "arma de fogo",
+      "munição",
+      "porte",
+      "posse",
+      "registro"
+    ],
+    "related_laws": [
+      "leg_002",
+      "leg_011"
+    ],
+    "status": "active",
+    "publication_date": "2003-12-22",
+    "effective_date": "2004-12-23",
+    "source_url": "http://www.planalto.gov.br/ccivil_03/leis/2003/l10.826.htm",
+    "summary": "Regulamenta o controle de armas de fogo no Brasil, criando o Sistema Nacional de Armas (SINARM).",
+    "key_changes": [
+      "Decreto 9.845/2019",
+      "Lei 13.870/2019"
+    ],
+    "affected_groups": [
+      "Proprietários de armas",
+      "Seguranças privados",
+      "Caçadores",
+      "Atiradores"
+    ],
+    "penalties": [
+      "Detenção",
+      "Reclusão",
+      "Multa"
+    ],
+    "statistics": {
+      "views": 7340,
+      "searches": 3920,
+      "bookmarks": 890
+    },
+    "created_by": "system",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "leg_006",
+    "title": "Marco Civil da Internet",
+    "type": "law",
+    "number": "Lei 12.965/14",
+    "year": 2014,
+    "subject_area": "Direito Digital",
+    "description": "Lei que estabelece princípios, garantias, direitos e deveres para o uso da Internet no Brasil.",
+    "full_text": "Texto completo do Marco Civil da Internet...",
+    "articles": [
+      {
+        "id": "art_006_002",
+        "number": "Art. 2º",
+        "title": "Fundamentos da internet no Brasil",
+        "content": "A disciplina do uso da internet no Brasil tem como fundamento o respeito à liberdade de expressão, bem como:",
+        "paragraphs": [
+          {
+            "id": "par_006_001",
+            "number": "I",
+            "content": "o reconhecimento da escala mundial da rede;",
+            "items": []
+          },
+          {
+            "id": "par_006_002",
+            "number": "II",
+            "content": "os direitos humanos, o desenvolvimento da personalidade e o exercício da cidadania em meios digitais;",
+            "items": []
+          },
+          {
+            "id": "par_006_003",
+            "number": "III",
+            "content": "a pluralidade e a diversidade;",
+            "items": []
+          }
+        ],
+        "comments": "Estabelece os fundamentos para o uso da internet no Brasil.",
+        "jurisprudence": [
+          "STF - ADI 5527",
+          "STJ - REsp 1679465"
+        ]
+      },
+      {
+        "id": "art_006_007",
+        "number": "Art. 7º",
+        "title": "Direitos dos usuários",
+        "content": "O acesso à internet é essencial ao exercício da cidadania, e ao usuário são assegurados os seguintes direitos:",
+        "paragraphs": [
+          {
+            "id": "par_007_001",
+            "number": "I",
+            "content": "inviolabilidade da intimidade e da vida privada, sua proteção e indenização pelo dano material ou moral decorrente de sua violação;",
+            "items": []
+          },
+          {
+            "id": "par_007_002",
+            "number": "II",
+            "content": "inviolabilidade e sigilo do fluxo de suas comunicações pela internet, salvo por ordem judicial, na forma da lei;",
+            "items": []
+          }
+        ],
+        "comments": "Define os direitos fundamentais dos usuários de internet.",
+        "jurisprudence": [
+          "STF - ADPF 403",
+          "STJ - REsp 1758799"
+        ]
+      }
+    ],
+    "keywords": [
+      "internet",
+      "direitos digitais",
+      "privacidade",
+      "dados pessoais",
+      "liberdade de expressão"
+    ],
+    "related_laws": [
+      "leg_012",
+      "leg_007"
+    ],
+    "status": "active",
+    "publication_date": "2014-04-23",
+    "effective_date": "2014-06-23",
+    "source_url": "http://www.planalto.gov.br/ccivil_03/_ato2011-2014/2014/lei/l12965.htm",
+    "summary": "Estabelece direitos e deveres para o uso da internet no Brasil, garantindo liberdade de expressão e proteção de dados.",
+    "key_changes": [
+      "Regulamentação pelo Decreto 8.771/2016"
+    ],
+    "affected_groups": [
+      "Todos os usuários de internet",
+      "Provedores",
+      "Empresas digitais"
+    ],
+    "penalties": [
+      "Multa",
+      "Suspensão de serviços"
+    ],
+    "statistics": {
+      "views": 6180,
+      "searches": 2940,
+      "bookmarks": 720
+    },
+    "created_by": "system",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+]

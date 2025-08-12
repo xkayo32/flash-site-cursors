@@ -1,0 +1,63 @@
+[
+  {
+    "legislation_id": "leg_002",
+    "action": "search",
+    "timestamp": "2025-08-12T04:25:21.859Z",
+    "metadata": {
+      "search_term": "penal"
+    }
+  },
+  {
+    "legislation_id": "leg_003",
+    "action": "search",
+    "timestamp": "2025-08-12T04:25:21.862Z",
+    "metadata": {
+      "search_term": "penal"
+    }
+  },
+  {
+    "legislation_id": "leg_001",
+    "action": "view",
+    "timestamp": "2025-08-12T04:25:38.580Z"
+  },
+  {
+    "legislation_id": "leg_001",
+    "action": "view",
+    "timestamp": "2025-08-12T04:27:29.787Z"
+  },
+  {
+    "legislation_id": "leg_002",
+    "action": "view",
+    "timestamp": "2025-08-12T04:27:29.827Z"
+  },
+  {
+    "legislation_id": "leg_001",
+    "action": "view",
+    "timestamp": "2025-08-12T04:27:58.247Z"
+  },
+  {
+    "legislation_id": "leg_002",
+    "action": "view",
+    "timestamp": "2025-08-12T04:27:58.292Z"
+  },
+  {
+    "legislation_id": "leg_001",
+    "action": "view",
+    "timestamp": "2025-08-12T04:28:31.324Z"
+  },
+  {
+    "legislation_id": "leg_002",
+    "action": "view",
+    "timestamp": "2025-08-12T04:28:31.368Z"
+  },
+  {
+    "legislation_id": "leg_001",
+    "action": "view",
+    "timestamp": "2025-08-12T04:36:22.228Z"
+  },
+  {
+    "legislation_id": "leg_002",
+    "action": "view",
+    "timestamp": "2025-08-12T04:36:22.302Z"
+  }
+]
