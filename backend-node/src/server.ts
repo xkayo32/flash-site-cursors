@@ -17,6 +17,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 import questionsRoutes from './routes/questions.routes';
 import flashcardsRoutes from './routes/flashcards.routes';
 import mockexamsRoutes from './routes/mockexams.routes';
+import previousexamsRoutes from './routes/previousexams.routes';
 
 // Load environment variables
 dotenv.config();
@@ -57,6 +58,7 @@ app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/questions', questionsRoutes);
 app.use('/api/v1/flashcards', flashcardsRoutes);
 app.use('/api/v1/mockexams', mockexamsRoutes);
+app.use('/api/v1/previousexams', previousexamsRoutes);
 
 // Root endpoint
 app.get('/', (_req, res) => {
@@ -75,7 +77,8 @@ app.get('/', (_req, res) => {
       '/api/v1/dashboard': 'Dashboard statistics',
       '/api/v1/questions': 'Questions management',
       '/api/v1/flashcards': 'Flashcards management',
-      '/api/v1/mockexams': 'Mock exams management'
+      '/api/v1/mockexams': 'Mock exams management',
+      '/api/v1/previousexams': 'Previous exams management'
     }
   });
 });
