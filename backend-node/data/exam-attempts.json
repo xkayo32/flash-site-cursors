@@ -1,0 +1,113 @@
+[
+  {
+    "id": "ea_1734984000000_123",
+    "exam_id": "me1",
+    "user_id": "2",
+    "user_name": "João Silva",
+    "questions": ["q1", "q2", "q3", "q4", "q5"],
+    "answers": {
+      "q1": 1,
+      "q2": true,
+      "q3": "suspensos ou limitados",
+      "q5": 0
+    },
+    "started_at": "2024-12-24T10:00:00Z",
+    "submitted_at": "2024-12-24T12:30:00Z",
+    "time_spent": 9000,
+    "score": 78.5,
+    "correct_answers": 4,
+    "wrong_answers": 1,
+    "blank_answers": 0,
+    "status": "completed",
+    "review": [
+      {
+        "question_id": "q1",
+        "is_correct": true,
+        "user_answer": 1,
+        "correct_answer": 1,
+        "explanation": "O Princípio da Isonomia estabelece que todos são iguais perante a lei, conforme previsto no art. 5º da Constituição Federal."
+      },
+      {
+        "question_id": "q2",
+        "is_correct": true,
+        "user_answer": true,
+        "correct_answer": true,
+        "explanation": "Correto. O Brasil adota o sistema presidencialista, onde o Presidente é chefe de Estado e de Governo."
+      },
+      {
+        "question_id": "q3",
+        "is_correct": true,
+        "user_answer": "suspensos ou limitados",
+        "correct_answer": "suspensos ou limitados",
+        "explanation": "Os direitos fundamentais podem ser suspensos durante estado de defesa ou sítio, conforme arts. 136 e 139 da CF/88."
+      },
+      {
+        "question_id": "q5",
+        "is_correct": true,
+        "user_answer": 0,
+        "correct_answer": 0,
+        "explanation": "Os princípios expressos da Administração Pública estão previstos no art. 37, caput, da CF/88: LIMPE (Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência)."
+      }
+    ]
+  },
+  {
+    "id": "ea_1734990000000_456",
+    "exam_id": "me2",
+    "user_id": "3",
+    "user_name": "Maria Santos",
+    "questions": ["q1", "q2", "q5"],
+    "answers": {
+      "q1": 2,
+      "q2": true,
+      "q5": 0
+    },
+    "started_at": "2024-12-24T14:00:00Z",
+    "submitted_at": "2024-12-24T16:45:00Z",
+    "time_spent": 9900,
+    "score": 66.7,
+    "correct_answers": 2,
+    "wrong_answers": 1,
+    "blank_answers": 0,
+    "status": "completed",
+    "review": [
+      {
+        "question_id": "q1",
+        "is_correct": false,
+        "user_answer": 2,
+        "correct_answer": 1,
+        "explanation": "O Princípio da Isonomia estabelece que todos são iguais perante a lei, conforme previsto no art. 5º da Constituição Federal."
+      },
+      {
+        "question_id": "q2",
+        "is_correct": true,
+        "user_answer": true,
+        "correct_answer": true,
+        "explanation": "Correto. O Brasil adota o sistema presidencialista, onde o Presidente é chefe de Estado e de Governo."
+      },
+      {
+        "question_id": "q5",
+        "is_correct": true,
+        "user_answer": 0,
+        "correct_answer": 0,
+        "explanation": "Os princípios expressos da Administração Pública estão previstos no art. 37, caput, da CF/88: LIMPE (Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência)."
+      }
+    ]
+  },
+  {
+    "id": "ea_1734996000000_789",
+    "exam_id": "me3",
+    "user_id": "2",
+    "user_name": "João Silva",
+    "questions": ["q1", "q2"],
+    "answers": {
+      "q1": 1
+    },
+    "started_at": "2024-12-24T16:00:00Z",
+    "time_spent": 1800,
+    "score": 0,
+    "correct_answers": 0,
+    "wrong_answers": 0,
+    "blank_answers": 0,
+    "status": "in_progress"
+  }
+]
