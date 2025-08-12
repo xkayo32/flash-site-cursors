@@ -1,59 +1,62 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { mockExamService, MockExam } from '@/services/mockExamService';
+import toast from 'react-hot-toast';
 
-interface MockExam {
-  id: number;
-  title: string;
-  organization: string;
-  totalQuestions: number;
-  timeLimitMinutes: number;
-  difficulty: string;
-  isActive: boolean;
-  attempts: number;
-  avgScore: number;
-}
-
-const mockExams: MockExam[] = [
-  {
-    id: 1,
-    title: 'Simulado Polícia Federal - Agente',
-    organization: 'Polícia Federal',
-    totalQuestions: 120,
-    timeLimitMinutes: 240,
-    difficulty: 'Avançado',
-    isActive: true,
-    attempts: 1250,
-    avgScore: 58.5
-  },
-  {
-    id: 2,
-    title: 'Simulado PRF - Policial Rodoviário',
-    organization: 'Polícia Rodoviária Federal',
-    totalQuestions: 120,
-    timeLimitMinutes: 240,
-    difficulty: 'Avançado',
-    isActive: true,
-    attempts: 980,
-    avgScore: 52.3
-  },
-  {
-    id: 3,
-    title: 'Simulado Polícia Civil SP - Escrivão',
-    organization: 'Polícia Civil SP',
-    totalQuestions: 100,
-    timeLimitMinutes: 180,
-    difficulty: 'Intermediário',
-    isActive: true,
-    attempts: 650,
-    avgScore: 61.2
-  }
-];
 
 export default function MockExamManagerSimple() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [exams, setExams] = useState<MockExam[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredExams = mockExams.filter(exam =>
+  const loadExams = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await mockExamService.getAllMockExams({
+        search: searchTerm || undefined,
+        limit: 100
+      });
+      setExams(response.data || []);
+    } catch (err: any) {
+      console.error('Erro ao carregar simulados:', err);
+      setError('Erro ao carregar simulados');
+      toast.error('Erro ao carregar simulados');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (examId: string) => {
+    if (window.confirm('Tem certeza que deseja excluir este simulado?')) {
+      try {
+        await mockExamService.deleteMockExam(examId);
+        toast.success('Simulado excluído com sucesso');
+        loadExams();
+      } catch (err: any) {
+        console.error('Erro ao excluir simulado:', err);
+        toast.error('Erro ao excluir simulado');
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadExams();
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm !== undefined) {
+        loadExams();
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  const filteredExams = exams.filter(exam =>
     exam.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -73,24 +76,24 @@ export default function MockExamManagerSimple() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Simulados</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{mockExams.length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{exams.length}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Simulados Ativos</h3>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {mockExams.filter(e => e.isActive).length}
+            {exams.filter(e => e.status === 'published').length}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Tentativas</h3>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {mockExams.reduce((sum, exam) => sum + exam.attempts, 0).toLocaleString()}
+            {exams.reduce((sum, exam) => sum + exam.total_attempts, 0).toLocaleString()}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Média Geral</h3>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {(mockExams.reduce((sum, exam) => sum + exam.avgScore, 0) / mockExams.length).toFixed(1)}%
+            {exams.length > 0 ? (exams.reduce((sum, exam) => sum + exam.average_score, 0) / exams.length).toFixed(1) : '0.0'}%
           </p>
         </div>
       </div>
@@ -144,61 +147,83 @@ export default function MockExamManagerSimple() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredExams.map((exam) => (
-                <tr key={exam.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {exam.title}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Dificuldade: {exam.difficulty}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-900 dark:text-white">{exam.organization}</span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="text-sm text-gray-900 dark:text-white">{exam.totalQuestions}</span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="text-sm text-gray-900 dark:text-white">
-                      {exam.timeLimitMinutes} min
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {exam.attempts.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Média: {exam.avgScore.toFixed(1)}%
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      exam.isActive 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
-                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
-                    }`}>
-                      {exam.isActive ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => navigate(`/admin/mock-exams/${exam.id}/edit`)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-sm py-1 px-2 rounded transition-colors"
-                      >
-                        Editar
-                      </button>
-                      <button className="bg-red-600 hover:bg-red-700 text-white text-sm py-1 px-2 rounded transition-colors">
-                        Excluir
-                      </button>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <span className="ml-3 text-gray-600 dark:text-gray-400">Carregando simulados...</span>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : error ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <p className="text-red-500 dark:text-red-400">{error}</p>
+                    <button 
+                      onClick={loadExams}
+                      className="mt-2 bg-blue-600 hover:bg-blue-700 text-white text-sm py-1 px-3 rounded transition-colors"
+                    >
+                      Tentar novamente
+                    </button>
+                  </td>
+                </tr>
+              ) : (
+                filteredExams.map((exam) => (
+                  <tr key={exam.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {exam.title}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        Dificuldade: {mockExamService.getDifficultyLabel(exam.difficulty)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-900 dark:text-white">{exam.description || 'N/A'}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-sm text-gray-900 dark:text-white">{exam.total_questions}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-sm text-gray-900 dark:text-white">
+                        {mockExamService.formatDuration(exam.duration)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {exam.total_attempts.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          Média: {exam.average_score.toFixed(1)}%
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${mockExamService.getStatusColor(exam.status)}`}>
+                        {mockExamService.getStatusLabel(exam.status)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => navigate(`/admin/mock-exams/${exam.id}/edit`)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white text-sm py-1 px-2 rounded transition-colors"
+                        >
+                          Editar
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(exam.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white text-sm py-1 px-2 rounded transition-colors"
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

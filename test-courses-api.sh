@@ -335,14 +335,14 @@ test_lessons() {
     fi
     
     # Test 1: Create new lesson
-    print_test "POST /api/v1/modules/:moduleId/lessons - Create new lesson"
+    print_test "POST /api/v1/courses/modules/:moduleId/lessons - Create new lesson"
     ((TOTAL_TESTS++))
     
     lesson_response=$(curl -s -w "\n%{http_code}" -X POST \
         -H "Authorization: Bearer $JWT_TOKEN" \
         -H "Content-Type: application/x-www-form-urlencoded" \
         -d "title=Aula de Teste&description=Aula criada para testar a API&type=video&duration_minutes=30&video_url=https://example.com/video.mp4&is_published=true&is_free=false" \
-        "${API_URL}/modules/$TEST_MODULE_ID/lessons")
+        "${API_URL}/courses/modules/$TEST_MODULE_ID/lessons")
     
     status_code=$(echo "$lesson_response" | tail -n1)
     response_body=$(echo "$lesson_response" | head -n -1)
@@ -362,12 +362,12 @@ test_lessons() {
     fi
     
     # Test 2: List module lessons
-    print_test "GET /api/v1/modules/:moduleId/lessons - List module lessons"
+    print_test "GET /api/v1/courses/modules/:moduleId/lessons - List module lessons"
     ((TOTAL_TESTS++))
     
     list_lessons_response=$(curl -s -w "\n%{http_code}" \
         -H "Authorization: Bearer $JWT_TOKEN" \
-        "${API_URL}/modules/$TEST_MODULE_ID/lessons")
+        "${API_URL}/courses/modules/$TEST_MODULE_ID/lessons")
     
     status_code=$(echo "$list_lessons_response" | tail -n1)
     response_body=$(echo "$list_lessons_response" | head -n -1)
@@ -387,14 +387,14 @@ test_lessons() {
     
     # Test 3: Update lesson
     if [ -n "$TEST_LESSON_ID" ]; then
-        print_test "PUT /api/v1/modules/:moduleId/lessons/:id - Update lesson"
+        print_test "PUT /api/v1/courses/modules/:moduleId/lessons/:id - Update lesson"
         ((TOTAL_TESTS++))
         
         update_lesson_response=$(curl -s -w "\n%{http_code}" -X PUT \
             -H "Authorization: Bearer $JWT_TOKEN" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "title=Aula de Teste - Atualizada&description=Aula atualizada via API&duration_minutes=45" \
-            "${API_URL}/modules/$TEST_MODULE_ID/lessons/$TEST_LESSON_ID")
+            "${API_URL}/courses/modules/$TEST_MODULE_ID/lessons/$TEST_LESSON_ID")
         
         status_code=$(echo "$update_lesson_response" | tail -n1)
         response_body=$(echo "$update_lesson_response" | head -n -1)
@@ -528,12 +528,12 @@ cleanup_test_data() {
     
     # Delete lesson
     if [ -n "$TEST_LESSON_ID" ]; then
-        print_test "DELETE /api/v1/modules/:moduleId/lessons/:id - Delete lesson"
+        print_test "DELETE /api/v1/courses/modules/:moduleId/lessons/:id - Delete lesson"
         ((TOTAL_TESTS++))
         
         delete_lesson_response=$(curl -s -w "\n%{http_code}" -X DELETE \
             -H "Authorization: Bearer $JWT_TOKEN" \
-            "${API_URL}/modules/$TEST_MODULE_ID/lessons/$TEST_LESSON_ID")
+            "${API_URL}/courses/modules/$TEST_MODULE_ID/lessons/$TEST_LESSON_ID")
         
         status_code=$(echo "$delete_lesson_response" | tail -n1)
         if [ "$status_code" = "200" ]; then

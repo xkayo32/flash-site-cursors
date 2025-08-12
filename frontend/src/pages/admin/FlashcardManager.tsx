@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { flashcardService, Flashcard, FlashcardStats } from '@/services/flashcardService';
 import {
   Search,
   Filter,
@@ -30,87 +31,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
 
-// Mock data para demonstração
-const flashcardDecks = [
-  {
-    id: 1,
-    title: 'ARTIGOS - CÓDIGO PENAL MILITAR',
-    description: 'Memorização dos principais artigos do CPM para concursos policiais',
-    category: 'DIREITO',
-    subcategory: 'Penal Militar',
-    totalCards: 150,
-    completedCards: 87,
-    isPublic: true,
-    tags: ['CPM', 'ARTIGOS', 'MILITAR'],
-    author: 'Major Silva',
-    createdAt: '2024-01-15',
-    lastReview: '2024-01-20',
-    difficulty: 'medium',
-    reviews: 234,
-    rating: 4.8
-  },
-  {
-    id: 2,
-    title: 'SIGLAS E TERMINOLOGIAS TÁTICAS',
-    description: 'Siglas operacionais e terminologias usadas em operações especiais',
-    category: 'SEGURANÇA PÚBLICA',
-    subcategory: 'Operações Táticas',
-    totalCards: 200,
-    completedCards: 145,
-    isPublic: true,
-    tags: ['SIGLAS', 'TÁTICO', 'OPERACIONAL'],
-    author: 'Capitão Rodrigues',
-    createdAt: '2024-01-10',
-    lastReview: '2024-01-19',
-    difficulty: 'easy',
-    reviews: 456,
-    rating: 4.9
-  },
-  {
-    id: 3,
-    title: 'CONSTITUIÇÃO FEDERAL - ARTIGOS FUNDAMENTAIS',
-    description: 'Art. 1º ao 5º da CF/88 com foco em concursos',
-    category: 'DIREITO',
-    subcategory: 'Constitucional',
-    totalCards: 80,
-    completedCards: 80,
-    isPublic: false,
-    tags: ['CF88', 'CONSTITUCIONAL', 'FUNDAMENTAIS'],
-    author: 'Tenente Costa',
-    createdAt: '2024-01-08',
-    lastReview: '2024-01-18',
-    difficulty: 'hard',
-    reviews: 123,
-    rating: 4.7
-  },
-  {
-    id: 4,
-    title: 'PROCEDIMENTOS OPERACIONAIS PADRÃO',
-    description: 'POPs essenciais para atuação policial',
-    category: 'SEGURANÇA PÚBLICA',
-    subcategory: 'Procedimentos',
-    totalCards: 120,
-    completedCards: 0,
-    isPublic: true,
-    tags: ['POP', 'PROCEDIMENTOS', 'OPERACIONAL'],
-    author: 'Sargento Lima',
-    createdAt: '2024-01-05',
-    lastReview: null,
-    difficulty: 'medium',
-    reviews: 0,
-    rating: 0
-  }
-];
 
-// Categorias e subcategorias
-const materias: { [key: string]: string[] } = {
-  'DIREITO': ['Todas', 'Constitucional', 'Administrativo', 'Penal', 'Penal Militar', 'Processual'],
-  'SEGURANÇA PÚBLICA': ['Todas', 'Operações Táticas', 'Procedimentos', 'Legislação Policial', 'Inteligência'],
-  'CONHECIMENTOS GERAIS': ['Todas', 'História Militar', 'Geografia', 'Atualidades', 'Informática']
-};
-
-const categories = ['Todos', ...Object.keys(materias)];
-const difficulties = ['Todos', 'easy', 'medium', 'hard'];
 
 export default function FlashcardManager() {
   const navigate = useNavigate();
@@ -119,26 +40,78 @@ export default function FlashcardManager() {
   const [selectedSubcategory, setSelectedSubcategory] = useState('Todas');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Todos');
   const [showPublicOnly, setShowPublicOnly] = useState(false);
-  const [selectedDecks, setSelectedDecks] = useState<number[]>([]);
+  const [selectedDecks, setSelectedDecks] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // State para dados da API
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const [stats, setStats] = useState<FlashcardStats | null>(null);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [subcategories, setSubcategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadFlashcards = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await flashcardService.getFlashcards({
+        search: searchTerm || undefined,
+        category: selectedCategory !== 'Todos' ? selectedCategory : undefined,
+        subcategory: selectedSubcategory !== 'Todas' ? selectedSubcategory : undefined,
+        difficulty: selectedDifficulty !== 'Todos' ? selectedDifficulty as any : undefined,
+        status: showPublicOnly ? 'published' : undefined,
+        limit: 100
+      });
+      
+      setFlashcards(response.data || []);
+    } catch (err: any) {
+      console.error('Erro ao carregar flashcards:', err);
+      setError('Erro ao carregar flashcards');
+      toast.error('Erro ao carregar flashcards');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const response = await flashcardService.getStats();
+      setStats(response.data);
+    } catch (err: any) {
+      console.error('Erro ao carregar estatísticas:', err);
+    }
+  };
+
+  const loadFilterOptions = async () => {
+    try {
+      const response = await flashcardService.getFilterOptions();
+      setCategories(['Todos', ...response.data.categories]);
+      setSubcategories(['Todas', ...response.data.subcategories]);
+    } catch (err: any) {
+      console.error('Erro ao carregar opções de filtro:', err);
+      setCategories(['Todos']);
+      setSubcategories(['Todas']);
+    }
+  };
+
+  useEffect(() => {
+    loadStats();
+    loadFilterOptions();
+  }, []);
+
+  useEffect(() => {
+    loadFlashcards();
+  }, [searchTerm, selectedCategory, selectedSubcategory, selectedDifficulty, showPublicOnly]);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
     setSelectedSubcategory('Todas');
   };
 
-  const filteredDecks = flashcardDecks.filter(deck => {
-    const matchesSearch = deck.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         deck.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         deck.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = selectedCategory === 'Todos' || deck.category === selectedCategory;
-    const matchesSubcategory = selectedSubcategory === 'Todas' || deck.subcategory === selectedSubcategory;
-    const matchesDifficulty = selectedDifficulty === 'Todos' || deck.difficulty === selectedDifficulty;
-    const matchesPublic = !showPublicOnly || deck.isPublic;
-    
-    return matchesSearch && matchesCategory && matchesSubcategory && matchesDifficulty && matchesPublic;
-  });
+  const filteredDecks = flashcards;
 
   const getDifficultyBadge = (difficulty: string) => {
     const config = {
@@ -164,47 +137,54 @@ export default function FlashcardManager() {
     navigate('/admin/flashcards/new');
   };
 
-  const handleEditDeck = (deckId: number) => {
-    navigate(`/admin/flashcards/${deckId}/edit`);
+  const handleEditDeck = (deckId: string) => {
+    navigate(`/admin/flashcards/cards/${deckId}/edit`);
   };
 
-  const handleManageCards = (deckId: number) => {
-    navigate(`/admin/flashcards/${deckId}/cards`);
+  const handleManageCards = (deckId: string) => {
+    navigate(`/admin/flashcards/cards/${deckId}`);
   };
 
-  const handleDeleteDeck = (deckId: number) => {
-    if (confirm('Tem certeza que deseja arquivar este deck?')) {
-      toast.success('Deck arquivado com sucesso', {
-        duration: 3000,
-        icon: '📦'
-      });
+  const handleDeleteDeck = async (deckId: string) => {
+    if (confirm('Tem certeza que deseja excluir este flashcard?')) {
+      try {
+        await flashcardService.deleteFlashcard(deckId);
+        toast.success('Flashcard excluído com sucesso', {
+          duration: 3000,
+          icon: '📦'
+        });
+        loadFlashcards();
+      } catch (err: any) {
+        console.error('Erro ao excluir flashcard:', err);
+        toast.error('Erro ao excluir flashcard');
+      }
     }
   };
 
-  const handlePreviewDeck = (deckId: number) => {
-    toast.success('Abrindo preview do deck...', {
+  const handlePreviewDeck = (deckId: string) => {
+    toast.success('Abrindo preview do flashcard...', {
       duration: 2000,
       icon: '👁️'
     });
   };
 
-  const handlePlayDeck = (deckId: number) => {
-    navigate(`/admin/flashcards/${deckId}/study`);
-    toast.success('Iniciando estudo do deck...', {
+  const handlePlayDeck = (deckId: string) => {
+    navigate(`/admin/flashcards/cards/${deckId}/study`);
+    toast.success('Iniciando estudo do flashcard...', {
       duration: 2000,
       icon: '🎯'
     });
   };
 
-  const handleDuplicateDeck = (deckId: number) => {
-    const originalDeck = flashcardDecks.find(d => d.id === deckId);
-    toast.success(`Deck "${originalDeck?.title}" duplicado com sucesso`, {
+  const handleDuplicateDeck = (deckId: string) => {
+    const originalDeck = flashcards.find(d => d.id === deckId);
+    toast.success(`Flashcard "${originalDeck?.front || originalDeck?.question}" duplicado com sucesso`, {
       duration: 3000,
       icon: '📋'
     });
   };
 
-  const handleSelectDeck = (id: number) => {
+  const handleSelectDeck = (id: string) => {
     setSelectedDecks(prev => 
       prev.includes(id) 
         ? prev.filter(d => d !== id)
@@ -314,7 +294,7 @@ export default function FlashcardManager() {
                   TOTAL DE DECKS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {flashcardDecks.length}
+                  {flashcards.length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
@@ -334,7 +314,7 @@ export default function FlashcardManager() {
                   CARTÕES ATIVOS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {flashcardDecks.reduce((acc, deck) => acc + deck.totalCards, 0)}
+                  {stats?.published || 0}
                 </p>
               </div>
               <div className="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center">
@@ -354,10 +334,7 @@ export default function FlashcardManager() {
                   TAXA DE CONCLUSÃO
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {Math.round(
-                    (flashcardDecks.reduce((acc, deck) => acc + deck.completedCards, 0) / 
-                     flashcardDecks.reduce((acc, deck) => acc + deck.totalCards, 0)) * 100
-                  )}%
+                  {stats?.avgCorrectRate ? Math.round(stats.avgCorrectRate) : 0}%
                 </p>
               </div>
               <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
@@ -377,7 +354,7 @@ export default function FlashcardManager() {
                   REVISÕES TOTAIS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {flashcardDecks.reduce((acc, deck) => acc + deck.reviews, 0).toLocaleString()}
+                  {stats?.totalStudies?.toLocaleString() || '0'}
                 </p>
               </div>
               <div className="w-12 h-12 bg-gray-600 rounded-lg flex items-center justify-center">

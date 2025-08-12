@@ -1,71 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { previousExamService, PreviousExam } from '@/services/previousExamService';
+import toast from 'react-hot-toast';
 
-interface PreviousExam {
-  id: number;
-  title: string;
-  organization: string;
-  examBoard: string;
-  year: number;
-  totalQuestions: number;
-  difficulty: string;
-  hasAnswerSheet: boolean;
-  hasPDF: boolean;
-  views: number;
-  attempts: number;
-  isActive: boolean;
-}
-
-const previousExams: PreviousExam[] = [
-  {
-    id: 1,
-    title: 'Polícia Federal - Agente 2021',
-    organization: 'Polícia Federal',
-    examBoard: 'CESPE',
-    year: 2021,
-    totalQuestions: 120,
-    difficulty: 'Difícil',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    views: 15420,
-    attempts: 3250,
-    isActive: true
-  },
-  {
-    id: 2,
-    title: 'PRF - Policial Rodoviário 2021',
-    organization: 'Polícia Rodoviária Federal',
-    examBoard: 'CESPE',
-    year: 2021,
-    totalQuestions: 120,
-    difficulty: 'Difícil',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    views: 12350,
-    attempts: 2840,
-    isActive: true
-  },
-  {
-    id: 3,
-    title: 'Polícia Civil SP - Escrivão 2023',
-    organization: 'Polícia Civil SP',
-    examBoard: 'VUNESP',
-    year: 2023,
-    totalQuestions: 100,
-    difficulty: 'Médio',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    views: 8930,
-    attempts: 1950,
-    isActive: true
-  }
-];
 
 export default function PreviousExamsManagerSimple() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [exams, setExams] = useState<PreviousExam[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredExams = previousExams.filter(exam =>
+  const loadExams = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await previousExamService.getAll({
+        search: searchTerm || undefined,
+        limit: 100
+      });
+      setExams(response.data || []);
+    } catch (err: any) {
+      console.error('Erro ao carregar provas anteriores:', err);
+      setError('Erro ao carregar provas anteriores');
+      toast.error('Erro ao carregar provas anteriores');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadExams();
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm !== undefined) {
+        loadExams();
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  const filteredExams = exams.filter(exam =>
     exam.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -87,14 +65,14 @@ export default function PreviousExamsManagerSimple() {
           {/* Corner accents */}
           <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <h3 className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ARQUIVO TOTAL</h3>
-          <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white mt-1">{previousExams.length}</p>
+          <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white mt-1">{exams.length}</p>
         </div>
         <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-6 rounded-lg">
           {/* Corner accents */}
           <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <h3 className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ALVOS CATALOGADOS</h3>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {previousExams.reduce((sum, exam) => sum + exam.totalQuestions, 0).toLocaleString()}
+            {exams.reduce((sum, exam) => sum + exam.total_questions, 0).toLocaleString()}
           </p>
         </div>
         <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-6 rounded-lg">
@@ -102,7 +80,7 @@ export default function PreviousExamsManagerSimple() {
           <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <h3 className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ACESSOS TÁTICOS</h3>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {previousExams.reduce((sum, exam) => sum + exam.views, 0).toLocaleString()}
+            {exams.reduce((sum, exam) => sum + (exam.statistics?.total_attempts || 0), 0).toLocaleString()}
           </p>
         </div>
         <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-6 rounded-lg">
@@ -110,7 +88,7 @@ export default function PreviousExamsManagerSimple() {
           <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <h3 className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ENGAJAMENTOS</h3>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {previousExams.reduce((sum, exam) => sum + exam.attempts, 0).toLocaleString()}
+            {exams.reduce((sum, exam) => sum + (exam.statistics?.total_attempts || 0), 0).toLocaleString()}
           </p>
         </div>
       </div>
@@ -174,58 +152,93 @@ export default function PreviousExamsManagerSimple() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredExams.map((exam) => (
-                <tr key={exam.id} className="hover:bg-accent-500/10 dark:hover:bg-gray-700/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="text-sm font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider">
-                        {exam.title}
-                      </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
-                        {exam.organization}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm font-police-body font-semibold text-gray-900 dark:text-white uppercase tracking-wider">{exam.examBoard}</span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">{exam.year}</span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">{exam.totalQuestions}</span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2 text-xs">
-                      <span className={exam.hasPDF ? 'text-green-600' : 'text-gray-400'}>
-                        PDF: {exam.hasPDF ? '✓' : '✗'}
-                      </span>
-                      <span className={exam.hasAnswerSheet ? 'text-green-600' : 'text-gray-400'}>
-                        Gabarito: {exam.hasAnswerSheet ? '✓' : '✗'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="text-xs font-police-body font-medium">
-                      <div className="text-gray-600 dark:text-gray-400 uppercase tracking-wider">Acessos: <span className="font-police-numbers font-bold text-gray-900 dark:text-white">{exam.views.toLocaleString()}</span></div>
-                      <div className="text-gray-600 dark:text-gray-400 uppercase tracking-wider">Engajamentos: <span className="font-police-numbers font-bold text-gray-900 dark:text-white">{exam.attempts.toLocaleString()}</span></div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => navigate(`/admin/previous-exams/${exam.id}/edit`)}
-                        className="bg-accent-500 hover:bg-accent-600 text-black text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-2 rounded transition-colors"
-                      >
-                        CONFIGURAR
-                      </button>
-                      <button className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-2 rounded transition-colors">
-                        DESATIVAR
-                      </button>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-500"></div>
+                      <span className="ml-3 text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">CARREGANDO ARQUIVO...</span>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : error ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <p className="text-red-500 dark:text-red-400 font-police-body uppercase tracking-wider">{error}</p>
+                    <button 
+                      onClick={loadExams}
+                      className="mt-2 bg-accent-500 hover:bg-accent-600 text-black text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-3 rounded transition-colors"
+                    >
+                      TENTAR NOVAMENTE
+                    </button>
+                  </td>
+                </tr>
+              ) : (
+                filteredExams.map((exam) => (
+                  <tr key={exam.id} className="hover:bg-accent-500/10 dark:hover:bg-gray-700/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div>
+                        <div className="text-sm font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                          {exam.title}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                          {exam.organization}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm font-police-body font-semibold text-gray-900 dark:text-white uppercase tracking-wider">{exam.exam_board}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">{exam.year}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">{exam.total_questions}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex items-center justify-center gap-2 text-xs">
+                        <span className={exam.metadata?.pdf_url ? 'text-green-600' : 'text-gray-400'}>
+                          PDF: {exam.metadata?.pdf_url ? '✓' : '✗'}
+                        </span>
+                        <span className={exam.metadata?.oficial_resolution ? 'text-green-600' : 'text-gray-400'}>
+                          Gabarito: {exam.metadata?.oficial_resolution ? '✓' : '✗'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="text-xs font-police-body font-medium">
+                        <div className="text-gray-600 dark:text-gray-400 uppercase tracking-wider">Tentativas: <span className="font-police-numbers font-bold text-gray-900 dark:text-white">{(exam.statistics?.total_attempts || 0).toLocaleString()}</span></div>
+                        <div className="text-gray-600 dark:text-gray-400 uppercase tracking-wider">Aprovação: <span className="font-police-numbers font-bold text-gray-900 dark:text-white">{(exam.statistics?.approval_rate || 0).toFixed(1)}%</span></div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => navigate(`/admin/previous-exams/${exam.id}/edit`)}
+                          className="bg-accent-500 hover:bg-accent-600 text-black text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-2 rounded transition-colors"
+                        >
+                          CONFIGURAR
+                        </button>
+                        <button 
+                          onClick={() => {
+                            if (exam.status === 'published') {
+                              previousExamService.archive(exam.id).then(() => {
+                                toast.success('Operação arquivada');
+                                loadExams();
+                              }).catch(() => {
+                                toast.error('Erro ao arquivar operação');
+                              });
+                            }
+                          }}
+                          className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-2 rounded transition-colors"
+                        >
+                          {exam.status === 'published' ? 'ARQUIVAR' : 'ARQUIVADO'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
