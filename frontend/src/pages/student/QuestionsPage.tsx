@@ -309,6 +309,7 @@ export default function QuestionsPage() {
             </button>
           ))}
         </div>
+        )}
 
         {/* Explicação */}
         {question.isAnswered && showExplanation && question.explanation && (
