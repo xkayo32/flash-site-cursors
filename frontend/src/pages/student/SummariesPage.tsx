@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { summaryService, Summary } from '@/services/summaryService';
+import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 import {
   FileText,
@@ -85,6 +86,7 @@ export default function SummariesPage() {
   const [selectedSubject, setSelectedSubject] = useState('Todos');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Todos');
   const [showFilters, setShowFilters] = useState(false);
+  const user = useAuthStore((state) => state.user);
   const [viewMode, setViewMode] = useState<'grid' | 'reading'>('grid');
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [showFlashcardAnswers, setShowFlashcardAnswers] = useState<{ [key: string]: boolean }>({});
@@ -113,7 +115,10 @@ export default function SummariesPage() {
         page: 1
       };
       
-      const response = await summaryService.getAvailable(filters);
+      // Admin usa getAll(), estudante usa getAvailable()
+      const response = user?.role === 'admin' 
+        ? await summaryService.getAll(filters)
+        : await summaryService.getAvailable(filters);
       
       const localSummaries: LocalSummary[] = response.summaries.map(s => ({
         ...s,
