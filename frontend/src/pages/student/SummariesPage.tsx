@@ -104,16 +104,16 @@ export default function SummariesPage() {
       setError(null);
       
       const filters = {
-        search: searchTerm || undefined,
+        q: searchTerm || undefined,
         subject: selectedSubject !== 'Todos' ? selectedSubject : undefined,
         difficulty: selectedDifficulty !== 'Todos' ? selectedDifficulty.toLowerCase() : undefined,
         status: 'published' as const,
         visibility: 'public' as const,
         limit: 20,
-        offset: 0
+        page: 1
       };
       
-      const response = await summaryService.list(filters);
+      const response = await summaryService.getAvailable(filters);
       
       const localSummaries: LocalSummary[] = response.summaries.map(s => ({
         ...s,
