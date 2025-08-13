@@ -479,41 +479,135 @@ router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void =
       );
     }
 
-    // Upcoming events
-    const upcomingEvents = [
-      {
-        id: 1,
-        title: 'OPERAÇÃO POLÍCIA FEDERAL - AGENTE',
-        date: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(),
-        daysLeft: 45,
-        type: 'exam',
-        progress: Math.min(100, accuracyRate)
-      },
-      {
-        id: 2,
-        title: 'SIMULAÇÃO TÁTICA SEMANAL - PF',
-        date: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000).toISOString(),
-        daysLeft: 12,
-        type: 'simulation',
-        progress: 100
-      },
-      {
-        id: 3,
-        title: 'REVISÃO CÓDIGO PENAL MILITAR',
-        date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        daysLeft: 7,
-        type: 'study',
-        progress: 45
+    // Próximos estudos programados baseados em dados reais
+    const upcomingStudies = [];
+    
+    // Adicionar revisões de flashcards pendentes
+    if (userFlashcards.length > 0) {
+      const flashcardsForReview = userFlashcards.filter(f => {
+        const lastReview = new Date(f.lastReviewed || f.createdAt || Date.now());
+        const daysSinceReview = Math.floor((today.getTime() - lastReview.getTime()) / (1000 * 60 * 60 * 24));
+        return daysSinceReview >= 1; // Cards que precisam de revisão
+      }).length;
+      
+      if (flashcardsForReview > 0) {
+        upcomingStudies.push({
+          id: 'flashcards-review',
+          title: 'REVISÃO DE CARTÕES TÁTICOS',
+          description: `${flashcardsForReview} cartões aguardando revisão`,
+          date: new Date().toISOString(),
+          daysLeft: 0,
+          type: 'flashcards',
+          priority: 'high',
+          progress: 0,
+          action: '/flashcards'
+        });
       }
-    ];
+    }
+    
+    // Adicionar cursos com baixo progresso
+    const coursesNeedingAttention = enrolledCourses.filter(c => c.progress < 30).slice(0, 2);
+    coursesNeedingAttention.forEach((course, index) => {
+      upcomingStudies.push({
+        id: `course-${course.id}`,
+        title: `CONTINUAR ${course.name.toUpperCase()}`,
+        description: `${Math.round(course.progress)}% concluído - ${course.totalQuestions} questões disponíveis`,
+        date: new Date(Date.now() + (index + 1) * 24 * 60 * 60 * 1000).toISOString(),
+        daysLeft: 0,
+        type: 'course',
+        priority: 'medium',
+        progress: course.progress,
+        action: `/course/${course.id}`
+      });
+    });
+    
+    // Adicionar estudo das matérias fracas
+    const weakestSubject = subjectPerformance.find(s => s.accuracy < 50);
+    if (weakestSubject && weakestSubject.questions > 0) {
+      upcomingStudies.push({
+        id: 'weak-subject',
+        title: `REFORÇO EM ${weakestSubject.subject}`,
+        description: `Apenas ${weakestSubject.accuracy}% de acerto - precisa de atenção`,
+        date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        daysLeft: 1,
+        type: 'practice',
+        priority: 'high',
+        progress: weakestSubject.accuracy,
+        action: '/questions'
+      });
+    }
+    
+    // Se não há estudos específicos, adicionar sugestões gerais
+    if (upcomingStudies.length === 0) {
+      upcomingStudies.push(
+        {
+          id: 'daily-practice',
+          title: 'EXERCÍCIOS DIÁRIOS',
+          description: 'Mantenha a disciplina com exercícios diários',
+          date: new Date().toISOString(),
+          daysLeft: 0,
+          type: 'practice',
+          priority: 'medium',
+          progress: 0,
+          action: '/questions'
+        },
+        {
+          id: 'flashcard-study',
+          title: 'ESTUDO COM FLASHCARDS',
+          description: 'Otimize sua memorização com cartões inteligentes',
+          date: new Date().toISOString(),
+          daysLeft: 0,
+          type: 'flashcards',
+          priority: 'medium',
+          progress: 0,
+          action: '/flashcards'
+        }
+      );
+    }
+    
+    // Limitar a 3 itens e ordenar por prioridade
+    const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+    const upcomingEvents = upcomingStudies
+      .sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority])
+      .slice(0, 3);
 
-    // Study tips
-    const studyTips = [
+    // Study tips - rotacionados por dia da semana + personalização
+    const allStudyTips = [
       'USE A TÉCNICA POMODORO: 25MIN OPERAÇÃO + 5MIN DESCANSO TÁTICO',
       'REVISE CARTÕES TÁTICOS ANTES DO DESCANSO NOTURNO',
       'EXECUTE EXERCÍCIOS DE OPERAÇÕES ANTERIORES DA MESMA BANCA',
-      'MANTENHA CRONOGRAMA OPERACIONAL CONSISTENTE'
+      'MANTENHA CRONOGRAMA OPERACIONAL CONSISTENTE',
+      'FAÇA INTERVALOS DE 15 MINUTOS A CADA 2 HORAS DE ESTUDO INTENSO',
+      'PRIORIZE MATÉRIAS FRACAS NOS HORÁRIOS DE MAIOR CONCENTRAÇÃO',
+      'CRIE MAPAS MENTAIS PARA CONECTAR CONCEITOS COMPLEXOS',
+      'PRATIQUE QUESTÕES ANTES DE ESTUDAR TEORIA NOVA',
+      'MANTENHA UM DIÁRIO DE ERROS PARA REVISÃO SEMANAL',
+      'SIMULE CONDIÇÕES REAIS DE PROVA: TEMPO E AMBIENTE'
     ];
+    
+    // Personalizar dica principal baseada no desempenho do usuário
+    let dailyTip = '';
+    const dayOfWeek = today.getDay();
+    
+    if (accuracyRate < 50) {
+      dailyTip = 'FOQUE EM REVISÃO: Suas estatísticas mostram necessidade de consolidação. Revise conceitos básicos antes de avançar.';
+    } else if (questionsAnswered < 10) {
+      dailyTip = 'ACELERE A PRÁTICA: Aumente o volume de exercícios diários. Meta: 30 questões por dia para ganhar ritmo.';
+    } else if (flashcardsReviewed < 20) {
+      dailyTip = 'ATIVE OS FLASHCARDS: Use cartões de memória para fixar conceitos. 15 minutos diários fazem diferença.';
+    } else {
+      // Usar dica rotativa baseada no dia da semana
+      dailyTip = allStudyTips[dayOfWeek % allStudyTips.length];
+    }
+    
+    const studyTips = {
+      daily: dailyTip,
+      additional: allStudyTips
+        .filter(tip => tip !== dailyTip)
+        .slice(((dayOfWeek * 3) % allStudyTips.length), ((dayOfWeek * 3) % allStudyTips.length) + 3),
+      total: allStudyTips.length,
+      category: accuracyRate < 50 ? 'improvement' : questionsAnswered < 10 ? 'volume' : flashcardsReviewed < 20 ? 'memory' : 'general'
+    };
 
     res.json({
       success: true,
@@ -552,31 +646,22 @@ router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void =
             porcentagem: Math.min(100, percentage)
           };
         }),
-        // User groups (esquadrões)
-        userGroups: [
-          {
-            id: '1',
-            name: 'ESQUADRÃO ELITE PF 2024',
-            members: 127,
-            role: 'OPERADOR',
-            badge: '🎯',
-            progress: 78,
-            nextActivity: 'SIMULAÇÃO TÁTICA ÀS 19H',
-            instructor: 'COMANDANTE CARLOS SILVA',
-            rank: 12
-          },
-          {
-            id: '2',
-            name: 'FORÇA TÁTICA - CONSTITUCIONAL',
-            members: 42,
-            role: 'LÍDER DE ESQUADRÃO',
-            badge: '⚡',
-            progress: 85,
-            nextActivity: 'REVISÃO OPERACIONAL AMANHÃ',
-            instructor: 'CAP. ANA SANTOS',
-            rank: 3
-          }
-        ],
+        // Recent courses accessed by user
+        recentCourses: enrolledCourses
+          .sort((a, b) => new Date(b.enrolledAt).getTime() - new Date(a.enrolledAt).getTime())
+          .slice(0, 3)
+          .map(course => ({
+            id: course.id,
+            name: course.name,
+            category: course.category,
+            progress: course.progress,
+            totalQuestions: course.totalQuestions,
+            totalFlashcards: course.totalFlashcards,
+            lastAccessedAt: course.enrolledAt,
+            thumbnail: course.thumbnail,
+            difficulty: course.difficulty || 'INTERMEDIÁRIO',
+            estimatedTime: course.estimatedTime || '2-3 semanas'
+          })),
         // Weak subjects that need attention
         weakSubjects: subjectPerformance
           .filter(s => s.accuracy < 75)
