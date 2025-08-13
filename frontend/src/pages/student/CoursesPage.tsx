@@ -141,6 +141,7 @@ export default function CoursesPage() {
   const [totalCourses, setTotalCourses] = useState(0);
   const [enrollmentLoading, setEnrollmentLoading] = useState<string | null>(null);
   const [enrolledCourses, setEnrolledCourses] = useState<Set<string>>(new Set());
+  const [courseProgress, setCourseProgress] = useState<Map<string, number>>(new Map());
 
   // Carregar cursos da API
   useEffect(() => {
@@ -148,13 +149,23 @@ export default function CoursesPage() {
     checkEnrolledCourses();
   }, []);
 
-  // Verificar quais cursos o usuário já está matriculado
+  // Verificar quais cursos o usuário já está matriculado e seu progresso
   const checkEnrolledCourses = async () => {
     try {
       const response = await courseService.getEnrolledCourses();
       if (response.success && response.data) {
         const enrolledIds = new Set(response.data.map((course: any) => course.id));
+        const progressMap = new Map();
+        
+        // Mapear progresso de cada curso
+        response.data.forEach((course: any) => {
+          if (course.progress !== undefined) {
+            progressMap.set(course.id, course.progress);
+          }
+        });
+        
         setEnrolledCourses(enrolledIds);
+        setCourseProgress(progressMap);
       }
     } catch (error) {
       console.error('Erro ao verificar matrículas:', error);
@@ -175,6 +186,8 @@ export default function CoursesPage() {
           const transformed = transformCourseFromAPI(course);
           // Check if user is enrolled in this course
           transformed.enrolled = enrolledCourses.has(course.id);
+          // Set progress if available
+          transformed.progress = courseProgress.get(course.id) || 0;
           return transformed;
         });
         setCourses(transformedCourses);
@@ -347,16 +360,34 @@ export default function CoursesPage() {
               </div>
             </div>
             {course.enrolled ? (
-              <Link to={`/student/courses/${course.id}`}>
-                <Button 
-                  size="sm" 
-                  variant="secondary"
-                  className="gap-2 font-police-body uppercase tracking-wider"
+              <div className="flex flex-col gap-2">
+                <Link to={`/courses/${course.id}`}>
+                  <Button 
+                    size="sm" 
+                    variant="secondary"
+                    className="w-full gap-2 font-police-body uppercase tracking-wider"
+                  >
+                    CONTINUAR
+                    <Play className="w-4 h-4" />
+                  </Button>
+                </Link>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={enrollmentLoading === course.id}
+                  onClick={() => handleUnenrollment(course.id)}
+                  className="w-full text-xs font-police-body uppercase tracking-wider text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
                 >
-                  CONTINUAR
-                  <Play className="w-4 h-4" />
+                  {enrollmentLoading === course.id ? (
+                    <>
+                      <div className="w-3 h-3 border border-red-600/30 border-t-red-600 rounded-full animate-spin mr-1" />
+                      PAUSANDO...
+                    </>
+                  ) : (
+                    'PAUSAR OPERAÇÃO'
+                  )}
                 </Button>
-              </Link>
+              </div>
             ) : (
               <Button 
                 size="sm"
@@ -458,16 +489,34 @@ export default function CoursesPage() {
                   R$ {course.price}
                 </div>
                 {course.enrolled ? (
-                  <Link to={`/student/courses/${course.id}`}>
-                    <Button 
-                      size="sm" 
-                      variant="secondary"
-                      className="gap-2 font-police-body uppercase tracking-wider"
+                  <div className="flex flex-col gap-2">
+                    <Link to={`/courses/${course.id}`}>
+                      <Button 
+                        size="sm" 
+                        variant="secondary"
+                        className="w-full gap-2 font-police-body uppercase tracking-wider"
+                      >
+                        CONTINUAR
+                        <Play className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={enrollmentLoading === course.id}
+                      onClick={() => handleUnenrollment(course.id)}
+                      className="w-full text-xs font-police-body uppercase tracking-wider text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
                     >
-                      CONTINUAR
-                      <Play className="w-4 h-4" />
+                      {enrollmentLoading === course.id ? (
+                        <>
+                          <div className="w-3 h-3 border border-red-600/30 border-t-red-600 rounded-full animate-spin mr-1" />
+                          PAUSANDO...
+                        </>
+                      ) : (
+                        'PAUSAR OPERAÇÃO'
+                      )}
                     </Button>
-                  </Link>
+                  </div>
                 ) : (
                   <Button 
                     size="sm"
@@ -508,6 +557,53 @@ export default function CoursesPage() {
       </Card>
     </motion.div>
   );
+
+  const handleUnenrollment = async (courseId: string) => {
+    try {
+      setEnrollmentLoading(courseId);
+      
+      // Update enrollment status to paused instead of complete unenrollment
+      const response = await courseService.updateEnrollmentStatus(courseId, 'paused', 'Operação pausada pelo agente');
+      
+      if (response.success) {
+        // Remove from enrolled courses but keep progress
+        setEnrolledCourses(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(courseId);
+          return newSet;
+        });
+        
+        // Update courses list to reflect new status
+        setCourses(prevCourses => 
+          prevCourses.map(course => 
+            course.id === courseId 
+              ? { ...course, enrolled: false }
+              : course
+          )
+        );
+        
+        toast.success('OPERAÇÃO PAUSADA COM SUCESSO!', {
+          description: 'Seu progresso foi mantido. Você pode retomar a qualquer momento.',
+          icon: '⏸️',
+          duration: 5000
+        });
+      } else {
+        toast.error(response.message || 'ERRO AO PAUSAR OPERAÇÃO', {
+          icon: '❌',
+          duration: 4000
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao pausar matrícula:', error);
+      toast.error('FALHA CRÍTICA AO PAUSAR OPERAÇÃO', {
+        description: 'Tente novamente em alguns instantes',
+        icon: '⚠️',
+        duration: 4000
+      });
+    } finally {
+      setEnrollmentLoading(null);
+    }
+  };
 
   const handleEnrollment = async (courseId: string) => {
     try {

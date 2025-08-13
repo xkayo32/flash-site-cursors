@@ -376,50 +376,80 @@ router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void =
       thumbnail: course.thumbnail || null
     }));
 
-    // Recent activities based on real data
+    // Recent activities based on real data - mais detalhadas
     const recentActivities = [];
     
     // Add recent question activities
     const recentQuestions = userQuestions
       .sort((a, b) => new Date(b.createdAt || b.answeredAt || '').getTime() - new Date(a.createdAt || a.answeredAt || '').getTime())
-      .slice(0, 2);
+      .slice(0, 3);
     
     recentQuestions.forEach((q, index) => {
+      const courseName = courses.find(c => c.id === q.courseId)?.name || 'Questão Avulsa';
       recentActivities.push({
-        id: `q-${index}`,
-        type: 'questions',
-        title: `Exercício: ${q.title || q.question?.substring(0, 50) || 'Questão tática'}...`,
+        id: `q-${q.id || index}`,
+        type: 'question',
+        title: `${q.correct ? 'ACERTOU' : 'ERROU'}: ${courseName}`,
+        description: q.subject || 'Exercício Tático',
         timestamp: q.createdAt || q.answeredAt || new Date().toISOString(),
         score: q.correct ? 100 : 0,
-        icon: 'crosshair'
+        icon: 'crosshair',
+        success: q.correct,
+        details: `${q.subject || 'Geral'} - ${q.difficulty || 'Médio'}`
       });
     });
     
-    // Add recent flashcard activities
+    // Add recent flashcard activities  
     const recentFlashcards = userFlashcards
       .sort((a, b) => new Date(b.updatedAt || '').getTime() - new Date(a.updatedAt || '').getTime())
-      .slice(0, 1);
+      .slice(0, 2);
     
     recentFlashcards.forEach((f, index) => {
+      const accuracy = Math.round(((f.correctCount || 0) / Math.max(1, f.reviews || 1)) * 100);
       recentActivities.push({
-        id: `f-${index}`,
-        type: 'flashcards',
-        title: `Flashcard: ${f.front?.substring(0, 50) || 'Cartão tático'}...`,
+        id: `f-${f.id || index}`,
+        type: 'flashcard',
+        title: `REVIOU FLASHCARD: ${accuracy}% precisão`,
+        description: f.category || 'Cartão Tático',
         timestamp: f.updatedAt || new Date().toISOString(),
-        score: Math.round(((f.correctCount || 0) / Math.max(1, f.reviews || 1)) * 100),
-        icon: 'brain'
+        score: accuracy,
+        icon: 'brain',
+        success: accuracy >= 75,
+        details: `${f.reviews || 1} revisões - ${f.category || 'Geral'}`
       });
     });
     
-    // If no recent activities, add a placeholder
-    if (recentActivities.length === 0) {
+    // Add course access activities
+    enrolledCourses.slice(0, 1).forEach((course, index) => {
       recentActivities.push({
+        id: `c-${course.id}`,
+        type: 'course',
+        title: `ACESSOU CURSO: ${course.name}`,
+        description: `${Math.round(course.progress)}% concluído`,
+        timestamp: course.enrolledAt || new Date().toISOString(),
+        score: course.progress,
+        icon: 'book',
+        success: course.progress > 0,
+        details: `${course.category} - ${course.totalQuestions} questões`
+      });
+    });
+    
+    // Sort by timestamp and limit to 5 most recent
+    recentActivities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    const limitedActivities = recentActivities.slice(0, 5);
+    
+    // If no recent activities, add helpful suggestions
+    if (limitedActivities.length === 0) {
+      limitedActivities.push({
         id: 'welcome',
-        type: 'system',
-        title: 'Bem-vindo ao sistema! Comece respondendo questões para ver suas atividades aqui.',
+        type: 'welcome',
+        title: 'COMECE SUA OPERAÇÃO TÁTICA',
+        description: 'Inicie seus estudos para ver atividades aqui',
         timestamp: new Date().toISOString(),
         score: 0,
-        icon: 'star'
+        icon: 'star',
+        success: true,
+        details: 'Sistema pronto para uso'
       });
     }
 
@@ -629,7 +659,27 @@ router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void =
           totalStudyTime: (questionsAnswered * 3) + (flashcardsReviewed * 1), // Estimate in minutes based on activities
         },
         courses: enrolledCourses,
-        recentActivities,
+        // Cursos em progresso (operações em andamento)
+        coursesInProgress: enrolledCourses
+          .filter(course => course.progress > 0 && course.progress < 100)
+          .slice(0, 4)
+          .map(course => ({
+            id: course.id,
+            name: course.name,
+            category: course.category,
+            progress: course.progress,
+            totalQuestions: course.totalQuestions,
+            totalFlashcards: course.totalFlashcards,
+            thumbnail: course.thumbnail,
+            estimatedTimeLeft: course.progress > 0 ? 
+              Math.ceil((100 - course.progress) / 10) + ' semanas' : '4-6 semanas',
+            nextAction: course.progress < 25 ? 'Continuar lições básicas' :
+                       course.progress < 50 ? 'Praticar exercícios' :
+                       course.progress < 75 ? 'Revisar conteúdo' : 'Finalizar módulos',
+            priority: course.progress < 25 ? 'high' : course.progress < 75 ? 'medium' : 'low',
+            lastAccessed: course.enrolledAt
+          })),
+        recentActivities: limitedActivities,
         dailyGoals,
         subjectPerformance,
         upcomingEvents,

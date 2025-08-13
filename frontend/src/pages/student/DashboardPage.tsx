@@ -337,6 +337,8 @@ export default function DashboardPage() {
 
   // Últimos cursos acessados pelo usuário
   const recentCourses = dashboardData.recentCourses || [];
+  // Cursos em progresso (operações em andamento)
+  const coursesInProgress = dashboardData.coursesInProgress || [];
 
   // Eventos do calendário
   const calendarEvents = {
@@ -768,7 +770,7 @@ export default function DashboardPage() {
 
       {/* Ações Rápidas melhorado */}
       <motion.div variants={itemVariants}>
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700 relative overflow-hidden">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700 relative">
           {/* Tactical grid pattern */}
           <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,204,21,0.3) 1px, transparent 0)', backgroundSize: '20px 20px' }} />
           <CardHeader className="pb-4">
@@ -1350,53 +1352,109 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
                 <BookOpen className="w-5 h-5 text-accent-500" />
-                OPERAÇÕES EM ANDAMENTO
+                CURSOS EM PROGRESSO
               </CardTitle>
               <Button 
                 variant="ghost" 
                 size="sm"
                 className="font-police-body uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={() => navigate('/my-courses')}
               >
-                VER TODAS
+                VER TODOS
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {dashboardData.courses.map((course) => (
-              <div
+            {coursesInProgress.length > 0 ? coursesInProgress.map((course) => (
+              <motion.div
                 key={course.id}
-                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-accent-500 dark:hover:border-accent-500 transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                onClick={() => navigate(`/student/courses/${course.id}`)}
+                whileHover={{ scale: 1.02 }}
+                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-accent-500 dark:hover:border-accent-500 transition-all cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                onClick={() => navigate(`/course/${course.id}`)}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">{course.name}</h4>
-                  <span className="text-sm font-police-numbers font-medium text-gray-600 dark:text-gray-400">{course.progress}%</span>
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    {course.thumbnail ? (
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-600">
+                        <img 
+                          src={course.thumbnail} 
+                          alt={course.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div className="w-full h-full bg-accent-500 rounded-lg flex items-center justify-center" style={{display: 'none'}}>
+                          <BookOpen className="w-4 h-4 text-black" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 bg-accent-500 rounded-lg flex items-center justify-center">
+                        <BookOpen className="w-4 h-4 text-black" />
+                      </div>
+                    )}
+                    <div>
+                      <h4 className="font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-sm">{course.name}</h4>
+                      <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">{course.category}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-sm font-police-numbers font-medium ${
+                      course.priority === 'high' ? 'text-red-600 dark:text-red-400' :
+                      course.priority === 'medium' ? 'text-accent-500' : 'text-green-600 dark:text-green-400'
+                    }`}>
+                      {Math.round(course.progress)}%
+                    </span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-police-body">{course.estimatedTimeLeft}</p>
+                  </div>
                 </div>
+                
                 <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-3">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${course.progress}%` }}
-                    transition={{ duration: 1, delay: 0.3 }}
+                    transition={{ duration: 1, delay: 0.2 }}
                     className="bg-gradient-to-r from-accent-500 to-accent-600 h-2 rounded-full"
                   />
                 </div>
-                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                  <span className="flex items-center gap-1 font-police-body uppercase tracking-wider">
-                    <Crosshair className="w-4 h-4" />
-                    {course.totalQuestions} EXERCÍCIOS
-                  </span>
-                  <span className="flex items-center gap-1 font-police-body uppercase tracking-wider">
-                    <Brain className="w-4 h-4" />
-                    {course.totalFlashcards} CARDS
-                  </span>
-                  <span className="flex items-center gap-1 font-police-body uppercase tracking-wider">
-                    <Users className="w-4 h-4" />
-                    {Math.floor(Math.random() * 500) + 100} OPERADORES
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+                    <span className="flex items-center gap-1 font-police-body uppercase tracking-wider">
+                      <Target className="w-3 h-3" />
+                      {course.totalQuestions}
+                    </span>
+                    <span className="flex items-center gap-1 font-police-body uppercase tracking-wider">
+                      <Brain className="w-3 h-3" />
+                      {course.totalFlashcards}
+                    </span>
+                  </div>
+                  <span className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                    {course.nextAction}
                   </span>
                 </div>
+              </motion.div>
+            )) : (
+              <div className="text-center py-8">
+                <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider text-sm">
+                  NENHUM CURSO EM ANDAMENTO
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 font-police-body mt-1">
+                  Comece um novo curso para acompanhar o progresso
+                </p>
+                <Button 
+                  size="sm"
+                  variant="outline"
+                  className="mt-3 font-police-body uppercase tracking-wider"
+                  onClick={() => navigate('/courses')}
+                >
+                  EXPLORAR CURSOS
+                </Button>
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
 

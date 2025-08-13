@@ -21,9 +21,9 @@ const Tooltip: React.FC<TooltipProps> = ({ children, content, className = "" }) 
     >
       {children}
       {isVisible && (
-        <div className={`absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 rounded-lg shadow-lg border bg-gray-900 dark:bg-gray-100 text-white dark:text-black text-sm font-medium pointer-events-none opacity-100 transition-opacity duration-200 ${className}`.trim()}>
+        <div className={`absolute z-[9999] bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 rounded-lg shadow-xl border bg-gray-900 dark:bg-gray-100 text-white dark:text-black text-sm font-medium pointer-events-none opacity-100 transition-opacity duration-200 ${className}`.trim()}>
           {content}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-100 rotate-45 -mt-1"></div>
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-100 rotate-45 -mt-1 z-[9999]"></div>
         </div>
       )}
     </div>

@@ -751,6 +751,31 @@ class CourseService {
     }
   }
 
+  async unenrollFromCourse(courseId: string, reason?: string): Promise<{ 
+    success: boolean; 
+    message?: string; 
+    data?: any;
+  }> {
+    try {
+      const params = new URLSearchParams();
+      if (reason) {
+        params.append('reason', reason);
+      }
+
+      const response = await fetch(`${API_ENDPOINTS.courses.get(courseId)}/unenroll`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: params.toString(),
+      });
+
+      const data = await this.handleApiResponse(response);
+      return data;
+    } catch (error) {
+      console.error('Error unenrolling from course:', error);
+      return { success: false, message: 'ERRO AO CANCELAR MATRÍCULA OPERACIONAL' };
+    }
+  }
+
   async getEnrolledCourses(): Promise<{ success: boolean; data?: any[]; message?: string }> {
     try {
       // First try the dedicated enrolled courses endpoint

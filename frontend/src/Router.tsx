@@ -142,6 +142,7 @@ function Router() {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/courses" element={<CoursesPage />} />
+        <Route path="/courses/:id" element={<CourseDetailsPage />} />
         <Route path="/my-courses" element={<MyCoursesPage />} />
         <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/simulations" element={<MockExamsPageSimple />} />
