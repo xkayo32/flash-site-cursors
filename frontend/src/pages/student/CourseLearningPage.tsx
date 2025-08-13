@@ -2,6 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { courseProgressService, type CourseProgress, type ModuleProgress } from '@/services/courseProgressService';
+import { courseService } from '@/services/courseService';
+import toast from 'react-hot-toast';
 import {
   Play,
   Pause,
@@ -113,94 +116,7 @@ interface CourseData {
   currentLesson?: string;
 }
 
-// Dados mockados do curso
-const mockCourseData: CourseData = {
-  id: '1',
-  title: 'Receita Federal - Auditor Fiscal',
-  instructor: 'Prof. Ana Silva',
-  category: 'Fiscal',
-  progress: 45,
-  currentLesson: '1-2',
-  modules: [
-    {
-      id: '1',
-      title: 'Direito Tributário',
-      completed: false,
-      totalDuration: '8h 30min',
-      lessons: [
-        {
-          id: '1-1',
-          title: 'Introdução ao Sistema Tributário Nacional',
-          duration: '45min',
-          durationSeconds: 2700,
-          completed: true,
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
-        },
-        {
-          id: '1-2',
-          title: 'Princípios Constitucionais Tributários',
-          duration: '52min',
-          durationSeconds: 3120,
-          completed: false,
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-          description: 'Nesta aula vamos estudar os principais princípios que regem o sistema tributário brasileiro, estabelecidos na Constituição Federal.',
-          resources: [
-            {
-              title: 'Resumo - Princípios Tributários',
-              type: 'pdf',
-              url: '#'
-            },
-            {
-              title: 'Exercícios - Capítulo 1',
-              type: 'exercise',
-              url: '#'
-            }
-          ]
-        },
-        {
-          id: '1-3',
-          title: 'ICMS - Conceitos Básicos',
-          duration: '38min',
-          durationSeconds: 2280,
-          completed: false,
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
-        },
-        {
-          id: '1-4',
-          title: 'ICMS - Casos Práticos',
-          duration: '41min',
-          durationSeconds: 2460,
-          completed: false,
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'
-        }
-      ]
-    },
-    {
-      id: '2',
-      title: 'Contabilidade Pública',
-      completed: false,
-      totalDuration: '6h 15min',
-      lessons: [
-        {
-          id: '2-1',
-          title: 'Princípios de Contabilidade Pública',
-          duration: '35min',
-          durationSeconds: 2100,
-          completed: false,
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4'
-        },
-        {
-          id: '2-2',
-          title: 'Orçamento Público',
-          duration: '48min',
-          durationSeconds: 2880,
-          completed: false,
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4'
-        }
-      ]
-    }
-  ]
-};
+// ===================== COURSE LEARNING PAGE =====================
 
 
 export default function CourseLearningPage() {
@@ -217,28 +133,132 @@ export default function CourseLearningPage() {
   const [playbackRate, setPlaybackRate] = useState(1);
   
   // Estados da interface
-  const [currentLessonId, setCurrentLessonId] = useState(mockCourseData.currentLesson || '1-1');
   const [showSidebar, setShowSidebar] = useState(true);
-  const [expandedModules, setExpandedModules] = useState<string[]>(['1']);
+  const [expandedModules, setExpandedModules] = useState<string[]>([]);
   const [showControls, setShowControls] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [shareButtonPosition, setShareButtonPosition] = useState({ top: 0, left: 0 });
   const shareButtonRef = useRef<HTMLButtonElement>(null);
 
-  const course = mockCourseData;
+  // Estados dos dados reais
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [course, setCourse] = useState<any>(null);
+  const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
+  const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
+  const [enrollmentStatus, setEnrollmentStatus] = useState<any>(null);
   
-  // Encontrar a aula atual
-  const currentLesson = course.modules
-    .flatMap(module => module.lessons)
-    .find(lesson => lesson.id === currentLessonId);
+  // Derivar dados das aulas
+  const currentLesson = courseProgress && currentLessonId ? 
+    courseProgress.modules
+      .flatMap(module => module.lessons)
+      .find(lesson => lesson.id === currentLessonId) : null;
 
-  const currentModule = course.modules.find(module =>
-    module.lessons.some(lesson => lesson.id === currentLessonId)
-  );
+  const currentModule = courseProgress && currentLessonId ?
+    courseProgress.modules.find(module =>
+      module.lessons.some(lesson => lesson.id === currentLessonId)
+    ) : null;
 
-  // Fechar dropdown ao clicar fora
-  // First click outside handler removed - using unified logic below
+  // ===================== CARREGAMENTO DOS DADOS =====================
+  
+  useEffect(() => {
+    const loadCourseData = async () => {
+      if (!courseId) {
+        setError('ID do curso não encontrado');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Verificar matrícula
+        const enrollment = await courseProgressService.getEnrollmentStatus(courseId);
+        setEnrollmentStatus(enrollment);
+
+        if (!enrollment.enrolled) {
+          setError('Você não está matriculado neste curso');
+          setLoading(false);
+          return;
+        }
+
+        // Carregar dados do curso
+        const [courseData, progressData] = await Promise.all([
+          courseService.getCourseById(courseId),
+          courseProgressService.getCourseProgress(courseId)
+        ]);
+
+        setCourse(courseData.data);
+        setCourseProgress(progressData);
+
+        // Definir aula atual
+        if (progressData) {
+          const currentId = progressData.current_lesson_id || 
+            progressData.modules[0]?.lessons[0]?.id;
+          setCurrentLessonId(currentId);
+
+          // Expandir módulos iniciais
+          const moduleIds = progressData.modules.map(m => m.id);
+          setExpandedModules(moduleIds);
+        }
+
+      } catch (err: any) {
+        console.error('Erro ao carregar dados do curso:', err);
+        setError(err.message || 'Erro ao carregar curso');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCourseData();
+  }, [courseId]);
+
+  // ===================== PROGRESSO DA AULA =====================
+
+  // Carregegar progresso específico da aula atual
+  useEffect(() => {
+    const loadLessonProgress = async () => {
+      if (!courseId || !currentLessonId) return;
+
+      try {
+        const progress = await courseProgressService.getLessonProgress(courseId, currentLessonId);
+        if (progress && progress.current_time > 0) {
+          setCurrentTime(progress.current_time);
+          
+          // Se há progresso salvo e o vídeo está carregado, posicionar o vídeo
+          if (videoRef.current && progress.current_time > 0) {
+            videoRef.current.currentTime = progress.current_time;
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar progresso da aula:', error);
+      }
+    };
+
+    loadLessonProgress();
+  }, [courseId, currentLessonId]);
+
+  // Salvar progresso automaticamente
+  useEffect(() => {
+    if (!courseId || !currentLessonId || !duration || duration <= 0) return;
+
+    const watchedPercentage = courseProgressService.calculateWatchedPercentage(currentTime, duration);
+    
+    // Salvar progresso a cada 5% assistido ou a cada 30 segundos
+    if (watchedPercentage % 5 === 0 || currentTime % 30 === 0) {
+      courseProgressService.saveProgressDebounced(
+        courseId,
+        currentLessonId,
+        currentTime,
+        duration,
+        2000 // 2 segundos de delay
+      );
+    }
+  }, [courseId, currentLessonId, currentTime, duration]);
+
+  // ===================== PLAYER DE VÍDEO =====================
 
   useEffect(() => {
     const video = videoRef.current;
@@ -363,30 +383,94 @@ export default function CourseLearningPage() {
     );
   };
 
-  const goToLesson = (lessonId: string) => {
-    setCurrentLessonId(lessonId);
-    setCurrentTime(0);
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
+  // ===================== NAVEGAÇÃO ENTRE AULAS =====================
+
+  const goToLesson = async (lessonId: string) => {
+    if (!courseId) return;
+
+    try {
+      // Salvar progresso final da aula atual antes de trocar
+      if (currentLessonId && duration > 0) {
+        const watchedPercentage = courseProgressService.calculateWatchedPercentage(currentTime, duration);
+        await courseProgressService.updateLessonProgress(courseId, currentLessonId, {
+          currentTime,
+          duration,
+          watchedPercentage,
+          completed: watchedPercentage >= 90
+        });
+      }
+
+      // Trocar para nova aula
+      setCurrentLessonId(lessonId);
+      setCurrentTime(0);
+      
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0;
+      }
+
+      toast.success('📚 Nova missão carregada!', {
+        duration: 2000,
+        icon: '🎯'
+      });
+
+    } catch (error) {
+      console.error('Erro ao trocar de aula:', error);
+      toast.error('Erro ao carregar nova aula');
     }
   };
 
   const getPreviousLesson = () => {
-    const allLessons = course.modules.flatMap(module => module.lessons);
+    if (!courseProgress) return null;
+    
+    const allLessons = courseProgress.modules.flatMap(module => module.lessons);
     const currentIndex = allLessons.findIndex(lesson => lesson.id === currentLessonId);
     return currentIndex > 0 ? allLessons[currentIndex - 1] : null;
   };
 
   const getNextLesson = () => {
-    const allLessons = course.modules.flatMap(module => module.lessons);
+    if (!courseProgress) return null;
+    
+    const allLessons = courseProgress.modules.flatMap(module => module.lessons);
     const currentIndex = allLessons.findIndex(lesson => lesson.id === currentLessonId);
     return currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
   };
 
-  const markLessonComplete = () => {
-    if (currentLesson) {
-      toast.success('Aula marcada como concluída!');
-      // Aqui seria a lógica para salvar o progresso
+  const markLessonComplete = async () => {
+    if (!currentLesson || !courseId || !currentLessonId) {
+      toast.error('Dados da aula não disponíveis');
+      return;
+    }
+
+    try {
+      const watchedPercentage = courseProgressService.calculateWatchedPercentage(currentTime, duration);
+      
+      await courseProgressService.updateLessonProgress(courseId, currentLessonId, {
+        currentTime,
+        duration,
+        watchedPercentage,
+        completed: true
+      });
+
+      // Recarregar progresso do curso
+      const updatedProgress = await courseProgressService.getCourseProgress(courseId);
+      setCourseProgress(updatedProgress);
+
+      toast.success('🎯 MISSÃO CONCLUÍDA! Objetivo eliminado com sucesso.', {
+        duration: 3000,
+        icon: '✅'
+      });
+
+      // Avançar para próxima aula automaticamente se houver
+      const next = getNextLesson();
+      if (next) {
+        setTimeout(() => {
+          goToLesson(next.id);
+        }, 2000);
+      }
+
+    } catch (error) {
+      console.error('Erro ao marcar aula como concluída:', error);
+      toast.error('Erro ao concluir aula');
     }
   };
 
@@ -560,6 +644,71 @@ Junte-se à operação e domine os concursos! 💪`;
   const previousLesson = getPreviousLesson();
   const nextLesson = getNextLesson();
 
+  // ===================== STATES DE CARREGAMENTO =====================
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin w-16 h-16 border-4 border-accent-500 border-t-transparent rounded-full mx-auto"></div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+            CARREGANDO OPERAÇÃO
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+            Preparando sua missão de estudos...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-md mx-auto p-6">
+          <div className="text-red-500">
+            <AlertTriangle className="w-20 h-20 mx-auto" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+            OPERAÇÃO INDISPONÍVEL
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 font-police-body">
+            {error}
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Link to="/my-courses">
+              <Button className="bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider">
+                VOLTAR AOS CURSOS
+              </Button>
+            </Link>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.reload()}
+              className="font-police-body uppercase tracking-wider"
+            >
+              TENTAR NOVAMENTE
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!course || !courseProgress || !currentLesson) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+            DADOS INDISPONÍVEIS
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+            Não foi possível carregar os dados do curso
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-[#14242f] to-gray-900 text-white">
       {/* Header */}
@@ -645,7 +794,7 @@ Junte-se à operação e domine os concursos! 💪`;
 
             {/* Lista de módulos e aulas */}
             <div className="p-4">
-              {course.modules.map((module) => (
+              {courseProgress.modules.map((module) => (
                 <div key={module.id} className="mb-4">
                   <button
                     onClick={() => toggleModule(module.id)}
@@ -656,7 +805,9 @@ Junte-se à operação e domine os concursos! 💪`;
                     
                     <div className="text-left">
                       <h3 className="font-medium font-police-subtitle uppercase tracking-wider text-white group-hover:text-accent-400 transition-colors">{module.title}</h3>
-                      <p className="text-sm text-gray-400 font-police-body">{module.totalDuration}</p>
+                      <p className="text-sm text-gray-400 font-police-body">
+                        {module.completed_lessons}/{module.total_lessons} MISSÕES • {module.completion_percentage}% CONCLUÍDO
+                      </p>
                     </div>
                     {expandedModules.includes(module.id) ? (
                       <ChevronUp className="w-5 h-5" />
@@ -679,10 +830,14 @@ Junte-se à operação e domine os concursos! 💪`;
                           )}
                         >
                           <div className="flex-shrink-0">
-                            {lesson.completed ? (
+                            {lesson.progress?.completed || lesson.progress?.watched_percentage >= 90 ? (
                               <CheckCircle className="w-5 h-5 text-green-500" />
                             ) : lesson.id === currentLessonId ? (
                               <Play className="w-5 h-5 text-white" />
+                            ) : lesson.progress?.watched_percentage > 0 ? (
+                              <div className="w-5 h-5 border-2 border-accent-500 rounded-full flex items-center justify-center bg-accent-500/20">
+                                <span className="text-xs text-accent-500">{Math.round(lesson.progress.watched_percentage)}%</span>
+                              </div>
                             ) : (
                               <div className="w-5 h-5 border-2 border-gray-500 rounded-full flex items-center justify-center">
                                 <span className="text-xs">{index + 1}</span>
@@ -691,7 +846,12 @@ Junte-se à operação e domine os concursos! 💪`;
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="font-medium line-clamp-2 font-police-body group-hover:text-accent-400 transition-colors">{lesson.title}</h4>
-                            <p className="text-sm text-gray-400 font-police-numbers">{lesson.duration}</p>
+                            <p className="text-sm text-gray-400 font-police-numbers">
+                              {lesson.duration_minutes}min 
+                              {lesson.progress?.watched_percentage > 0 && 
+                                ` • ${Math.round(lesson.progress.watched_percentage)}% assistido`
+                              }
+                            </p>
                           </div>
                         </button>
                       ))}
@@ -709,7 +869,7 @@ Junte-se à operação e domine os concursos! 💪`;
           <div className="relative bg-black">
             <video
               ref={videoRef}
-              src={currentLesson?.videoUrl}
+              src={currentLesson?.video_url}
               className="w-full aspect-video"
               onClick={handlePlayPause}
               onPlay={() => setIsPlaying(true)}

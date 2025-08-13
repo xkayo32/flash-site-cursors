@@ -897,15 +897,53 @@ router.post('/:id/enroll', authMiddleware, (req: AuthRequest, res: Response): vo
     );
     
     if (existingEnrollment) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'AGENTE JÁ REGISTRADO NESTA OPERAÇÃO',
-        data: {
-          enrollment: existingEnrollment,
-          status: 'already_enrolled'
+      // If enrollment exists but is paused or unenrolled, reactivate it
+      if (existingEnrollment.status === 'paused' || existingEnrollment.status === 'unenrolled') {
+        const enrollmentIndex = enrollments.findIndex(e => e.id === existingEnrollment.id);
+        enrollments[enrollmentIndex].status = 'active';
+        enrollments[enrollmentIndex].updated_at = new Date().toISOString();
+        enrollments[enrollmentIndex].reactivated_at = new Date().toISOString();
+        
+        // Add tactical note about reactivation
+        enrollments[enrollmentIndex].tactical_notes.push({
+          note: 'OPERAÇÃO REATIVADA - AGENTE RETOMOU OS ESTUDOS',
+          timestamp: new Date().toISOString(),
+          type: 'reactivation'
+        });
+        
+        saveEnrollments(enrollments);
+        
+        // Update course statistics if unenrolled previously
+        if (existingEnrollment.status === 'unenrolled') {
+          course.stats.enrollments += 1;
+          courses[courseIndex] = course;
+          saveCourses(courses);
         }
-      });
-      return;
+        
+        res.json({ 
+          success: true, 
+          message: 'OPERAÇÃO REATIVADA COM SUCESSO!',
+          data: {
+            enrollment: enrollments[enrollmentIndex],
+            status: 'reactivated',
+            progress_preserved: true
+          }
+        });
+        return;
+      }
+      
+      // If actively enrolled, return existing enrollment
+      if (existingEnrollment.status === 'active') {
+        res.status(400).json({ 
+          success: false, 
+          message: 'AGENTE JÁ REGISTRADO NESTA OPERAÇÃO',
+          data: {
+            enrollment: existingEnrollment,
+            status: 'already_enrolled'
+          }
+        });
+        return;
+      }
     }
     
     // Create new enrollment record
@@ -1001,6 +1039,63 @@ router.get('/:id/enrollment', authMiddleware, (req: AuthRequest, res: Response):
   }
 });
 
+// POST /api/v1/courses/:id/unenroll - Unenroll from course
+router.post('/:id/unenroll', authMiddleware, (req: AuthRequest, res: Response): void => {
+  try {
+    if (req.user?.role !== 'student' && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, message: 'Acesso negado' });
+      return;
+    }
+
+    const courses = getCourses();
+    const course = courses.find(c => c.id === req.params.id);
+    
+    if (!course) {
+      res.status(404).json({ success: false, message: 'Operação não localizada' });
+      return;
+    }
+
+    const enrollments = getEnrollments();
+    const enrollmentIndex = enrollments.findIndex(e => 
+      e.course_id === req.params.id && e.user_id === req.user!.id
+    );
+
+    if (enrollmentIndex === -1) {
+      res.status(404).json({ success: false, message: 'Matrícula não encontrada' });
+      return;
+    }
+
+    // Update enrollment status to 'unenrolled' but keep progress
+    const { reason } = req.body;
+    enrollments[enrollmentIndex].status = 'unenrolled';
+    enrollments[enrollmentIndex].unenrolled_at = new Date().toISOString();
+    enrollments[enrollmentIndex].unenroll_reason = reason || 'Cancelamento solicitado pelo agente';
+    enrollments[enrollmentIndex].updated_at = new Date().toISOString();
+    
+    saveEnrollments(enrollments);
+
+    // Decrease enrollment counter
+    const courseIndex = courses.findIndex(c => c.id === req.params.id);
+    if (courseIndex !== -1 && courses[courseIndex].stats.enrollments > 0) {
+      courses[courseIndex].stats.enrollments -= 1;
+      saveCourses(courses);
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'MATRÍCULA CANCELADA COM SUCESSO',
+      data: { 
+        enrollment: enrollments[enrollmentIndex],
+        progress_preserved: true,
+        can_reenroll: true
+      }
+    });
+  } catch (error) {
+    console.error('Error unenrolling from course:', error);
+    res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+  }
+});
+
 // PUT /api/v1/courses/:id/enrollment - Update enrollment (pause, resume, etc)
 router.put('/:id/enrollment', authMiddleware, (req: AuthRequest, res: Response): void => {
   try {
@@ -1086,7 +1181,308 @@ router.get('/enrollments/my-courses', authMiddleware, (req: AuthRequest, res: Re
   }
 });
 
-// POST /api/v1/courses/:courseId/lessons/:lessonId/complete - Mark lesson as complete
+// ===================== LESSON PROGRESS ENDPOINTS =====================
+
+// Data storage for lesson progress
+const LESSON_PROGRESS_FILE = path.join(__dirname, '../../data/lesson_progress.json');
+
+const getLessonProgress = (): any[] => readJsonFile(LESSON_PROGRESS_FILE);
+const saveLessonProgress = (progress: any[]): void => writeJsonFile(LESSON_PROGRESS_FILE, progress);
+
+// Initialize lesson progress file if it doesn't exist
+if (!fs.existsSync(LESSON_PROGRESS_FILE)) {
+  saveLessonProgress([]);
+}
+
+// POST /api/v1/courses/:courseId/lessons/:lessonId/progress - Update lesson progress
+router.post('/:courseId/lessons/:lessonId/progress', authMiddleware, 
+  (req: AuthRequest, res: Response): void => {
+    try {
+      const userId = req.user?.id;
+      const { currentTime, duration, completed = false, watchedPercentage } = req.body;
+      
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+        return;
+      }
+      
+      const lessons = getLessons();
+      const lesson = lessons.find(l => l.id === req.params.lessonId);
+      
+      if (!lesson) {
+        res.status(404).json({ success: false, message: 'MISSÃO NÃO ENCONTRADA' });
+        return;
+      }
+      
+      // Verify enrollment
+      const enrollments = getEnrollments();
+      const enrollment = enrollments.find(e => 
+        e.user_id === userId && e.course_id === req.params.courseId
+      );
+      
+      if (!enrollment) {
+        res.status(404).json({ success: false, message: 'MATRÍCULA NÃO ENCONTRADA' });
+        return;
+      }
+      
+      // Get or create lesson progress record
+      const progressRecords = getLessonProgress();
+      let progressIndex = progressRecords.findIndex(p => 
+        p.user_id === userId && 
+        p.lesson_id === req.params.lessonId &&
+        p.course_id === req.params.courseId
+      );
+      
+      const progressData = {
+        user_id: userId,
+        course_id: req.params.courseId,
+        lesson_id: req.params.lessonId,
+        current_time: parseFloat(currentTime) || 0,
+        duration: parseFloat(duration) || 0,
+        watched_percentage: parseFloat(watchedPercentage) || 0,
+        completed: Boolean(completed),
+        last_accessed: new Date().toISOString(),
+        sessions: [], // Array to track viewing sessions
+        total_watch_time: 0 // Total accumulated watch time
+      };
+      
+      if (progressIndex === -1) {
+        // Create new progress record
+        progressData.id = uuidv4();
+        progressData.created_at = new Date().toISOString();
+        progressData.sessions = [{
+          start_time: new Date().toISOString(),
+          watch_time: parseFloat(currentTime) || 0,
+          completed_session: Boolean(completed)
+        }];
+        progressData.total_watch_time = parseFloat(currentTime) || 0;
+        
+        progressRecords.push(progressData);
+      } else {
+        // Update existing progress record
+        const existingProgress = progressRecords[progressIndex];
+        const lastSession = existingProgress.sessions[existingProgress.sessions.length - 1];
+        
+        // Calculate watch time for this session
+        const sessionWatchTime = Math.max(0, 
+          parseFloat(currentTime) - (lastSession?.watch_time || 0)
+        );
+        
+        // Update progress data
+        progressRecords[progressIndex] = {
+          ...existingProgress,
+          current_time: parseFloat(currentTime) || existingProgress.current_time,
+          duration: parseFloat(duration) || existingProgress.duration,
+          watched_percentage: parseFloat(watchedPercentage) || existingProgress.watched_percentage,
+          completed: Boolean(completed) || existingProgress.completed,
+          last_accessed: new Date().toISOString(),
+          total_watch_time: existingProgress.total_watch_time + sessionWatchTime,
+          sessions: [
+            ...existingProgress.sessions,
+            {
+              timestamp: new Date().toISOString(),
+              watch_time: parseFloat(currentTime) || 0,
+              session_duration: sessionWatchTime,
+              completed_session: Boolean(completed)
+            }
+          ]
+        };
+      }
+      
+      saveLessonProgress(progressRecords);
+      
+      // Auto-complete lesson if watched >= 90%
+      const watchPercentage = parseFloat(watchedPercentage) || 0;
+      if (watchPercentage >= 90 || completed) {
+        // Update enrollment progress
+        const enrollmentIndex = enrollments.findIndex(e => e.id === enrollment.id);
+        if (enrollmentIndex !== -1) {
+          const currentEnrollment = enrollments[enrollmentIndex];
+          
+          if (!currentEnrollment.progress.completed_lessons.includes(req.params.lessonId)) {
+            currentEnrollment.progress.completed_lessons.push(req.params.lessonId);
+            currentEnrollment.progress.last_accessed = new Date().toISOString();
+            currentEnrollment.updated_at = new Date().toISOString();
+            
+            // Recalculate course progress
+            const modules = getModules().filter(m => m.course_id === req.params.courseId);
+            const moduleIds = modules.map(m => m.id);
+            const allCourseLessons = lessons.filter(l => moduleIds.includes(l.module_id));
+            const totalLessons = allCourseLessons.length;
+            const completedLessons = currentEnrollment.progress.completed_lessons.length;
+            
+            currentEnrollment.progress.percentage = totalLessons > 0 ? 
+              Math.round((completedLessons / totalLessons) * 100) : 0;
+            
+            // Check if course is completed
+            if (currentEnrollment.progress.percentage >= 100 && currentEnrollment.status === 'active') {
+              currentEnrollment.status = 'completed';
+              currentEnrollment.completion_date = new Date().toISOString();
+              currentEnrollment.certificate_issued = true;
+            }
+            
+            saveEnrollments(enrollments);
+          }
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        message: completed ? 'MISSÃO CONCLUÍDA!' : 'PROGRESSO SALVO',
+        data: {
+          lesson_progress: progressData,
+          course_progress: enrollment.progress.percentage,
+          lesson_completed: watchPercentage >= 90 || completed
+        }
+      });
+    } catch (error) {
+      console.error('Error updating lesson progress:', error);
+      res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
+    }
+  }
+);
+
+// GET /api/v1/courses/:courseId/lessons/:lessonId/progress - Get lesson progress
+router.get('/:courseId/lessons/:lessonId/progress', authMiddleware, 
+  (req: AuthRequest, res: Response): void => {
+    try {
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+        return;
+      }
+      
+      const progressRecords = getLessonProgress();
+      const progress = progressRecords.find(p => 
+        p.user_id === userId && 
+        p.lesson_id === req.params.lessonId &&
+        p.course_id === req.params.courseId
+      );
+      
+      if (!progress) {
+        res.json({ 
+          success: true, 
+          data: {
+            current_time: 0,
+            duration: 0,
+            watched_percentage: 0,
+            completed: false,
+            last_accessed: null
+          }
+        });
+        return;
+      }
+      
+      res.json({ 
+        success: true, 
+        data: progress
+      });
+    } catch (error) {
+      console.error('Error getting lesson progress:', error);
+      res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
+    }
+  }
+);
+
+// GET /api/v1/courses/:courseId/progress - Get complete course progress
+router.get('/:courseId/progress', authMiddleware, 
+  (req: AuthRequest, res: Response): void => {
+    try {
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+        return;
+      }
+      
+      // Get enrollment
+      const enrollments = getEnrollments();
+      const enrollment = enrollments.find(e => 
+        e.user_id === userId && e.course_id === req.params.courseId
+      );
+      
+      if (!enrollment) {
+        res.status(404).json({ success: false, message: 'MATRÍCULA NÃO ENCONTRADA' });
+        return;
+      }
+      
+      // Get course structure
+      const modules = getModules().filter(m => m.course_id === req.params.courseId);
+      const lessons = getLessons();
+      const progressRecords = getLessonProgress().filter(p => 
+        p.user_id === userId && p.course_id === req.params.courseId
+      );
+      
+      // Build detailed progress
+      const detailedProgress = modules.map(module => {
+        const moduleLessons = lessons.filter(l => l.module_id === module.id)
+          .sort((a, b) => a.order_index - b.order_index);
+        
+        const lessonsWithProgress = moduleLessons.map(lesson => {
+          const lessonProgress = progressRecords.find(p => p.lesson_id === lesson.id);
+          return {
+            ...lesson,
+            progress: lessonProgress || {
+              current_time: 0,
+              duration: 0,
+              watched_percentage: 0,
+              completed: false,
+              last_accessed: null
+            }
+          };
+        });
+        
+        const completedLessons = lessonsWithProgress.filter(l => 
+          l.progress.completed || l.progress.watched_percentage >= 90
+        ).length;
+        
+        return {
+          ...module,
+          lessons: lessonsWithProgress,
+          completed_lessons: completedLessons,
+          total_lessons: moduleLessons.length,
+          completion_percentage: moduleLessons.length > 0 ? 
+            Math.round((completedLessons / moduleLessons.length) * 100) : 0
+        };
+      }).sort((a, b) => a.order_index - b.order_index);
+      
+      // Find current lesson (next incomplete lesson)
+      let currentLessonId = null;
+      let nextLessonId = null;
+      
+      for (const module of detailedProgress) {
+        for (const lesson of module.lessons) {
+          if (!lesson.progress.completed && lesson.progress.watched_percentage < 90) {
+            if (!currentLessonId) {
+              currentLessonId = lesson.id;
+            } else if (!nextLessonId) {
+              nextLessonId = lesson.id;
+              break;
+            }
+          }
+        }
+        if (nextLessonId) break;
+      }
+      
+      res.json({ 
+        success: true, 
+        data: {
+          enrollment,
+          modules: detailedProgress,
+          current_lesson_id: currentLessonId,
+          next_lesson_id: nextLessonId,
+          total_watch_time: progressRecords.reduce((sum, p) => sum + (p.total_watch_time || 0), 0)
+        }
+      });
+    } catch (error) {
+      console.error('Error getting course progress:', error);
+      res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
+    }
+  }
+);
+
+// POST /api/v1/courses/:courseId/lessons/:lessonId/complete - Mark lesson as complete (legacy endpoint)
 router.post('/:courseId/lessons/:lessonId/complete', authMiddleware, 
   (req: AuthRequest, res: Response): void => {
     try {
@@ -1173,7 +1569,10 @@ router.get('/my-enrollments', authMiddleware, (req: AuthRequest, res: Response):
       return;
     }
     
-    const enrollments = getEnrollments().filter(e => e.user_id === userId && e.status === 'active');
+    const enrollments = getEnrollments().filter(e => 
+      e.user_id === userId && 
+      (e.status === 'active' || e.status === 'paused' || e.status === 'completed')
+    );
     const courses = getCourses();
     
     // Get enrolled courses with progress
