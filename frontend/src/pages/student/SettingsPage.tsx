@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Settings,
@@ -155,7 +155,7 @@ export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
 
   // Carregar configurações do usuário
-  const loadUserSettings = async () => {
+  const loadUserSettings = useCallback(async () => {
     try {
       setIsLoadingData(true);
       const response = await settingsService.getUserSettings();
@@ -180,12 +180,12 @@ export default function SettingsPage() {
     } finally {
       setIsLoadingData(false);
     }
-  };
+  }, []);
 
   // Carregar configurações na montagem do componente
   useEffect(() => {
     loadUserSettings();
-  }, []);
+  }, [loadUserSettings]);
 
   // Loading state
   if (isLoadingData) {
