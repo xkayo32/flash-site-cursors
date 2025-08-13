@@ -36,14 +36,14 @@ import {
   Share2,
   Copy,
   Send,
-  Mail
+  Mail,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import { cn } from '@/utils/cn';
-import toast from 'react-hot-toast';
 
 // Ícones customizados das redes sociais
 const WhatsAppIcon = () => (
