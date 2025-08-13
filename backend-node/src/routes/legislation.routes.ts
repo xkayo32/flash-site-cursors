@@ -170,15 +170,12 @@ const updateLegislationStatistics = (legislationId: string, action: 'view' | 'se
 router.get('/search', (req, res: Response) => {
   try {
     const legislation = readJSONFile<LegislationDocument[]>(legislationPath, []);
-    const { q, limit = '20', type, subject_area } = req.query as any;
-
-    if (!q) {
-      return res.status(400).json({ error: 'Search query (q) is required' });
-    }
+    const { q = '', limit = '20', type, subject_area } = req.query as any;
 
     const searchTerm = q.toLowerCase();
     let results = legislation.filter(l => {
-      const matchesText = 
+      // If no search term, include all
+      const matchesText = !searchTerm || 
         l.title.toLowerCase().includes(searchTerm) ||
         l.description.toLowerCase().includes(searchTerm) ||
         l.full_text.toLowerCase().includes(searchTerm) ||
@@ -469,6 +466,51 @@ router.post('/', authMiddleware, (req: AuthRequest, res: Response) => {
   }
 });
 
+// GET /api/v1/legislation/categories - Get unique categories/subject areas
+router.get('/categories', (req, res: Response) => {
+  try {
+    const legislation = readJSONFile<LegislationDocument[]>(legislationPath, []);
+    
+    // Get unique subject areas with counts
+    const categoryMap = new Map<string, number>();
+    legislation.forEach(doc => {
+      const count = categoryMap.get(doc.subject_area) || 0;
+      categoryMap.set(doc.subject_area, count + 1);
+    });
+
+    // Also get unique types
+    const typeMap = new Map<string, number>();
+    legislation.forEach(doc => {
+      const count = typeMap.get(doc.type) || 0;
+      typeMap.set(doc.type, count + 1);
+    });
+
+    // Convert to arrays and sort by count
+    const categories = Array.from(categoryMap.entries())
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => b.count - a.count);
+
+    const types = Array.from(typeMap.entries())
+      .map(([type, count]) => ({ type, count }))
+      .sort((a, b) => b.count - a.count);
+
+    res.json({
+      success: true,
+      data: {
+        categories,
+        types,
+        total_documents: legislation.length
+      }
+    });
+  } catch (error) {
+    console.error('Error getting categories:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar categorias'
+    });
+  }
+});
+
 // GET /api/v1/legislation/:id - Get specific legislation
 router.get('/:id', (req, res: Response) => {
   try {
@@ -688,5 +730,53 @@ router.get('/:id/related', (req, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch related legislation' });
   }
 });
+
+// MOVIDO PARA ANTES DE /:id
+/*
+// GET /api/v1/legislation/categories - Get unique categories/subject areas
+router.get('/categories', (req, res: Response) => {
+  try {
+    const legislation = readJSONFile<LegislationDocument[]>(legislationPath, []);
+    
+    // Get unique subject areas with counts
+    const categoryMap = new Map<string, number>();
+    legislation.forEach(doc => {
+      const count = categoryMap.get(doc.subject_area) || 0;
+      categoryMap.set(doc.subject_area, count + 1);
+    });
+
+    // Also get unique types
+    const typeMap = new Map<string, number>();
+    legislation.forEach(doc => {
+      const count = typeMap.get(doc.type) || 0;
+      typeMap.set(doc.type, count + 1);
+    });
+
+    // Convert to arrays and sort by count
+    const categories = Array.from(categoryMap.entries())
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => b.count - a.count);
+
+    const types = Array.from(typeMap.entries())
+      .map(([type, count]) => ({ type, count }))
+      .sort((a, b) => b.count - a.count);
+
+    res.json({
+      success: true,
+      data: {
+        categories,
+        types,
+        total_documents: legislation.length
+      }
+    });
+  } catch (error) {
+    console.error('Error getting categories:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar categorias'
+    });
+  }
+});
+*/
 
 export default router;

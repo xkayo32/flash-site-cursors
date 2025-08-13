@@ -4,17 +4,12 @@
       "name": "João Silva",
       "phone": "(11) 99999-9999"
     },
-    "updatedAt": "2025-08-13T01:24:25.054Z",
+    "updatedAt": "2025-08-13T06:22:35.928Z",
     "notifications": {
       "study-reminders": {
-        "enabled": false,
-        "channels": {
-          "email": false,
-          "push": false,
-          "sms": false
-        }
+        "enabled": true
       },
-      "updatedAt": "2025-08-13T01:33:44.292Z"
+      "updatedAt": "2025-08-13T06:22:35.950Z"
     }
   }
 }

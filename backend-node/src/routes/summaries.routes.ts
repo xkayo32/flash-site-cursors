@@ -143,6 +143,11 @@ function loadDataFromFile<T>(filePath: string, defaultData: T[] = []): T[] {
   }
 }
 
+// Helper function to load summaries
+function loadSummaries(): Summary[] {
+  return loadDataFromFile<Summary>(summariesPath, summaries);
+}
+
 // Helper function to save data to file
 function saveDataToFile<T>(filePath: string, data: T[]): void {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
@@ -392,6 +397,122 @@ router.get('/available', authMiddleware, (req: AuthRequest, res: Response): void
     });
   }
 });
+
+// GET /api/v1/summaries/search - Search summaries
+router.get('/search', authMiddleware, (req: AuthRequest, res: Response): void => {
+  try {
+    const query = (req.query.q || req.query.query || '').toString().toLowerCase();
+    const subject = req.query.subject as string;
+    const topic = req.query.topic as string;
+    const tags = req.query.tags as string;
+    const type = req.query.type as string;
+    const difficulty = req.query.difficulty as string;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+
+    const summariesData = loadSummaries();
+    
+    // Filter summaries based on search criteria
+    let filteredSummaries = summariesData.filter(summary => {
+      const matchesQuery = !query || 
+        summary.title.toLowerCase().includes(query) ||
+        summary.content.toLowerCase().includes(query) ||
+        summary.tags.some(tag => tag.toLowerCase().includes(query));
+      
+      const matchesSubject = !subject || summary.subject === subject;
+      const matchesTopic = !topic || summary.topic === topic;
+      const matchesType = !type || summary.summary_type === type;
+      const matchesDifficulty = !difficulty || summary.difficulty === difficulty;
+      
+      const matchesTags = !tags || 
+        tags.split(',').some(tag => 
+          summary.tags.some(summaryTag => 
+            summaryTag.toLowerCase().includes(tag.trim().toLowerCase())
+          )
+        );
+      
+      return matchesQuery && matchesSubject && matchesTopic && 
+             matchesType && matchesDifficulty && matchesTags;
+    });
+
+    // Sort by relevance (title matches first, then content matches)
+    if (query) {
+      filteredSummaries.sort((a, b) => {
+        const aInTitle = a.title.toLowerCase().includes(query);
+        const bInTitle = b.title.toLowerCase().includes(query);
+        if (aInTitle && !bInTitle) return -1;
+        if (!aInTitle && bInTitle) return 1;
+        return 0;
+      });
+    }
+
+    // Pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedSummaries = filteredSummaries.slice(startIndex, endIndex);
+
+    res.json({
+      success: true,
+      data: paginatedSummaries,
+      pagination: {
+        page,
+        limit,
+        total: filteredSummaries.length,
+        pages: Math.ceil(filteredSummaries.length / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Error searching summaries:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar resumos'
+    });
+  }
+});
+
+// GET /api/v1/summaries/subjects - Get unique subjects from summaries
+router.get('/subjects', authMiddleware, (req: AuthRequest, res: Response): void => {
+  try {
+    const summariesData = loadSummaries();
+    
+    // Get unique subjects with counts
+    const subjectMap = new Map<string, number>();
+    summariesData.forEach(summary => {
+      const count = subjectMap.get(summary.subject) || 0;
+      subjectMap.set(summary.subject, count + 1);
+    });
+
+    // Convert to array and sort by count (most summaries first)
+    const subjects = Array.from(subjectMap.entries())
+      .map(([subject, count]) => ({
+        subject,
+        count,
+        topics: getTopicsForSubjectHelper(summariesData, subject)
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    res.json({
+      success: true,
+      data: subjects,
+      total: subjects.length
+    });
+  } catch (error) {
+    console.error('Error getting subjects:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar matérias'
+    });
+  }
+});
+
+// Helper function to get topics for a subject
+function getTopicsForSubjectHelper(summariesData: any[], subject: string): string[] {
+  const topics = new Set<string>();
+  summariesData
+    .filter(s => s.subject === subject && s.topic)
+    .forEach(s => topics.add(s.topic));
+  return Array.from(topics);
+}
 
 // GET /api/v1/summaries/:id - Get single summary
 router.get('/:id', authMiddleware, (req: AuthRequest, res: Response): void => {
@@ -3275,5 +3396,124 @@ function getActiveSubjects(limit: number): any[] {
       summary_count: summaries.filter(s => s.subject === subject).length
     }));
 }
+
+// MOVIDO PARA ANTES DE /:id
+// GET /api/v1/summaries/search - Search summaries
+/*
+router.get('/search', authMiddleware, (req: AuthRequest, res: Response): void => {
+  try {
+    const query = (req.query.q || req.query.query || '').toString().toLowerCase();
+    const subject = req.query.subject as string;
+    const topic = req.query.topic as string;
+    const tags = req.query.tags as string;
+    const type = req.query.type as string;
+    const difficulty = req.query.difficulty as string;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+
+    const summaries = loadSummaries();
+    
+    // Filter summaries based on search criteria
+    let filteredSummaries = summaries.filter(summary => {
+      const matchesQuery = !query || 
+        summary.title.toLowerCase().includes(query) ||
+        summary.content.toLowerCase().includes(query) ||
+        summary.tags.some(tag => tag.toLowerCase().includes(query));
+      
+      const matchesSubject = !subject || summary.subject === subject;
+      const matchesTopic = !topic || summary.topic === topic;
+      const matchesType = !type || summary.summary_type === type;
+      const matchesDifficulty = !difficulty || summary.difficulty === difficulty;
+      
+      const matchesTags = !tags || 
+        tags.split(',').some(tag => 
+          summary.tags.some(summaryTag => 
+            summaryTag.toLowerCase().includes(tag.trim().toLowerCase())
+          )
+        );
+      
+      return matchesQuery && matchesSubject && matchesTopic && 
+             matchesType && matchesDifficulty && matchesTags;
+    });
+
+    // Sort by relevance (title matches first, then content matches)
+    if (query) {
+      filteredSummaries.sort((a, b) => {
+        const aInTitle = a.title.toLowerCase().includes(query);
+        const bInTitle = b.title.toLowerCase().includes(query);
+        if (aInTitle && !bInTitle) return -1;
+        if (!aInTitle && bInTitle) return 1;
+        return 0;
+      });
+    }
+
+    // Pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedSummaries = filteredSummaries.slice(startIndex, endIndex);
+
+    res.json({
+      success: true,
+      data: paginatedSummaries,
+      pagination: {
+        page,
+        limit,
+        total: filteredSummaries.length,
+        pages: Math.ceil(filteredSummaries.length / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Error searching summaries:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar resumos'
+    });
+  }
+});
+
+// GET /api/v1/summaries/subjects - Get unique subjects from summaries
+router.get('/subjects', authMiddleware, (req: AuthRequest, res: Response): void => {
+  try {
+    const summaries = loadSummaries();
+    
+    // Get unique subjects with counts
+    const subjectMap = new Map<string, number>();
+    summaries.forEach(summary => {
+      const count = subjectMap.get(summary.subject) || 0;
+      subjectMap.set(summary.subject, count + 1);
+    });
+
+    // Convert to array and sort by count (most summaries first)
+    const subjects = Array.from(subjectMap.entries())
+      .map(([subject, count]) => ({
+        subject,
+        count,
+        topics: getTopicsForSubject(summaries, subject)
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    res.json({
+      success: true,
+      data: subjects,
+      total: subjects.length
+    });
+  } catch (error) {
+    console.error('Error getting subjects:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar matérias'
+    });
+  }
+});
+
+// Helper function to get topics for a subject
+function getTopicsForSubject(summaries: any[], subject: string): string[] {
+  const topics = new Set<string>();
+  summaries
+    .filter(s => s.subject === subject && s.topic)
+    .forEach(s => topics.add(s.topic));
+  return Array.from(topics);
+}
+*/
 
 export default router;
