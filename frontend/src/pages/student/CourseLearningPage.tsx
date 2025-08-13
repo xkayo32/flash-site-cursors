@@ -238,18 +238,7 @@ export default function CourseLearningPage() {
   );
 
   // Fechar dropdown ao clicar fora
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showShareMenu && shareButtonRef.current && !shareButtonRef.current.contains(event.target as Node)) {
-        setShowShareMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showShareMenu]);
+  // First click outside handler removed - using unified logic below
 
   useEffect(() => {
     const video = videoRef.current;
@@ -272,7 +261,13 @@ export default function CourseLearningPage() {
   // Fechar menu ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (showShareMenu && !(event.target as Element).closest('.share-menu-container')) {
+      const target = event.target as Element;
+      
+      // Verificar se clicou no botão de compartilhar ou dentro do menu
+      if (showShareMenu && 
+          shareButtonRef.current && 
+          !shareButtonRef.current.contains(target) &&
+          !target.closest('.share-dropdown-menu')) {
         setShowShareMenu(false);
       }
     };
@@ -408,7 +403,11 @@ Junte-se à operação e domine os concursos! 💪`;
   };
 
   const handleSharePlatform = async (platform: string) => {
+    console.log('🚀 handleSharePlatform chamado para:', platform);
+    
     const { title, text, url } = getShareData();
+    console.log('📝 Dados de compartilhamento:', { title, text, url });
+    
     const encodedText = encodeURIComponent(text);
     const encodedUrl = encodeURIComponent(url);
     const encodedTitle = encodeURIComponent(title);
@@ -418,6 +417,7 @@ Junte-se à operação e domine os concursos! 💪`;
     switch (platform) {
       case 'whatsapp':
         shareUrl = `https://wa.me/?text=${encodedText}%20${encodedUrl}`;
+        console.log('📱 WhatsApp URL:', shareUrl);
         break;
       case 'telegram':
         shareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`;
@@ -441,16 +441,14 @@ Junte-se à operação e domine os concursos! 💪`;
           icon: '💗',
           duration: 4000
         });
-        setShowShareMenu(false);
-        return;
+        break;
       case 'copy':
         await copyToClipboard(url);
         toast.success('🔗 LINK COPIADO! Cole onde quiser compartilhar esta operação.', {
           icon: '📋',
           duration: 3000
         });
-        setShowShareMenu(false);
-        return;
+        break;
       case 'native':
         try {
           if (navigator.share && navigator.canShare({ title, text, url })) {
@@ -479,8 +477,10 @@ Junte-se à operação e domine os concursos! 💪`;
     }
 
     if (shareUrl) {
+      console.log('🔗 Tentando abrir URL:', shareUrl);
       try {
-        window.open(shareUrl, '_blank', 'width=600,height=400');
+        const newWindow = window.open(shareUrl, '_blank', 'width=600,height=400');
+        console.log('🪟 Window.open resultado:', newWindow);
         
         // Toast específico para cada plataforma
         let message = '';
@@ -968,7 +968,7 @@ Junte-se à operação e domine os concursos! 💪`;
       {/* Portal para o dropdown de compartilhamento */}
       {showShareMenu && createPortal(
         <div 
-          className="fixed w-56 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 py-2"
+          className="share-dropdown-menu fixed w-56 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 py-2"
           style={{ 
             zIndex: 999999, 
             top: shareButtonPosition.top, 
