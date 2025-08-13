@@ -186,7 +186,8 @@ export function Sidebar() {
               <img
                 src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=14242f&color=fff`}
                 alt={user.name}
-                className="w-10 h-10 rounded-full flex-shrink-0"
+                className="w-10 h-10 rounded-full flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-accent-500 transition-all"
+                onClick={() => window.location.href = '/settings'}
               />
               {isOpen && (
                 <motion.div 

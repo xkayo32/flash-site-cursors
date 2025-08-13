@@ -447,7 +447,7 @@ export default function DashboardPage() {
                   src={dashboardData.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(dashboardData.user?.name || 'User')}&background=14242f&color=fff`}
                   alt={dashboardData.user?.name || 'Usuário'}
                   className="w-12 h-12 lg:w-14 lg:h-14 rounded-full border-2 border-accent-500 hover:border-accent-600 transition-colors cursor-pointer shadow-lg"
-                  onClick={() => navigate('/student/settings')}
+                  onClick={() => navigate('/settings')}
                 />
                 <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full shadow-sm"></div>
               </div>

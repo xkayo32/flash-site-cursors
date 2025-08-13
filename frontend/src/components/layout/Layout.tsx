@@ -40,7 +40,6 @@ const routeTitles: Record<string, string> = {
   '/subscription': 'PLANO OPERACIONAL',
   '/student/subscription': 'PLANO OPERACIONAL',
   '/settings': 'CONFIGURAÇÕES',
-  '/student/settings': 'CONFIGURAÇÕES',
 };
 
 export function Layout() {
