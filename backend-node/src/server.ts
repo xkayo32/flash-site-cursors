@@ -20,12 +20,15 @@ import mockexamsRoutes from './routes/mockexams.routes';
 import previousexamsRoutes from './routes/previousexams.routes';
 import summariesRoutes from './routes/summaries.routes';
 import legislationRoutes from './routes/legislation.routes';
+import examSessionsRoutes from './routes/exam-sessions.routes';
+import scheduleRoutes from './routes/schedule.routes';
+import paymentRoutes from './routes/payment.routes';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8180;
+const PORT = process.env.PORT || 8181;
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '..', 'uploads');
@@ -63,6 +66,11 @@ app.use('/api/v1/mockexams', mockexamsRoutes);
 app.use('/api/v1/previousexams', previousexamsRoutes);
 app.use('/api/v1/summaries', summariesRoutes);
 app.use('/api/v1/legislation', legislationRoutes);
+app.use('/api/v1/exams', examSessionsRoutes);
+app.use('/api/v1/exam-sessions', examSessionsRoutes);
+app.use('/api/v1/schedule', scheduleRoutes);
+app.use('/api/v1/payment', paymentRoutes);
+app.use('/api/v1/subscription', paymentRoutes);
 
 // Root endpoint
 app.get('/', (_req, res) => {
@@ -84,7 +92,12 @@ app.get('/', (_req, res) => {
       '/api/v1/mockexams': 'Mock exams management',
       '/api/v1/previousexams': 'Previous exams management',
       '/api/v1/summaries': 'Summaries management',
-      '/api/v1/legislation': 'Legislation management'
+      '/api/v1/legislation': 'Legislation management',
+      '/api/v1/exams': 'Exam sessions management',
+      '/api/v1/exam-sessions': 'Exam sessions management',
+      '/api/v1/schedule': 'Schedule and task management',
+      '/api/v1/payment': 'Payment and billing management',
+      '/api/v1/subscription': 'Subscription management'
     }
   });
 });

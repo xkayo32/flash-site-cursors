@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
+import { examService, ExamResults as ApiExamResults } from '@/services/examService';
 
 // Tipos
 interface QuestionResult {
@@ -54,124 +55,110 @@ interface SubjectPerformance {
   color: string;
 }
 
-interface ExamResult {
-  id: string;
-  examTitle: string;
-  score: number;
-  correctAnswers: number;
-  totalQuestions: number;
-  timeSpent: number; // em segundos
-  completedAt: string;
-  ranking: number;
-  totalParticipants: number;
-  questions: QuestionResult[];
-  subjectPerformance: SubjectPerformance[];
-  percentile: number;
-  averageScore: number;
-  recommendedStudyTopics: string[];
+interface ExamResult extends ApiExamResults {
+  // Local interface can extend API results if needed
 }
 
-// Mock data dos resultados
-const mockExamResult: ExamResult = {
-  id: 'result-1',
-  examTitle: 'OPERAÇÃO PF 2024 - SIMULAÇÃO TÁTICA COMPLETA',
-  score: 78,
-  correctAnswers: 94,
-  totalQuestions: 120,
-  timeSpent: 9900, // 2h45min
-  completedAt: new Date().toISOString(),
-  ranking: 1247,
-  totalParticipants: 8743,
-  percentile: 85.7,
-  averageScore: 68.5,
-  recommendedStudyTopics: [
-    'Direito Constitucional - Direitos Fundamentais',
-    'Direito Penal - Crimes contra a Administração',
-    'Informática - Segurança da Informação'
-  ],
-  subjectPerformance: [
-    { subject: 'Direito Constitucional', total: 30, correct: 24, percentage: 80, color: 'bg-green-500' },
-    { subject: 'Direito Penal', total: 25, correct: 18, percentage: 72, color: 'bg-yellow-500' },
-    { subject: 'Direito Administrativo', total: 20, correct: 16, percentage: 80, color: 'bg-green-500' },
-    { subject: 'Informática', total: 25, correct: 20, percentage: 80, color: 'bg-green-500' },
-    { subject: 'Português', total: 20, correct: 16, percentage: 80, color: 'bg-green-500' }
-  ],
-  questions: [
-    {
-      id: 'q1',
-      number: 1,
-      subject: 'Direito Constitucional',
-      statement: 'Segundo a Constituição Federal de 1988, no que se refere aos direitos e garantias fundamentais...',
-      alternatives: [
-        { id: 'a', letter: 'A', text: 'Os direitos fundamentais têm aplicação imediata...' },
-        { id: 'b', letter: 'B', text: 'A casa é asilo inviolável do indivíduo...' },
-        { id: 'c', letter: 'C', text: 'É livre a manifestação do pensamento...' },
-        { id: 'd', letter: 'D', text: 'Todos são iguais perante a lei...' },
-        { id: 'e', letter: 'E', text: 'A liberdade de consciência e de crença...' }
-      ],
-      correctAnswer: 'd',
-      userAnswer: 'd',
-      isCorrect: true,
-      explanation: 'A alternativa D está correta pois reproduz fielmente o caput do artigo 5º da Constituição Federal.',
-      difficulty: 'Médio'
-    },
-    {
-      id: 'q2',
-      number: 2,
-      subject: 'Direito Penal',
-      statement: 'João, funcionário público, solicitou e recebeu vantagem indevida...',
-      alternatives: [
-        { id: 'a', letter: 'A', text: 'João praticou crime de corrupção passiva...' },
-        { id: 'b', letter: 'B', text: 'O crime consumou-se no momento...' },
-        { id: 'c', letter: 'C', text: 'Configura-se concussão...' },
-        { id: 'd', letter: 'D', text: 'Não há crime...' },
-        { id: 'e', letter: 'E', text: 'João deve responder por prevaricação...' }
-      ],
-      correctAnswer: 'a',
-      userAnswer: 'c',
-      isCorrect: false,
-      explanation: 'A resposta correta é A. Trata-se de corrupção passiva, prevista no art. 317 do CP, pois o funcionário solicitou e recebeu vantagem indevida.',
-      difficulty: 'Difícil'
-    }
-  ]
+// Utility functions for results display
+const formatTime = (seconds: number) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) {
+    return `${hours}h ${minutes}min`;
+  }
+  return `${minutes}min`;
+};
+
+const getScoreColor = (score: number) => {
+  if (score >= 80) return 'text-green-600';
+  if (score >= 60) return 'text-yellow-600';
+  return 'text-red-600';
+};
+
+const getScoreBgColor = (score: number) => {
+  if (score >= 80) return 'bg-green-100';
+  if (score >= 60) return 'bg-yellow-100';
+  return 'bg-red-100';
 };
 
 export default function ExamResultsPage() {
-  const { examId } = useParams();
+  const { examId, sessionId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   
-  const [examResult] = useState<ExamResult>(mockExamResult);
+  const [examResult, setExamResult] = useState<ExamResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showReview, setShowReview] = useState(false);
   const [reviewFilter, setReviewFilter] = useState<'all' | 'wrong' | 'correct'>('all');
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+
+  // Load exam results
+  useEffect(() => {
+    const loadResults = async () => {
+      if (!sessionId) {
+        setError('ID da sessão não encontrado');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const results = await examService.getExamResults(sessionId);
+        setExamResult(results);
+      } catch (err: any) {
+        console.error('Error loading results:', err);
+        setError(err.message || 'Erro ao carregar resultados');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadResults();
+  }, [sessionId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-accent-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+            PROCESSANDO RESULTADOS TÁTICOS...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !examResult) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
+        <Card className="p-8 text-center max-w-md">
+          <div className="text-red-500 mb-4">
+            <X className="w-16 h-16 mx-auto" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 font-police-title uppercase tracking-ultra-wide">
+            ERRO NO RELATÓRIO
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6 font-police-body">
+            {error || 'Não foi possível carregar os resultados'}
+          </p>
+          <Button
+            onClick={() => navigate('/simulations')}
+            className="bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider"
+          >
+            RETORNAR ÀS OPERAÇÕES
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   const filteredQuestions = examResult.questions.filter(q => {
     if (reviewFilter === 'wrong') return !q.isCorrect;
     if (reviewFilter === 'correct') return q.isCorrect;
     return true;
   });
-
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    if (hours > 0) {
-      return `${hours}h ${minutes}min`;
-    }
-    return `${minutes}min`;
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const getScoreBgColor = (score: number) => {
-    if (score >= 80) return 'bg-green-100';
-    if (score >= 60) return 'bg-yellow-100';
-    return 'bg-red-100';
-  };
 
   const handleRetakeExam = () => {
     navigate(`/simulations/${examId}/take`);

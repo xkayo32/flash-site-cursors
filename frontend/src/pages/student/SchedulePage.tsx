@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar,
@@ -34,8 +34,9 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
+import { scheduleService, Task, ScheduleStats, StudySession, DailyGoal } from '@/services/scheduleService';
 
-// Tipos
+// Tipos locais
 interface StudyRecord {
   id: string;
   timestamp: string;
@@ -48,6 +49,7 @@ interface StudyRecord {
   courseId?: string;
   lessonId?: string;
   icon?: string;
+  completed?: boolean;
   details?: {
     questionsAnswered?: number;
     correctAnswers?: number;
@@ -81,19 +83,7 @@ interface ExamInfo {
   }[];
 }
 
-interface Task {
-  id: string;
-  date: string;
-  title: string;
-  description?: string;
-  type: 'study' | 'practice' | 'review' | 'exam';
-  priority: 'high' | 'medium' | 'low';
-  completed: boolean;
-  time: string;
-  duration: number;
-}
-
-// Dados mockados
+// Dados mockados para informações do exame (temporário)
 const examInfo: ExamInfo = {
   name: 'OPERAÇÃO PF - AGENTE TÁTICO',
   date: '2024-05-15',
@@ -112,112 +102,90 @@ const examInfo: ExamInfo = {
   ]
 };
 
-// Dados mockados do histórico de estudos
-const studyHistory: DailyStudyLog[] = [
-  {
-    date: new Date().toISOString().split('T')[0],
-    records: [
-      {
-        id: '1',
-        timestamp: new Date().toISOString(),
-        subject: 'DIREITO CONSTITUCIONAL TÁTICO',
-        title: 'Módulo 3 - Direitos Fundamentais Completo',
-        type: 'module',
-        duration: 120,
-        progress: 100,
-        courseId: 'const-001'
-      },
-      {
-        id: '2',
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        subject: 'DIREITO PENAL OPERACIONAL',
-        title: 'Simulado - Crimes contra a Administração',
-        type: 'simulation',
-        duration: 45,
-        score: 85,
-        details: {
-          questionsAnswered: 30,
-          correctAnswers: 26
-        }
-      },
-      {
-        id: '3',
-        timestamp: new Date(Date.now() - 7200000).toISOString(),
-        subject: 'INTELIGÊNCIA DIGITAL',
-        title: 'Aula 15 - Segurança da Informação',
-        type: 'lesson',
-        duration: 45,
-        progress: 100,
-        courseId: 'info-001',
-        lessonId: 'info-001-15'
-      },
-      {
-        id: '4',
-        timestamp: new Date(Date.now() - 10800000).toISOString(),
-        subject: 'RACIOCÍNIO LÓGICO TÁTICO',
-        title: 'Questões - Lógica Proposicional',
-        type: 'questions',
-        duration: 30,
-        score: 78,
-        details: {
-          questionsAnswered: 25,
-          correctAnswers: 20
-        }
-      }
-    ],
-    totalMinutes: 240,
-    achievements: {
-      coursesCompleted: 0,
-      lessonsWatched: 1,
-      questionsAnswered: 55,
-      averageScore: 82
-    }
-  },
-  {
-    date: new Date(Date.now() - 86400000).toISOString().split('T')[0], // ontem
-    records: [
-      {
-        id: '5',
-        timestamp: new Date(Date.now() - 86400000 - 3600000).toISOString(),
-        subject: 'DIREITO ADMINISTRATIVO',
-        title: 'Curso Completo - Princípios da Administração',
-        type: 'course',
-        duration: 180,
-        progress: 100,
-        courseId: 'admin-001'
-      },
-      {
-        id: '6',
-        timestamp: new Date(Date.now() - 86400000 - 7200000).toISOString(),
-        subject: 'CONTABILIDADE OPERACIONAL',
-        title: 'Revisão - Balanço Patrimonial',
-        type: 'revision',
-        duration: 60
-      }
-    ],
-    totalMinutes: 240,
-    achievements: {
-      coursesCompleted: 1,
-      lessonsWatched: 0,
-      questionsAnswered: 0,
-      averageScore: 0
-    }
-  }
-];
+// Load data from API
+useEffect(() => {
+  loadScheduleData();
+}, []);
 
-// Estatísticas de estudo baseadas no histórico real
-const studyStats = {
-  totalHours: 142,
-  weeklyTotal: 1680, // minutos na semana
-  todayTotal: 240, // minutos hoje
-  streak: 15,
-  questionsTotal: 1250,
-  averageScore: 82,
-  completedModules: 24,
-  completedLessons: 156,
-  strongSubjects: ['DIREITO CONSTITUCIONAL TÁTICO', 'INTELIGÊNCIA DIGITAL'],
-  weakSubjects: ['RACIOCÍNIO LÓGICO TÁTICO', 'ECONOMIA ESTRATÉGICA'],
-  averageDaily: 4.5
+const loadScheduleData = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    const [tasksData, sessionsData, statsData, goalData] = await Promise.all([
+      scheduleService.getTasks(),
+      scheduleService.getStudySessions(),
+      scheduleService.getStats(),
+      scheduleService.getTodayGoal()
+    ]);
+
+    setTasks(tasksData);
+    setStudySessions(sessionsData);
+    setScheduleStats(statsData);
+    setDailyGoal(goalData);
+  } catch (err) {
+    console.error('Error loading schedule data:', err);
+    setError('Erro ao carregar dados do cronograma');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Convert study sessions to study records for display
+const convertSessionsToRecords = (sessions: StudySession[]): StudyRecord[] => {
+  return sessions.map(session => ({
+    id: session.id,
+    timestamp: session.start_time,
+    subject: session.subject,
+    title: session.title,
+    type: session.type,
+    duration: session.duration,
+    progress: session.progress,
+    score: session.score,
+    courseId: session.course_id,
+    lessonId: session.lesson_id,
+    completed: session.status === 'completed',
+    details: session.notes ? { topicsReviewed: [session.notes] } : undefined
+  }));
+};
+
+// Generate study history from sessions
+const generateStudyHistory = (): DailyStudyLog[] => {
+  if (!studySessions || studySessions.length === 0) return [];
+
+  const groupedByDate: { [date: string]: StudySession[] } = {};
+  
+  studySessions.forEach(session => {
+    if (!groupedByDate[session.date]) {
+      groupedByDate[session.date] = [];
+    }
+    groupedByDate[session.date].push(session);
+  });
+
+  return Object.entries(groupedByDate)
+    .map(([date, sessions]) => {
+      const records = convertSessionsToRecords(sessions);
+      const totalMinutes = sessions.reduce((total, session) => total + session.duration, 0);
+      const completedSessions = sessions.filter(s => s.status === 'completed');
+      const questionsCount = completedSessions.filter(s => s.type === 'questions').length;
+      const scoresWithValues = completedSessions.filter(s => s.score !== undefined);
+      const averageScore = scoresWithValues.length > 0 
+        ? scoresWithValues.reduce((sum, s) => sum + (s.score || 0), 0) / scoresWithValues.length 
+        : 0;
+
+      return {
+        date,
+        records,
+        totalMinutes,
+        achievements: {
+          coursesCompleted: completedSessions.filter(s => s.type === 'course').length,
+          lessonsWatched: completedSessions.filter(s => s.type === 'lesson').length,
+          questionsAnswered: questionsCount,
+          averageScore: Math.round(averageScore)
+        }
+      };
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
 };
 
 export default function SchedulePage() {
@@ -238,7 +206,17 @@ export default function SchedulePage() {
     priority: 'medium' as 'high' | 'medium' | 'low',
     subject: ''
   });
+  
+  // API State
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [studySessions, setStudySessions] = useState<StudySession[]>([]);
+  const [scheduleStats, setScheduleStats] = useState<ScheduleStats | null>(null);
+  const [dailyGoal, setDailyGoal] = useState<DailyGoal | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Generate study history from sessions
+  const studyHistory = generateStudyHistory();
 
   // Gerar dias do calendário
   const generateCalendarDays = () => {
@@ -275,13 +253,15 @@ export default function SchedulePage() {
 
   // Obter tarefas do dia
   const getTasksForDate = (date: Date) => {
-    // Combinar tarefas do cronograma com tarefas criadas pelo usuário
+    const dateStr = date.toISOString().split('T')[0];
+    
+    // Combinar tarefas do cronograma com sessões de estudo
     const scheduledTasks = studyHistory
-      .find(d => new Date(d.date).toDateString() === date.toDateString())
+      .find(d => d.date === dateStr)
       ?.records || [];
     
     const userTasks = tasks
-      .filter(task => new Date(task.date).toDateString() === date.toDateString())
+      .filter(task => task.date === dateStr)
       .map(task => ({
         id: task.id,
         startTime: task.time,
@@ -291,21 +271,35 @@ export default function SchedulePage() {
         type: 'revision' as StudyRecord['type'],
         duration: task.duration,
         priority: task.priority,
-        completed: task.completed
+        completed: task.status === 'completed'
       }));
     
     return [...scheduledTasks, ...userTasks];
   };
 
   // Marcar tarefa como concluída
-  const toggleTaskComplete = (taskId: string) => {
-    // Atualizar tarefas do usuário
-    setTasks(prev => prev.map(task => 
-      task.id === taskId ? { ...task, completed: !task.completed } : task
-    ));
-    
-    // Aqui será integrado com o backend futuramente
-    console.log('Marcar tarefa como concluída:', taskId);
+  const toggleTaskComplete = async (taskId: string) => {
+    try {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const completed = task.status !== 'completed';
+      const updatedTask = await scheduleService.completeTask(taskId, completed);
+      
+      // Atualizar estado local
+      setTasks(prev => prev.map(t => 
+        t.id === taskId ? updatedTask : t
+      ));
+
+      // Recarregar estatísticas se a tarefa foi marcada como concluída
+      if (completed) {
+        const statsData = await scheduleService.getStats();
+        setScheduleStats(statsData);
+      }
+    } catch (err) {
+      console.error('Error toggling task completion:', err);
+      setError('Erro ao atualizar tarefa');
+    }
   };
 
   const getRecordIcon = (type: StudyRecord['type']) => {
@@ -440,6 +434,40 @@ export default function SchedulePage() {
         }}
       />
       
+      {/* Error Message */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4"
+        >
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-5 h-5" />
+            <span className="font-police-body">{error}</span>
+            <button
+              onClick={() => setError(null)}
+              className="ml-auto text-red-500 hover:text-red-700"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-center justify-center py-8"
+        >
+          <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-500"></div>
+            <span className="font-police-body uppercase tracking-wider">Carregando cronograma...</span>
+          </div>
+        </motion.div>
+      )}
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -546,15 +574,15 @@ export default function SchedulePage() {
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                  {studyStats.todayTotal / 60}h
+                  {scheduleStats ? scheduleStats.today.study_time.completed_hours.toFixed(1) : '0'}h
                 </div>
-                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">MÉDIA DIÁRIA</div>
+                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">ESTUDO HOJE</div>
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold text-accent-500 font-police-numbers">
-                  {studyStats.streak}
+                  {scheduleStats ? scheduleStats.weekly.tasks_completed : '0'}
                 </div>
-                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">SEQUÊNCIA ATIVA</div>
+                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">TAREFAS SEMANA</div>
               </div>
             </div>
           </CardContent>
@@ -792,26 +820,26 @@ export default function SchedulePage() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
-                      HORAS PLANEJADAS
+                      HORAS SEMANA
                     </span>
                     <span className="font-police-numbers font-bold text-gray-900 dark:text-white">
-                      {studyStats.totalHours}H
+                      {scheduleStats ? scheduleStats.weekly.study_time_hours.toFixed(1) : '0'}H
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
-                      MÓDULOS COMPLETOS
+                      TAREFAS HOJE
                     </span>
                     <span className="font-police-numbers font-bold text-accent-500">
-                      {studyStats.completedModules}
+                      {scheduleStats ? scheduleStats.today.tasks.completed : '0'}/{scheduleStats ? scheduleStats.today.tasks.total : '0'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
-                      MÉDIA DE ACERTO
+                      QUESTÕES HOJE
                     </span>
                     <span className="font-police-numbers font-bold text-gray-900 dark:text-white">
-                      {studyStats.averageScore}%
+                      {scheduleStats ? scheduleStats.today.questions_answered : '0'}
                     </span>
                   </div>
                 </div>
@@ -1199,36 +1227,45 @@ MANTENHA O FOCO E A DISCIPLINA MILITAR!
                   CANCELAR
                 </Button>
                 <Button
-                  onClick={() => {
-                    // Aqui você adicionaria a lógica para salvar a tarefa
-                    console.log('Nova tarefa:', newTask);
-                    
-                    // Adicionar tarefa ao estado de tarefas
-                    setTasks([...tasks, {
-                      id: (tasks.length + 1).toString(),
-                      date: newTask.date,
-                      title: newTask.title,
-                      description: newTask.description,
-                      type: newTask.type,
-                      priority: newTask.priority,
-                      completed: false,
-                      time: newTask.time,
-                      duration: parseInt(newTask.duration)
-                    }]);
-                    
-                    // Resetar o formulário
-                    setNewTask({
-                      title: '',
-                      description: '',
-                      date: new Date().toISOString().split('T')[0],
-                      time: '09:00',
-                      duration: '60',
-                      type: 'study',
-                      priority: 'medium',
-                      subject: ''
-                    });
-                    
-                    setShowNewTaskModal(false);
+                  onClick={async () => {
+                    try {
+                      const taskData = {
+                        title: newTask.title,
+                        description: newTask.description,
+                        date: newTask.date,
+                        time: newTask.time,
+                        duration: parseInt(newTask.duration),
+                        type: newTask.type,
+                        priority: newTask.priority,
+                        subject: newTask.subject
+                      };
+
+                      const createdTask = await scheduleService.createTask(taskData);
+                      
+                      // Atualizar estado local
+                      setTasks(prev => [...prev, createdTask]);
+                      
+                      // Recarregar estatísticas
+                      const statsData = await scheduleService.getStats();
+                      setScheduleStats(statsData);
+                      
+                      // Resetar o formulário
+                      setNewTask({
+                        title: '',
+                        description: '',
+                        date: new Date().toISOString().split('T')[0],
+                        time: '09:00',
+                        duration: '60',
+                        type: 'study',
+                        priority: 'medium',
+                        subject: ''
+                      });
+                      
+                      setShowNewTaskModal(false);
+                    } catch (err) {
+                      console.error('Error creating task:', err);
+                      setError('Erro ao criar tarefa');
+                    }
                   }}
                   disabled={!newTask.title || !newTask.subject}
                   className="flex-1 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"

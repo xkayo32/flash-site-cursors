@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
+import { examService, ExamSession as ApiExamSession } from '@/services/examService';
 
 // Tipos
 interface Question {
@@ -43,154 +44,108 @@ interface Question {
   institution?: string;
 }
 
-interface ExamSession {
-  id: string;
-  examId: string;
-  title: string;
-  questions: Question[];
-  duration: number; // em minutos
-  startedAt: string;
-  answers: Record<string, string>; // questionId -> alternativeId
-  flaggedQuestions: Set<string>;
+interface ExamSession extends Omit<ApiExamSession, 'flaggedQuestions'> {
+  flaggedQuestions: Set<string>; // Convert array to Set for local state
   timeRemaining: number; // em segundos
   isPaused: boolean;
   isFullscreen: boolean;
 }
 
-// Dados mockados do simulado
-const mockExamSession: ExamSession = {
-  id: 'session-1',
-  examId: '1',
-  title: 'OPERAÇÃO PF 2024 - SIMULAÇÃO TÁTICA COMPLETA',
-  duration: 180,
-  startedAt: new Date().toISOString(),
-  answers: {},
-  flaggedQuestions: new Set(),
-  timeRemaining: 180 * 60, // 3 horas em segundos
-  isPaused: false,
-  isFullscreen: false,
-  questions: [
-    {
-      id: 'q1',
-      number: 1,
-      subject: 'Direito Constitucional',
-      statement: 'Segundo a Constituição Federal de 1988, no que se refere aos direitos e garantias fundamentais, é correto afirmar que:',
-      alternatives: [
-        {
-          id: 'a',
-          letter: 'A',
-          text: 'Os direitos fundamentais têm aplicação imediata, independentemente de regulamentação infraconstitucional.'
-        },
-        {
-          id: 'b',
-          letter: 'B',
-          text: 'A casa é asilo inviolável do indivíduo, não podendo ninguém nela penetrar sem consentimento do morador, salvo em caso de flagrante delito ou desastre.'
-        },
-        {
-          id: 'c',
-          letter: 'C',
-          text: 'É livre a manifestação do pensamento, sendo vedado o anonimato em qualquer circunstância.'
-        },
-        {
-          id: 'd',
-          letter: 'D',
-          text: 'Todos são iguais perante a lei, sem distinção de qualquer natureza, garantindo-se aos brasileiros e aos estrangeiros residentes no País a inviolabilidade do direito à vida, à liberdade, à igualdade, à segurança e à propriedade.'
-        },
-        {
-          id: 'e',
-          letter: 'E',
-          text: 'A liberdade de consciência e de crença é inviolável, mas o exercício dos cultos religiosos depende de autorização do Poder Público.'
-        }
-      ],
-      difficulty: 'CABO',
-      year: 2023,
-      institution: 'CESPE'
-    },
-    {
-      id: 'q2',
-      number: 2,
-      subject: 'Direito Penal',
-      statement: 'João, funcionário público, solicitou e recebeu vantagem indevida de R$ 5.000,00 para acelerar um processo administrativo. Com base no Código Penal, analise as afirmativas:',
-      alternatives: [
-        {
-          id: 'a',
-          letter: 'A',
-          text: 'João praticou crime de corrupção passiva, com pena de reclusão de 2 a 12 anos e multa.'
-        },
-        {
-          id: 'b',
-          letter: 'B',
-          text: 'O crime consumou-se no momento em que João solicitou a vantagem, independentemente do recebimento.'
-        },
-        {
-          id: 'c',
-          letter: 'C',
-          text: 'Configura-se concussão, pois houve exigência de vantagem indevida.'
-        },
-        {
-          id: 'd',
-          letter: 'D',
-          text: 'Não há crime, pois o valor é inferior ao limite estabelecido pela jurisprudência.'
-        },
-        {
-          id: 'e',
-          letter: 'E',
-          text: 'João deve responder por prevaricação, pois retardou ato de ofício.'
-        }
-      ],
-      difficulty: 'SARGENTO',
-      year: 2022,
-      institution: 'CESPE'
-    },
-    {
-      id: 'q3',
-      number: 3,
-      subject: 'Informática',
-      statement: 'Em relação aos conceitos de segurança da informação, é correto afirmar que:',
-      alternatives: [
-        {
-          id: 'a',
-          letter: 'A',
-          text: 'A criptografia simétrica utiliza chaves diferentes para cifrar e decifrar os dados.'
-        },
-        {
-          id: 'b',
-          letter: 'B',
-          text: 'O protocolo HTTPS garante apenas a integridade dos dados transmitidos.'
-        },
-        {
-          id: 'c',
-          letter: 'C',
-          text: 'Um firewall é capaz de detectar e bloquear todos os tipos de malware.'
-        },
-        {
-          id: 'd',
-          letter: 'D',
-          text: 'A autenticação de dois fatores (2FA) aumenta significativamente a segurança do sistema.'
-        },
-        {
-          id: 'e',
-          letter: 'E',
-          text: 'Backup incremental copia todos os arquivos do sistema a cada execução.'
-        }
-      ],
-      difficulty: 'RECRUTA',
-      year: 2023,
-      institution: 'CESPE'
-    }
-  ]
-};
+// Helper function to convert API flagged array to Set
+const convertFlaggedToSet = (flagged: string[]): Set<string> => new Set(flagged);
 
 export default function ExamTakingPage() {
-  const { examId } = useParams();
+  const { examId, examType } = useParams();
   const navigate = useNavigate();
   
-  const [examSession, setExamSession] = useState<ExamSession>(mockExamSession);
+  const [examSession, setExamSession] = useState<ExamSession | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showQuestionList, setShowQuestionList] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showWarningDialog, setShowWarningDialog] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Initialize exam session
+  useEffect(() => {
+    const initializeExam = async () => {
+      if (!examId || !examType) {
+        setError('ID do exame ou tipo não encontrado');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const session = await examService.resumeOrStartSession(examId, examType as 'mock' | 'previous');
+        
+        // Convert API session to local session format
+        const localSession: ExamSession = {
+          ...session,
+          flaggedQuestions: new Set(session.flaggedQuestions),
+          timeRemaining: session.duration * 60 - session.timeSpent, // Calculate remaining time
+          isPaused: false,
+          isFullscreen: false
+        };
+
+        setExamSession(localSession);
+        
+        // Start time tracking
+        examService.startTimeTracking(session.id);
+        
+      } catch (err: any) {
+        console.error('Error initializing exam:', err);
+        setError(err.message || 'Erro ao carregar o exame');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeExam();
+
+    // Cleanup time tracking on unmount
+    return () => {
+      examService.stopTimeTracking();
+    };
+  }, [examId, examType]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-accent-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+            CARREGANDO OPERAÇÃO TÁTICA...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !examSession) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
+        <Card className="p-8 text-center max-w-md">
+          <div className="text-red-500 mb-4">
+            <X className="w-16 h-16 mx-auto" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 font-police-title uppercase tracking-ultra-wide">
+            ERRO NA OPERAÇÃO
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6 font-police-body">
+            {error || 'Não foi possível carregar o exame'}
+          </p>
+          <Button
+            onClick={() => navigate('/simulations')}
+            className="bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider"
+          >
+            RETORNAR ÀS OPERAÇÕES
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   const currentQuestion = examSession.questions[currentQuestionIndex];
   const totalQuestions = examSession.questions.length;
@@ -198,20 +153,31 @@ export default function ExamTakingPage() {
   const flaggedCount = examSession.flaggedQuestions.size;
 
   // Submit exam function - defined early to be used in useEffect
-  const handleSubmitExam = useCallback((autoSubmit = false) => {
+  const handleSubmitExam = useCallback(async (autoSubmit = false) => {
     if (!autoSubmit && answeredQuestions < totalQuestions) {
       setShowWarningDialog(true);
       return;
     }
-    
-    // Navigate to results page
-    navigate(`/simulations/${examId}/results`, {
-      state: {
-        answers: examSession.answers,
-        timeSpent: examSession.duration * 60 - examSession.timeRemaining
-      }
-    });
-  }, [answeredQuestions, totalQuestions, navigate, examId, examSession.answers, examSession.timeRemaining, examSession.duration]);
+
+    if (!examSession) return;
+
+    try {
+      const timeSpent = examSession.duration * 60 - examSession.timeRemaining;
+      
+      // Stop time tracking
+      examService.stopTimeTracking();
+      
+      // Submit exam to API
+      const result = await examService.submitExam(examSession.id, timeSpent);
+      
+      // Navigate to results page with sessionId
+      navigate(`/simulations/${examId}/results/${result.sessionId}`);
+      
+    } catch (error: any) {
+      console.error('Error submitting exam:', error);
+      setError(error.message || 'Erro ao submeter o exame');
+    }
+  }, [answeredQuestions, totalQuestions, navigate, examId, examSession]);
 
   // Timer effect
   useEffect(() => {
@@ -283,26 +249,49 @@ export default function ExamTakingPage() {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleAnswerSelect = (alternativeId: string) => {
-    setExamSession(prev => ({
+  const handleAnswerSelect = async (alternativeId: string) => {
+    if (!examSession) return;
+
+    // Update local state immediately for better UX
+    setExamSession(prev => prev ? ({
       ...prev,
       answers: {
         ...prev.answers,
         [currentQuestion.id]: alternativeId
       }
-    }));
+    }) : prev);
+
+    // Save to API with debouncing
+    try {
+      examService.debouncedSaveAnswer(examSession.id, currentQuestion.id, alternativeId);
+    } catch (error) {
+      console.error('Error saving answer:', error);
+    }
   };
 
-  const handleToggleFlag = () => {
-    setExamSession(prev => {
-      const newFlagged = new Set(prev.flaggedQuestions);
-      if (newFlagged.has(currentQuestion.id)) {
-        newFlagged.delete(currentQuestion.id);
-      } else {
-        newFlagged.add(currentQuestion.id);
-      }
-      return { ...prev, flaggedQuestions: newFlagged };
-    });
+  const handleToggleFlag = async () => {
+    if (!examSession) return;
+
+    const wasFlagged = examSession.flaggedQuestions.has(currentQuestion.id);
+    const newFlagged = new Set(examSession.flaggedQuestions);
+    
+    if (wasFlagged) {
+      newFlagged.delete(currentQuestion.id);
+    } else {
+      newFlagged.add(currentQuestion.id);
+    }
+
+    // Update local state immediately
+    setExamSession(prev => prev ? ({ ...prev, flaggedQuestions: newFlagged }) : prev);
+
+    // Save to API
+    try {
+      await examService.toggleFlag(examSession.id, currentQuestion.id, !wasFlagged);
+    } catch (error) {
+      console.error('Error toggling flag:', error);
+      // Revert local state on error
+      setExamSession(prev => prev ? ({ ...prev, flaggedQuestions: examSession.flaggedQuestions }) : prev);
+    }
   };
 
   const handlePauseToggle = () => {

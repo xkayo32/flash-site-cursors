@@ -9,14 +9,14 @@ const router = Router();
 
 // File upload configuration
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_, __, cb) => {
     const uploadPath = path.join(__dirname, '../../uploads/courses');
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
     cb(null, uploadPath);
   },
-  filename: (req, file, cb) => {
+  filename: (_, file, cb) => {
     const ext = path.extname(file.originalname);
     cb(null, `course-${Date.now()}${ext}`);
   }
@@ -27,7 +27,7 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
@@ -200,7 +200,7 @@ router.get('/', optionalAuth, (req: Request, res: Response): void => {
 });
 
 // GET /api/v1/courses/stats - Get course statistics (admin only)
-router.get('/stats', authMiddleware, (req: AuthRequest, res: Response): void => {
+router.get('/stats', authMiddleware, (_: AuthRequest, res: Response): void => {
   try {
     const courses = getCourses();
     const modules = getModules();
@@ -641,7 +641,6 @@ router.put('/:courseId/modules/reorder', authMiddleware, (req: AuthRequest, res:
     }
     
     const modules = getModules();
-    const courseModules = modules.filter(m => m.course_id === req.params.courseId);
     
     // Update order indices
     module_ids.forEach((moduleId: string, index: number) => {
@@ -855,6 +854,17 @@ router.put('/modules/:moduleId/lessons/reorder', authMiddleware, (req: AuthReque
 
 // ===================== ENROLLMENT ENDPOINTS =====================
 
+// Data storage for enrollments
+const ENROLLMENTS_FILE = path.join(__dirname, '../../data/enrollments.json');
+
+const getEnrollments = (): any[] => readJsonFile(ENROLLMENTS_FILE);
+const saveEnrollments = (enrollments: any[]): void => writeJsonFile(ENROLLMENTS_FILE, enrollments);
+
+// Initialize enrollments file if it doesn't exist
+if (!fs.existsSync(ENROLLMENTS_FILE)) {
+  saveEnrollments([]);
+}
+
 // POST /api/v1/courses/:id/enroll - Enroll in course (student only)
 router.post('/:id/enroll', authMiddleware, (req: AuthRequest, res: Response): void => {
   try {
@@ -862,29 +872,217 @@ router.post('/:id/enroll', authMiddleware, (req: AuthRequest, res: Response): vo
     const courseIndex = courses.findIndex(c => c.id === req.params.id);
     
     if (courseIndex === -1) {
-      res.status(404).json({ success: false, message: 'Curso não encontrado' });
+      res.status(404).json({ success: false, message: 'OPERAÇÃO NÃO ENCONTRADA' });
       return;
     }
     
     const course = courses[courseIndex];
+    const userId = req.user?.id;
     
-    // Check if course is published
-    if (course.status !== 'published') {
-      res.status(400).json({ success: false, message: 'Curso não está disponível para matrícula' });
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
       return;
     }
     
-    // Simulate enrollment (in a real app, you'd store this in a separate enrollments table)
+    // Check if course is published and available
+    if (course.status !== 'published') {
+      res.status(400).json({ success: false, message: 'OPERAÇÃO NÃO DISPONÍVEL PARA MATRÍCULA' });
+      return;
+    }
+    
+    // Check for existing enrollment
+    const enrollments = getEnrollments();
+    const existingEnrollment = enrollments.find(e => 
+      e.user_id === userId && e.course_id === req.params.id
+    );
+    
+    if (existingEnrollment) {
+      res.status(400).json({ 
+        success: false, 
+        message: 'AGENTE JÁ REGISTRADO NESTA OPERAÇÃO',
+        data: {
+          enrollment: existingEnrollment,
+          status: 'already_enrolled'
+        }
+      });
+      return;
+    }
+    
+    // Create new enrollment record
+    const newEnrollment = {
+      id: uuidv4(),
+      user_id: userId,
+      course_id: req.params.id,
+      status: 'active', // active, paused, completed, cancelled
+      progress: {
+        percentage: 0,
+        completed_modules: [],
+        completed_lessons: [],
+        last_accessed: new Date().toISOString()
+      },
+      enrolled_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      completion_date: null,
+      certificate_issued: false,
+      tactical_notes: [] // Array for student notes/achievements
+    };
+    
+    // Add enrollment to records
+    enrollments.push(newEnrollment);
+    saveEnrollments(enrollments);
+    
+    // Update course statistics
     course.stats.enrollments += 1;
     course.updated_at = new Date().toISOString();
-    
     courses[courseIndex] = course;
     saveCourses(courses);
     
-    res.json({ success: true, message: 'Matrícula realizada com sucesso' });
+    res.json({ 
+      success: true, 
+      message: 'MATRÍCULA OPERACIONAL CONFIRMADA!',
+      data: {
+        enrollment: newEnrollment,
+        course: {
+          id: course.id,
+          title: course.title,
+          instructor: course.instructor,
+          modules: course.stats?.modules || 0,
+          lessons: course.stats?.lessons || 0
+        },
+        next_steps: [
+          'ACESSE O MÓDULO INICIAL PARA COMEÇAR SUA PREPARAÇÃO',
+          'COMPLETE AS MISSÕES NA ORDEM SEQUENCIAL',
+          'UTILIZE OS ARSENAIS DE FLASHCARDS PARA MEMORIZAÇÃO',
+          'MONITORE SEU PROGRESSO TÁTICO NO DASHBOARD'
+        ]
+      }
+    });
   } catch (error) {
     console.error('Error enrolling in course:', error);
-    res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+    res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
+  }
+});
+
+// GET /api/v1/courses/:id/enrollment - Check enrollment status
+router.get('/:id/enrollment', authMiddleware, (req: AuthRequest, res: Response): void => {
+  try {
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+      return;
+    }
+    
+    const enrollments = getEnrollments();
+    const enrollment = enrollments.find(e => 
+      e.user_id === userId && e.course_id === req.params.id
+    );
+    
+    if (!enrollment) {
+      res.json({ 
+        success: true, 
+        data: { enrolled: false, status: 'not_enrolled' }
+      });
+      return;
+    }
+    
+    res.json({ 
+      success: true, 
+      data: { 
+        enrolled: true,
+        enrollment,
+        status: enrollment.status,
+        progress: enrollment.progress
+      }
+    });
+  } catch (error) {
+    console.error('Error checking enrollment:', error);
+    res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
+  }
+});
+
+// PUT /api/v1/courses/:id/enrollment - Update enrollment (pause, resume, etc)
+router.put('/:id/enrollment', authMiddleware, (req: AuthRequest, res: Response): void => {
+  try {
+    const userId = req.user?.id;
+    const { status, tactical_notes } = req.body;
+    
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+      return;
+    }
+    
+    const enrollments = getEnrollments();
+    const enrollmentIndex = enrollments.findIndex(e => 
+      e.user_id === userId && e.course_id === req.params.id
+    );
+    
+    if (enrollmentIndex === -1) {
+      res.status(404).json({ success: false, message: 'MATRÍCULA NÃO ENCONTRADA' });
+      return;
+    }
+    
+    // Update enrollment data
+    if (status) {
+      enrollments[enrollmentIndex].status = status;
+    }
+    
+    if (tactical_notes) {
+      enrollments[enrollmentIndex].tactical_notes.push({
+        note: tactical_notes,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    enrollments[enrollmentIndex].updated_at = new Date().toISOString();
+    saveEnrollments(enrollments);
+    
+    res.json({ 
+      success: true, 
+      message: 'STATUS OPERACIONAL ATUALIZADO',
+      data: { enrollment: enrollments[enrollmentIndex] }
+    });
+  } catch (error) {
+    console.error('Error updating enrollment:', error);
+    res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
+  }
+});
+
+// GET /api/v1/enrollments - List user's enrollments
+router.get('/enrollments/my-courses', authMiddleware, (req: AuthRequest, res: Response): void => {
+  try {
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+      return;
+    }
+    
+    const enrollments = getEnrollments().filter(e => e.user_id === userId);
+    const courses = getCourses();
+    
+    // Enrich enrollments with course data
+    const enrichedEnrollments = enrollments.map(enrollment => {
+      const course = courses.find(c => c.id === enrollment.course_id);
+      return {
+        ...enrollment,
+        course: course || null
+      };
+    }).filter(e => e.course); // Remove enrollments for deleted courses
+    
+    res.json({ 
+      success: true, 
+      data: enrichedEnrollments,
+      stats: {
+        total_enrollments: enrichedEnrollments.length,
+        active: enrollments.filter(e => e.status === 'active').length,
+        completed: enrollments.filter(e => e.status === 'completed').length,
+        paused: enrollments.filter(e => e.status === 'paused').length
+      }
+    });
+  } catch (error) {
+    console.error('Error listing enrollments:', error);
+    res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
   }
 });
 
@@ -892,22 +1090,123 @@ router.post('/:id/enroll', authMiddleware, (req: AuthRequest, res: Response): vo
 router.post('/:courseId/lessons/:lessonId/complete', authMiddleware, 
   (req: AuthRequest, res: Response): void => {
     try {
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+        return;
+      }
+      
       const lessons = getLessons();
       const lesson = lessons.find(l => l.id === req.params.lessonId);
       
       if (!lesson) {
-        res.status(404).json({ success: false, message: 'Aula não encontrada' });
+        res.status(404).json({ success: false, message: 'MISSÃO NÃO ENCONTRADA' });
         return;
       }
       
-      // In a real app, you'd store completion status per user
-      // For now, we'll just return success
-      res.json({ success: true, message: 'Aula marcada como concluída' });
+      // Find user's enrollment
+      const enrollments = getEnrollments();
+      const enrollmentIndex = enrollments.findIndex(e => 
+        e.user_id === userId && e.course_id === req.params.courseId
+      );
+      
+      if (enrollmentIndex === -1) {
+        res.status(404).json({ success: false, message: 'MATRÍCULA NÃO ENCONTRADA' });
+        return;
+      }
+      
+      const enrollment = enrollments[enrollmentIndex];
+      
+      // Add lesson to completed list if not already there
+      if (!enrollment.progress.completed_lessons.includes(req.params.lessonId)) {
+        enrollment.progress.completed_lessons.push(req.params.lessonId);
+        
+        // Update last accessed
+        enrollment.progress.last_accessed = new Date().toISOString();
+        enrollment.updated_at = new Date().toISOString();
+        
+        // Calculate new progress percentage (basic calculation)
+        const modules = getModules().filter(m => m.course_id === req.params.courseId);
+        const moduleIds = modules.map(m => m.id);
+        const allCourseLessons = lessons.filter(l => moduleIds.includes(l.module_id));
+        const totalLessons = allCourseLessons.length;
+        const completedLessons = enrollment.progress.completed_lessons.length;
+        
+        enrollment.progress.percentage = totalLessons > 0 ? 
+          Math.round((completedLessons / totalLessons) * 100) : 0;
+        
+        // Check if course is completed
+        if (enrollment.progress.percentage >= 100 && enrollment.status === 'active') {
+          enrollment.status = 'completed';
+          enrollment.completion_date = new Date().toISOString();
+          enrollment.certificate_issued = true;
+        }
+        
+        saveEnrollments(enrollments);
+      }
+      
+      res.json({ 
+        success: true, 
+        message: 'MISSÃO CONCLUÍDA COM SUCESSO!',
+        data: {
+          progress: enrollment.progress,
+          status: enrollment.status,
+          next_lesson: null, // Could implement next lesson logic
+          achievement_unlocked: enrollment.progress.percentage >= 100
+        }
+      });
     } catch (error) {
       console.error('Error marking lesson as complete:', error);
-      res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+      res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
     }
   }
 );
+
+// GET /api/v1/courses/my-enrollments - Get user's enrolled courses (alias for dashboard)
+router.get('/my-enrollments', authMiddleware, (req: AuthRequest, res: Response): void => {
+  try {
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+      return;
+    }
+    
+    const enrollments = getEnrollments().filter(e => e.user_id === userId && e.status === 'active');
+    const courses = getCourses();
+    
+    // Get enrolled courses with progress
+    const enrolledCourses = enrollments.map(enrollment => {
+      const course = courses.find(c => c.id === enrollment.course_id);
+      if (!course) return null;
+      
+      return {
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        instructor: course.instructor,
+        thumbnail: course.thumbnail,
+        category: course.category,
+        stats: course.stats,
+        enrollment: {
+          status: enrollment.status,
+          progress: enrollment.progress.percentage,
+          enrolled_at: enrollment.enrolled_at,
+          last_accessed: enrollment.progress.last_accessed
+        }
+      };
+    }).filter(c => c !== null);
+    
+    res.json({ 
+      success: true, 
+      data: enrolledCourses,
+      message: `${enrolledCourses.length} OPERAÇÕES EM ANDAMENTO`
+    });
+  } catch (error) {
+    console.error('Error getting enrolled courses:', error);
+    res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
+  }
+});
 
 export default router;

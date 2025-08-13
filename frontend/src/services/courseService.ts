@@ -673,7 +673,16 @@ class CourseService {
 
   // =================== ENROLLMENT ENDPOINTS ===================
 
-  async enrollInCourse(courseId: string): Promise<{ success: boolean; message?: string }> {
+  async enrollInCourse(courseId: string): Promise<{ 
+    success: boolean; 
+    message?: string; 
+    data?: {
+      enrollment: any;
+      course: any;
+      next_steps: string[];
+      status?: string;
+    }
+  }> {
     try {
       const response = await fetch(`${API_ENDPOINTS.courses.get(courseId)}/enroll`, {
         method: 'POST',
@@ -685,18 +694,88 @@ class CourseService {
       return data;
     } catch (error) {
       console.error('Error enrolling in course:', error);
-      return { success: false, message: 'Erro ao realizar matrícula' };
+      return { success: false, message: 'ERRO AO REALIZAR MATRÍCULA OPERACIONAL' };
+    }
+  }
+
+  async checkEnrollmentStatus(courseId: string): Promise<{ 
+    success: boolean; 
+    data?: {
+      enrolled: boolean;
+      status?: string;
+      enrollment?: any;
+      progress?: any;
+    };
+    message?: string; 
+  }> {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.courses.get(courseId)}/enrollment`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      const data = await this.handleApiResponse(response);
+      return data;
+    } catch (error) {
+      console.error('Error checking enrollment status:', error);
+      return { 
+        success: true, 
+        data: { enrolled: false, status: 'not_enrolled' }
+      };
+    }
+  }
+
+  async updateEnrollmentStatus(courseId: string, status: string, tacticalNotes?: string): Promise<{ 
+    success: boolean; 
+    message?: string; 
+    data?: any;
+  }> {
+    try {
+      const params = new URLSearchParams();
+      params.append('status', status);
+      if (tacticalNotes) {
+        params.append('tactical_notes', tacticalNotes);
+      }
+
+      const response = await fetch(`${API_ENDPOINTS.courses.get(courseId)}/enrollment`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: params.toString(),
+      });
+
+      const data = await this.handleApiResponse(response);
+      return data;
+    } catch (error) {
+      console.error('Error updating enrollment status:', error);
+      return { success: false, message: 'ERRO AO ATUALIZAR STATUS OPERACIONAL' };
     }
   }
 
   async getEnrolledCourses(): Promise<{ success: boolean; data?: any[]; message?: string }> {
     try {
-      const response = await fetch('/api/v1/dashboard/student', {
+      // First try the dedicated enrolled courses endpoint
+      let response = await fetch(`${API_ENDPOINTS.courses.list}/my-enrollments`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
 
-      const result = await this.handleApiResponse(response);
+      let result = await this.handleApiResponse(response);
+      
+      if (result.success && result.data) {
+        return {
+          success: true,
+          data: result.data,
+          message: result.message
+        };
+      }
+      
+      // Fallback to dashboard endpoint
+      response = await fetch('/api/v1/dashboard/student', {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      result = await this.handleApiResponse(response);
       
       if (result.success && result.data?.courses) {
         return {
@@ -705,10 +784,35 @@ class CourseService {
         };
       }
       
-      return { success: false, message: result.message || 'Nenhum curso matriculado encontrado' };
+      return { success: false, message: result.message || 'NENHUMA OPERAÇÃO MATRICULADA ENCONTRADA' };
     } catch (error) {
       console.error('Error getting enrolled courses:', error);
-      return { success: false, message: 'Erro ao buscar cursos matriculados' };
+      return { success: false, message: 'ERRO AO BUSCAR OPERAÇÕES MATRICULADAS' };
+    }
+  }
+
+  async getMyEnrollments(): Promise<{ 
+    success: boolean; 
+    data?: any[]; 
+    stats?: {
+      total_enrollments: number;
+      active: number;
+      completed: number;
+      paused: number;
+    };
+    message?: string; 
+  }> {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.courses.list}/enrollments/my-courses`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      const data = await this.handleApiResponse(response);
+      return data;
+    } catch (error) {
+      console.error('Error getting my enrollments:', error);
+      return { success: false, message: 'ERRO AO BUSCAR MATRÍCULAS OPERACIONAIS' };
     }
   }
 
@@ -759,7 +863,16 @@ class CourseService {
     }
   }
 
-  async markLessonComplete(courseId: string, lessonId: string): Promise<{ success: boolean; message?: string }> {
+  async markLessonComplete(courseId: string, lessonId: string): Promise<{ 
+    success: boolean; 
+    message?: string;
+    data?: {
+      progress: any;
+      status: string;
+      next_lesson?: any;
+      achievement_unlocked: boolean;
+    }
+  }> {
     try {
       const response = await fetch(`${API_ENDPOINTS.courses.get(courseId)}/lessons/${lessonId}/complete`, {
         method: 'POST',
@@ -771,7 +884,7 @@ class CourseService {
       return data;
     } catch (error) {
       console.error('Error marking lesson as complete:', error);
-      return { success: false, message: 'Erro ao marcar aula como concluída' };
+      return { success: false, message: 'ERRO AO MARCAR MISSÃO COMO CONCLUÍDA' };
     }
   }
 }

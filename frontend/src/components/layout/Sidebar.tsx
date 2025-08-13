@@ -55,6 +55,7 @@ const menuItems = [
 ];
 
 const bottomItems = [
+  { icon: CreditCard, label: 'COMANDO FINANCEIRO', path: '/payment' },
   { icon: Wallet, label: 'PLANO OPERACIONAL', path: '/subscription' },
   { icon: Cog, label: 'CONFIGURAÇÕES', path: '/settings' },
 ];

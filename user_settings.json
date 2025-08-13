@@ -1,0 +1,20 @@
+{
+  "2": {
+    "profile": {
+      "name": "João Silva",
+      "phone": "(11) 99999-9999"
+    },
+    "updatedAt": "2025-08-13T01:24:25.054Z",
+    "notifications": {
+      "study-reminders": {
+        "enabled": false,
+        "channels": {
+          "email": false,
+          "push": false,
+          "sms": false
+        }
+      },
+      "updatedAt": "2025-08-13T01:33:44.292Z"
+    }
+  }
+}

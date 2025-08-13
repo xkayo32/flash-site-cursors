@@ -1,17 +1,25 @@
 import { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
-import { optionalAuth } from '../middleware/auth.middleware';
+import bcrypt from 'bcryptjs';
+import { optionalAuth, requireAuth, AuthRequest } from '../middleware/auth.middleware';
 
 const router = Router();
 
-// Settings file path
+// Settings file paths
 const settingsPath = path.join(__dirname, '../../data/settings.json');
+const userSettingsPath = path.join(__dirname, '../../../user_settings.json');
+const usersPath = path.join(__dirname, '../../data/users.json');
 
 // Ensure data directory exists
 const dataDir = path.dirname(settingsPath);
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
+}
+
+// Ensure user settings file exists
+if (!fs.existsSync(userSettingsPath)) {
+  fs.writeFileSync(userSettingsPath, JSON.stringify({}, null, 2));
 }
 
 // Default settings
@@ -101,6 +109,248 @@ router.post('/', optionalAuth, (req, res) => {
 router.put('/', optionalAuth, (req, res) => {
   // Redirect to POST handler
   router.stack[0].handle(req, res, () => {});
+});
+
+// Get user settings
+router.get('/user', requireAuth, (req: AuthRequest, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Usuário não autenticado' });
+    }
+
+    let userSettings = {};
+    if (fs.existsSync(userSettingsPath)) {
+      const allUserSettings = JSON.parse(fs.readFileSync(userSettingsPath, 'utf-8'));
+      userSettings = allUserSettings[userId] || {};
+    }
+
+    // Default user settings
+    const defaultUserSettings = {
+      profile: {
+        name: req.user?.name || '',
+        email: req.user?.email || '',
+        phone: '',
+        avatar: ''
+      },
+      notifications: {
+        'study-reminders': {
+          enabled: true,
+          channels: { email: true, push: true, sms: false }
+        },
+        'new-content': {
+          enabled: true,
+          channels: { email: true, push: false, sms: false }
+        },
+        'achievements': {
+          enabled: true,
+          channels: { email: false, push: true, sms: false }
+        },
+        'marketing': {
+          enabled: false,
+          channels: { email: false, push: false, sms: false }
+        }
+      },
+      privacy: {
+        'profile-visibility': false,
+        'ranking-participation': true,
+        'study-data-sharing': true
+      },
+      appearance: {
+        theme: 'system',
+        compactMode: false,
+        stealthMode: false,
+        animations: true
+      },
+      study: {
+        dailyTimeGoal: 120,
+        dailyCardsGoal: 50,
+        autoReview: true,
+        intensiveMode: false,
+        focusMode: true
+      }
+    };
+
+    const mergedSettings = {
+      ...defaultUserSettings,
+      ...userSettings,
+      profile: {
+        ...defaultUserSettings.profile,
+        ...(userSettings as any)?.profile
+      },
+      notifications: {
+        ...defaultUserSettings.notifications,
+        ...(userSettings as any)?.notifications
+      },
+      privacy: {
+        ...defaultUserSettings.privacy,
+        ...(userSettings as any)?.privacy
+      },
+      appearance: {
+        ...defaultUserSettings.appearance,
+        ...(userSettings as any)?.appearance
+      },
+      study: {
+        ...defaultUserSettings.study,
+        ...(userSettings as any)?.study
+      }
+    };
+
+    res.json({ success: true, settings: mergedSettings });
+  } catch (error) {
+    console.error('Error reading user settings:', error);
+    res.status(500).json({ success: false, message: 'Erro ao carregar configurações' });
+  }
+});
+
+// Save user settings
+router.put('/user', requireAuth, (req: AuthRequest, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Usuário não autenticado' });
+    }
+
+    let allUserSettings = {};
+    if (fs.existsSync(userSettingsPath)) {
+      allUserSettings = JSON.parse(fs.readFileSync(userSettingsPath, 'utf-8'));
+    }
+
+    const currentUserSettings = (allUserSettings as any)[userId] || {};
+    const updatedUserSettings = {
+      ...currentUserSettings,
+      ...req.body,
+      updatedAt: new Date().toISOString()
+    };
+
+    (allUserSettings as any)[userId] = updatedUserSettings;
+    fs.writeFileSync(userSettingsPath, JSON.stringify(allUserSettings, null, 2));
+
+    // Update user profile data if provided
+    // Comentado temporariamente devido a problemas de permissão
+    /*
+    if (req.body.profile) {
+      const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'));
+      const userIndex = users.findIndex((u: any) => u.id === userId);
+      
+      if (userIndex !== -1 && req.body.profile.name) {
+        users[userIndex].name = req.body.profile.name;
+        users[userIndex].updatedAt = new Date().toISOString();
+        fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
+      }
+    }
+    */
+
+    res.json({
+      success: true,
+      message: 'Configurações salvas com sucesso',
+      settings: updatedUserSettings
+    });
+  } catch (error) {
+    console.error('Error saving user settings:', error);
+    res.status(500).json({ success: false, message: 'Erro ao salvar configurações' });
+  }
+});
+
+// Update notifications settings
+router.put('/notifications', requireAuth, (req: AuthRequest, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Usuário não autenticado' });
+    }
+
+    let allUserSettings = {};
+    if (fs.existsSync(userSettingsPath)) {
+      allUserSettings = JSON.parse(fs.readFileSync(userSettingsPath, 'utf-8'));
+    }
+
+    const currentSettings = (allUserSettings as any)[userId] || {};
+    currentSettings.notifications = {
+      ...currentSettings.notifications,
+      ...req.body,
+      updatedAt: new Date().toISOString()
+    };
+
+    (allUserSettings as any)[userId] = currentSettings;
+    fs.writeFileSync(userSettingsPath, JSON.stringify(allUserSettings, null, 2));
+
+    res.json({
+      success: true,
+      message: 'Configurações de notificação atualizadas',
+      notifications: currentSettings.notifications
+    });
+  } catch (error) {
+    console.error('Error updating notifications:', error);
+    res.status(500).json({ success: false, message: 'Erro ao atualizar notificações' });
+  }
+});
+
+// Change password
+router.put('/password', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user?.id;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Usuário não autenticado' });
+    }
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Todos os campos são obrigatórios' 
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Nova senha e confirmação não conferem' 
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Nova senha deve ter pelo menos 6 caracteres' 
+      });
+    }
+
+    // Get user and verify current password
+    const users = JSON.parse(fs.readFileSync(usersPath, 'utf-8'));
+    const user = users.find((u: any) => u.id === userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Senha atual incorreta' 
+      });
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user password
+    const userIndex = users.findIndex((u: any) => u.id === userId);
+    users[userIndex].password = hashedNewPassword;
+    users[userIndex].updatedAt = new Date().toISOString();
+    
+    fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
+
+    res.json({
+      success: true,
+      message: 'Senha alterada com sucesso'
+    });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ success: false, message: 'Erro ao alterar senha' });
+  }
 });
 
 export default router;

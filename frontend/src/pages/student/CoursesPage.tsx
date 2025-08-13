@@ -95,7 +95,7 @@ const transformCourseFromAPI = (course: CourseFromAPI): Course => {
       color: 'bg-green-500'
     } : undefined,
     progress: undefined,
-    enrolled: false
+    enrolled: false // Will be updated based on actual enrollment status
   };
 };
 
@@ -139,11 +139,27 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [totalCourses, setTotalCourses] = useState(0);
+  const [enrollmentLoading, setEnrollmentLoading] = useState<string | null>(null);
+  const [enrolledCourses, setEnrolledCourses] = useState<Set<string>>(new Set());
 
   // Carregar cursos da API
   useEffect(() => {
     loadCourses();
+    checkEnrolledCourses();
   }, []);
+
+  // Verificar quais cursos o usuário já está matriculado
+  const checkEnrolledCourses = async () => {
+    try {
+      const response = await courseService.getEnrolledCourses();
+      if (response.success && response.data) {
+        const enrolledIds = new Set(response.data.map((course: any) => course.id));
+        setEnrolledCourses(enrolledIds);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar matrículas:', error);
+    }
+  };
 
   const loadCourses = async () => {
     try {
@@ -155,7 +171,12 @@ export default function CoursesPage() {
       });
       
       if (response.success && response.data) {
-        const transformedCourses = response.data.map(transformCourseFromAPI);
+        const transformedCourses = response.data.map(course => {
+          const transformed = transformCourseFromAPI(course);
+          // Check if user is enrolled in this course
+          transformed.enrolled = enrolledCourses.has(course.id);
+          return transformed;
+        });
         setCourses(transformedCourses);
         setTotalCourses(transformedCourses.length);
       } else {
@@ -337,14 +358,21 @@ export default function CoursesPage() {
                 </Button>
               </Link>
             ) : (
-              <Link to={`/student/courses/${course.id}`}>
-                <Button 
-                  size="sm"
-                  className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
-                >
-                  INICIAR OPERAÇÃO
-                </Button>
-              </Link>
+              <Button 
+                size="sm"
+                disabled={enrollmentLoading === course.id}
+                onClick={() => handleEnrollment(course.id)}
+                className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {enrollmentLoading === course.id ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin mr-2" />
+                    REGISTRANDO...
+                  </>
+                ) : (
+                  'INICIAR OPERAÇÃO'
+                )}
+              </Button>
             )}
           </div>
         </CardContent>
@@ -441,14 +469,21 @@ export default function CoursesPage() {
                     </Button>
                   </Link>
                 ) : (
-                  <Link to={`/student/courses/${course.id}`}>
-                    <Button 
-                      size="sm"
-                      className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
-                    >
-                      INICIAR OPERAÇÃO
-                    </Button>
-                  </Link>
+                  <Button 
+                    size="sm"
+                    disabled={enrollmentLoading === course.id}
+                    onClick={() => handleEnrollment(course.id)}
+                    className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {enrollmentLoading === course.id ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin mr-2" />
+                        REGISTRANDO...
+                      </>
+                    ) : (
+                      'INICIAR OPERAÇÃO'
+                    )}
+                  </Button>
                 )}
               </div>
             </div>
@@ -474,11 +509,81 @@ export default function CoursesPage() {
     </motion.div>
   );
 
-  const handleEnrollment = (courseId: string) => {
-    toast.success('OPERAÇÃO INICIADA COM SUCESSO!', {
-      icon: '🎯',
-      duration: 3000
-    });
+  const handleEnrollment = async (courseId: string) => {
+    try {
+      setEnrollmentLoading(courseId);
+      
+      // Verificar se já está matriculado
+      const statusCheck = await courseService.checkEnrollmentStatus(courseId);
+      if (statusCheck.data?.enrolled) {
+        toast.error('AGENTE JÁ REGISTRADO NESTA OPERAÇÃO!', {
+          icon: '⚠️',
+          duration: 4000
+        });
+        setEnrollmentLoading(null);
+        return;
+      }
+      
+      // Realizar matrícula
+      const response = await courseService.enrollInCourse(courseId);
+      
+      if (response.success) {
+        // Atualizar estado local
+        setEnrolledCourses(prev => new Set([...prev, courseId]));
+        
+        // Atualizar contadores de matrícula no curso
+        setCourses(prevCourses => 
+          prevCourses.map(course => 
+            course.id === courseId 
+              ? { ...course, students: course.students + 1, enrolled: true }
+              : course
+          )
+        );
+        
+        // Toast de sucesso com detalhes
+        toast.success(response.message || 'MATRÍCULA OPERACIONAL CONFIRMADA!', {
+          icon: '🎯',
+          duration: 5000
+        });
+        
+        // Mostrar próximos passos se disponíveis
+        if (response.data?.next_steps) {
+          setTimeout(() => {
+            toast.success('PRÓXIMOS PASSOS OPERACIONAIS:', {
+              description: response.data.next_steps[0],
+              icon: '📋',
+              duration: 6000
+            });
+          }, 2000);
+        }
+      } else {
+        // Tratar casos especiais
+        if (response.data?.status === 'already_enrolled') {
+          setEnrolledCourses(prev => new Set([...prev, courseId]));
+          setCourses(prevCourses => 
+            prevCourses.map(course => 
+              course.id === courseId 
+                ? { ...course, enrolled: true }
+                : course
+            )
+          );
+        }
+        
+        toast.error(response.message || 'ERRO NA OPERAÇÃO DE MATRÍCULA', {
+          icon: '❌',
+          duration: 4000
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao realizar matrícula:', error);
+      toast.error('FALHA CRÍTICA NO SISTEMA OPERACIONAL', {
+        description: 'Tente novamente em alguns instantes',
+        icon: '⚠️',
+        duration: 4000
+      });
+    } finally {
+      setEnrollmentLoading(null);
+    }
   };
 
   return (

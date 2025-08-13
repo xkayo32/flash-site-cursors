@@ -24,6 +24,7 @@ import LegislationPage from './pages/student/LegislationPage';
 import TacticalPanelPage from './pages/student/TacticalPanelPage';
 import SubscriptionPage from './pages/student/SubscriptionPage';
 import SettingsPage from './pages/student/SettingsPage';
+import PaymentSettingsPage from './pages/student/PaymentSettingsPage';
 
 // Páginas do Admin
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -99,7 +100,7 @@ function Router() {
         } 
       />
       <Route 
-        path="/simulations/:examId/take" 
+        path="/simulations/:examType/:examId/take" 
         element={
           <ProtectedRoute>
             <ExamTakingPage />
@@ -107,10 +108,19 @@ function Router() {
         } 
       />
       <Route 
-        path="/simulations/:examId/results" 
+        path="/simulations/:examId/results/:sessionId" 
         element={
           <ProtectedRoute>
             <ExamResultsPage />
+          </ProtectedRoute>
+        } 
+      />
+      {/* Legacy route for backward compatibility */}
+      <Route 
+        path="/simulations/:examId/take" 
+        element={
+          <ProtectedRoute>
+            <ExamTakingPage />
           </ProtectedRoute>
         } 
       />
@@ -135,6 +145,7 @@ function Router() {
         <Route path="/legislation" element={<LegislationPage />} />
         <Route path="/tactical" element={<TacticalPanelPage />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
+        <Route path="/payment" element={<PaymentSettingsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
       

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Settings,
@@ -49,9 +49,16 @@ import { useAuthStore } from '@/store/authStore';
 import { useTheme } from '@/contexts/ThemeContext';
 import { PageHeader } from '@/components/student';
 import toast from 'react-hot-toast';
+import { 
+  settingsService, 
+  UserSettings, 
+  NotificationSettings, 
+  PrivacySettings, 
+  ChangePasswordData
+} from '@/services/settingsService';
 
-// Tipos
-interface NotificationSetting {
+// Tipos locais para UI
+interface UINotificationSetting {
   id: string;
   title: string;
   description: string;
@@ -63,63 +70,63 @@ interface NotificationSetting {
   };
 }
 
-interface PrivacySetting {
+interface UIPrivacySetting {
   id: string;
   title: string;
   description: string;
   enabled: boolean;
 }
 
-// Dados mockados
-const notificationSettings: NotificationSetting[] = [
+// Configuração da UI das notificações
+const getNotificationUISettings = (notifications: NotificationSettings): UINotificationSetting[] => [
   {
     id: 'study-reminders',
     title: 'ALERTAS DE MISSÃO',
     description: 'NOTIFICAÇÕES SOBRE OPERAÇÕES AGENDADAS',
-    enabled: true,
-    channels: { email: true, push: true, sms: false }
+    enabled: notifications['study-reminders']?.enabled || false,
+    channels: notifications['study-reminders']?.channels || { email: false, push: false, sms: false }
   },
   {
     id: 'new-content',
     title: 'NOVO ARSENAL TÁTICO',
     description: 'AVISOS SOBRE NOVOS RECURSOS E ARMAMENTOS',
-    enabled: true,
-    channels: { email: true, push: false, sms: false }
+    enabled: notifications['new-content']?.enabled || false,
+    channels: notifications['new-content']?.channels || { email: false, push: false, sms: false }
   },
   {
     id: 'achievements',
     title: 'CONDECORAÇÕES',
     description: 'ALERTAS SOBRE MEDALHAS E PROMOÇÕES',
-    enabled: true,
-    channels: { email: false, push: true, sms: false }
+    enabled: notifications['achievements']?.enabled || false,
+    channels: notifications['achievements']?.channels || { email: false, push: false, sms: false }
   },
   {
     id: 'marketing',
     title: 'COMUNICADOS DO COMANDO',
     description: 'INFORMAÇÕES ESTRATÉGICAS E ATUALIZAÇÕES',
-    enabled: false,
-    channels: { email: false, push: false, sms: false }
+    enabled: notifications['marketing']?.enabled || false,
+    channels: notifications['marketing']?.channels || { email: false, push: false, sms: false }
   }
 ];
 
-const privacySettings: PrivacySetting[] = [
+const getPrivacyUISettings = (privacy: PrivacySettings): UIPrivacySetting[] => [
   {
     id: 'profile-visibility',
     title: 'PERFIL PÚBLICO',
     description: 'PERMITIR QUE OUTROS AGENTES VEJAM SEU PERFIL E ESTATÍSTICAS',
-    enabled: false
+    enabled: privacy['profile-visibility'] || false
   },
   {
     id: 'ranking-participation',
     title: 'RANKING OPERACIONAL',
     description: 'APARECER NO RANKING GERAL DE AGENTES',
-    enabled: true
+    enabled: privacy['ranking-participation'] || false
   },
   {
     id: 'study-data-sharing',
     title: 'INTELIGÊNCIA COMPARTILHADA',
     description: 'CONTRIBUIR ANONIMAMENTE PARA MELHORIAS DO SISTEMA',
-    enabled: true
+    enabled: privacy['study-data-sharing'] || false
   }
 ];
 
@@ -127,11 +134,53 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState('account');
   const { theme, setTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
-  const [notifications, setNotifications] = useState(notificationSettings);
-  const [privacy, setPrivacy] = useState(privacySettings);
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
+  const [notifications, setNotifications] = useState<UINotificationSetting[]>([]);
+  const [privacy, setPrivacy] = useState<UIPrivacySetting[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [passwordData, setPasswordData] = useState<ChangePasswordData>({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    dailyTimeGoal: 120,
+    dailyCardsGoal: 50
+  });
   const user = useAuthStore((state) => state.user);
+
+  // Carregar configurações na montagem do componente
+  useEffect(() => {
+    loadUserSettings();
+  }, []);
+
+  // Loading state
+  if (isLoadingData) {
+    return (
+      <div className="p-6">
+        <PageHeader
+          title="CENTRO DE COMANDO"
+          subtitle="GERENCIE SUAS CONFIGURAÇÕES OPERACIONAIS"
+          icon={Settings}
+          breadcrumbs={[
+            { label: 'PAINEL DE COMANDO', href: '/student/dashboard' },
+            { label: 'CONFIGURAÇÕES' }
+          ]}
+        />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-500 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase">CARREGANDO CONFIGURAÇÕES...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Sections do menu
   const sections = [
@@ -145,9 +194,37 @@ export default function SettingsPage() {
     { id: 'help', label: 'SUPORTE TÁTICO', icon: HelpCircle }
   ];
 
+  // Carregar configurações do usuário
+  const loadUserSettings = async () => {
+    try {
+      setIsLoadingData(true);
+      const response = await settingsService.getUserSettings();
+      
+      if (response.success && response.data) {
+        setUserSettings(response.data);
+        setNotifications(getNotificationUISettings(response.data.notifications));
+        setPrivacy(getPrivacyUISettings(response.data.privacy));
+        setFormData({
+          name: response.data.profile.name,
+          email: response.data.profile.email,
+          phone: response.data.profile.phone,
+          dailyTimeGoal: response.data.study.dailyTimeGoal,
+          dailyCardsGoal: response.data.study.dailyCardsGoal
+        });
+      } else {
+        toast.error(response.error || 'Erro ao carregar configurações');
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+      toast.error('Erro ao carregar configurações');
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
   // Toggle notificação
-  const toggleNotification = (id: string, field?: 'enabled' | 'email' | 'push' | 'sms') => {
-    setNotifications(prev => prev.map(notif => {
+  const toggleNotification = async (id: string, field?: 'enabled' | 'email' | 'push' | 'sms') => {
+    const updatedNotifications = notifications.map(notif => {
       if (notif.id === id) {
         if (field === 'enabled') {
           return { ...notif, enabled: !notif.enabled };
@@ -159,22 +236,169 @@ export default function SettingsPage() {
         }
       }
       return notif;
-    }));
+    });
+    
+    setNotifications(updatedNotifications);
+    
+    // Salvar no backend
+    try {
+      const notificationSettings: Partial<NotificationSettings> = {};
+      updatedNotifications.forEach(notif => {
+        (notificationSettings as any)[notif.id] = {
+          enabled: notif.enabled,
+          channels: notif.channels
+        };
+      });
+      
+      await settingsService.updateNotifications(notificationSettings);
+    } catch (error) {
+      console.error('Error updating notifications:', error);
+      // Reverter em caso de erro
+      await loadUserSettings();
+    }
   };
 
   // Toggle privacidade
-  const togglePrivacy = (id: string) => {
-    setPrivacy(prev => prev.map(setting => 
+  const togglePrivacy = async (id: string) => {
+    const updatedPrivacy = privacy.map(setting => 
       setting.id === id ? { ...setting, enabled: !setting.enabled } : setting
-    ));
+    );
+    
+    setPrivacy(updatedPrivacy);
+    
+    // Salvar no backend
+    try {
+      const privacySettings: Partial<PrivacySettings> = {};
+      updatedPrivacy.forEach(setting => {
+        (privacySettings as any)[setting.id] = setting.enabled;
+      });
+      
+      await settingsService.updatePrivacy(privacySettings);
+    } catch (error) {
+      console.error('Error updating privacy:', error);
+      // Reverter em caso de erro
+      await loadUserSettings();
+    }
   };
 
   // Salvar configurações
-  const saveSettings = async () => {
+  const saveSettings = async (section?: string) => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    toast.success('CONFIGURAÇÕES ATUALIZADAS!', { icon: '✅' });
+    try {
+      let response;
+      
+      switch (section) {
+        case 'profile':
+          const profileValidation = settingsService.validateProfileSettings({
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone
+          });
+          
+          if (!profileValidation.valid) {
+            toast.error(profileValidation.errors[0]);
+            setIsLoading(false);
+            return;
+          }
+          
+          response = await settingsService.updateProfile({
+            name: formData.name,
+            phone: formData.phone
+          });
+          break;
+          
+        case 'study':
+          const studyValidation = settingsService.validateStudySettings({
+            dailyTimeGoal: formData.dailyTimeGoal,
+            dailyCardsGoal: formData.dailyCardsGoal
+          });
+          
+          if (!studyValidation.valid) {
+            toast.error(studyValidation.errors[0]);
+            setIsLoading(false);
+            return;
+          }
+          
+          response = await settingsService.updateStudySettings({
+            dailyTimeGoal: formData.dailyTimeGoal,
+            dailyCardsGoal: formData.dailyCardsGoal,
+            autoReview: userSettings?.study.autoReview || true,
+            intensiveMode: userSettings?.study.intensiveMode || false,
+            focusMode: userSettings?.study.focusMode || true
+          });
+          break;
+          
+        case 'appearance':
+          response = await settingsService.updateAppearance({
+            theme: theme as 'light' | 'dark' | 'system',
+            animations: userSettings?.appearance.animations || true,
+            compactMode: userSettings?.appearance.compactMode || false,
+            stealthMode: userSettings?.appearance.stealthMode || false
+          });
+          break;
+          
+        default:
+          // Salvar todas as configurações
+          response = await settingsService.saveUserSettings({
+            ...userSettings!,
+            profile: {
+              ...userSettings!.profile,
+              name: formData.name,
+              phone: formData.phone
+            },
+            study: {
+              ...userSettings!.study,
+              dailyTimeGoal: formData.dailyTimeGoal,
+              dailyCardsGoal: formData.dailyCardsGoal
+            }
+          });
+          break;
+      }
+      
+      if (response?.success) {
+        toast.success('CONFIGURAÇÕES ATUALIZADAS!', { icon: '✅' });
+        await loadUserSettings(); // Recarregar para sincronizar
+      } else {
+        toast.error(response?.error || 'Erro ao salvar configurações');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast.error('Erro ao salvar configurações');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Alterar senha
+  const changePassword = async () => {
+    setIsLoading(true);
+    try {
+      const validation = settingsService.validatePasswordChange(passwordData);
+      
+      if (!validation.valid) {
+        toast.error(validation.errors[0]);
+        setIsLoading(false);
+        return;
+      }
+      
+      const response = await settingsService.changePassword(passwordData);
+      
+      if (response.success) {
+        toast.success('SENHA ALTERADA COM SUCESSO!', { icon: '🔒' });
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+      } else {
+        toast.error(response.error || 'Erro ao alterar senha');
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error('Erro ao alterar senha');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Componente de toggle
@@ -290,7 +514,8 @@ export default function SettingsPage() {
                         </label>
                         <input
                           type="text"
-                          defaultValue={user?.name}
+                          value={formData.name}
+                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                         />
                       </div>
@@ -300,8 +525,9 @@ export default function SettingsPage() {
                         </label>
                         <input
                           type="email"
-                          defaultValue={user?.email}
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
+                          value={formData.email}
+                          readOnly
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 rounded-lg cursor-not-allowed"
                         />
                       </div>
                       <div>
@@ -310,6 +536,8 @@ export default function SettingsPage() {
                         </label>
                         <input
                           type="tel"
+                          value={formData.phone}
+                          onChange={(e) => setFormData(prev => ({ ...prev, phone: settingsService.formatPhoneNumber(e.target.value) }))}
                           placeholder="(00) 00000-0000"
                           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                         />
@@ -366,7 +594,7 @@ export default function SettingsPage() {
                         ENCERRAR MISSÃO
                       </Button>
                       <Button 
-                        onClick={saveSettings} 
+                        onClick={() => saveSettings('profile')} 
                         disabled={isLoading}
                         className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
                       >
@@ -414,6 +642,8 @@ export default function SettingsPage() {
                           <div className="relative">
                             <input
                               type={showPassword ? "text" : "password"}
+                              value={passwordData.currentPassword}
+                              onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
                               className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                             />
                             <button
@@ -436,6 +666,8 @@ export default function SettingsPage() {
                             </label>
                             <input
                               type="password"
+                              value={passwordData.newPassword}
+                              onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
                               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                             />
                           </div>
@@ -445,6 +677,8 @@ export default function SettingsPage() {
                             </label>
                             <input
                               type="password"
+                              value={passwordData.confirmPassword}
+                              onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                             />
                           </div>
@@ -505,12 +739,12 @@ export default function SettingsPage() {
 
                     <div className="flex justify-end">
                       <Button 
-                        onClick={saveSettings} 
+                        onClick={changePassword} 
                         disabled={isLoading}
                         className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
                       >
                         <Lock className="w-4 h-4 mr-2" />
-                        ATUALIZAR SEGURANÇA
+                        ALTERAR SENHA
                       </Button>
                     </div>
                   </CardContent>
@@ -586,12 +820,12 @@ export default function SettingsPage() {
                     
                     <div className="flex justify-end">
                       <Button 
-                        onClick={saveSettings} 
-                        disabled={isLoading}
-                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                        onClick={() => toast.success('PREFERÊNCIAS SALVAS AUTOMATICAMENTE!', { icon: '✅' })} 
+                        disabled={true}
+                        className="font-police-body uppercase tracking-wider bg-gray-400 text-gray-600 cursor-not-allowed"
                       >
                         <Bell className="w-4 h-4 mr-2" />
-                        SALVAR PREFERÊNCIAS
+                        SALVO AUTOMATICAMENTE
                       </Button>
                     </div>
                   </CardContent>
@@ -646,12 +880,12 @@ export default function SettingsPage() {
                     
                     <div className="flex justify-end">
                       <Button 
-                        onClick={saveSettings} 
-                        disabled={isLoading}
-                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                        onClick={() => toast.success('PROTOCOLOS SALVOS AUTOMATICAMENTE!', { icon: '🛡️' })} 
+                        disabled={true}
+                        className="font-police-body uppercase tracking-wider bg-gray-400 text-gray-600 cursor-not-allowed"
                       >
                         <Shield className="w-4 h-4 mr-2" />
-                        CONFIRMAR PROTOCOLOS
+                        SALVO AUTOMATICAMENTE
                       </Button>
                     </div>
                   </CardContent>
@@ -752,7 +986,7 @@ export default function SettingsPage() {
                     
                     <div className="flex justify-end">
                       <Button 
-                        onClick={saveSettings} 
+                        onClick={() => saveSettings('appearance')} 
                         disabled={isLoading}
                         className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
                       >
@@ -793,7 +1027,8 @@ export default function SettingsPage() {
                           </label>
                           <input
                             type="number"
-                            defaultValue="120"
+                            value={formData.dailyTimeGoal}
+                            onChange={(e) => setFormData(prev => ({ ...prev, dailyTimeGoal: parseInt(e.target.value) || 15 }))}
                             min="15"
                             max="480"
                             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
@@ -805,7 +1040,8 @@ export default function SettingsPage() {
                           </label>
                           <input
                             type="number"
-                            defaultValue="50"
+                            value={formData.dailyCardsGoal}
+                            onChange={(e) => setFormData(prev => ({ ...prev, dailyCardsGoal: parseInt(e.target.value) || 10 }))}
                             min="10"
                             max="200"
                             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
@@ -871,7 +1107,7 @@ export default function SettingsPage() {
                     
                     <div className="flex justify-end">
                       <Button 
-                        onClick={saveSettings} 
+                        onClick={() => saveSettings('study')} 
                         disabled={isLoading}
                         className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
                       >

@@ -37,3 +37,5 @@ export const optionalAuth = (req: AuthRequest, _res: Response, next: NextFunctio
     next();
   }
 };
+
+export const requireAuth = authMiddleware;

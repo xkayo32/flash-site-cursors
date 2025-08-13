@@ -61,32 +61,33 @@ interface EnrolledCourse {
   expiresAt?: string;
 }
 
-// Função para transformar dados da API do dashboard
-const transformEnrolledCourseFromDashboard = (course: any): EnrolledCourse => {
-  const progress = course.progress || Math.floor(Math.random() * 100);
-  const totalLessons = course.totalQuestions || course.totalFlashcards || Math.floor(Math.random() * 50) + 20;
+// Função para transformar dados da API de enrollment
+const transformEnrolledCourseFromAPI = (enrollment: any): EnrolledCourse => {
+  const course = enrollment.course || enrollment;
+  const progress = enrollment.enrollment?.progress || enrollment.progress || 0;
+  const totalLessons = course.stats?.lessons || Math.floor(Math.random() * 50) + 20;
   const completedLessons = Math.floor((progress / 100) * totalLessons);
   
   return {
     id: course.id,
-    title: course.name?.toUpperCase() || 'OPERAÇÃO SEM NOME',
-    instructor: 'COMANDANTE DESIGNADO',
+    title: course.title?.toUpperCase() || 'OPERAÇÃO SEM NOME',
+    instructor: course.instructor?.name?.toUpperCase() || 'COMANDANTE DESIGNADO',
     thumbnail: course.thumbnail || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=400&h=250&fit=crop',
     progress,
     totalLessons,
     completedLessons,
-    lastAccessed: new Date(course.enrolledAt || Date.now()).toISOString().split('T')[0],
+    lastAccessed: enrollment.enrollment?.last_accessed || enrollment.lastAccessed || new Date().toISOString().split('T')[0],
     nextLesson: {
       id: `${completedLessons + 1}`,
       title: progress === 100 ? 'MISSÃO CONCLUÍDA!' : `PRÓXIMO BRIEFING - MÓDULO ${Math.floor(completedLessons / 10) + 1}`,
       duration: progress === 100 ? '' : '30min'
     },
     certificate: {
-      available: progress === 100,
-      earnedAt: progress === 100 ? new Date().toISOString().split('T')[0] : undefined
+      available: progress >= 100,
+      earnedAt: progress >= 100 ? enrollment.completion_date?.split('T')[0] : undefined
     },
     category: course.category?.toUpperCase() || 'GERAL',
-    duration: `${Math.floor(Math.random() * 100) + 50}H OPERACIONAIS`,
+    duration: `${course.duration?.hours || Math.floor(Math.random() * 100) + 50}H OPERACIONAIS`,
     expiresAt: undefined
   };
 };
@@ -120,18 +121,27 @@ export default function MyCoursesPage() {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await courseService.getEnrolledCourses();
+      
+      // Tentar primeiro o novo endpoint de enrollments
+      let response = await courseService.getMyEnrollments();
       
       if (response.success && response.data) {
-        const transformedCourses = response.data.map(course => transformEnrolledCourseFromDashboard(course));
+        const transformedCourses = response.data.map(enrollment => transformEnrolledCourseFromAPI(enrollment));
         setEnrolledCourses(transformedCourses);
       } else {
-        // Se não tiver cursos matriculados, usar array vazio
-        setEnrolledCourses([]);
+        // Fallback para o endpoint antigo de cursos matriculados
+        response = await courseService.getEnrolledCourses();
+        
+        if (response.success && response.data) {
+          const transformedCourses = response.data.map(course => transformEnrolledCourseFromAPI(course));
+          setEnrolledCourses(transformedCourses);
+        } else {
+          setEnrolledCourses([]);
+        }
       }
     } catch (error) {
-      console.error('Erro ao carregar cursos matriculados:', error);
-      setError('Erro ao carregar seus cursos. Tente novamente.');
+      console.error('Erro ao carregar operações matriculadas:', error);
+      setError('Erro ao carregar suas operações. Tente novamente.');
       setEnrolledCourses([]);
     } finally {
       setIsLoading(false);

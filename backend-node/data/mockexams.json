@@ -6,7 +6,7 @@
     "type": "AUTOMATIC",
     "difficulty": "SARGENTO",
     "duration": 240,
-    "total_questions": 120,
+    "total_questions": 3,
     "filters": {
       "subjects": ["Direito Constitucional", "Direito Administrativo", "Direito Penal"],
       "exam_boards": ["CESPE"],
@@ -23,7 +23,123 @@
     "total_attempts": 1250,
     "completed_attempts": 1180,
     "average_score": 58.5,
-    "pass_rate": 42.3
+    "pass_rate": 42.3,
+    "questions": [
+      {
+        "id": "q1",
+        "number": 1,
+        "subject": "Direito Constitucional",
+        "statement": "Segundo a Constituição Federal de 1988, no que se refere aos direitos e garantias fundamentais, é correto afirmar que:",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Os direitos fundamentais têm aplicação imediata, independentemente de regulamentação infraconstitucional."
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "A casa é asilo inviolável do indivíduo, não podendo ninguém nela penetrar sem consentimento do morador, salvo em caso de flagrante delito ou desastre."
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "É livre a manifestação do pensamento, sendo vedado o anonimato em qualquer circunstância."
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Todos são iguais perante a lei, sem distinção de qualquer natureza, garantindo-se aos brasileiros e aos estrangeiros residentes no País a inviolabilidade do direito à vida, à liberdade, à igualdade, à segurança e à propriedade."
+          },
+          {
+            "id": "e",
+            "letter": "E",
+            "text": "A liberdade de consciência e de crença é inviolável, mas o exercício dos cultos religiosos depende de autorização do Poder Público."
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "A alternativa D está correta pois reproduz fielmente o caput do artigo 5º da Constituição Federal.",
+        "difficulty": "CABO",
+        "year": 2023,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q2",
+        "number": 2,
+        "subject": "Direito Penal",
+        "statement": "João, funcionário público, solicitou e recebeu vantagem indevida de R$ 5.000,00 para acelerar um processo administrativo. Com base no Código Penal, analise as afirmativas:",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "João praticou crime de corrupção passiva, com pena de reclusão de 2 a 12 anos e multa."
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "O crime consumou-se no momento em que João solicitou a vantagem, independentemente do recebimento."
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Configura-se concussão, pois houve exigência de vantagem indevida."
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Não há crime, pois o valor é inferior ao limite estabelecido pela jurisprudência."
+          },
+          {
+            "id": "e",
+            "letter": "E",
+            "text": "João deve responder por prevaricação, pois retardou ato de ofício."
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "A resposta correta é A. Trata-se de corrupção passiva, prevista no art. 317 do CP, pois o funcionário solicitou e recebeu vantagem indevida.",
+        "difficulty": "SARGENTO",
+        "year": 2022,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q3",
+        "number": 3,
+        "subject": "Informática",
+        "statement": "Em relação aos conceitos de segurança da informação, é correto afirmar que:",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "A criptografia simétrica utiliza chaves diferentes para cifrar e decifrar os dados."
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "O protocolo HTTPS garante apenas a integridade dos dados transmitidos."
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Um firewall é capaz de detectar e bloquear todos os tipos de malware."
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "A autenticação de dois fatores (2FA) aumenta significativamente a segurança do sistema."
+          },
+          {
+            "id": "e",
+            "letter": "E",
+            "text": "Backup incremental copia todos os arquivos do sistema a cada execução."
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "A alternativa D está correta. A autenticação de dois fatores (2FA) adiciona uma camada extra de segurança ao processo de autenticação.",
+        "difficulty": "RECRUTA",
+        "year": 2023,
+        "institution": "CESPE"
+      }
+    ]
   },
   {
     "id": "me2",

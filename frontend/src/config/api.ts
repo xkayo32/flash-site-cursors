@@ -1,4 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8180';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8181';
 
 export const API_ENDPOINTS = {
   auth: {

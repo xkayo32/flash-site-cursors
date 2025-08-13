@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CreditCard,
@@ -25,70 +25,35 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { PageHeader } from '@/components/student';
 import toast from 'react-hot-toast';
+import paymentService, {
+  PaymentMethod,
+  PaymentHistory,
+  BillingAddress,
+  Subscription,
+  NotificationSettings
+} from '@/services/paymentService';
 
-// Mock data for payment methods
-const mockPaymentMethods = [
-  {
-    id: '1',
-    type: 'card',
-    brand: 'visa',
-    last4: '4242',
-    expiryMonth: 12,
-    expiryYear: 2025,
-    isDefault: true,
-    nickname: 'CARTÃO DE COMANDO PRINCIPAL'
-  },
-  {
-    id: '2',
-    type: 'card',
-    brand: 'mastercard',
-    last4: '5555',
-    expiryMonth: 8,
-    expiryYear: 2026,
-    isDefault: false,
-    nickname: 'CARTÃO DE RESERVA TÁTICA'
-  }
-];
-
-// Mock data for payment history
-const mockPaymentHistory = [
-  {
-    id: 'pay_1',
-    amount: 49.90,
-    currency: 'BRL',
-    status: 'succeeded',
-    date: '2024-01-15',
-    description: 'OPERAÇÃO MENSAL - NÍVEL COMANDANTE VIP',
-    method: 'Visa ****4242',
-    invoice: 'inv_1234567'
-  },
-  {
-    id: 'pay_2',
-    amount: 49.90,
-    currency: 'BRL',
-    status: 'succeeded',
-    date: '2023-12-15',
-    description: 'OPERAÇÃO MENSAL - NÍVEL COMANDANTE VIP',
-    method: 'Visa ****4242',
-    invoice: 'inv_1234566'
-  },
-  {
-    id: 'pay_3',
-    amount: 49.90,
-    currency: 'BRL',
-    status: 'failed',
-    date: '2023-11-15',
-    description: 'OPERAÇÃO MENSAL - NÍVEL COMANDANTE VIP',
-    method: 'Visa ****4242',
-    invoice: null,
-    failureReason: 'AUTENTICAÇÃO DE PAGAMENTO RECUSADA'
-  }
-];
 
 export default function PaymentSettingsPage() {
+  // State
   const [showAddCardModal, setShowAddCardModal] = useState(false);
   const [showBillingModal, setShowBillingModal] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState<any>(null);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentHistory | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingAction, setLoadingAction] = useState('');
+  
+  // Data state
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [billingAddress, setBillingAddress] = useState<BillingAddress | null>(null);
+  const [notifications, setNotifications] = useState<NotificationSettings>({
+    payment_reminders: true,
+    payment_failures: true,
+    promotional_offers: false
+  });
+  
+  // Form state
   const [cardForm, setCardForm] = useState({
     number: '',
     expiry: '',
@@ -96,16 +61,213 @@ export default function PaymentSettingsPage() {
     name: '',
     nickname: ''
   });
-  const [billingAddress, setBillingAddress] = useState({
-    name: 'João Silva',
-    email: 'joao@email.com',
-    line1: 'Rua das Flores, 123',
-    line2: 'Apt 45',
-    city: 'São Paulo',
-    state: 'SP',
-    postal_code: '01234-567',
+  const [billingForm, setBillingForm] = useState<BillingAddress>({
+    name: '',
+    email: '',
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    postal_code: '',
     country: 'BR'
   });
+
+  // Load data on mount
+  useEffect(() => {
+    loadAllData();
+  }, []);
+
+  // Load all payment data
+  const loadAllData = async () => {
+    setLoading(true);
+    try {
+      await Promise.allSettled([
+        loadPaymentMethods(),
+        loadPaymentHistory(),
+        loadSubscription(),
+        loadBillingAddress(),
+        loadNotificationSettings()
+      ]);
+    } catch (error) {
+      console.error('Error loading payment data:', error);
+      toast.error('ERRO AO CARREGAR DADOS FINANCEIROS');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load payment methods
+  const loadPaymentMethods = async () => {
+    try {
+      const methods = await paymentService.getPaymentMethods();
+      setPaymentMethods(methods);
+    } catch (error: any) {
+      console.error('Error loading payment methods:', error);
+      toast.error(error.message || 'ERRO AO CARREGAR ARSENAL FINANCEIRO');
+    }
+  };
+
+  // Load payment history
+  const loadPaymentHistory = async () => {
+    try {
+      const response = await paymentService.getPaymentHistory(1, 20);
+      setPaymentHistory(response.data);
+    } catch (error: any) {
+      console.error('Error loading payment history:', error);
+      toast.error(error.message || 'ERRO AO CARREGAR RELATÓRIO DE OPERAÇÕES');
+    }
+  };
+
+  // Load subscription
+  const loadSubscription = async () => {
+    try {
+      const sub = await paymentService.getSubscription();
+      setSubscription(sub);
+    } catch (error: any) {
+      console.error('Error loading subscription:', error);
+      // Don't show error for missing subscription
+    }
+  };
+
+  // Load billing address
+  const loadBillingAddress = async () => {
+    try {
+      const address = await paymentService.getBillingAddress();
+      setBillingAddress(address);
+      if (address) {
+        setBillingForm(address);
+      }
+    } catch (error: any) {
+      console.error('Error loading billing address:', error);
+      toast.error(error.message || 'ERRO AO CARREGAR BASE DE OPERAÇÕES');
+    }
+  };
+
+  // Load notification settings
+  const loadNotificationSettings = async () => {
+    try {
+      const settings = await paymentService.getNotificationSettings();
+      setNotifications(settings);
+    } catch (error: any) {
+      console.error('Error loading notification settings:', error);
+    }
+  };
+
+  // Add payment method
+  const handleAddPaymentMethod = async () => {
+    if (!cardForm.number || !cardForm.expiry || !cardForm.cvc || !cardForm.name) {
+      toast.error('PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS');
+      return;
+    }
+
+    setLoadingAction('adding-card');
+    try {
+      const [month, year] = cardForm.expiry.split('/');
+      const brand = paymentService.getCardBrand(cardForm.number);
+      const last4 = cardForm.number.replace(/\D/g, '').slice(-4);
+
+      await paymentService.addPaymentMethod({
+        brand,
+        last4,
+        expiry_month: parseInt(month),
+        expiry_year: parseInt('20' + year),
+        holder_name: cardForm.name,
+        nickname: cardForm.nickname || `CARTÃO ${brand.toUpperCase()} ****${last4}`,
+        is_default: paymentMethods.length === 0
+      });
+
+      toast.success('ARMAMENTO ADICIONADO AO ARSENAL!', { icon: '⚔️' });
+      setShowAddCardModal(false);
+      setCardForm({ number: '', expiry: '', cvc: '', name: '', nickname: '' });
+      await loadPaymentMethods();
+    } catch (error: any) {
+      toast.error(error.message || 'ERRO AO ADICIONAR ARMAMENTO');
+    } finally {
+      setLoadingAction('');
+    }
+  };
+
+  // Remove payment method
+  const handleRemovePaymentMethod = async (id: string) => {
+    setLoadingAction('removing-card');
+    try {
+      await paymentService.removePaymentMethod(id);
+      toast.success('ARMAMENTO REMOVIDO DO ARSENAL!');
+      await loadPaymentMethods();
+    } catch (error: any) {
+      toast.error(error.message || 'ERRO AO REMOVER ARMAMENTO');
+    } finally {
+      setLoadingAction('');
+    }
+  };
+
+  // Set default payment method
+  const handleSetDefault = async (id: string) => {
+    setLoadingAction('setting-default');
+    try {
+      await paymentService.setDefaultPaymentMethod(id);
+      toast.success('ARMAMENTO PRINCIPAL ATUALIZADO!');
+      await loadPaymentMethods();
+    } catch (error: any) {
+      toast.error(error.message || 'ERRO AO DEFINIR ARMAMENTO PRINCIPAL');
+    } finally {
+      setLoadingAction('');
+    }
+  };
+
+  // Update billing address
+  const handleUpdateBillingAddress = async () => {
+    if (!billingForm.name || !billingForm.email || !billingForm.line1 || 
+        !billingForm.city || !billingForm.state || !billingForm.postal_code) {
+      toast.error('PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS');
+      return;
+    }
+
+    setLoadingAction('updating-billing');
+    try {
+      await paymentService.updateBillingAddress(billingForm);
+      toast.success('BASE DE OPERAÇÕES CONFIGURADA!', { icon: '🏠' });
+      setShowBillingModal(false);
+      await loadBillingAddress();
+    } catch (error: any) {
+      toast.error(error.message || 'ERRO AO CONFIGURAR BASE');
+    } finally {
+      setLoadingAction('');
+    }
+  };
+
+  // Download invoice
+  const handleDownloadInvoice = async (invoiceId: string) => {
+    setLoadingAction('downloading-invoice');
+    try {
+      const result = await paymentService.downloadInvoice(invoiceId);
+      toast.success('DOWNLOAD DO RELATÓRIO INICIADO!', { icon: '📥' });
+      // In a real implementation, this would trigger an actual download
+      window.open(result.download_url, '_blank');
+    } catch (error: any) {
+      toast.error(error.message || 'ERRO NO DOWNLOAD DO RELATÓRIO');
+    } finally {
+      setLoadingAction('');
+    }
+  };
+
+  // Manage subscription
+  const handleManageSubscription = () => {
+    toast.success('ACESSANDO COMANDO DE ASSINATURAS!', { icon: '⚙️' });
+    // In a real implementation, this would open subscription management
+  };
+
+  // Update notification setting
+  const handleNotificationChange = async (setting: keyof NotificationSettings, value: boolean) => {
+    try {
+      const updatedSettings = { ...notifications, [setting]: value };
+      await paymentService.updateNotificationSettings(updatedSettings);
+      setNotifications(updatedSettings);
+      toast.success('ALERTAS ATUALIZADOS!');
+    } catch (error: any) {
+      toast.error(error.message || 'ERRO AO ATUALIZAR ALERTAS');
+    }
+  };
 
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
@@ -131,14 +293,10 @@ export default function PaymentSettingsPage() {
   };
 
   const getCardBrandIcon = (brand: string) => {
-    const brandColors = {
-      visa: 'bg-blue-600',
-      mastercard: 'bg-red-600',
-      amex: 'bg-green-600'
-    };
+    const brandClass = paymentService.getCardBrandClass(brand);
     
     return (
-      <div className={`w-8 h-5 rounded ${brandColors[brand as keyof typeof brandColors] || 'bg-gray-600'} flex items-center justify-center`}>
+      <div className={`w-8 h-5 rounded ${brandClass} flex items-center justify-center`}>
         <span className="text-white text-xs font-bold">
           {brand.toUpperCase().substring(0, 2)}
         </span>
@@ -147,15 +305,9 @@ export default function PaymentSettingsPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      succeeded: { label: 'CONFIRMADO', color: 'bg-green-100 text-green-800' },
-      pending: { label: 'EM PROCESSO', color: 'bg-yellow-100 text-yellow-800' },
-      failed: { label: 'NEGADO', color: 'bg-red-100 text-red-800' }
-    };
-    
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    const config = paymentService.getStatusConfig(status);
     return (
-      <Badge className={config.color}>
+      <Badge className={config.className}>
         {config.label}
       </Badge>
     );
@@ -177,6 +329,22 @@ export default function PaymentSettingsPage() {
       [field]: formattedValue
     }));
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="p-6 max-w-6xl mx-auto space-y-8">
+        <PageHeader
+          title="COMANDO FINANCEIRO"
+          subtitle="CARREGANDO DADOS FINANCEIROS..."
+          icon={CreditCard}
+        />
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
@@ -200,9 +368,14 @@ export default function PaymentSettingsPage() {
             </Button>
             <Button 
               onClick={() => setShowAddCardModal(true)} 
-              className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+              disabled={loadingAction === 'adding-card'}
+              className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider disabled:opacity-50"
             >
-              <Plus className="w-4 h-4" />
+              {loadingAction === 'adding-card' ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
               ADICIONAR CARTÃO
             </Button>
           </div>
@@ -234,7 +407,7 @@ export default function PaymentSettingsPage() {
                   NÍVEL
                 </p>
                 <p className="text-lg font-bold text-primary-900 dark:text-white font-police-title">
-                  COMANDANTE VIP MENSAL
+                  {subscription?.plan_name || 'NENHUMA OPERAÇÃO ATIVA'}
                 </p>
               </div>
               <div>
@@ -242,7 +415,7 @@ export default function PaymentSettingsPage() {
                   VALOR OPERACIONAL
                 </p>
                 <p className="text-lg font-bold text-primary-900 dark:text-white">
-                  R$ 49,90/mês
+                  {subscription ? paymentService.formatCurrency(subscription.amount) + '/' + subscription.interval : 'N/A'}
                 </p>
               </div>
               <div>
@@ -250,7 +423,7 @@ export default function PaymentSettingsPage() {
                   PRÓXIMA OPERAÇÃO
                 </p>
                 <p className="text-lg font-bold text-primary-900 dark:text-white">
-                  15/02/2024
+                  {subscription ? paymentService.formatDate(subscription.current_period_end) : 'N/A'}
                 </p>
               </div>
             </div>
@@ -266,7 +439,7 @@ export default function PaymentSettingsPage() {
                 variant="outline" 
                 size="sm"
                 className="font-police-body uppercase tracking-wider"
-                onClick={() => toast.success('ACESSANDO COMANDO DE ASSINATURAS!', { icon: '⚙️' })}
+                onClick={handleManageSubscription}
               >
                 GERENCIAR OPERAÇÃO
               </Button>
@@ -290,7 +463,13 @@ export default function PaymentSettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {mockPaymentMethods.map((method) => (
+              {paymentMethods.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <CreditCard className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p className="font-police-body uppercase tracking-wider">NENHUM ARMAMENTO NO ARSENAL</p>
+                </div>
+              ) : (
+                paymentMethods.map((method) => (
                 <div
                   key={method.id}
                   className="flex items-center justify-between p-4 border border-primary-200 dark:border-gray-700 rounded-lg hover:bg-primary-50 dark:hover:bg-gray-800 transition-colors"
@@ -302,28 +481,47 @@ export default function PaymentSettingsPage() {
                         <span className="font-medium text-primary-900 dark:text-white">
                           •••• •••• •••• {method.last4}
                         </span>
-                        {method.isDefault && (
+                        {method.is_default && (
                           <Badge variant="secondary" className="text-xs font-police-body">
                             PRINCIPAL
                           </Badge>
                         )}
                       </div>
                       <p className="text-sm text-primary-600 dark:text-gray-400">
-                        {method.nickname} • Expira {method.expiryMonth}/{method.expiryYear}
+                        {method.nickname} • Expira {paymentService.formatExpiryDate(method.expiry_month, method.expiry_year)}
                       </p>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
-                      <Trash2 className="w-4 h-4" />
+                    {!method.is_default && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleSetDefault(method.id)}
+                        disabled={loadingAction === 'setting-default'}
+                        title="Definir como principal"
+                      >
+                        <Star className="w-4 h-4" />
+                      </Button>
+                    )}
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleRemovePaymentMethod(method.id)}
+                      disabled={loadingAction === 'removing-card'}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      {loadingAction === 'removing-card' ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
-              ))}
+              ))
+              )}
               
               <Button
                 variant="outline"
@@ -352,33 +550,43 @@ export default function PaymentSettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
-                <div>
-                  <p className="font-medium text-primary-900 dark:text-white">
-                    {billingAddress.name}
-                  </p>
-                  <p className="text-sm text-primary-600 dark:text-gray-400">
-                    {billingAddress.email}
-                  </p>
-                </div>
-                
-                <div className="text-sm text-primary-700 dark:text-gray-300">
-                  <p>{billingAddress.line1}</p>
-                  {billingAddress.line2 && <p>{billingAddress.line2}</p>}
-                  <p>
-                    {billingAddress.city}, {billingAddress.state} {billingAddress.postal_code}
-                  </p>
-                </div>
+                {billingAddress ? (
+                  <>
+                    <div>
+                      <p className="font-medium text-primary-900 dark:text-white">
+                        {billingAddress.name}
+                      </p>
+                      <p className="text-sm text-primary-600 dark:text-gray-400">
+                        {billingAddress.email}
+                      </p>
+                    </div>
+                    
+                    <div className="text-sm text-primary-700 dark:text-gray-300">
+                      <p>{billingAddress.line1}</p>
+                      {billingAddress.line2 && <p>{billingAddress.line2}</p>}
+                      <p>
+                        {billingAddress.city}, {billingAddress.state} {billingAddress.postal_code}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                    <p className="font-police-body uppercase tracking-wider">BASE NÃO CONFIGURADA</p>
+                  </div>
+                )}
               </div>
               
               <Button
                 variant="outline"
-                onClick={() => {
-                  toast.success('ACESSANDO CONFIGURAÇÕES DA BASE!', { icon: '🏠' });
-                  setShowBillingModal(true);
-                }}
-                className="w-full gap-2 font-police-body uppercase tracking-wider"
+                onClick={() => setShowBillingModal(true)}
+                disabled={loadingAction === 'updating-billing'}
+                className="w-full gap-2 font-police-body uppercase tracking-wider disabled:opacity-50"
               >
-                <Edit className="w-4 h-4" />
+                {loadingAction === 'updating-billing' ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                ) : (
+                  <Edit className="w-4 h-4" />
+                )}
                 CONFIGURAR BASE
               </Button>
             </CardContent>
@@ -397,7 +605,8 @@ export default function PaymentSettingsPage() {
                 <label className="flex items-center gap-3">
                   <input
                     type="checkbox"
-                    defaultChecked
+                    checked={notifications.payment_reminders}
+                    onChange={(e) => handleNotificationChange('payment_reminders', e.target.checked)}
                     className="w-4 h-4 text-primary-600 border-primary-300 rounded focus:ring-primary-500"
                   />
                   <span className="text-sm text-primary-700 dark:text-gray-300 font-police-body">
@@ -408,7 +617,8 @@ export default function PaymentSettingsPage() {
                 <label className="flex items-center gap-3">
                   <input
                     type="checkbox"
-                    defaultChecked
+                    checked={notifications.payment_failures}
+                    onChange={(e) => handleNotificationChange('payment_failures', e.target.checked)}
                     className="w-4 h-4 text-primary-600 border-primary-300 rounded focus:ring-primary-500"
                   />
                   <span className="text-sm text-primary-700 dark:text-gray-300 font-police-body">
@@ -419,6 +629,8 @@ export default function PaymentSettingsPage() {
                 <label className="flex items-center gap-3">
                   <input
                     type="checkbox"
+                    checked={notifications.promotional_offers}
+                    onChange={(e) => handleNotificationChange('promotional_offers', e.target.checked)}
                     className="w-4 h-4 text-primary-600 border-primary-300 rounded focus:ring-primary-500"
                   />
                   <span className="text-sm text-primary-700 dark:text-gray-300 font-police-body">
@@ -470,14 +682,24 @@ export default function PaymentSettingsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {mockPaymentHistory.map((payment) => (
+                  {paymentHistory.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                        <div className="flex flex-col items-center">
+                          <Receipt className="w-12 h-12 mb-4 opacity-50" />
+                          <p className="font-police-body uppercase tracking-wider">NENHUMA OPERAÇÃO REGISTRADA</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    paymentHistory.map((payment) => (
                     <tr
                       key={payment.id}
                       className="border-b border-primary-100 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-gray-800"
                     >
                       <td className="py-4 px-6">
                         <span className="text-primary-900 dark:text-white">
-                          {new Date(payment.date).toLocaleDateString('pt-BR')}
+                          {paymentService.formatDate(payment.created_at)}
                         </span>
                       </td>
                       <td className="py-4 px-6">
@@ -485,9 +707,9 @@ export default function PaymentSettingsPage() {
                           <p className="font-medium text-primary-900 dark:text-white">
                             {payment.description}
                           </p>
-                          {payment.failureReason && (
+                          {payment.failure_reason && (
                             <p className="text-sm text-red-600 dark:text-red-400">
-                              {payment.failureReason}
+                              {payment.failure_reason}
                             </p>
                           )}
                         </div>
@@ -499,7 +721,7 @@ export default function PaymentSettingsPage() {
                       </td>
                       <td className="py-4 px-6">
                         <span className="font-medium text-primary-900 dark:text-white">
-                          R$ {payment.amount.toFixed(2)}
+                          {paymentService.formatCurrency(payment.amount, payment.currency)}
                         </span>
                       </td>
                       <td className="py-4 px-6">
@@ -507,14 +729,19 @@ export default function PaymentSettingsPage() {
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-2">
-                          {payment.invoice && (
+                          {payment.invoice_id && (
                             <Button 
                               variant="ghost" 
                               size="sm" 
                               title="Baixar Fatura"
-                              onClick={() => toast.success('DOWNLOAD DO RELATÓRIO INICIADO!', { icon: '📥' })}
+                              onClick={() => handleDownloadInvoice(payment.invoice_id!)}
+                              disabled={loadingAction === 'downloading-invoice'}
                             >
-                              <Download className="w-4 h-4" />
+                              {loadingAction === 'downloading-invoice' ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                              ) : (
+                                <Download className="w-4 h-4" />
+                              )}
                             </Button>
                           )}
                           <Button
@@ -531,7 +758,8 @@ export default function PaymentSettingsPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -649,13 +877,15 @@ export default function PaymentSettingsPage() {
                   CANCELAR OPERAÇÃO
                 </Button>
                 <Button 
-                  className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
-                  onClick={() => {
-                    toast.success('ARMAMENTO ADICIONADO AO ARSENAL!', { icon: '⚔️' });
-                    setShowAddCardModal(false);
-                  }}
+                  className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider disabled:opacity-50"
+                  onClick={handleAddPaymentMethod}
+                  disabled={loadingAction === 'adding-card'}
                 >
-                  <Save className="w-4 h-4" />
+                  {loadingAction === 'adding-card' ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
                   ADICIONAR ARMAMENTO
                 </Button>
               </div>
@@ -695,7 +925,8 @@ export default function PaymentSettingsPage() {
                     </label>
                     <input
                       type="text"
-                      defaultValue={billingAddress.name}
+                      value={billingForm.name}
+                      onChange={(e) => setBillingForm(prev => ({ ...prev, name: e.target.value }))}
                       className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white"
                     />
                   </div>
@@ -705,7 +936,8 @@ export default function PaymentSettingsPage() {
                     </label>
                     <input
                       type="email"
-                      defaultValue={billingAddress.email}
+                      value={billingForm.email}
+                      onChange={(e) => setBillingForm(prev => ({ ...prev, email: e.target.value }))}
                       className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white"
                     />
                   </div>
@@ -717,7 +949,8 @@ export default function PaymentSettingsPage() {
                   </label>
                   <input
                     type="text"
-                    defaultValue={billingAddress.line1}
+                    value={billingForm.line1}
+                    onChange={(e) => setBillingForm(prev => ({ ...prev, line1: e.target.value }))}
                     className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white"
                   />
                 </div>
@@ -728,7 +961,8 @@ export default function PaymentSettingsPage() {
                   </label>
                   <input
                     type="text"
-                    defaultValue={billingAddress.line2}
+                    value={billingForm.line2 || ''}
+                    onChange={(e) => setBillingForm(prev => ({ ...prev, line2: e.target.value }))}
                     className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white"
                   />
                 </div>
@@ -740,7 +974,8 @@ export default function PaymentSettingsPage() {
                     </label>
                     <input
                       type="text"
-                      defaultValue={billingAddress.city}
+                      value={billingForm.city}
+                      onChange={(e) => setBillingForm(prev => ({ ...prev, city: e.target.value }))}
                       className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white"
                     />
                   </div>
@@ -749,7 +984,8 @@ export default function PaymentSettingsPage() {
                       ESTADO OPERACIONAL
                     </label>
                     <select
-                      defaultValue={billingAddress.state}
+                      value={billingForm.state}
+                      onChange={(e) => setBillingForm(prev => ({ ...prev, state: e.target.value }))}
                       className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white"
                     >
                       <option value="SP">São Paulo</option>
@@ -766,7 +1002,8 @@ export default function PaymentSettingsPage() {
                   </label>
                   <input
                     type="text"
-                    defaultValue={billingAddress.postal_code}
+                    value={billingForm.postal_code}
+                    onChange={(e) => setBillingForm(prev => ({ ...prev, postal_code: e.target.value }))}
                     className="w-full px-4 py-2 border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white"
                   />
                 </div>
@@ -781,13 +1018,15 @@ export default function PaymentSettingsPage() {
                   CANCELAR MISSÃO
                 </Button>
                 <Button 
-                  className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
-                  onClick={() => {
-                    toast.success('BASE DE OPERAÇÕES CONFIGURADA!', { icon: '🏠' });
-                    setShowBillingModal(false);
-                  }}
+                  className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider disabled:opacity-50"
+                  onClick={handleUpdateBillingAddress}
+                  disabled={loadingAction === 'updating-billing'}
                 >
-                  <Save className="w-4 h-4" />
+                  {loadingAction === 'updating-billing' ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
                   CONFIRMAR BASE
                 </Button>
               </div>
