@@ -1,4 +1,4 @@
-import apiConfig from '@/config/api';
+import { API_BASE_URL } from '@/config/api';
 
 export interface LessonProgress {
   id?: string;
@@ -61,7 +61,7 @@ export interface CourseProgress {
 }
 
 class CourseProgressService {
-  private apiUrl = apiConfig.baseURL;
+  private apiUrl = API_BASE_URL;
 
   /**
    * Atualizar progresso de uma aula
