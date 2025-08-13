@@ -8,7 +8,6 @@ import {
   BookOpen,
   Scale,
   LogOut,
-  ChevronLeft,
   Settings,
   Menu,
   X,
@@ -153,10 +152,6 @@ export default function AdminLayout() {
     navigate('/login');
   };
 
-  const handleBackToStudent = () => {
-    navigate('/dashboard');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800">
       {/* Mobile Header */}
@@ -297,37 +292,6 @@ export default function AdminLayout() {
                     'hover:bg-gray-800 dark:hover:bg-gray-800',
                     isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-start gap-3 px-3 py-2.5'
                   )}
-                  onClick={handleBackToStudent}
-                >
-                  <ChevronLeft className="w-5 h-5 flex-shrink-0" />
-                  {!isCollapsed && (
-                    <motion.span 
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: "auto" }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="font-medium whitespace-nowrap overflow-hidden font-police-body uppercase tracking-wider text-sm"
-                    >
-                      VOLTAR AO PORTAL
-                    </motion.span>
-                  )}
-                </Button>
-                {isCollapsed && (
-                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 border border-gray-600">
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-800"></div>
-                    <span className="font-police-body font-semibold uppercase tracking-wider">VOLTAR AO PORTAL</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="relative group">
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    'w-full flex items-center rounded-lg transition-all',
-                    'hover:bg-gray-800 dark:hover:bg-gray-800',
-                    isCollapsed ? 'justify-center px-2 py-2.5' : 'justify-start gap-3 px-3 py-2.5'
-                  )}
                   onClick={() => navigate('/admin/settings')}
                 >
                   <Settings className="w-5 h-5 flex-shrink-0" />
@@ -438,15 +402,6 @@ export default function AdminLayout() {
               </div>
               <div className="flex items-center gap-4">
                 <ThemeToggle />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleBackToStudent}
-                  className="gap-2 text-gray-300 hover:text-white hover:bg-gray-800 font-police-body font-semibold uppercase tracking-wider"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  PORTAL DO ALUNO
-                </Button>
               </div>
             </div>
           </header>
