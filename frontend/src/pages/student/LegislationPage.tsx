@@ -111,12 +111,12 @@ const categories = ['Todos', 'Direito Constitucional', 'Direito Penal', 'Direito
 const types = ['Todos', 'Lei', 'Decreto', 'Medida Provisória', 'Constituição', 'Código', 'Estatuto'];
 const statuses = ['Todos', 'Vigente', 'Revogada', 'Alterada'];
 
-export default function LegislationPage() {
-  // Estados principais
-  useEffect(() => {
-    // TODO: Implementar carregamento da API
-    console.log('LegislationPage: Integração com API em desenvolvimento');
-  }, []);
+// Dados mockados da Constituição
+const mockLegislationData = [
+  {
+    id: '1',
+    number: 'I',
+    title: 'Dos Princípios Fundamentais',
     articles: [
       {
         id: '1',
@@ -162,10 +162,6 @@ export default function LegislationPage() {
     ]
   }
 ];
-
-const categories = ['Todos', 'Direito Constitucional', 'Direito Penal', 'Direito Administrativo', 'Direito Civil', 'Direito do Trabalho'];
-const types = ['Todos', 'Lei', 'Decreto', 'Medida Provisória', 'Constituição', 'Código', 'Estatuto'];
-const statuses = ['Todos', 'Vigente', 'Revogada', 'Alterada'];
 
 // Comentários mockados por capítulo
 const mockChapterComments: { [key: string]: Comment[] } = {
