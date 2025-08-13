@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_BASE_URL } from '@/config/api';
 import {
   Settings,
   User,
@@ -60,6 +61,21 @@ import { Badge } from '@/components/ui/Badge';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useProfileStore } from '@/store/profileStore';
 import { useToast } from '@/contexts/ToastContext';
+
+// Helper function to build full image URLs
+const getImageUrl = (path: string | undefined | null): string => {
+  if (!path) return '';
+  // If it's already a full URL, return as is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  // If it starts with /uploads, prepend the API base URL
+  if (path.startsWith('/uploads/')) {
+    return `${API_BASE_URL}${path}`;
+  }
+  // Otherwise return as is (for relative paths like /logo.png)
+  return path;
+};
 
 export default function AdminSettings() {
   const { settings, isLoading, error, fetchSettings, updateGeneralSettings, updateCompanySettings, updateBrandSettings, updateSocialSettings, uploadLogo, clearError } = useSettingsStore();
@@ -844,7 +860,7 @@ export default function AdminSettings() {
                     </label>
                     <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center">
                       {formData.brand?.brand_logo_light ? (
-                        <img src={formData.brand.brand_logo_light} alt="Logo Light" className="max-h-20 mx-auto mb-2" />
+                        <img src={getImageUrl(formData.brand.brand_logo_light)} alt="Logo Light" className="max-h-20 mx-auto mb-2" />
                       ) : (
                         <ImageIcon className="w-12 h-12 mx-auto text-gray-400 mb-2" />
                       )}
@@ -867,7 +883,7 @@ export default function AdminSettings() {
                     </label>
                     <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center">
                       {formData.brand?.brand_logo_dark ? (
-                        <img src={formData.brand.brand_logo_dark} alt="Logo Dark" className="max-h-20 mx-auto mb-2" />
+                        <img src={getImageUrl(formData.brand.brand_logo_dark)} alt="Logo Dark" className="max-h-20 mx-auto mb-2" />
                       ) : (
                         <ImageIcon className="w-12 h-12 mx-auto text-gray-400 mb-2" />
                       )}
