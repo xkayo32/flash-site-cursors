@@ -154,46 +154,6 @@ export default function SettingsPage() {
   });
   const user = useAuthStore((state) => state.user);
 
-  // Carregar configurações na montagem do componente
-  useEffect(() => {
-    loadUserSettings();
-  }, []);
-
-  // Loading state
-  if (isLoadingData) {
-    return (
-      <div className="p-6">
-        <PageHeader
-          title="CENTRO DE COMANDO"
-          subtitle="GERENCIE SUAS CONFIGURAÇÕES OPERACIONAIS"
-          icon={Settings}
-          breadcrumbs={[
-            { label: 'PAINEL DE COMANDO', href: '/student/dashboard' },
-            { label: 'CONFIGURAÇÕES' }
-          ]}
-        />
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-500 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase">CARREGANDO CONFIGURAÇÕES...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Sections do menu
-  const sections = [
-    { id: 'account', label: 'DADOS DO AGENTE', icon: User },
-    { id: 'security', label: 'SEGURANÇA', icon: ShieldCheck },
-    { id: 'notifications', label: 'COMUNICAÇÕES', icon: Bell },
-    { id: 'privacy', label: 'PRIVACIDADE', icon: Shield },
-    { id: 'appearance', label: 'INTERFACE', icon: Monitor },
-    { id: 'study', label: 'TREINAMENTO', icon: Target },
-    { id: 'data', label: 'INTELIGÊNCIA', icon: Activity },
-    { id: 'help', label: 'SUPORTE TÁTICO', icon: HelpCircle }
-  ];
-
   // Carregar configurações do usuário
   const loadUserSettings = async () => {
     try {
@@ -221,6 +181,46 @@ export default function SettingsPage() {
       setIsLoadingData(false);
     }
   };
+
+  // Carregar configurações na montagem do componente
+  useEffect(() => {
+    loadUserSettings();
+  }, []);
+
+  // Loading state
+  if (isLoadingData) {
+    return (
+      <div className="p-6">
+        <PageHeader
+          title="CENTRO DE COMANDO"
+          subtitle="GERENCIE SUAS CONFIGURAÇÕES OPERACIONAIS"
+          icon={Settings}
+          breadcrumbs={[
+            { label: 'PAINEL DE COMANDO', href: '/dashboard' },
+            { label: 'CONFIGURAÇÕES' }
+          ]}
+        />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-500 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase">CARREGANDO CONFIGURAÇÕES...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Sections do menu
+  const sections = [
+    { id: 'account', label: 'DADOS DO AGENTE', icon: User },
+    { id: 'security', label: 'SEGURANÇA', icon: ShieldCheck },
+    { id: 'notifications', label: 'COMUNICAÇÕES', icon: Bell },
+    { id: 'privacy', label: 'PRIVACIDADE', icon: Shield },
+    { id: 'appearance', label: 'INTERFACE', icon: Monitor },
+    { id: 'study', label: 'TREINAMENTO', icon: Target },
+    { id: 'data', label: 'INTELIGÊNCIA', icon: Activity },
+    { id: 'help', label: 'SUPORTE TÁTICO', icon: HelpCircle }
+  ];
 
   // Toggle notificação
   const toggleNotification = async (id: string, field?: 'enabled' | 'email' | 'push' | 'sms') => {
