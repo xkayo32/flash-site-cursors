@@ -1,4 +1,4 @@
-import { api } from '@/config/api';
+import api from './api';
 
 // Types
 export type MockExamType = 'AUTOMATIC' | 'MANUAL' | 'RANDOM';
