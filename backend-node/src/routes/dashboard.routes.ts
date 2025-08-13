@@ -356,8 +356,11 @@ router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void =
     const accuracyRate = questionsAnswered > 0 ? Math.round((correctAnswers / questionsAnswered) * 100) : 0;
     const flashcardsReviewed = userFlashcards.reduce((total: number, f: any) => total + (f.reviews || 0), 0);
 
-    // Calculate study streak (mock for now)
-    const studyStreak = Math.floor(Math.random() * 30) + 1;
+    // Calculate study streak based on user login activity
+    const today = new Date();
+    const lastLogin = new Date(currentUser.lastLogin || currentUser.createdAt);
+    const daysDiff = Math.floor((today.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24));
+    const studyStreak = Math.max(1, Math.min(daysDiff, 30)); // Max 30 days, min 1
 
     // Get enrolled courses
     const enrolledCourses = courses.filter((c: any) => 
@@ -366,40 +369,59 @@ router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void =
       id: course.id,
       name: course.name,
       category: course.category || 'Geral',
-      progress: Math.floor(Math.random() * 100), // Mock progress
+      progress: Math.min(100, Math.round((userQuestions.filter(q => q.courseId === course.id).length / Math.max(1, course.totalLessons || 10)) * 100)), // Real progress based on completed questions
       totalQuestions: questions.filter((q: any) => q.courseId === course.id).length,
       totalFlashcards: flashcards.filter((f: any) => f.courseId === course.id).length,
       enrolledAt: course.createdAt || new Date().toISOString(),
       thumbnail: course.thumbnail || null
     }));
 
-    // Recent activities
-    const recentActivities = [
-      {
-        id: 1,
+    // Recent activities based on real data
+    const recentActivities = [];
+    
+    // Add recent question activities
+    const recentQuestions = userQuestions
+      .sort((a, b) => new Date(b.createdAt || b.answeredAt || '').getTime() - new Date(a.createdAt || a.answeredAt || '').getTime())
+      .slice(0, 2);
+    
+    recentQuestions.forEach((q, index) => {
+      recentActivities.push({
+        id: `q-${index}`,
         type: 'questions',
-        title: 'Completou 25 exercícios de Direito Constitucional',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        score: accuracyRate,
+        title: `Exercício: ${q.title || q.question?.substring(0, 50) || 'Questão tática'}...`,
+        timestamp: q.createdAt || q.answeredAt || new Date().toISOString(),
+        score: q.correct ? 100 : 0,
         icon: 'crosshair'
-      },
-      {
-        id: 2,
+      });
+    });
+    
+    // Add recent flashcard activities
+    const recentFlashcards = userFlashcards
+      .sort((a, b) => new Date(b.updatedAt || '').getTime() - new Date(a.updatedAt || '').getTime())
+      .slice(0, 1);
+    
+    recentFlashcards.forEach((f, index) => {
+      recentActivities.push({
+        id: `f-${index}`,
         type: 'flashcards',
-        title: 'Revisou 30 cartões táticos de Português',
-        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-        score: 100,
+        title: `Flashcard: ${f.front?.substring(0, 50) || 'Cartão tático'}...`,
+        timestamp: f.updatedAt || new Date().toISOString(),
+        score: Math.round(((f.correctCount || 0) / Math.max(1, f.reviews || 1)) * 100),
         icon: 'brain'
-      },
-      {
-        id: 3,
-        type: 'exam',
-        title: 'Completou simulação de Direito Penal',
-        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        score: 85,
-        icon: 'trophy'
-      }
-    ];
+      });
+    });
+    
+    // If no recent activities, add a placeholder
+    if (recentActivities.length === 0) {
+      recentActivities.push({
+        id: 'welcome',
+        type: 'system',
+        title: 'Bem-vindo ao sistema! Comece respondendo questões para ver suas atividades aqui.',
+        timestamp: new Date().toISOString(),
+        score: 0,
+        icon: 'star'
+      });
+    }
 
     // Daily goals
     const dailyGoals = [
@@ -420,7 +442,7 @@ router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void =
       {
         id: 3,
         task: 'TREINAR POR 4 HORAS',
-        completed: Math.random() * 4,
+        completed: Math.min(4, (questionsAnswered * 0.05) + (flashcardsReviewed * 0.02)), // Estimate study time based on activities
         total: 4,
         type: 'study_time'
       },
@@ -433,14 +455,29 @@ router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void =
       }
     ];
 
-    // Subject performance
-    const subjectPerformance = [
-      { subject: 'DIREITO CONSTITUCIONAL', accuracy: Math.floor(Math.random() * 40) + 60, questions: Math.floor(Math.random() * 200) + 50 },
-      { subject: 'DIREITO ADMINISTRATIVO', accuracy: Math.floor(Math.random() * 40) + 60, questions: Math.floor(Math.random() * 200) + 50 },
-      { subject: 'DIREITO PENAL', accuracy: Math.floor(Math.random() * 40) + 50, questions: Math.floor(Math.random() * 200) + 50 },
-      { subject: 'PORTUGUÊS TÁTICO', accuracy: Math.floor(Math.random() * 40) + 70, questions: Math.floor(Math.random() * 200) + 50 },
-      { subject: 'RACIOCÍNIO LÓGICO', accuracy: Math.floor(Math.random() * 40) + 55, questions: Math.floor(Math.random() * 200) + 50 }
-    ];
+    // Subject performance based on real data
+    const subjectStats = {};
+    userQuestions.forEach(q => {
+      const subject = q.subject || q.category || 'GERAL';
+      if (!subjectStats[subject]) {
+        subjectStats[subject] = { correct: 0, total: 0 };
+      }
+      subjectStats[subject].total++;
+      if (q.correct) subjectStats[subject].correct++;
+    });
+
+    const subjectPerformance = Object.entries(subjectStats).map(([subject, stats]: [string, any]) => ({
+      subject: subject.toUpperCase(),
+      accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
+      questions: stats.total
+    }));
+
+    // Add default subjects if no data available
+    if (subjectPerformance.length === 0) {
+      subjectPerformance.push(
+        { subject: 'GERAL', accuracy: 0, questions: 0 }
+      );
+    }
 
     // Upcoming events
     const upcomingEvents = [
@@ -450,7 +487,7 @@ router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void =
         date: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(),
         daysLeft: 45,
         type: 'exam',
-        progress: Math.floor(Math.random() * 40) + 60
+        progress: Math.min(100, accuracyRate)
       },
       {
         id: 2,
@@ -495,7 +532,7 @@ router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void =
           accuracyRate,
           flashcardsReviewed,
           studyStreak,
-          totalStudyTime: Math.floor(Math.random() * 5000) + 1000, // minutes
+          totalStudyTime: (questionsAnswered * 3) + (flashcardsReviewed * 1), // Estimate in minutes based on activities
         },
         courses: enrolledCourses,
         recentActivities,
@@ -503,14 +540,18 @@ router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void =
         subjectPerformance,
         upcomingEvents,
         studyTips,
-        // Additional progress data
-        editalProgress: [
-          { materia: 'DIREITO CONSTITUCIONAL', total: 120, concluido: Math.floor(Math.random() * 60) + 60, porcentagem: 74 },
-          { materia: 'DIREITO ADMINISTRATIVO', total: 95, concluido: Math.floor(Math.random() * 50) + 45, porcentagem: 71 },
-          { materia: 'DIREITO PENAL', total: 110, concluido: Math.floor(Math.random() * 70) + 40, porcentagem: 53 },
-          { materia: 'PORTUGUÊS TÁTICO', total: 80, concluido: Math.floor(Math.random() * 20) + 60, porcentagem: 90 },
-          { materia: 'RACIOCÍNIO LÓGICO', total: 60, concluido: Math.floor(Math.random() * 30) + 30, porcentagem: 63 }
-        ],
+        // Additional progress data based on subject performance
+        editalProgress: subjectPerformance.map(subject => {
+          const completed = subject.questions;
+          const total = Math.max(completed, 50); // Minimum total for percentage calculation
+          const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+          return {
+            materia: subject.subject,
+            total: total,
+            concluido: completed,
+            porcentagem: Math.min(100, percentage)
+          };
+        }),
         // User groups (esquadrões)
         userGroups: [
           {
