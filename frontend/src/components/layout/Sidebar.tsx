@@ -38,7 +38,7 @@ import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Logo } from '@/components/ui/Logo';
+import { StudyProLogo } from '@/components/ui/StudyProLogo';
 
 const menuItems = [
   { icon: Command, label: 'COMANDO CENTRAL', path: '/dashboard' },
@@ -165,10 +165,9 @@ export function Sidebar() {
             isOpen ? "justify-between" : "justify-center"
           )}>
             <div className="flex items-center">
-              <Logo 
+              <StudyProLogo 
                 variant={isOpen ? "full" : "icon"} 
                 size="sm" 
-                animated={true} 
                 className="flex-shrink-0"
               />
             </div>

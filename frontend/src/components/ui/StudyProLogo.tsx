@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import LogoColorida from '@/assets/Logo_colorida_2.png';
-import { useSystemSettings } from '@/hooks/useSystemSettings';
+import { useThemedLogo, useLogoSettings } from '@/hooks/useLogoSettings';
 
 interface StudyProLogoProps {
   className?: string;
@@ -15,7 +15,9 @@ export const StudyProLogo: React.FC<StudyProLogoProps> = ({
   size = 'md' 
 }) => {
   const { resolvedTheme } = useTheme();
-  const { systemLogo, systemName } = useSystemSettings();
+  const themedLogo = useThemedLogo();
+  const { siteName, isLoading } = useLogoSettings();
+  
   const sizes = {
     sm: { width: 120, height: 40, iconSize: 32 },
     md: { width: 160, height: 50, iconSize: 40 },
@@ -25,8 +27,8 @@ export const StudyProLogo: React.FC<StudyProLogoProps> = ({
 
   const { width, height, iconSize } = sizes[size];
   
-  // Usar logo customizada se configurada, senão usar a padrão
-  const logoSrc = systemLogo || LogoColorida;
+  // Usar logo configurada no sistema, com fallback para a logo padrão
+  const logoSrc = themedLogo || LogoColorida;
 
   if (variant === 'icon') {
     return (
@@ -58,7 +60,7 @@ export const StudyProLogo: React.FC<StudyProLogoProps> = ({
             color: resolvedTheme === 'dark' ? '#ffffff' : '#000000'
           }}
         >
-          {systemName.toUpperCase()}
+          {siteName.toUpperCase()}
         </span>
       </div>
     </div>
