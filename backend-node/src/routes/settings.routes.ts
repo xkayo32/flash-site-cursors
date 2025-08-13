@@ -2,9 +2,41 @@ import { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
+import multer from 'multer';
 import { optionalAuth, requireAuth, AuthRequest } from '../middleware/auth.middleware';
 
 const router = Router();
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadsDir = path.join(__dirname, '../../uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'logo-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|svg/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Apenas imagens são permitidas (jpeg, jpg, png, gif, svg)'));
+    }
+  }
+});
 
 // Settings file paths
 const settingsPath = path.join(__dirname, '../../data/settings.json');
@@ -361,8 +393,8 @@ router.put('/password', requireAuth, async (req: AuthRequest, res) => {
   }
 });
 
-// Logo upload endpoint
-router.post('/logo', requireAuth, async (req: AuthRequest, res) => {
+// Logo upload endpoint with file upload
+router.post('/logo', requireAuth, upload.single('logo'), async (req: any, res) => {
   try {
     // Check if user is admin
     if (req.user?.role !== 'admin') {
@@ -372,14 +404,22 @@ router.post('/logo', requireAuth, async (req: AuthRequest, res) => {
       });
     }
 
-    // For now, we'll just accept the logo data and save the path
-    // In a real implementation, you would handle file upload with multer
-    const { type, data } = req.body; // type: 'light' | 'dark', data: base64 or url
-    
-    if (!type || !data) {
+    // Check if file was uploaded
+    if (!req.file) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Tipo e dados da logo são obrigatórios' 
+        message: 'Arquivo de imagem é obrigatório' 
+      });
+    }
+
+    // Get type from form data
+    const type = req.body.type;
+    if (!type || (type !== 'light' && type !== 'dark')) {
+      // Delete uploaded file if type is invalid
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Tipo de logo inválido. Use "light" ou "dark"' 
       });
     }
 
@@ -389,16 +429,23 @@ router.post('/logo', requireAuth, async (req: AuthRequest, res) => {
       settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
     }
 
+    // Build URL for the uploaded file
+    const logoUrl = `/uploads/${req.file.filename}`;
+
+    // Delete old logo file if exists
+    const oldLogoPath = type === 'light' ? settings.brand.brand_logo_light : settings.brand.brand_logo_dark;
+    if (oldLogoPath && oldLogoPath.startsWith('/uploads/')) {
+      const oldFilePath = path.join(__dirname, '../..', oldLogoPath);
+      if (fs.existsSync(oldFilePath)) {
+        fs.unlinkSync(oldFilePath);
+      }
+    }
+
     // Update logo path based on type
     if (type === 'light') {
-      settings.brand.brand_logo_light = data;
-    } else if (type === 'dark') {
-      settings.brand.brand_logo_dark = data;
+      settings.brand.brand_logo_light = logoUrl;
     } else {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Tipo de logo inválido. Use "light" ou "dark"' 
-      });
+      settings.brand.brand_logo_dark = logoUrl;
     }
 
     // Save settings
@@ -407,13 +454,19 @@ router.post('/logo', requireAuth, async (req: AuthRequest, res) => {
     res.json({
       success: true,
       message: 'Logo atualizada com sucesso',
-      logoUrl: data
+      logoUrl: logoUrl
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error uploading logo:', error);
+    
+    // Delete uploaded file if error occurred
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+    
     res.status(500).json({ 
       success: false, 
-      message: 'Erro ao fazer upload da logo' 
+      message: error.message || 'Erro ao fazer upload da logo' 
     });
   }
 });
