@@ -399,6 +399,22 @@ export default function DashboardPage() {
     }
   };
 
+  // Função para obter tooltips explicativos dos cards
+  const getGoalTooltip = (goal: any) => {
+    switch (goal.type) {
+      case 'questions':
+        return 'EXERCÍCIOS TÁTICOS: Complete questões de concursos para treinar seus conhecimentos. Meta diária recomendada para manter o ritmo de estudos.';
+      case 'flashcards':
+        return 'CARTÕES TÁTICOS: Revise flashcards para fixar conceitos importantes. O sistema de repetição espaçada otimiza sua memorização.';
+      case 'study_time':
+        return 'TEMPO DE TREINO: Dedique tempo aos estudos para construir disciplina. Inclui aulas, exercícios e revisões. Meta em horas.';
+      case 'simulation':
+        return 'SIMULAÇÃO TÁTICA: Execute simulados para testar seus conhecimentos em condições reais de prova. Essencial para aprovação.';
+      default:
+        return 'OBJETIVO OPERACIONAL: Complete esta meta diária para manter seu progresso nos estudos.';
+    }
+  };
+
   return (
     <motion.div
       variants={containerVariants}
@@ -606,13 +622,22 @@ export default function DashboardPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.1 }}
                         whileHover={{ scale: 1.02 }}
-                        className="relative"
+                        className="relative group"
                       >
                         <div className={`p-4 rounded-xl border-2 transition-all duration-300 relative overflow-hidden ${
                           isCompleted 
                             ? `border-green-300 dark:border-green-600 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 shadow-green-100` 
                             : `${goal.borderColor} bg-gradient-to-br ${goal.bgGradient} hover:shadow-lg`
                         } shadow-lg hover:shadow-xl`}>
+                          
+                          {/* Tooltip explicativo */}
+                          <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full z-50 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
+                            <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg px-3 py-2 max-w-80 text-center shadow-xl border border-gray-200 dark:border-gray-600 leading-relaxed">
+                              {getGoalTooltip(goal)}
+                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+                            </div>
+                          </div>
+                          
                           {/* Efeito de confete para metas concluídas */}
                           {isCompleted && (
                             <div className="absolute inset-0 opacity-20">
@@ -649,7 +674,10 @@ export default function DashboardPage() {
                           
                           <div className="flex items-center justify-between text-sm mb-3">
                             <span className="font-police-numbers font-medium text-gray-700 dark:text-gray-300">
-                              {goal.completed}/{goal.total}
+                              {goal.type === 'study_time' 
+                                ? `${parseFloat(goal.completed).toFixed(2)}/${goal.total}` 
+                                : `${Math.round(goal.completed)}/${goal.total}`
+                              }
                             </span>
                             <span className={`font-police-numbers font-bold px-2 py-1 rounded-full text-xs ${
                               isCompleted 
