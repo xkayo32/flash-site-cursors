@@ -252,7 +252,7 @@ export default function DashboardPage() {
       icon: Flame,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
-      progress: (stats.studyStreak / 30) * 100,
+      progress: Math.round((stats.studyStreak / 30) * 100),
       change: '+1',
       trend: 'up' as const,
     },
@@ -570,7 +570,7 @@ export default function DashboardPage() {
                       />
                     </div>
                     <span className="absolute right-0 -top-6 text-xs font-police-numbers font-medium text-gray-700 dark:text-gray-300">
-                      {stat.progress}%
+                      {Math.round(stat.progress)}%
                     </span>
                   </div>
                 </CardContent>
