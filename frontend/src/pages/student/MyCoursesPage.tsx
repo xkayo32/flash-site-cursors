@@ -64,27 +64,37 @@ interface EnrolledCourse {
 // Função para transformar dados da API de enrollment
 const transformEnrolledCourseFromAPI = (enrollment: any): EnrolledCourse => {
   const course = enrollment.course || enrollment;
-  const progress = enrollment.enrollment?.progress || enrollment.progress || 0;
+  
+  // Garantir que progress seja sempre um número
+  let progressValue = 0;
+  if (typeof enrollment.enrollment?.progress === 'number') {
+    progressValue = enrollment.enrollment.progress;
+  } else if (typeof enrollment.progress === 'number') {
+    progressValue = enrollment.progress;
+  } else if (typeof enrollment.progress === 'object' && enrollment.progress?.percentage !== undefined) {
+    progressValue = enrollment.progress.percentage;
+  }
+  
   const totalLessons = course.stats?.lessons || Math.floor(Math.random() * 50) + 20;
-  const completedLessons = Math.floor((progress / 100) * totalLessons);
+  const completedLessons = Math.floor((progressValue / 100) * totalLessons);
   
   return {
     id: course.id,
     title: course.title?.toUpperCase() || 'OPERAÇÃO SEM NOME',
     instructor: course.instructor?.name?.toUpperCase() || 'COMANDANTE DESIGNADO',
     thumbnail: course.thumbnail || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=400&h=250&fit=crop',
-    progress,
+    progress: progressValue,
     totalLessons,
     completedLessons,
     lastAccessed: enrollment.enrollment?.last_accessed || enrollment.lastAccessed || new Date().toISOString().split('T')[0],
     nextLesson: {
       id: `${completedLessons + 1}`,
-      title: progress === 100 ? 'MISSÃO CONCLUÍDA!' : `PRÓXIMO BRIEFING - MÓDULO ${Math.floor(completedLessons / 10) + 1}`,
-      duration: progress === 100 ? '' : '30min'
+      title: progressValue === 100 ? 'MISSÃO CONCLUÍDA!' : `PRÓXIMO BRIEFING - MÓDULO ${Math.floor(completedLessons / 10) + 1}`,
+      duration: progressValue === 100 ? '' : '30min'
     },
     certificate: {
-      available: progress >= 100,
-      earnedAt: progress >= 100 ? enrollment.completion_date?.split('T')[0] : undefined
+      available: progressValue >= 100,
+      earnedAt: progressValue >= 100 ? enrollment.completion_date?.split('T')[0] : undefined
     },
     category: course.category?.toUpperCase() || 'GERAL',
     duration: `${course.duration?.hours || Math.floor(Math.random() * 100) + 50}H OPERACIONAIS`,
