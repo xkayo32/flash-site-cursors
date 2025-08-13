@@ -361,4 +361,61 @@ router.put('/password', requireAuth, async (req: AuthRequest, res) => {
   }
 });
 
+// Logo upload endpoint
+router.post('/logo', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    // Check if user is admin
+    if (req.user?.role !== 'admin') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Apenas administradores podem fazer upload de logo' 
+      });
+    }
+
+    // For now, we'll just accept the logo data and save the path
+    // In a real implementation, you would handle file upload with multer
+    const { type, data } = req.body; // type: 'light' | 'dark', data: base64 or url
+    
+    if (!type || !data) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Tipo e dados da logo são obrigatórios' 
+      });
+    }
+
+    // Read current settings
+    let settings = defaultSettings;
+    if (fs.existsSync(settingsPath)) {
+      settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+    }
+
+    // Update logo path based on type
+    if (type === 'light') {
+      settings.brand.brand_logo_light = data;
+    } else if (type === 'dark') {
+      settings.brand.brand_logo_dark = data;
+    } else {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Tipo de logo inválido. Use "light" ou "dark"' 
+      });
+    }
+
+    // Save settings
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+
+    res.json({
+      success: true,
+      message: 'Logo atualizada com sucesso',
+      logoUrl: data
+    });
+  } catch (error) {
+    console.error('Error uploading logo:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Erro ao fazer upload da logo' 
+    });
+  }
+});
+
 export default router;

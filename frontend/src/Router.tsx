@@ -57,20 +57,27 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode;
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   
+  // Debug: Log de tentativas de acesso
+  console.log('ProtectedRoute - User:', user?.email, 'Role:', user?.role, 'Required:', requiredRole);
+  
   if (!isAuthenticated) {
+    console.log('ProtectedRoute - Redirecionando para login: usuário não autenticado');
     return <Navigate to="/login" replace />;
   }
   
   if (requiredRole && user?.role !== requiredRole) {
     // Se é admin tentando acessar rota de student, redireciona para admin
     if (user?.role === 'admin' && requiredRole === 'student') {
+      console.log('ProtectedRoute - Admin tentando acessar rota de student, redirecionando para admin dashboard');
       return <Navigate to="/admin/dashboard" replace />;
     }
     // Se é student tentando acessar rota de admin, redireciona para dashboard
     if (user?.role === 'student' && requiredRole === 'admin') {
+      console.log('ProtectedRoute - Student tentando acessar rota de admin, redirecionando para dashboard');
       return <Navigate to="/dashboard" replace />;
     }
     // Fallback
+    console.log('ProtectedRoute - Redirecionamento fallback para home');
     return <Navigate to="/" replace />;
   }
   
