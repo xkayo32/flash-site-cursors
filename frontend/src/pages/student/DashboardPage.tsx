@@ -159,6 +159,16 @@ export default function DashboardPage() {
     return path;
   };
 
+  // Helper to get user initials
+  const getUserInitials = (name: string | undefined): string => {
+    if (!name) return 'U';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
   const getCurrentTime = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'BOM DIA';
@@ -462,12 +472,23 @@ export default function DashboardPage() {
               
               {/* Avatar do usuário */}
               <div className="relative">
-                <img
-                  src={getImageUrl(dashboardData.user?.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(dashboardData.user?.name || 'User')}&background=14242f&color=fff`}
-                  alt={dashboardData.user?.name || 'Usuário'}
-                  className="w-12 h-12 lg:w-14 lg:h-14 rounded-full border-2 border-accent-500 hover:border-accent-600 transition-colors cursor-pointer shadow-lg"
-                  onClick={() => navigate('/settings')}
-                />
+                {dashboardData.user?.avatar && getImageUrl(dashboardData.user.avatar) ? (
+                  <img
+                    src={getImageUrl(dashboardData.user.avatar)!}
+                    alt={dashboardData.user?.name || 'Usuário'}
+                    className="w-12 h-12 lg:w-14 lg:h-14 rounded-full border-2 border-accent-500 hover:border-accent-600 transition-colors cursor-pointer shadow-lg object-cover"
+                    onClick={() => navigate('/settings')}
+                  />
+                ) : (
+                  <div
+                    className="w-12 h-12 lg:w-14 lg:h-14 rounded-full border-2 border-accent-500 hover:border-accent-600 transition-colors cursor-pointer shadow-lg bg-gradient-to-br from-[#14242f] to-gray-800 flex items-center justify-center"
+                    onClick={() => navigate('/settings')}
+                  >
+                    <span className="text-white font-police-title text-sm lg:text-base font-semibold">
+                      {getUserInitials(dashboardData.user?.name)}
+                    </span>
+                  </div>
+                )}
                 <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-gray-900 rounded-full shadow-sm"></div>
               </div>
             </div>
