@@ -596,7 +596,7 @@ export default function SettingsPage() {
                       <Button 
                         onClick={() => saveSettings('profile')} 
                         disabled={isLoading}
-                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black dark:text-black"
                       >
                         {isLoading ? (
                           <>SALVANDO...</>
@@ -741,7 +741,7 @@ export default function SettingsPage() {
                       <Button 
                         onClick={changePassword} 
                         disabled={isLoading}
-                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black dark:text-black"
                       >
                         <Lock className="w-4 h-4 mr-2" />
                         ALTERAR SENHA
@@ -988,7 +988,7 @@ export default function SettingsPage() {
                       <Button 
                         onClick={() => saveSettings('appearance')} 
                         disabled={isLoading}
-                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black dark:text-black"
                       >
                         <Monitor className="w-4 h-4 mr-2" />
                         APLICAR CONFIGURAÇÕES
@@ -1109,7 +1109,7 @@ export default function SettingsPage() {
                       <Button 
                         onClick={() => saveSettings('study')} 
                         disabled={isLoading}
-                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                        className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black dark:text-black"
                       >
                         <Target className="w-4 h-4 mr-2" />
                         SALVAR OBJETIVOS
@@ -1246,7 +1246,7 @@ export default function SettingsPage() {
                         Nossa equipe tática está disponível 24/7 para assistência
                       </p>
                       <Button 
-                        className="bg-accent-500 hover:bg-accent-600 text-black font-police-body uppercase tracking-wider"
+                        className="bg-accent-500 hover:bg-accent-600 text-black dark:text-black font-police-body uppercase tracking-wider"
                         onClick={() => toast.info('ABRINDO CANAL SEGURO...', { icon: '📡' })}
                       >
                         <Mail className="w-4 h-4 mr-2" />

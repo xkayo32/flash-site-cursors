@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -31,12 +32,13 @@ import {
   RotateCcw,
   Share2,
   Copy,
-  Send
+  Send,
+  Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Logo } from '@/components/ui/Logo';
+import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 
@@ -62,6 +64,12 @@ const FacebookIcon = () => (
 const TwitterIcon = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
     <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>
+  </svg>
+);
+
+const LinkedInIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
   </svg>
 );
 
@@ -194,6 +202,7 @@ const mockCourseData: CourseData = {
   ]
 };
 
+
 export default function CourseLearningPage() {
   const { courseId } = useParams();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -214,6 +223,8 @@ export default function CourseLearningPage() {
   const [showControls, setShowControls] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [shareButtonPosition, setShareButtonPosition] = useState({ top: 0, left: 0 });
+  const shareButtonRef = useRef<HTMLButtonElement>(null);
 
   const course = mockCourseData;
   
@@ -225,6 +236,20 @@ export default function CourseLearningPage() {
   const currentModule = course.modules.find(module =>
     module.lessons.some(lesson => lesson.id === currentLessonId)
   );
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showShareMenu && shareButtonRef.current && !shareButtonRef.current.contains(event.target as Node)) {
+        setShowShareMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showShareMenu]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -451,17 +476,17 @@ export default function CourseLearningPage() {
   const nextLesson = getNextLesson();
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-[#14242f] to-gray-900 text-white">
       {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700 px-4 py-3">
+      <header className="bg-gradient-to-r from-gray-900 via-[#14242f] to-gray-900 border-b border-accent-500/20 px-4 py-3 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/student/my-courses">
-              <Logo variant="icon" size="sm" className="text-white" />
+            <Link to="/my-courses">
+              <StudyProLogo variant="icon" size="sm" className="text-white" />
             </Link>
             <div className="hidden md:block">
-              <h1 className="text-lg font-semibold line-clamp-1">{course.title}</h1>
-              <p className="text-sm text-gray-400">{course.instructor}</p>
+              <h1 className="text-lg font-semibold line-clamp-1 font-police-title uppercase tracking-wider">{course.title}</h1>
+              <p className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider">COMANDANTE: {course.instructor}</p>
             </div>
           </div>
           
@@ -470,137 +495,67 @@ export default function CourseLearningPage() {
               variant="ghost"
               size="sm"
               onClick={() => setShowSidebar(!showSidebar)}
-              className="lg:hidden text-white hover:bg-gray-700"
+              className="lg:hidden text-white hover:bg-white/10 border border-accent-500/30"
             >
               {showSidebar ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
-            <div className="relative share-menu-container">
+            <div className="relative share-menu-container z-50">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-white hover:bg-gray-700"
-                onClick={() => setShowShareMenu(!showShareMenu)}
+                className="text-white hover:bg-white/10 border border-accent-500/30 font-police-body uppercase tracking-wider"
+                ref={shareButtonRef}
+                onClick={() => {
+                  if (!showShareMenu && shareButtonRef.current) {
+                    const rect = shareButtonRef.current.getBoundingClientRect();
+                    setShareButtonPosition({
+                      top: rect.bottom + window.scrollY + 8,
+                      left: rect.right - 224 + window.scrollX // 224px = w-56
+                    });
+                  }
+                  setShowShareMenu(!showShareMenu);
+                }}
               >
                 <Share2 className="w-4 h-4 mr-2" />
-                Compartilhar
+                COMPARTILHAR INTEL
                 <ChevronDown className={cn("w-4 h-4 ml-1 transition-transform", showShareMenu && "rotate-180")} />
               </Button>
-
-              {/* Menu de compartilhamento */}
-              {showShareMenu && (
-                <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                  <div className="px-3 py-2 text-xs font-medium text-gray-500 border-b">
-                    Compartilhar aula
-                  </div>
-                  
-                  {/* Compartilhamento nativo */}
-                  {'share' in navigator && (
-                    <button
-                      onClick={() => handleSharePlatform('native')}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <Share2 className="w-4 h-4 text-gray-500" />
-                      Compartilhamento do sistema
-                    </button>
-                  )}
-
-                  {/* WhatsApp */}
-                  <button
-                    onClick={() => handleSharePlatform('whatsapp')}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="text-green-500">
-                      <WhatsAppIcon />
-                    </div>
-                    WhatsApp
-                  </button>
-
-                  {/* Telegram */}
-                  <button
-                    onClick={() => handleSharePlatform('telegram')}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="text-blue-500">
-                      <TelegramIcon />
-                    </div>
-                    Telegram
-                  </button>
-
-                  {/* Facebook */}
-                  <button
-                    onClick={() => handleSharePlatform('facebook')}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="text-blue-600">
-                      <FacebookIcon />
-                    </div>
-                    Facebook
-                  </button>
-
-                  {/* Twitter/X */}
-                  <button
-                    onClick={() => handleSharePlatform('twitter')}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="text-black">
-                      <TwitterIcon />
-                    </div>
-                    X (Twitter)
-                  </button>
-
-                  {/* Instagram */}
-                  <button
-                    onClick={() => handleSharePlatform('instagram')}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="text-pink-500">
-                      <InstagramIcon />
-                    </div>
-                    Instagram
-                  </button>
-
-                  <div className="border-t border-gray-100 mt-1 pt-1">
-                    {/* Copiar link */}
-                    <button
-                      onClick={() => handleSharePlatform('copy')}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <Copy className="w-4 h-4 text-gray-500" />
-                      Copiar link
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
-            <Link to="/student/my-courses">
-              <Button variant="outline" size="sm" className="text-white border-gray-600 hover:bg-gray-700 hover:text-white">
-                Voltar aos cursos
+            <Link to="/my-courses">
+              <Button variant="outline" size="sm" className="text-white border-accent-500/30 hover:bg-white/10 hover:text-accent-500 font-police-body uppercase tracking-wider">
+                RETORNAR À BASE
               </Button>
             </Link>
           </div>
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex flex-1">
         {/* Sidebar com conteúdo do curso */}
         <div className={cn(
-          "lg:w-80 bg-gray-800 border-r border-gray-700 transition-all duration-300",
+          "lg:w-80 bg-gray-800/90 backdrop-blur-sm border-r border-accent-500/20 transition-all duration-300",
           showSidebar ? "w-80" : "w-0 lg:w-80",
           "fixed lg:relative inset-y-0 left-0 z-40 overflow-hidden"
         )}>
           <div className="h-full overflow-y-auto">
             {/* Progresso do curso */}
-            <div className="p-4 border-b border-gray-700">
+            <div className="p-4 border-b border-accent-500/20 relative">
+              {/* Tactical corner accent */}
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+              
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium font-police-body uppercase tracking-wider">PROGRESSO DA OPERAÇÃO</span>
-                <span className="text-sm text-gray-400">{course.progress}%</span>
+                <span className="text-sm font-medium font-police-body uppercase tracking-wider text-accent-500">PROGRESSO DA OPERAÇÃO</span>
+                <span className="text-sm text-accent-400 font-police-numbers font-bold">{course.progress}%</span>
               </div>
-              <div className="w-full bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-gray-700/50 rounded-full h-3 border border-accent-500/20">
                 <div
-                  className="bg-accent-500 h-full rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-accent-500 to-accent-600 h-full rounded-full transition-all duration-500 shadow-lg shadow-accent-500/20"
                   style={{ width: `${course.progress}%` }}
                 />
               </div>
+              
+              {/* Tactical stripe */}
+              <div className="absolute left-0 top-4 w-1 h-16 bg-accent-500/30" />
             </div>
 
             {/* Lista de módulos e aulas */}
@@ -609,11 +564,14 @@ export default function CourseLearningPage() {
                 <div key={module.id} className="mb-4">
                   <button
                     onClick={() => toggleModule(module.id)}
-                    className="w-full flex items-center justify-between p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                    className="w-full flex items-center justify-between p-3 bg-gray-700/70 border border-accent-500/20 rounded-lg hover:bg-gray-600/70 hover:border-accent-500/40 transition-all duration-300 relative group"
                   >
+                    {/* Tactical corner accent */}
+                    <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-accent-500/30 group-hover:border-accent-500/60 transition-colors" />
+                    
                     <div className="text-left">
-                      <h3 className="font-medium">{module.title}</h3>
-                      <p className="text-sm text-gray-400">{module.totalDuration}</p>
+                      <h3 className="font-medium font-police-subtitle uppercase tracking-wider text-white group-hover:text-accent-400 transition-colors">{module.title}</h3>
+                      <p className="text-sm text-gray-400 font-police-body">{module.totalDuration}</p>
                     </div>
                     {expandedModules.includes(module.id) ? (
                       <ChevronUp className="w-5 h-5" />
@@ -629,10 +587,10 @@ export default function CourseLearningPage() {
                           key={lesson.id}
                           onClick={() => goToLesson(lesson.id)}
                           className={cn(
-                            "w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors",
+                            "w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all duration-300 relative group border",
                             lesson.id === currentLessonId
-                              ? "bg-accent-500 text-black"
-                              : "hover:bg-gray-700"
+                              ? "bg-accent-500 text-black border-accent-600 shadow-lg shadow-accent-500/30"
+                              : "hover:bg-gray-700/50 border-gray-600/50 hover:border-accent-500/30"
                           )}
                         >
                           <div className="flex-shrink-0">
@@ -647,8 +605,8 @@ export default function CourseLearningPage() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-medium line-clamp-2">{lesson.title}</h4>
-                            <p className="text-sm text-gray-400">{lesson.duration}</p>
+                            <h4 className="font-medium line-clamp-2 font-police-body group-hover:text-accent-400 transition-colors">{lesson.title}</h4>
+                            <p className="text-sm text-gray-400 font-police-numbers">{lesson.duration}</p>
                           </div>
                         </button>
                       ))}
@@ -792,31 +750,36 @@ export default function CourseLearningPage() {
           </div>
 
           {/* Informações da aula */}
-          <div className="flex-1 bg-white text-gray-900 p-6">
+          <div className="flex-1 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white p-6">
             <div className="max-w-4xl mx-auto">
               {/* Cabeçalho da aula */}
               <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary">{currentModule?.title}</Badge>
-                    <Badge variant="outline">Aula {currentLessonId}</Badge>
+                    <Badge variant="secondary" className="bg-gray-800 text-accent-500 border-accent-500/20 font-police-subtitle uppercase tracking-wider">{currentModule?.title}</Badge>
+                    <Badge variant="outline" className="border-accent-500/30 text-accent-600 dark:text-accent-400 font-police-body uppercase tracking-wider">MISSÃO {currentLessonId}</Badge>
                   </div>
-                  <h1 className="text-2xl font-bold mb-2">{currentLesson?.title}</h1>
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {currentLesson?.duration}
+                  <h1 className="text-2xl font-bold mb-2 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">{currentLesson?.title}</h1>
+                  <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                    <span className="flex items-center gap-1 font-police-body uppercase tracking-wider">
+                      <Clock className="w-4 h-4 text-accent-500" />
+                      DURAÇÃO: {currentLesson?.duration}
                     </span>
-                    <span>Professor: {course.instructor}</span>
+                    <span className="font-police-body uppercase tracking-wider">COMANDANTE: {course.instructor}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={markLessonComplete}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={markLessonComplete}
+                    className="bg-accent-500 hover:bg-accent-600 text-black dark:text-black border-accent-600 font-police-body font-semibold uppercase tracking-wider"
+                  >
                     <CheckCircle className="w-4 h-4 mr-2" />
-                    CONCLUIR MISSÃO
+                    MISSÃO COMPLETA
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-400 hover:text-accent-500 hover:bg-white/10">
                     <Flag className="w-4 h-4" />
                   </Button>
                 </div>
@@ -824,19 +787,28 @@ export default function CourseLearningPage() {
 
               {/* Descrição da aula */}
               {currentLesson?.description && (
-                <Card className="mb-6">
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold mb-2 font-police-subtitle uppercase tracking-wider">BRIEFING DA MISSÃO</h3>
-                    <p className="text-gray-700">{currentLesson.description}</p>
+                <Card className="mb-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500">
+                  <CardContent className="p-4 relative">
+                    {/* Tactical corner accent */}
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+                    
+                    <h3 className="font-semibold mb-2 font-police-subtitle uppercase tracking-wider text-accent-500 flex items-center gap-2">
+                      <BookOpen className="w-5 h-5" />
+                      BRIEFING DA MISSÃO
+                    </h3>
+                    <p className="text-gray-700 dark:text-gray-300 font-police-body">{currentLesson.description}</p>
                   </CardContent>
                 </Card>
               )}
 
               {/* Recursos da aula */}
               {currentLesson?.resources && (
-                <Card className="mb-6">
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold mb-4 flex items-center gap-2 font-police-subtitle uppercase tracking-wider">
+                <Card className="mb-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500">
+                  <CardContent className="p-4 relative">
+                    {/* Tactical corner accent */}
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+                    
+                    <h3 className="font-semibold mb-4 flex items-center gap-2 font-police-subtitle uppercase tracking-wider text-accent-500">
                       <FileText className="w-5 h-5" />
                       ARSENAL DE APOIO
                     </h3>
@@ -845,12 +817,15 @@ export default function CourseLearningPage() {
                         <a
                           key={index}
                           href={resource.url}
-                          className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                          className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:border-accent-500/30 transition-all duration-300 relative group"
                         >
-                          <Download className="w-5 h-5 text-primary-600" />
+                          {/* Tactical stripe */}
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent-500/30 group-hover:bg-accent-500 transition-colors" />
+                          
+                          <Download className="w-5 h-5 text-accent-500 ml-2" />
                           <div>
-                            <p className="font-medium">{resource.title}</p>
-                            <p className="text-sm text-gray-600 capitalize">{resource.type}</p>
+                            <p className="font-medium font-police-body text-gray-900 dark:text-white group-hover:text-accent-500 transition-colors">{resource.title}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 capitalize font-police-body">{resource.type}</p>
                           </div>
                         </a>
                       ))}
@@ -865,7 +840,7 @@ export default function CourseLearningPage() {
                   <Button
                     variant="outline"
                     onClick={() => goToLesson(previousLesson.id)}
-                    className="gap-2"
+                    className="gap-2 border-accent-500/30 text-accent-600 dark:text-accent-400 hover:bg-white/10 hover:border-accent-500/60 font-police-body uppercase tracking-wider"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     MISSÃO ANTERIOR
@@ -877,13 +852,17 @@ export default function CourseLearningPage() {
                 {nextLesson ? (
                   <Button
                     onClick={() => goToLesson(nextLesson.id)}
-                    className="gap-2"
+                    className="gap-2 bg-accent-500 hover:bg-accent-600 dark:bg-accent-500 dark:hover:bg-accent-600 text-black dark:text-black font-police-body font-semibold uppercase tracking-wider"
                   >
                     PRÓXIMA MISSÃO
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 ) : (
-                  <Button variant="outline" disabled className="font-police-body font-semibold uppercase tracking-wider">
+                  <Button 
+                    variant="outline" 
+                    disabled 
+                    className="font-police-body font-semibold uppercase tracking-wider border-green-500/30 text-green-600 dark:text-green-400"
+                  >
                     OPERAÇÃO FINALIZADA!
                   </Button>
                 )}
@@ -899,6 +878,111 @@ export default function CourseLearningPage() {
           className="lg:hidden fixed inset-0 bg-black/50 z-30"
           onClick={() => setShowSidebar(false)}
         />
+      )}
+
+      {/* Portal para o dropdown de compartilhamento */}
+      {showShareMenu && createPortal(
+        <div 
+          className="fixed w-56 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 py-2"
+          style={{ 
+            zIndex: 999999, 
+            top: shareButtonPosition.top, 
+            left: shareButtonPosition.left,
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+            Compartilhar aula
+          </div>
+          
+          {/* Compartilhamento nativo */}
+          {'share' in navigator && (
+            <button
+              onClick={() => handleSharePlatform('native')}
+              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <Share2 className="w-4 h-4 text-gray-500" />
+              Compartilhamento do sistema
+            </button>
+          )}
+
+          {/* WhatsApp */}
+          <button
+            onClick={() => handleSharePlatform('whatsapp')}
+            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            <div className="text-green-500">
+              <WhatsAppIcon />
+            </div>
+            WhatsApp
+          </button>
+
+          {/* Telegram */}
+          <button
+            onClick={() => handleSharePlatform('telegram')}
+            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            <div className="text-blue-500">
+              <TelegramIcon />
+            </div>
+            Telegram
+          </button>
+
+          {/* Facebook */}
+          <button
+            onClick={() => handleSharePlatform('facebook')}
+            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            <div className="text-blue-500">
+              <FacebookIcon />
+            </div>
+            Facebook
+          </button>
+
+          {/* Twitter */}
+          <button
+            onClick={() => handleSharePlatform('twitter')}
+            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            <div className="text-blue-400">
+              <TwitterIcon />
+            </div>
+            Twitter
+          </button>
+
+          {/* LinkedIn */}
+          <button
+            onClick={() => handleSharePlatform('linkedin')}
+            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            <div className="text-blue-600">
+              <LinkedInIcon />
+            </div>
+            LinkedIn
+          </button>
+
+          <div className="border-t border-gray-200 dark:border-gray-700 my-2" />
+          
+          {/* Email */}
+          <button
+            onClick={() => handleSharePlatform('email')}
+            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            <Mail className="w-4 h-4 text-gray-500" />
+            Email
+          </button>
+
+          {/* Copiar link */}
+          <button
+            onClick={() => handleSharePlatform('copy')}
+            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            <Copy className="w-4 h-4 text-gray-500" />
+            Copiar link
+          </button>
+        </div>,
+        document.body
       )}
     </div>
   );

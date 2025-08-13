@@ -404,7 +404,7 @@ export default function SummariesPage() {
                       size="sm"
                       onClick={() => addReply(comment.id)}
                       disabled={!replyText.trim()}
-                      className="font-police-body uppercase bg-accent-500 hover:bg-accent-600 text-black"
+                      className="font-police-body uppercase bg-accent-500 hover:bg-accent-600 text-black dark:text-black"
                     >
                       <Send className="w-4 h-4 mr-1" />
                       RESPONDER
@@ -465,7 +465,7 @@ export default function SummariesPage() {
                 <Button
                   onClick={addComment}
                   disabled={!newComment.trim()}
-                  className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
+                  className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black dark:text-black"
                 >
                   <Send className="w-4 h-4 mr-2" />
                   ENVIAR COMENTÁRIO
@@ -855,7 +855,7 @@ export default function SummariesPage() {
             <Button variant="outline" size="sm" className="font-police-body uppercase">
               MARCAR CONCLUÍDO
             </Button>
-            <Button size="sm" className="gap-2 font-police-body uppercase bg-accent-500 hover:bg-accent-600 text-black">
+            <Button size="sm" className="gap-2 font-police-body uppercase bg-accent-500 hover:bg-accent-600 text-black dark:text-black">
               PRÓXIMA SEÇÃO
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -887,7 +887,7 @@ export default function SummariesPage() {
           </p>
           <Button 
             onClick={loadSummaries} 
-            className="bg-accent-500 hover:bg-accent-600 text-black font-police-body uppercase tracking-wider"
+            className="bg-accent-500 hover:bg-accent-600 text-black dark:text-black font-police-body uppercase tracking-wider"
           >
             TENTAR NOVAMENTE
           </Button>

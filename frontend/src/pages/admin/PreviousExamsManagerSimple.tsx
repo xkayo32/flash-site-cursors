@@ -107,7 +107,7 @@ export default function PreviousExamsManagerSimple() {
         <div className="flex gap-2">
           <button
             onClick={() => navigate('/admin/previous-exams/import')}
-            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider py-2 px-4 rounded-md transition-colors"
+            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black font-police-body font-semibold uppercase tracking-wider py-2 px-4 rounded-md transition-colors"
           >
             IMPORTAR ARQUIVO
           </button>
@@ -167,7 +167,7 @@ export default function PreviousExamsManagerSimple() {
                     <p className="text-red-500 dark:text-red-400 font-police-body uppercase tracking-wider">{error}</p>
                     <button 
                       onClick={loadExams}
-                      className="mt-2 bg-accent-500 hover:bg-accent-600 text-black text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-3 rounded transition-colors"
+                      className="mt-2 bg-accent-500 hover:bg-accent-600 text-black dark:text-black text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-3 rounded transition-colors"
                     >
                       TENTAR NOVAMENTE
                     </button>
@@ -215,7 +215,7 @@ export default function PreviousExamsManagerSimple() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => navigate(`/admin/previous-exams/${exam.id}/edit`)}
-                          className="bg-accent-500 hover:bg-accent-600 text-black text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-2 rounded transition-colors"
+                          className="bg-accent-500 hover:bg-accent-600 text-black dark:text-black text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-2 rounded transition-colors"
                         >
                           CONFIGURAR
                         </button>

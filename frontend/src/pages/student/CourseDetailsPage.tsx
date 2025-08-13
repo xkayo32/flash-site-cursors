@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { courseService } from '@/services/courseService';
+import { useAuthStore } from '@/store/authStore';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -36,7 +38,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Logo } from '@/components/ui/Logo';
+import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 
@@ -282,8 +284,66 @@ export default function CourseDetailsPage() {
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
   const [showAllModules, setShowAllModules] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'curriculum' | 'instructor' | 'reviews'>('overview');
+  const [isLoading, setIsLoading] = useState(true);
+  const [courseData, setCourseData] = useState<any>(null);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrollmentLoading, setEnrollmentLoading] = useState(false);
+  const user = useAuthStore(state => state.user);
 
-  const course = mockCourseDetails; // Em produção, buscar do backend usando o id
+  // Carregar dados do curso e verificar matrícula
+  useEffect(() => {
+    if (id) {
+      loadCourseData();
+      checkEnrollment();
+    }
+  }, [id]);
+
+  const loadCourseData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await courseService.getCourse(id!);
+      if (response.success && response.data) {
+        setCourseData(response.data);
+      } else {
+        // Usar dados mock se API falhar
+        setCourseData(mockCourseDetails);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar curso:', error);
+      setCourseData(mockCourseDetails);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkEnrollment = async () => {
+    try {
+      const response = await courseService.checkEnrollmentStatus(id!);
+      
+      if (response.success && response.data) {
+        setIsEnrolled(response.data.enrolled || false);
+      } else {
+        setIsEnrolled(false);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar matrícula:', error);
+      setIsEnrolled(false);
+    }
+  };
+
+  const course = courseData || mockCourseDetails;
+  
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-gray-300 border-t-accent-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">CARREGANDO OPERAÇÃO...</p>
+        </div>
+      </div>
+    );
+  } // Em produção, buscar do backend usando o id
 
   const toggleModule = (moduleId: string) => {
     setExpandedModules(prev =>
@@ -293,120 +353,83 @@ export default function CourseDetailsPage() {
     );
   };
 
-  const handleEnroll = () => {
-    // Aqui seria a lógica de matrícula/pagamento
-    toast.success('INICIANDO MISSÃO - REDIRECIONANDO PARA PAGAMENTO...', {
-      icon: '🎯',
-      description: 'Preparando arsenal tático'
-    });
-    // navigate('/checkout');
+  const handleEnroll = async () => {
+    if (isEnrolled) {
+      // Se já matriculado, continuar estudando
+      navigate(`/course/${id}/learn`);
+      return;
+    }
+    
+    try {
+      setEnrollmentLoading(true);
+      const response = await courseService.enrollInCourse(id!);
+      
+      if (response.success) {
+        setIsEnrolled(true);
+        toast.success('MATRÍCULA OPERACIONAL CONFIRMADA!', {
+          icon: '🎯',
+          duration: 5000
+        });
+        // Redirecionar para a página de aprendizado
+        setTimeout(() => {
+          navigate(`/my-courses`);
+        }, 2000);
+      } else {
+        toast.error(response.message || 'Erro ao realizar matrícula');
+      }
+    } catch (error) {
+      console.error('Erro ao matricular:', error);
+      toast.error('Erro ao processar matrícula');
+    } finally {
+      setEnrollmentLoading(false);
+    }
   };
 
-  const displayedModules = showAllModules ? course.modules : course.modules.slice(0, 3);
+  const displayedModules = showAllModules 
+    ? (course.modules || []) 
+    : (course.modules || []).slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header com navegação */}
-      <header className="bg-primary-900 text-white sticky top-0 z-50 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo e navegação */}
-            <div className="flex items-center gap-8">
-              <Link to="/dashboard">
-                <Logo variant="full" size="sm" className="text-white" />
-              </Link>
-              
-              <nav className="hidden md:flex items-center gap-6">
-                <Link
-                  to="/courses"
-                  className="flex items-center gap-2 hover:text-primary-200 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-VOLTAR ÀS OPERAÇÕES
-                </Link>
-              </nav>
-            </div>
-
-            {/* Busca e ações */}
-            <div className="flex items-center gap-4">
-              <div className="hidden lg:block">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary-400" />
-                  <input
-                    type="text"
-                    placeholder="BUSCAR OPERAÇÕES..."
-                    className="w-64 pl-10 pr-4 py-2 bg-primary-800 border border-primary-700 rounded-lg text-white placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-              
-              <Link to="/cart" className="relative p-2 hover:bg-primary-800 rounded-lg transition-colors">
-                <ShoppingCart className="w-6 h-6" />
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent-500 text-xs rounded-full flex items-center justify-center">
-                  2
-                </span>
-              </Link>
-              
-              <Link to="/dashboard">
-                <Button variant="secondary" size="sm">
-COMANDO CENTRAL
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile breadcrumb */}
-      <div className="md:hidden bg-white border-b px-4 py-2">
-        <Link
-          to="/courses"
-          className="flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Voltar aos cursos
-        </Link>
-      </div>
-
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary-700 to-primary-800 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-6 md:py-8">
+    <div className="min-h-screen">
+      {/* Hero Section - Full width without padding */}
+      <div className="bg-gradient-to-r from-gray-900 via-[#14242f] to-gray-900 text-white">
+        <div className="max-w-7xl mx-auto px-6 py-8 md:py-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Informações principais */}
             <div className="lg:col-span-2">
               <div className="flex items-center gap-3 mb-4">
                 <Badge variant="secondary" className="bg-white/20 text-white border-0">
-                  {course.category}
+                  {course.category || 'GERAL'}
                 </Badge>
                 <Badge variant="secondary" className="bg-white/20 text-white border-0">
-                  {course.level}
+                  {course.level || 'INTERMEDIÁRIO'}
                 </Badge>
               </div>
               
-              <h1 className="text-4xl font-bold mb-4 font-police-title uppercase tracking-wider">{course.title}</h1>
-              <p className="text-xl text-primary-100 mb-6 font-police-subtitle uppercase tracking-wider">{course.subtitle}</p>
+              <h1 className="text-4xl font-bold mb-4 font-police-title uppercase tracking-wider">{course.title || 'OPERAÇÃO SEM NOME'}</h1>
+              <p className="text-xl text-primary-100 mb-6 font-police-subtitle uppercase tracking-wider">{course.subtitle || ''}</p>
               
               <div className="flex items-center gap-6 mb-6">
                 <div className="flex items-center gap-2">
                   <Star className="w-5 h-5 text-yellow-400 fill-current" />
                   <span className="font-bold">{course.rating}</span>
-                  <span className="text-primary-200">({course.reviews} avaliações)</span>
+                  <span className="text-primary-200">({course.reviews || 0} avaliações)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  <span>{course.students.toLocaleString()} alunos</span>
+                  <span>{(course.students || 0).toLocaleString()} alunos</span>
                 </div>
               </div>
               
               <div className="flex items-center gap-4 mb-8">
                 <img
-                  src={course.instructor.avatar}
-                  alt={course.instructor.name}
+                  src={course.instructor?.avatar || 'https://ui-avatars.com/api/?name=Instrutor&background=14242f&color=fff'}
+                  alt={course.instructor?.name || 'Instrutor'}
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
                   <p className="font-medium font-police-body uppercase tracking-wider">COMANDANTE</p>
-                  <p className="text-primary-100 font-police-subtitle">{course.instructor.name}</p>
+                  <p className="text-primary-100 font-police-subtitle">{course.instructor?.name || 'COMANDANTE'}</p>
                 </div>
               </div>
 
@@ -414,19 +437,19 @@ COMANDO CENTRAL
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 bg-white/10 backdrop-blur-sm rounded-xl">
                 <div className="text-center">
                   <Clock className="w-8 h-8 mx-auto mb-2 text-accent-400" />
-                  <div className="text-2xl font-bold">{course.duration}</div>
+                  <div className="text-2xl font-bold">{course.duration || '0h'}</div>
                   <p className="text-sm text-primary-200 font-police-body uppercase tracking-wider">HORAS TÁTICAS</p>
                 </div>
                 <div className="text-center">
                   <Video className="w-8 h-8 mx-auto mb-2 text-accent-400" />
                   <div className="text-2xl font-bold">
-                    {course.modules.reduce((acc, mod) => acc + mod.lessons, 0)}
+                    {(course.modules || []).reduce((acc, mod) => acc + (mod.lessons || 0), 0)}
                   </div>
                   <p className="text-sm text-primary-200 font-police-body uppercase tracking-wider">BRIEFINGS</p>
                 </div>
                 <div className="text-center">
                   <FileText className="w-8 h-8 mx-auto mb-2 text-accent-400" />
-                  <div className="text-2xl font-bold">{course.questions.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">{(course.questions || 0).toLocaleString()}</div>
                   <p className="text-sm text-primary-200 font-police-body uppercase tracking-wider">ALVOS</p>
                 </div>
                 <div className="text-center">
@@ -459,7 +482,7 @@ COMANDO CENTRAL
                   {/* Preview do vídeo */}
                   <div className="relative mb-6 rounded-lg overflow-hidden">
                     <img
-                      src={course.image}
+                      src={course.image || course.thumbnail || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=800&h=400&fit=crop'}
                       alt={course.title}
                       className="w-full h-48 object-cover"
                     />
@@ -479,12 +502,12 @@ COMANDO CENTRAL
                     )}
                     <div className="flex items-baseline gap-2">
                       <span className="text-4xl font-bold text-primary-900">
-                        R$ {course.price}
+                        R$ {course.price || 0}
                       </span>
                       <span className="text-primary-600">à vista</span>
                     </div>
                     <p className="text-sm text-primary-600 mt-1">
-                      ou {course.installments.number}x de R$ {course.installments.value.toFixed(2)}
+                      ou {course.installments?.number || 12}x de R$ {(course.installments?.value || ((course.price || 0) / 12)).toFixed(2)}
                     </p>
                   </div>
 
@@ -492,11 +515,26 @@ COMANDO CENTRAL
                   <div className="space-y-3">
                     <Button
                       size="lg"
-                      className="w-full"
+                      className="w-full bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black font-police-body font-semibold uppercase tracking-wider"
                       onClick={handleEnroll}
+                      disabled={enrollmentLoading}
                     >
-                      <ShoppingCart className="w-5 h-5 mr-2" />
-INICIAR MISSÃO
+                      {enrollmentLoading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin mr-2" />
+                          PROCESSANDO...
+                        </>
+                      ) : isEnrolled ? (
+                        <>
+                          <Play className="w-5 h-5 mr-2" />
+                          CONTINUAR OPERAÇÃO
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="w-5 h-5 mr-2" />
+                          INICIAR MISSÃO
+                        </>
+                      )}
                     </Button>
                     <Button
                       size="lg"
@@ -521,7 +559,7 @@ ADICIONAR AO ARSENAL
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="w-4 h-4 text-primary-400" />
-                        <span>{course.duration} de conteúdo</span>
+                        <span>{course.duration || '0h'} de conteúdo</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Video className="w-4 h-4 text-primary-400" />
@@ -545,11 +583,12 @@ ADICIONAR AO ARSENAL
       </div>
 
       {/* Conteúdo principal */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
             {/* Tabs de navegação */}
-            <div className="border-b mb-8">
+            <div className="border-b border-gray-200 dark:border-gray-700 mb-8">
               <nav className="flex gap-8">
                 {[
                   { id: 'overview', label: 'VISÃO TÁTICA' },
@@ -561,17 +600,17 @@ ADICIONAR AO ARSENAL
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
                     className={cn(
-                      'pb-4 px-1 font-medium transition-colors relative',
+                      'pb-4 px-1 font-police-subtitle uppercase tracking-wider font-medium transition-colors relative',
                       activeTab === tab.id
-                        ? 'text-primary-900'
-                        : 'text-primary-500 hover:text-primary-700'
+                        ? 'text-accent-500 dark:text-accent-400'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                     )}
                   >
                     {tab.label}
                     {activeTab === tab.id && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-900"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-500"
                       />
                     )}
                   </button>
@@ -588,9 +627,9 @@ ADICIONAR AO ARSENAL
               >
 
                 {/* O que você aprenderá */}
-                <Card>
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                   <CardHeader>
-                    <h2 className="text-2xl font-bold font-police-title uppercase tracking-wider">HABILIDADES TÁTICAS</h2>
+                    <h2 className="text-2xl font-bold font-police-title uppercase tracking-wider text-gray-900 dark:text-white">HABILIDADES TÁTICAS</h2>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -603,8 +642,8 @@ ADICIONAR AO ARSENAL
                         'RACIOCÍNIO LÓGICO OPERACIONAL'
                       ].map((item, idx) => (
                         <div key={idx} className="flex items-start gap-3">
-                          <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                          <span className="text-primary-700">{item}</span>
+                          <CheckCircle className="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5" />
+                          <span className="text-gray-700 dark:text-gray-300 font-police-body">{item}</span>
                         </div>
                       ))}
                     </div>
@@ -612,16 +651,16 @@ ADICIONAR AO ARSENAL
                 </Card>
 
                 {/* Para quem é este curso */}
-                <Card>
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                   <CardHeader>
-                    <h2 className="text-2xl font-bold font-police-title uppercase tracking-wider">PERFIL OPERACIONAL</h2>
+                    <h2 className="text-2xl font-bold font-police-title uppercase tracking-wider text-gray-900 dark:text-white">PERFIL OPERACIONAL</h2>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
-                      {course.targetAudience.map((item, idx) => (
+                      {(course.targetAudience || []).map((item, idx) => (
                         <li key={idx} className="flex items-start gap-3">
-                          <Target className="w-5 h-5 text-primary-400 flex-shrink-0 mt-0.5" />
-                          <span className="text-primary-700">{item}</span>
+                          <Target className="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5" />
+                          <span className="text-gray-700 dark:text-gray-300 font-police-body">{item}</span>
                         </li>
                       ))}
                     </ul>
@@ -635,7 +674,7 @@ ADICIONAR AO ARSENAL
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
-                      {course.requirements.map((req, idx) => (
+                      {(course.requirements || []).map((req, idx) => (
                         <li key={idx} className="flex items-start gap-3">
                           <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                           <span className="text-primary-700">{req}</span>
@@ -693,7 +732,7 @@ ADICIONAR AO ARSENAL
                           {expandedModules.includes(module.id) && (
                             <div className="px-6 pb-4 border-t bg-gray-50">
                               <ul className="space-y-2 mt-4">
-                                {module.topics.map((topic, idx) => (
+                                {(module.topics || []).map((topic, idx) => (
                                   <li key={idx} className="flex items-center gap-3 text-sm text-primary-700">
                                     <CheckCircle className="w-4 h-4 text-green-500" />
                                     {topic}
@@ -752,7 +791,7 @@ ADICIONAR AO ARSENAL
                           </div>
                           <div className="flex items-center gap-2">
                             <Users className="w-4 h-4 text-primary-400" />
-                            <span className="font-medium">{course.instructor.students.toLocaleString()}</span>
+                            <span className="font-medium">{(course.instructor?.students || 0).toLocaleString()}</span>
                             <span className="text-primary-500 font-police-body uppercase tracking-wider">RECRUTAS</span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -830,7 +869,7 @@ ADICIONAR AO ARSENAL
                 </Card>
 
                 {/* Lista de avaliações */}
-                {course.topReviews.map(review => (
+                {(course.topReviews || []).map(review => (
                   <Card key={review.id}>
                     <CardContent className="p-6">
                       <div className="flex items-start gap-4">
@@ -888,7 +927,7 @@ ADICIONAR AO ARSENAL
               </CardHeader>
               <CardContent>
                 <div className="text-sm text-primary-700 space-y-3">
-                  {course.description.split('\n').map((paragraph, idx) => (
+                  {(course.description || '').split('\n').map((paragraph, idx) => (
                     <p key={idx}>{paragraph.trim()}</p>
                   ))}
                 </div>
@@ -905,7 +944,7 @@ DÚVIDAS OPERACIONAIS
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {course.faq.slice(0, 3).map((item, idx) => (
+                  {(course.faq || []).slice(0, 3).map((item, idx) => (
                     <div key={idx}>
                       <h4 className="font-medium text-primary-900 mb-1">
                         {item.question}
@@ -932,16 +971,16 @@ DÚVIDAS OPERACIONAIS
                   <div className="flex items-center justify-between">
                     <span className="text-primary-600 font-police-body uppercase tracking-wider">ÚLTIMA ATUALIZAÇÃO</span>
                     <span className="font-medium">
-                      {new Date(course.lastUpdated).toLocaleDateString('pt-BR')}
+                      {new Date(course.lastUpdated || Date.now()).toLocaleDateString('pt-BR')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-primary-600 font-police-body uppercase tracking-wider">IDIOMA</span>
-                    <span className="font-medium">{course.language}</span>
+                    <span className="font-medium">{course.language || 'PORTUGUÊS'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-primary-600 font-police-body uppercase tracking-wider">NÍVEL</span>
-                    <span className="font-medium">{course.level}</span>
+                    <span className="font-medium">{course.level || 'INTERMEDIÁRIO'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-primary-600 font-police-body uppercase tracking-wider">CONDECORAÇÃO</span>
@@ -952,37 +991,37 @@ DÚVIDAS OPERACIONAIS
             </Card>
 
             {/* Destaques do curso */}
-            <Card className="bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
+            <Card className="bg-gray-800/90 dark:bg-gray-900/90 backdrop-blur-sm border-gray-700 dark:border-gray-600">
               <CardHeader>
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <Star className="w-5 h-5 text-yellow-500 fill-current" />
-POR QUE ESTA OPERAÇÃO?
+                <h3 className="text-lg font-police-title font-bold flex items-center gap-2 text-white uppercase tracking-wider">
+                  <Star className="w-5 h-5 text-accent-500 fill-current" />
+                  POR QUE ESTA OPERAÇÃO?
                 </h3>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-primary-700">
-                      <strong>TAXA DE SUCESSO OPERACIONAL: 89%</strong> DOS RECRUTAS
+                    <span className="text-sm text-gray-300 font-police-body">
+                      <strong className="text-white uppercase">TAXA DE SUCESSO OPERACIONAL: 89%</strong> DOS RECRUTAS
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <TrendingUp className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-primary-700">
-                      <strong>ARSENAL SEMPRE ATUALIZADO</strong> CONFORME INTELIGÊNCIA
+                    <TrendingUp className="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-gray-300 font-police-body">
+                      <strong className="text-white uppercase">ARSENAL SEMPRE ATUALIZADO</strong> CONFORME INTELIGÊNCIA
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <Users className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-primary-700">
-                      <strong>ESQUADRÃO EXCLUSIVO</strong> PARA NETWORKING E APOIO
+                    <Users className="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-gray-300 font-police-body">
+                      <strong className="text-white uppercase">ESQUADRÃO EXCLUSIVO</strong> PARA NETWORKING E APOIO
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <Award className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-primary-700">
-                      <strong>COMANDANTE ESPECIALISTA</strong> COM EXPERIÊNCIA DE CAMPO
+                    <Award className="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-gray-300 font-police-body">
+                      <strong className="text-white uppercase">COMANDANTE ESPECIALISTA</strong> COM EXPERIÊNCIA DE CAMPO
                     </span>
                   </li>
                 </ul>
@@ -1003,13 +1042,31 @@ POR QUE ESTA OPERAÇÃO?
                   )}
                 </div>
               </div>
-              <Button size="lg" className="w-full" onClick={handleEnroll}>
-                Comprar agora
+              <Button 
+                size="lg" 
+                className="w-full bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black font-police-body font-semibold uppercase tracking-wider" 
+                onClick={handleEnroll}
+                disabled={enrollmentLoading}
+              >
+                {enrollmentLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin mr-2 inline-block" />
+                    PROCESSANDO...
+                  </>
+                ) : isEnrolled ? (
+                  <>
+                    <Play className="w-4 h-4 mr-2 inline-block" />
+                    CONTINUAR OPERAÇÃO
+                  </>
+                ) : (
+                  'INICIAR MISSÃO'
+                )}
               </Button>
             </div>
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

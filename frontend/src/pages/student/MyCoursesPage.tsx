@@ -120,6 +120,7 @@ export default function MyCoursesPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Carregar cursos matriculados e estatísticas
   useEffect(() => {
@@ -155,6 +156,38 @@ export default function MyCoursesPage() {
       setEnrolledCourses([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePauseOperation = async (courseId: string) => {
+    try {
+      setActionLoading(courseId);
+      
+      const response = await courseService.updateEnrollmentStatus(courseId, 'paused', 'Operação pausada temporariamente pelo agente');
+      
+      if (response.success) {
+        // Remover curso da lista de matriculados
+        setEnrolledCourses(prev => prev.filter(c => c.id !== courseId));
+        
+        toast.success('OPERAÇÃO PAUSADA COM SUCESSO!', {
+          description: 'Seu progresso foi mantido. Retome quando desejar.',
+          icon: '⏸️',
+          duration: 5000
+        });
+      } else {
+        toast.error(response.message || 'ERRO AO PAUSAR OPERAÇÃO', {
+          icon: '❌',
+          duration: 4000
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao pausar operação:', error);
+      toast.error('FALHA CRÍTICA AO PAUSAR OPERAÇÃO', {
+        icon: '⚠️',
+        duration: 4000
+      });
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -337,15 +370,30 @@ export default function MyCoursesPage() {
             <span className="text-xs text-gray-500 dark:text-gray-500 font-police-body uppercase tracking-wider">
               ACESSO {new Date(course.lastAccessed).toLocaleDateString('pt-BR')}
             </span>
-            <Link to={`/student/courses/${course.id}/learn`}>
-              <Button 
-                size="sm" 
-                className="gap-1 bg-gray-900 hover:bg-gray-800 text-white font-police-body font-semibold uppercase tracking-wider"
+            <div className="flex gap-2">
+              <Link to={`/courses/${course.id}`}>
+                <Button 
+                  size="sm" 
+                  className="gap-1 bg-gray-900 hover:bg-gray-800 text-white font-police-body font-semibold uppercase tracking-wider"
+                >
+                  {course.progress === 100 ? 'REVISAR' : 'CONTINUAR'}
+                  <Play className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={actionLoading === course.id}
+                onClick={() => handlePauseOperation(course.id)}
+                className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20 font-police-body uppercase tracking-wider"
               >
-                {course.progress === 100 ? 'REVISAR' : 'CONTINUAR'}
-                <Play className="w-4 h-4" />
+                {actionLoading === course.id ? (
+                  <div className="w-3 h-3 border border-red-600/30 border-t-red-600 rounded-full animate-spin" />
+                ) : (
+                  'PAUSAR'
+                )}
               </Button>
-            </Link>
+            </div>
           </div>
 
           {/* Data de expiração se houver */}
@@ -390,15 +438,30 @@ export default function MyCoursesPage() {
                   <span className="font-police-body uppercase tracking-wider">ACESSO {new Date(course.lastAccessed).toLocaleDateString('pt-BR')}</span>
                 </div>
               </div>
-              <Link to={`/student/courses/${course.id}/learn`}>
-                <Button 
+              <div className="flex gap-2">
+                <Link to={`/courses/${course.id}`}>
+                  <Button 
+                    size="sm"
+                    className="bg-gray-900 hover:bg-gray-800 text-white font-police-body font-semibold uppercase tracking-wider"
+                  >
+                    {course.progress === 100 ? 'REVISAR' : 'CONTINUAR'}
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </Link>
+                <Button
                   size="sm"
-                  className="bg-gray-900 hover:bg-gray-800 text-white font-police-body font-semibold uppercase tracking-wider"
+                  variant="outline"
+                  disabled={actionLoading === course.id}
+                  onClick={() => handlePauseOperation(course.id)}
+                  className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20 font-police-body uppercase tracking-wider"
                 >
-                  {course.progress === 100 ? 'REVISAR' : 'CONTINUAR'}
-                  <ChevronRight className="w-4 h-4 ml-1" />
+                  {actionLoading === course.id ? (
+                    <div className="w-3 h-3 border border-red-600/30 border-t-red-600 rounded-full animate-spin" />
+                  ) : (
+                    'PAUSAR'
+                  )}
                 </Button>
-              </Link>
+              </div>
             </div>
 
             {/* Barra de progresso */}
@@ -621,7 +684,7 @@ export default function MyCoursesPage() {
           </p>
           <Button
             onClick={loadEnrolledCourses}
-            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black font-police-body font-semibold uppercase tracking-wider"
           >
             TENTAR NOVAMENTE
           </Button>
@@ -652,7 +715,7 @@ export default function MyCoursesPage() {
               : 'AJUSTE OS FILTROS OU EXPLORE NOVAS OPERAÇÕES DISPONÍVEIS'
             }
           </p>
-          <Link to="/student/courses">
+          <Link to="/courses">
             <Button className="bg-gray-900 hover:bg-gray-800 text-white font-police-body font-semibold uppercase tracking-wider">
               {enrolledCourses.length === 0 ? 'EXPLORAR OPERAÇÕES' : 'VER TODAS AS OPERAÇÕES'}
             </Button>
@@ -675,7 +738,7 @@ export default function MyCoursesPage() {
         <p className="text-gray-300 dark:text-gray-400 mb-4 font-police-body">
           EXPLORE NOVAS OPERAÇÕES PARA COMPLEMENTAR SUA PREPARAÇÃO TÁTICA
         </p>
-        <Link to="/student/courses">
+        <Link to="/courses">
           <Button 
             variant="secondary"
             className="bg-white hover:bg-gray-100 text-black font-police-body font-semibold uppercase tracking-wider"

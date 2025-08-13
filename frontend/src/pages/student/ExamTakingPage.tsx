@@ -138,7 +138,7 @@ export default function ExamTakingPage() {
           </p>
           <Button
             onClick={() => navigate('/simulations')}
-            className="bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider"
+            className="bg-accent-500 hover:bg-accent-600 text-black dark:text-black font-police-body font-semibold uppercase tracking-wider"
           >
             RETORNAR ÀS OPERAÇÕES
           </Button>
@@ -320,7 +320,7 @@ export default function ExamTakingPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'current': return 'bg-accent-500 text-black border-accent-500';
+      case 'current': return 'bg-accent-500 text-black dark:text-black border-accent-500';
       case 'answered': return 'bg-green-500 text-white border-green-500';
       case 'answered-flagged': return 'bg-amber-500 text-black border-amber-500';
       case 'flagged': return 'bg-red-500 text-white border-red-500';
@@ -430,7 +430,7 @@ export default function ExamTakingPage() {
 
               <Button
                 onClick={() => setShowConfirmDialog(true)}
-                className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider gap-1"
+                className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black font-police-body font-semibold uppercase tracking-wider gap-1"
               >
                 <Send className="w-4 h-4" />
                 CONCLUIR MISSÃO
@@ -508,7 +508,7 @@ export default function ExamTakingPage() {
                 </p>
                 <Button 
                   onClick={handlePauseToggle} 
-                  className="gap-2 bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider"
+                  className="gap-2 bg-accent-500 hover:bg-accent-600 text-black dark:text-black font-police-body font-semibold uppercase tracking-wider"
                 >
                   <Play className="w-4 h-4" />
                   RETOMAR OPERAÇÃO
@@ -694,7 +694,7 @@ export default function ExamTakingPage() {
                   </Button>
                   <Button
                     onClick={() => handleSubmitExam()}
-                    className="flex-1 bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider"
+                    className="flex-1 bg-accent-500 hover:bg-accent-600 text-black dark:text-black font-police-body font-semibold uppercase tracking-wider"
                   >
                     CONCLUIR MISSÃO
                   </Button>
