@@ -211,6 +211,14 @@ router.put('/user', requireAuth, (req: AuthRequest, res) => {
       return res.status(401).json({ success: false, message: 'Usuário não autenticado' });
     }
 
+    // Validate that body has data
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Nenhuma configuração fornecida' 
+      });
+    }
+
     let allUserSettings = {};
     if (fs.existsSync(userSettingsPath)) {
       allUserSettings = JSON.parse(fs.readFileSync(userSettingsPath, 'utf-8'));

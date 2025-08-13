@@ -112,12 +112,12 @@
     "penalties": [],
     "statistics": {
       "views": 15425,
-      "searches": 8930,
+      "searches": 8934,
       "bookmarks": 2340
     },
     "created_by": "system",
     "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2025-08-12T04:36:22.235Z"
+    "updated_at": "2025-08-13T06:52:09.422Z"
   },
   {
     "id": "leg_002",
@@ -225,12 +225,12 @@
     ],
     "statistics": {
       "views": 12854,
-      "searches": 7121,
+      "searches": 7125,
       "bookmarks": 1890
     },
     "created_by": "system",
     "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2025-08-12T04:36:22.304Z"
+    "updated_at": "2025-08-13T06:52:09.425Z"
   },
   {
     "id": "leg_003",
@@ -335,12 +335,12 @@
     "penalties": [],
     "statistics": {
       "views": 9750,
-      "searches": 5421,
+      "searches": 5425,
       "bookmarks": 1230
     },
     "created_by": "system",
     "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2025-08-12T04:25:21.863Z"
+    "updated_at": "2025-08-13T06:52:09.427Z"
   },
   {
     "id": "leg_004",
@@ -449,12 +449,12 @@
     ],
     "statistics": {
       "views": 8920,
-      "searches": 4680,
+      "searches": 4684,
       "bookmarks": 1120
     },
     "created_by": "system",
     "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
+    "updated_at": "2025-08-13T06:52:09.432Z"
   },
   {
     "id": "leg_005",
@@ -538,12 +538,12 @@
     ],
     "statistics": {
       "views": 7340,
-      "searches": 3920,
+      "searches": 3924,
       "bookmarks": 890
     },
     "created_by": "system",
     "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
+    "updated_at": "2025-08-13T06:52:09.434Z"
   },
   {
     "id": "leg_006",
@@ -642,11 +642,11 @@
     ],
     "statistics": {
       "views": 6180,
-      "searches": 2940,
+      "searches": 2944,
       "bookmarks": 720
     },
     "created_by": "system",
     "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
+    "updated_at": "2025-08-13T06:52:09.437Z"
   }
 ]

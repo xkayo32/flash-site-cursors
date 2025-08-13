@@ -185,7 +185,7 @@ const calculateResults = (session: ExamSession): ExamResults => {
 router.post('/:examType/:examId/sessions', authMiddleware, async (req, res) => {
   try {
     const { examId, examType } = req.params;
-    const userId = (req as any).userId;
+    const userId = (req as any).user?.id;
 
     if (!['mock', 'previous'].includes(examType)) {
       return res.status(400).json({ error: 'Invalid exam type' });
@@ -204,7 +204,7 @@ router.post('/:examType/:examId/sessions', authMiddleware, async (req, res) => {
     );
 
     if (existingSession) {
-      return res.json(existingSession);
+      return res.status(201).json(existingSession);
     }
 
     // Create new session
@@ -240,7 +240,7 @@ router.put('/sessions/:sessionId/answers', authMiddleware, async (req, res) => {
   try {
     const { sessionId } = req.params;
     const { questionId, alternativeId, flagged } = req.body;
-    const userId = (req as any).userId;
+    const userId = (req as any).user?.id;
 
     const sessions = loadExamSessions();
     const sessionIndex = sessions.findIndex(
@@ -284,7 +284,7 @@ router.put('/sessions/:sessionId/time', authMiddleware, async (req, res) => {
   try {
     const { sessionId } = req.params;
     const { timeSpent } = req.body;
-    const userId = (req as any).userId;
+    const userId = (req as any).user?.id;
 
     const sessions = loadExamSessions();
     const sessionIndex = sessions.findIndex(
@@ -310,7 +310,7 @@ router.post('/sessions/:sessionId/submit', authMiddleware, async (req, res) => {
   try {
     const { sessionId } = req.params;
     const { timeSpent } = req.body;
-    const userId = (req as any).userId;
+    const userId = (req as any).user?.id;
 
     const sessions = loadExamSessions();
     const sessionIndex = sessions.findIndex(
@@ -352,7 +352,7 @@ router.post('/sessions/:sessionId/submit', authMiddleware, async (req, res) => {
 router.get('/sessions/:sessionId/results', authMiddleware, async (req, res) => {
   try {
     const { sessionId } = req.params;
-    const userId = (req as any).userId;
+    const userId = (req as any).user?.id;
 
     const sessions = loadExamSessions();
     const session = sessions.find(
@@ -401,7 +401,7 @@ router.get('/sessions/:sessionId/results', authMiddleware, async (req, res) => {
 router.get('/sessions/:sessionId', authMiddleware, async (req, res) => {
   try {
     const { sessionId } = req.params;
-    const userId = (req as any).userId;
+    const userId = (req as any).user?.id;
 
     const sessions = loadExamSessions();
     const session = sessions.find(
@@ -422,7 +422,7 @@ router.get('/sessions/:sessionId', authMiddleware, async (req, res) => {
 // GET /api/v1/exam-sessions - Get user's exam sessions
 router.get('/sessions', authMiddleware, async (req, res) => {
   try {
-    const userId = (req as any).userId;
+    const userId = (req as any).user?.id;
     const { status, examType } = req.query;
 
     const sessions = loadExamSessions();

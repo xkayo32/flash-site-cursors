@@ -30,6 +30,15 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validate required fields
+    if (!email || !password) {
+      res.status(400).json({
+        success: false,
+        message: 'Email e senha são obrigatórios'
+      });
+      return;
+    }
+
     // For demo purposes, accept the hardcoded credentials
     if (email === 'admin@studypro.com' && password === 'Admin@123') {
       const token = jwt.sign(

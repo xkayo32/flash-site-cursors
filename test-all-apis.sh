@@ -7,7 +7,7 @@
 # Inclui autenticação, CRUD operations e funcionalidades específicas
 
 # Configurações
-API_URL="http://localhost:8181"
+API_URL="http://localhost:8180"
 SUCCESS_COUNT=0
 ERROR_COUNT=0
 TOTAL_COUNT=0
@@ -200,7 +200,7 @@ echo ""
 echo -e "${YELLOW}🎯 SIMULADOS${NC}"
 test_api "GET" "/api/v1/mockexams" "Listar simulados" "true" "" "200"
 test_api "GET" "/api/v1/mockexams/available" "Simulados disponíveis" "true" "" "200"
-test_api "GET" "/api/v1/mockexams/stats" "Estatísticas simulados" "admin" "" "200"
+test_api "GET" "/api/v1/mockexams-stats/general" "Estatísticas simulados" "admin" "" "200"
 echo ""
 
 # ========================================
@@ -208,8 +208,8 @@ echo ""
 # ========================================
 echo -e "${YELLOW}📋 PROVAS ANTERIORES${NC}"
 test_api "GET" "/api/v1/previousexams" "Listar provas anteriores" "true" "" "200"
-test_api "GET" "/api/v1/previousexams/available" "Provas disponíveis" "true" "" "200"
-test_api "GET" "/api/v1/previousexams/stats" "Estatísticas provas" "admin" "" "200"
+test_api "GET" "/api/v1/previousexams-extra/available" "Provas disponíveis" "true" "" "200"
+test_api "GET" "/api/v1/previousexams-extra/stats" "Estatísticas provas" "admin" "" "200"
 echo ""
 
 # ========================================

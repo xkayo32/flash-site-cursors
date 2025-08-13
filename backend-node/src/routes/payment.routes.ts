@@ -448,7 +448,49 @@ router.get('/invoices/:id/download', authMiddleware, (req: Request, res: Respons
   }
 });
 
-// GET /api/v1/subscription/manage - Get subscription info
+// GET /api/v1/subscription/manage - Get subscription info (aliased)
+router.get('/manage', authMiddleware, (req: Request, res: Response) => {
+  try {
+    const data = readPaymentData();
+    const userId = req.user?.id;
+    
+    const subscription = data.subscriptions.find(
+      (sub: any) => sub.user_id == userId && sub.status === 'active'
+    );
+    
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'NENHUMA OPERAÇÃO ATIVA ENCONTRADA'
+      });
+    }
+
+    // Get payment method info
+    const paymentMethod = data.payment_methods.find(
+      (method: any) => method.id === subscription.payment_method_id
+    );
+
+    res.json({
+      success: true,
+      data: {
+        ...subscription,
+        payment_method: paymentMethod ? {
+          brand: paymentMethod.brand,
+          last4: paymentMethod.last4,
+          nickname: paymentMethod.nickname
+        } : null
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching subscription:', error);
+    res.status(500).json({
+      success: false,
+      message: 'ERRO NO COMANDO DE ASSINATURAS'
+    });
+  }
+});
+
+// GET /api/v1/subscription/manage - Get subscription info (legacy route)
 router.get('/subscription/manage', authMiddleware, (req: Request, res: Response) => {
   try {
     const data = readPaymentData();

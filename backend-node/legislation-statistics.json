@@ -59,5 +59,197 @@
     "legislation_id": "leg_002",
     "action": "view",
     "timestamp": "2025-08-12T04:36:22.302Z"
+  },
+  {
+    "legislation_id": "leg_001",
+    "action": "search",
+    "timestamp": "2025-08-13T06:40:57.827Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_002",
+    "action": "search",
+    "timestamp": "2025-08-13T06:40:57.832Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_003",
+    "action": "search",
+    "timestamp": "2025-08-13T06:40:57.834Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_004",
+    "action": "search",
+    "timestamp": "2025-08-13T06:40:57.841Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_005",
+    "action": "search",
+    "timestamp": "2025-08-13T06:40:57.844Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_006",
+    "action": "search",
+    "timestamp": "2025-08-13T06:40:57.846Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_001",
+    "action": "search",
+    "timestamp": "2025-08-13T06:43:24.153Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_002",
+    "action": "search",
+    "timestamp": "2025-08-13T06:43:24.156Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_003",
+    "action": "search",
+    "timestamp": "2025-08-13T06:43:24.158Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_004",
+    "action": "search",
+    "timestamp": "2025-08-13T06:43:24.161Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_005",
+    "action": "search",
+    "timestamp": "2025-08-13T06:43:24.163Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_006",
+    "action": "search",
+    "timestamp": "2025-08-13T06:43:24.166Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_001",
+    "action": "search",
+    "timestamp": "2025-08-13T06:51:27.130Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_002",
+    "action": "search",
+    "timestamp": "2025-08-13T06:51:27.132Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_003",
+    "action": "search",
+    "timestamp": "2025-08-13T06:51:27.135Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_004",
+    "action": "search",
+    "timestamp": "2025-08-13T06:51:27.137Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_005",
+    "action": "search",
+    "timestamp": "2025-08-13T06:51:27.138Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_006",
+    "action": "search",
+    "timestamp": "2025-08-13T06:51:27.140Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_001",
+    "action": "search",
+    "timestamp": "2025-08-13T06:52:09.420Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_002",
+    "action": "search",
+    "timestamp": "2025-08-13T06:52:09.424Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_003",
+    "action": "search",
+    "timestamp": "2025-08-13T06:52:09.426Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_004",
+    "action": "search",
+    "timestamp": "2025-08-13T06:52:09.431Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_005",
+    "action": "search",
+    "timestamp": "2025-08-13T06:52:09.433Z",
+    "metadata": {
+      "search_term": ""
+    }
+  },
+  {
+    "legislation_id": "leg_006",
+    "action": "search",
+    "timestamp": "2025-08-13T06:52:09.436Z",
+    "metadata": {
+      "search_term": ""
+    }
   }
 ]
