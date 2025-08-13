@@ -281,6 +281,123 @@ router.get('/', authMiddleware, (req: AuthRequest, res: Response) => {
   }
 });
 
+// GET /api/v1/previousexams/available - Get available previous exams for students
+router.get('/available', authMiddleware, (req: AuthRequest, res: Response): void => {
+  try {
+    console.log('📚 [PREVIOUS-EXAMS] Getting available previous exams for student');
+    
+    const previousExams = loadPreviousExams();
+    
+    // Filter only published exams for students
+    const availableExams = previousExams
+      .filter(exam => exam.status === 'published')
+      .map(exam => ({
+        id: exam.id,
+        title: exam.title,
+        organization: exam.organization,
+        exam_board: exam.exam_board,
+        position: exam.position,
+        year: exam.year,
+        total_questions: exam.total_questions,
+        duration: exam.duration,
+        subjects: exam.subjects,
+        difficulty_distribution: exam.difficulty_distribution,
+        statistics: exam.statistics
+      }));
+
+    console.log(`📚 [PREVIOUS-EXAMS] Found ${availableExams.length} available exams`);
+    
+    res.json({
+      success: true,
+      data: availableExams,
+      total: availableExams.length
+    });
+  } catch (error) {
+    console.error('❌ [PREVIOUS-EXAMS] Error getting available exams:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erro ao buscar provas disponíveis' 
+    });
+  }
+});
+
+// GET /api/v1/previousexams/stats - Get previous exams statistics (admin only)
+router.get('/stats', authMiddleware, (req: AuthRequest, res: Response): void => {
+  if (req.user?.role !== 'admin') {
+    res.status(403).json({ 
+      success: false,
+      message: 'Acesso negado - apenas administradores' 
+    });
+    return;
+  }
+
+  try {
+    console.log('📊 [PREVIOUS-EXAMS] Getting statistics for admin');
+    
+    const previousExams = loadPreviousExams();
+    const examAttempts = loadExamAttempts();
+
+    // Calculate overall statistics
+    const totalExams = previousExams.length;
+    const publishedExams = previousExams.filter(e => e.status === 'published').length;
+    const totalAttempts = examAttempts.length;
+    const completedAttempts = examAttempts.filter(a => a.status === 'completed').length;
+    
+    // Calculate average scores
+    const allScores = examAttempts
+      .filter(a => a.status === 'completed' && a.score !== undefined)
+      .map(a => a.score!);
+    
+    const avgScore = allScores.length > 0 
+      ? allScores.reduce((sum, score) => sum + score, 0) / allScores.length 
+      : 0;
+
+    // Group by organization
+    const byOrganization = previousExams.reduce((acc: any, exam) => {
+      acc[exam.organization] = (acc[exam.organization] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Group by exam board
+    const byExamBoard = previousExams.reduce((acc: any, exam) => {
+      acc[exam.exam_board] = (acc[exam.exam_board] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Group by year
+    const byYear = previousExams.reduce((acc: any, exam) => {
+      acc[exam.year] = (acc[exam.year] || 0) + 1;
+      return acc;
+    }, {});
+
+    console.log('📊 [PREVIOUS-EXAMS] Statistics calculated successfully');
+    
+    res.json({
+      success: true,
+      data: {
+        overall: {
+          total_exams: totalExams,
+          published_exams: publishedExams,
+          total_attempts: totalAttempts,
+          completed_attempts: completedAttempts,
+          average_score: Number(avgScore.toFixed(1))
+        },
+        distribution: {
+          by_organization: byOrganization,
+          by_exam_board: byExamBoard,
+          by_year: byYear
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ [PREVIOUS-EXAMS] Error getting statistics:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Erro ao buscar estatísticas' 
+    });
+  }
+});
+
 // GET /api/v1/previousexams/:id - Obter prova específica
 router.get('/:id', authMiddleware, (req: AuthRequest, res: Response) => {
   try {
@@ -1983,5 +2100,6 @@ router.get('/reports/difficulty', authMiddleware, (_req: AuthRequest, res: Respo
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
+
 
 export default router;
