@@ -140,6 +140,25 @@ export default function DashboardPage() {
     }
   };
 
+  // Helper to construct proper image URL
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8180';
+  const getImageUrl = (path: string | undefined | null): string | null => {
+    if (!path) return null;
+    
+    // If it's already a full URL, return as is
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    
+    // If it starts with /uploads/, prepend the API base URL
+    if (path.startsWith('/uploads/')) {
+      return `${API_BASE_URL}${path}`;
+    }
+    
+    // Otherwise return the path as is
+    return path;
+  };
+
   const getCurrentTime = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'BOM DIA';
@@ -444,7 +463,7 @@ export default function DashboardPage() {
               {/* Avatar do usuário */}
               <div className="relative">
                 <img
-                  src={dashboardData.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(dashboardData.user?.name || 'User')}&background=14242f&color=fff`}
+                  src={getImageUrl(dashboardData.user?.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(dashboardData.user?.name || 'User')}&background=14242f&color=fff`}
                   alt={dashboardData.user?.name || 'Usuário'}
                   className="w-12 h-12 lg:w-14 lg:h-14 rounded-full border-2 border-accent-500 hover:border-accent-600 transition-colors cursor-pointer shadow-lg"
                   onClick={() => navigate('/settings')}
