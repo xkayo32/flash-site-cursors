@@ -396,8 +396,13 @@ export default function CourseLearningPage() {
   };
 
   const getShareData = () => {
-    const title = `${course.title} - ${currentLesson?.title}`;
-    const text = `Estou estudando "${currentLesson?.title}" no curso "${course.title}" da StudyPro!`;
+    const title = `🎯 OPERAÇÃO TÁTICA: ${course.title} - ${currentLesson?.title}`;
+    const text = `🔥 Estou em uma missão de estudos! 
+📚 Curso: "${course.title}"
+🎯 Aula atual: "${currentLesson?.title}"
+⚡ Sistema de treinamento tático da StudyPro
+
+Junte-se à operação e domine os concursos! 💪`;
     const url = window.location.href;
     return { title, text, url };
   };
@@ -423,36 +428,99 @@ export default function CourseLearningPage() {
       case 'twitter':
         shareUrl = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
         break;
+      case 'linkedin':
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+        break;
+      case 'email':
+        shareUrl = `mailto:?subject=${encodedTitle}&body=${encodedText}%0A%0A${encodedUrl}`;
+        break;
       case 'instagram':
         // Instagram não permite compartilhamento direto via URL, então copiamos o link
         await copyToClipboard(url);
-        toast.success('Link copiado! Cole no Instagram Stories ou feed.');
+        toast.success('📸 LINK COPIADO! Cole no Instagram Stories ou feed para compartilhar sua jornada de estudos.', {
+          icon: '💗',
+          duration: 4000
+        });
         setShowShareMenu(false);
         return;
       case 'copy':
         await copyToClipboard(url);
-        toast.success('Link copiado para a área de transferência!');
+        toast.success('🔗 LINK COPIADO! Cole onde quiser compartilhar esta operação.', {
+          icon: '📋',
+          duration: 3000
+        });
         setShowShareMenu(false);
         return;
       case 'native':
         try {
           if (navigator.share && navigator.canShare({ title, text, url })) {
             await navigator.share({ title, text, url });
-            toast.success('Compartilhado com sucesso!');
+            toast.success('📤 COMPARTILHADO COM SUCESSO! Sua operação foi divulgada.', { 
+              icon: '✅',
+              duration: 3000
+            });
           } else {
             await copyToClipboard(url);
-            toast.success('Link copiado para a área de transferência!');
+            toast.success('🔗 LINK COPIADO! Compartilhamento nativo não disponível.', {
+              icon: '📋',
+              duration: 3000
+            });
           }
         } catch (error) {
           console.error('Erro ao compartilhar:', error);
+          await copyToClipboard(url);
+          toast.error('❌ Erro no compartilhamento nativo. Link copiado como alternativa.', {
+            icon: '📋',
+            duration: 4000
+          });
         }
         setShowShareMenu(false);
         return;
     }
 
     if (shareUrl) {
-      window.open(shareUrl, '_blank', 'width=600,height=400');
-      toast.success('Compartilhamento aberto em nova aba!');
+      try {
+        window.open(shareUrl, '_blank', 'width=600,height=400');
+        
+        // Toast específico para cada plataforma
+        let message = '';
+        let icon = '';
+        
+        switch (platform) {
+          case 'whatsapp':
+            message = '📱 WHATSAPP aberto! Compartilhe com seus contatos.';
+            icon = '💚';
+            break;
+          case 'telegram':
+            message = '✈️ TELEGRAM aberto! Envie para seus grupos de estudo.';
+            icon = '🔵';
+            break;
+          case 'facebook':
+            message = '📘 FACEBOOK aberto! Compartilhe no seu feed.';
+            icon = '🔵';
+            break;
+          case 'twitter':
+            message = '🐦 TWITTER/X aberto! Tuíte sobre sua jornada de estudos.';
+            icon = '⚫';
+            break;
+          case 'linkedin':
+            message = '💼 LINKEDIN aberto! Compartilhe profissionalmente.';
+            icon = '🔵';
+            break;
+          case 'email':
+            message = '📧 EMAIL aberto! Envie para quem quiser estudar junto.';
+            icon = '✉️';
+            break;
+          default:
+            message = '🚀 Compartilhamento aberto em nova aba!';
+            icon = '📤';
+        }
+        
+        toast.success(message, { icon, duration: 4000 });
+      } catch (error) {
+        console.error('Erro ao abrir compartilhamento:', error);
+        toast.error('❌ Erro ao abrir compartilhamento. Tente novamente.');
+      }
     }
     
     setShowShareMenu(false);
@@ -462,13 +530,30 @@ export default function CourseLearningPage() {
     try {
       await navigator.clipboard.writeText(text);
     } catch (error) {
-      // Fallback manual se clipboard falhar
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
+      console.error('Erro na API clipboard:', error);
+      try {
+        // Fallback manual se clipboard falhar
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (!successful) {
+          throw new Error('execCommand falhou');
+        }
+      } catch (fallbackError) {
+        console.error('Erro no fallback de cópia:', fallbackError);
+        toast.error('❌ Não foi possível copiar o link. Copie manualmente da barra de endereços.', {
+          duration: 5000
+        });
+        throw fallbackError;
+      }
     }
   };
 
