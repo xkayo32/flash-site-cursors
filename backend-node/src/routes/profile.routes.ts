@@ -54,7 +54,7 @@ const defaultProfiles: any = {
     email: 'admin@studypro.com',
     phone: '(11) 98765-4321',
     bio: 'Administrador do sistema StudyPro',
-    avatar: '/uploads/avatars/admin-avatar.jpg',
+    avatar: null,
     role: 'admin',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'

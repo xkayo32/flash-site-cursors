@@ -25,7 +25,7 @@ const defaultUsers = [
     role: 'admin',
     status: 'active',
     phone: '(11) 98765-4321',
-    avatar: '/uploads/avatars/admin-avatar.jpg',
+    avatar: null,
     emailVerified: true,
     subscription: {
       plan: 'COMANDO SUPREMO',
