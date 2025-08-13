@@ -145,6 +145,9 @@ export default function DashboardPage() {
   const getImageUrl = (path: string | undefined | null): string | null => {
     if (!path) return null;
     
+    // Check if it's a default avatar and treat as null
+    if (path.includes('default-avatar')) return null;
+    
     // If it's already a full URL, return as is
     if (path.startsWith('http://') || path.startsWith('https://')) {
       return path;
@@ -167,6 +170,22 @@ export default function DashboardPage() {
       return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
+  };
+
+  // Helper to format date to Brazilian format
+  const formatBrazilianDate = (dateString: string | undefined): string => {
+    if (!dateString || dateString === '30 DIAS') return '30 DIAS';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch {
+      return '30 DIAS';
+    }
   };
 
   const getCurrentTime = () => {
@@ -480,7 +499,7 @@ export default function DashboardPage() {
                       CLEARANCE {dashboardData.user?.subscription?.plan?.toUpperCase() || 'BÁSICO'}
                     </p>
                     <p className="text-xs text-gray-300 font-police-numbers">
-                      EXPIRA EM {dashboardData.user?.subscription?.expiresAt || '30 DIAS'}
+                      EXPIRA EM {formatBrazilianDate(dashboardData.user?.subscription?.expiresAt)}
                     </p>
                   </div>
                 </div>
@@ -488,7 +507,7 @@ export default function DashboardPage() {
               
               {/* Avatar do usuário */}
               <div className="relative">
-                {dashboardData.user?.avatar && getImageUrl(dashboardData.user.avatar) ? (
+                {getImageUrl(dashboardData.user?.avatar) ? (
                   <img
                     src={getImageUrl(dashboardData.user.avatar)!}
                     alt={dashboardData.user?.name || 'Usuário'}
