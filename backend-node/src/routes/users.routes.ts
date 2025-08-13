@@ -44,7 +44,7 @@ const defaultUsers = [
     role: 'student',
     status: 'active',
     phone: '(11) 91234-5678',
-    avatar: '/uploads/avatars/default-avatar.jpg',
+    avatar: null,
     emailVerified: true,
     subscription: {
       plan: 'RECRUTA',

@@ -485,7 +485,7 @@ router.get('/student', authMiddleware, (req: AuthRequest, res: Response): void =
           id: currentUser.id,
           name: currentUser.name,
           email: currentUser.email,
-          avatar: currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=14242f&color=fff`,
+          avatar: currentUser.avatar || null,
           role: currentUser.role,
           subscription: currentUser.subscription || { plan: 'BÁSICO', expiresAt: '30 DIAS' }
         },

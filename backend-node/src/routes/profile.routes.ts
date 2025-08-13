@@ -65,7 +65,7 @@ const defaultProfiles: any = {
     email: 'aluno@example.com',
     phone: '',
     bio: '',
-    avatar: '/uploads/avatars/default-avatar.jpg',
+    avatar: null,
     role: 'student',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
