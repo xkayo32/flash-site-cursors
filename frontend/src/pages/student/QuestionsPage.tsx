@@ -301,8 +301,8 @@ export default function QuestionsPage() {
                     "font-police-body",
                     question.isAnswered && index === question.correct_answer && "text-green-700 dark:text-green-400 font-medium",
                     question.isAnswered && index === question.userAnswer && index !== question.correct_answer && "text-red-700 dark:text-red-400",
-                  !question.isAnswered && "text-gray-800 dark:text-gray-200"
-                )}>
+                    !question.isAnswered && "text-gray-800 dark:text-gray-200"
+                  )}>
                   {option}
                 </span>
               </div>
