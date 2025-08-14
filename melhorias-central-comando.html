@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Melhorias - Central de Comando</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .before, .after {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .before {
+            border-left: 5px solid #ef4444;
+        }
+        .after {
+            border-left: 5px solid #22c55e;
+        }
+        .card-preview {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .improvement-item {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+        .improvement-icon {
+            background: #16a34a;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-top: 4px solid #facc15;
+        }
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: bold;
+            margin: 0.25rem;
+        }
+        .status-excellent { background: #dcfce7; color: #16a34a; }
+        .status-good { background: #fef3c7; color: #d97706; }
+        .status-attention { background: #fed7aa; color: #ea580c; }
+        .status-critical { background: #fee2e2; color: #dc2626; }
+        .test-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+            color: black;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 10px;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(250, 204, 21, 0.3);
+        }
+        .test-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(250, 204, 21, 0.4);
+        }
+        .highlight-box {
+            background: #fffbeb;
+            border: 2px solid #f59e0b;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #facc15, #eab308);
+            border-radius: 6px;
+            position: relative;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .mini-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .mini-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 CENTRAL DE COMANDO</h1>
+        <h2>✨ MELHORIAS IMPLEMENTADAS</h2>
+        <p>Dashboard mais intuitivo, informativo e visualmente atrativo</p>
+    </div>
+
+    <div class="comparison">
+        <div class="before">
+            <h3>❌ ANTES - Problemas Identificados</h3>
+            <div class="card-preview">
+                <h4>CENTRAL DE COMANDO</h4>
+                <p>2 CURSOS ATIVOS • 3 TOTAL</p>
+                <div style="text-align: right;">
+                    <div style="font-size: 2em; font-weight: bold;">33%</div>
+                    <div style="font-size: 0.8em;">PROGRESSO MÉDIO</div>
+                </div>
+                <br>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center;">
+                    <div>
+                        <div style="font-weight: bold;">2/200</div>
+                        <div style="font-size: 0.8em;">AULAS CONCLUÍDAS</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: bold;">100%</div>
+                        <div style="font-size: 0.8em;">TAXA CONCLUSÃO HOJE</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: bold;">0.0h</div>
+                        <div style="font-size: 0.8em;">ESTUDO HOJE</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: bold;">3</div>
+                        <div style="font-size: 0.8em;">TAREFAS SEMANA</div>
+                    </div>
+                </div>
+            </div>
+            <div class="improvement-item" style="background: #fef2f2; border-color: #fecaca;">
+                <div class="improvement-icon" style="background: #dc2626;">❌</div>
+                <div>
+                    <strong>Informações confusas:</strong> "2/200 aulas" não faz sentido com 33% de progresso
+                </div>
+            </div>
+            <div class="improvement-item" style="background: #fef2f2; border-color: #fecaca;">
+                <div class="improvement-icon" style="background: #dc2626;">❌</div>
+                <div>
+                    <strong>Layout simples:</strong> Informações jogadas sem hierarquia visual
+                </div>
+            </div>
+            <div class="improvement-item" style="background: #fef2f2; border-color: #fecaca;">
+                <div class="improvement-icon" style="background: #dc2626;">❌</div>
+                <div>
+                    <strong>Falta contexto:</strong> "Taxa conclusão hoje 100%" sem explicar o que significa
+                </div>
+            </div>
+        </div>
+
+        <div class="after">
+            <h3>✅ DEPOIS - Soluções Implementadas</h3>
+            <div class="card-preview">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                            <div style="width: 40px; height: 40px; background: linear-gradient(45deg, #facc15, #eab308); border-radius: 50%; display: flex; align-items: center; justify-content: center;">🎯</div>
+                            <h4 style="margin: 0;">CENTRAL DE COMANDO</h4>
+                        </div>
+                        <p style="margin: 0; color: #666;">2 OPERAÇÕES ATIVAS • 1 CONCLUÍDAS</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end;">
+                            <div style="width: 12px; height: 12px; background: #22c55e; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                            <span style="font-size: 2em; font-weight: bold;">33%</span>
+                        </div>
+                        <div style="font-size: 0.8em; color: #666;">EFICIÊNCIA OPERACIONAL</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8em; margin-bottom: 0.5rem;">
+                        <span>PROGRESSO GERAL</span>
+                        <span><strong>45 de 135 missões</strong></span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 33%;"></div>
+                    </div>
+                </div>
+                
+                <div class="mini-cards">
+                    <div class="mini-card">
+                        <div style="font-weight: bold; font-size: 1.2em;">3</div>
+                        <div style="font-size: 0.8em; color: #666;">OPERAÇÕES TOTAIS</div>
+                        <div style="font-size: 0.7em; color: #999;">2 ativas</div>
+                    </div>
+                    <div class="mini-card">
+                        <div style="font-weight: bold; font-size: 1.2em; color: #22c55e;">45<span style="color: #999;">/135</span></div>
+                        <div style="font-size: 0.8em; color: #666;">MISSÕES COMPLETAS</div>
+                    </div>
+                    <div class="mini-card">
+                        <div style="font-weight: bold; font-size: 1.2em;">2.5h</div>
+                        <div style="font-size: 0.8em; color: #666;">TREINO HOJE</div>
+                        <div style="font-size: 0.7em; color: #999;">12h esta semana</div>
+                    </div>
+                    <div class="mini-card">
+                        <div style="font-weight: bold; font-size: 1.2em; color: #facc15;">8<span style="color: #999;">/12</span></div>
+                        <div style="font-size: 0.8em; color: #666;">TAREFAS HOJE</div>
+                        <div style="font-size: 0.7em; color: #999;">67% taxa</div>
+                    </div>
+                </div>
+
+                <div style="background: linear-gradient(90deg, #f1f5f9, #e2e8f0); border-radius: 8px; padding: 1rem; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 12px; height: 12px; background: #22c55e; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                        <span style="font-size: 0.9em; font-weight: bold; color: #16a34a;">STATUS: OPERACIONAL ÓTIMO</span>
+                    </div>
+                    <div style="font-size: 0.8em; color: #666;">
+                        ÚLTIMA ATUALIZAÇÃO: 14:52
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3>🎨 Visual Aprimorado</h3>
+            <div class="improvement-item">
+                <div class="improvement-icon">✓</div>
+                <div>
+                    <strong>Ícone Gradiente:</strong> Target com fundo em gradiente tactical yellow
+                </div>
+            </div>
+            <div class="improvement-item">
+                <div class="improvement-icon">✓</div>
+                <div>
+                    <strong>Indicador de Status:</strong> Bolinha colorida animada baseada na performance
+                </div>
+            </div>
+            <div class="improvement-item">
+                <div class="improvement-icon">✓</div>
+                <div>
+                    <strong>Cards com Background:</strong> Cada métrica em card individual com fundo
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <h3>📊 Informações Melhoradas</h3>
+            <div class="improvement-item">
+                <div class="improvement-icon">✓</div>
+                <div>
+                    <strong>Terminologia Tática:</strong> "Operações" ao invés de "Cursos"
+                </div>
+            </div>
+            <div class="improvement-item">
+                <div class="improvement-icon">✓</div>
+                <div>
+                    <strong>Dados Contextualizados:</strong> "45/135 missões" é mais claro que "2/200"
+                </div>
+            </div>
+            <div class="improvement-item">
+                <div class="improvement-icon">✓</div>
+                <div>
+                    <strong>Informações Adicionais:</strong> Subtextos explicativos em cada métrica
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <h3>🎯 Barra de Progresso</h3>
+            <div class="improvement-item">
+                <div class="improvement-icon">✓</div>
+                <div>
+                    <strong>Progresso Visual:</strong> Barra animada mostrando progresso geral
+                </div>
+            </div>
+            <div class="improvement-item">
+                <div class="improvement-icon">✓</div>
+                <div>
+                    <strong>Animação Shimmer:</strong> Efeito visual que chama atenção para o progresso
+                </div>
+            </div>
+            <div class="improvement-item">
+                <div class="improvement-icon">✓</div>
+                <div>
+                    <strong>Contadores Claros:</strong> "45 de 135 missões" ao invés de apenas "%"
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <h3>⚡ Status Operacional</h3>
+            <div class="status-indicator status-excellent">
+                🟢 STATUS: OPERACIONAL ÓTIMO
+            </div>
+            <div class="status-indicator status-good">
+                🟡 STATUS: OPERACIONAL BOM  
+            </div>
+            <div class="status-indicator status-attention">
+                🟠 STATUS: REQUER ATENÇÃO
+            </div>
+            <div class="status-indicator status-critical">
+                🔴 STATUS: AÇÃO IMEDIATA NECESSÁRIA
+            </div>
+            <p style="font-size: 0.9em; color: #666; margin-top: 1rem;">
+                Status calculado automaticamente baseado na eficiência operacional (% progresso médio)
+            </p>
+        </div>
+    </div>
+
+    <div class="highlight-box">
+        <h4>🚀 Melhorias Técnicas Implementadas</h4>
+        <ul>
+            <li><strong>Cálculos Corrigidos:</strong> Estatísticas agora usam dados reais de <code>enrollments</code></li>
+            <li><strong>Hierarquia Visual:</strong> Informações organizadas por prioridade e contexto</li>
+            <li><strong>Feedback Visual:</strong> Cores e animações indicam status e progresso</li>
+            <li><strong>Responsividade:</strong> Layout adaptativo para diferentes tamanhos de tela</li>
+            <li><strong>Terminologia Consistente:</strong> Linguagem militar/tática em todo o card</li>
+            <li><strong>Timestamp:</strong> Última atualização para transparência dos dados</li>
+        </ul>
+    </div>
+
+    <div style="text-align: center; margin: 2rem 0;">
+        <a href="http://localhost:5174/student/schedule" class="test-button" target="_blank">
+            🗓️ VER CENTRAL DE COMANDO MELHORADA
+        </a>
+        <a href="http://localhost:5174/login" class="test-button" target="_blank">
+            🔐 FAZER LOGIN PRIMEIRO
+        </a>
+    </div>
+
+    <div class="highlight-box">
+        <h4>✨ Resultado Final</h4>
+        <p>O card da Central de Comando agora oferece uma visão muito mais clara e útil do progresso do estudante:</p>
+        <ul>
+            <li>✅ <strong>Informações precisas</strong> baseadas nos dados reais dos cursos matriculados</li>
+            <li>✅ <strong>Visual atrativo</strong> com gradientes, animações e indicadores de status</li>
+            <li>✅ <strong>Contexto adicional</strong> com subtextos explicativos e informações semanais</li>
+            <li>✅ <strong>Status operacional dinâmico</strong> que motiva e orienta o estudante</li>
+            <li>✅ <strong>Layout profissional</strong> mantendo o tema militar/tático</li>
+        </ul>
+    </div>
+</body>
+</html>

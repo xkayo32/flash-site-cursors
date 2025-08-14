@@ -11,7 +11,15 @@ import {
   Filter,
   ChevronRight,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Crosshair,
+  Award,
+  Zap,
+  TrendingUp,
+  Activity,
+  Timer,
+  Brain,
+  Sword
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -308,6 +316,164 @@ export default function MockExamsPageSimple() {
             </Card>
             </motion.div>
           ))}
+        </motion.div>
+      )}
+
+      {/* Tactical Command Center */}
+      {!loading && !error && filteredExams.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="mt-8 bg-gradient-to-r from-gray-900 via-[#14242f] to-gray-800 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 text-white relative overflow-hidden border border-accent-500/20"
+        >
+          {/* Background pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 20px,
+                rgba(250, 204, 21, 0.1) 20px,
+                rgba(250, 204, 21, 0.1) 40px
+              )`
+            }} />
+          </div>
+          
+          {/* Corner tactical accents */}
+          <div className="absolute top-0 left-0 w-12 h-12 border-t-2 border-l-2 border-accent-500/30"></div>
+          <div className="absolute top-0 right-0 w-12 h-12 border-t-2 border-r-2 border-accent-500/30"></div>
+          <div className="absolute bottom-0 left-0 w-12 h-12 border-b-2 border-l-2 border-accent-500/30"></div>
+          <div className="absolute bottom-0 right-0 w-12 h-12 border-b-2 border-r-2 border-accent-500/30"></div>
+          
+          <div className="relative z-10">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Sword className="w-8 h-8 text-accent-500 mr-2" />
+                  <span className="text-3xl font-bold font-police-numbers text-accent-500">
+                    {mockExams.filter(e => e.isActive).length}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-300 font-police-body uppercase tracking-wider">
+                  OPERAÇÕES ATIVAS
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Crosshair className="w-8 h-8 text-accent-500 mr-2" />
+                  <span className="text-3xl font-bold font-police-numbers text-accent-500">
+                    {mockExams.reduce((acc, exam) => acc + exam.totalQuestions, 0)}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-300 font-police-body uppercase tracking-wider">
+                  TOTAL DE ALVOS
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Timer className="w-8 h-8 text-accent-500 mr-2" />
+                  <span className="text-3xl font-bold font-police-numbers text-accent-500">
+                    {mockExams.length > 0 ? Math.round(mockExams.reduce((acc, exam) => acc + exam.timeLimitMinutes, 0) / mockExams.length) : 0}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-300 font-police-body uppercase tracking-wider">
+                  TEMPO MÉDIO (MIN)
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Activity className="w-8 h-8 text-accent-500 mr-2" />
+                  <span className="text-3xl font-bold font-police-numbers text-accent-500">
+                    {filteredExams.length}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-300 font-police-body uppercase tracking-wider">
+                  OPERAÇÕES DISPONÍVEIS
+                </p>
+              </div>
+            </div>
+
+            {/* Title and Description */}
+            <div className="text-center mb-8">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-2 h-8 bg-accent-500 mr-3"></div>
+                <Crosshair className="w-10 h-10 text-accent-500 mr-3" />
+                <div className="w-2 h-8 bg-accent-500"></div>
+              </div>
+              
+              <h2 className="text-2xl md:text-3xl font-bold mb-3 font-police-title uppercase tracking-wider">
+                CENTRO DE OPERAÇÕES TÁTICAS
+              </h2>
+              
+              <p className="text-gray-300 mb-2 max-w-3xl mx-auto font-police-body tracking-wider">
+                PREPARE-SE PARA O COMBATE COM SIMULAÇÕES REALÍSTICAS DE CAMPO
+              </p>
+              
+              <div className="w-24 h-1 bg-accent-500 mx-auto"></div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                size="lg" 
+                onClick={() => {
+                  // Find a random active exam
+                  const activeExams = mockExams.filter(e => e.isActive);
+                  if (activeExams.length > 0) {
+                    const randomExam = activeExams[Math.floor(Math.random() * activeExams.length)];
+                    navigate(`/simulations/${randomExam.id}/take`);
+                  }
+                }}
+                className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black hover:text-white dark:hover:text-white font-police-body font-semibold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl min-w-[220px]"
+              >
+                <Zap className="w-5 h-5 mr-2" />
+                MISSÃO ALEATÓRIA
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => {
+                  const totalTime = mockExams.reduce((acc, exam) => acc + exam.timeLimitMinutes, 0);
+                  const totalQuestions = mockExams.reduce((acc, exam) => acc + exam.totalQuestions, 0);
+                  const avgDifficulty = mockExams.length > 0 
+                    ? Math.round((mockExams.filter(e => e.difficulty === 'SARGENTO').length / mockExams.length) * 100)
+                    : 0;
+                  
+                  alert(`🎯 RELATÓRIO DE OPERAÇÕES\n\n⚡ ${mockExams.filter(e => e.isActive).length} operações ativas\n🎯 ${totalQuestions} alvos totais disponíveis\n⏱️ ${totalTime} minutos de combate total\n🔥 ${avgDifficulty}% operações de alta dificuldade`);
+                }}
+                className="border-accent-500/50 hover:border-accent-500 text-white hover:bg-accent-500/10 font-police-body font-semibold uppercase tracking-wider transition-all duration-300 min-w-[220px]"
+              >
+                <TrendingUp className="w-5 h-5 mr-2" />
+                RELATÓRIO DE COMBATE
+              </Button>
+            </div>
+
+            {/* Performance Indicator */}
+            <div className="mt-8">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-300 font-police-body uppercase">PRONTIDÃO OPERACIONAL:</span>
+                <span className="text-sm font-bold text-accent-500 font-police-numbers">
+                  {mockExams.filter(e => e.isActive).length}/{mockExams.length} OPERACIONAIS
+                </span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ 
+                    width: `${mockExams.length > 0 ? Math.round((mockExams.filter(e => e.isActive).length / mockExams.length) * 100) : 0}%` 
+                  }}
+                  transition={{ duration: 1, delay: 1 }}
+                  className="bg-gradient-to-r from-accent-500 to-yellow-400 h-full rounded-full shadow-lg"
+                />
+              </div>
+            </div>
+          </div>
         </motion.div>
       )}
 

@@ -35,5 +35,41 @@
     "completion_date": null,
     "certificate_issued": false,
     "tactical_notes": []
+  },
+  {
+    "id": "21eabff6-b94c-4619-bfd5-424b82c6d9c4",
+    "user_id": 1,
+    "course_id": "3b5af81d-266c-4d7f-bc9b-280b412caf09",
+    "status": "completed",
+    "progress": {
+      "percentage": 100,
+      "completed_modules": [],
+      "completed_lessons": [
+        "43c43388-5135-4586-b636-a2ef7fe952e6"
+      ],
+      "last_accessed": "2025-08-14T14:38:32.770Z"
+    },
+    "enrolled_at": "2025-08-14T14:38:32.726Z",
+    "updated_at": "2025-08-14T14:38:32.770Z",
+    "completion_date": "2025-08-14T14:38:32.772Z",
+    "certificate_issued": true,
+    "tactical_notes": []
+  },
+  {
+    "id": "b924a4df-d375-43f1-acea-f9cede68f1ab",
+    "user_id": 2,
+    "course_id": "88c9efca-98ae-43e7-848c-091f38703915",
+    "status": "active",
+    "progress": {
+      "percentage": 0,
+      "completed_modules": [],
+      "completed_lessons": [],
+      "last_accessed": "2025-08-14T14:43:15.482Z"
+    },
+    "enrolled_at": "2025-08-14T14:43:15.482Z",
+    "updated_at": "2025-08-14T14:43:15.482Z",
+    "completion_date": null,
+    "certificate_issued": false,
+    "tactical_notes": []
   }
 ]
