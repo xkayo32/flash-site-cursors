@@ -75,10 +75,10 @@ const transformCourseFromAPI = (course: CourseFromAPI): Course => {
     id: course.id,
     title: course.title.toUpperCase(),
     description: course.description,
-    instructor: course.instructor?.name?.toUpperCase() || 'INSTRUTOR NÃO INFORMADO',
+    instructor: course.instructor?.name || 'Comandante Tático',
     category: course.category?.toUpperCase() || 'GERAL',
     subcategory: course.category?.toUpperCase(),
-    duration: `${course.duration?.hours || 0}H OPERACIONAIS`,
+    duration: `${course.duration_hours || course.duration?.hours || 0}h`,
     students: course.stats?.enrollments || 0,
     rating: course.stats?.rating || 0,
     reviews: course.stats?.enrollments || 0,
@@ -86,8 +86,8 @@ const transformCourseFromAPI = (course: CourseFromAPI): Course => {
     originalPrice: undefined,
     modules: course.stats?.modules || 0,
     questions: course.stats?.lessons || 0,
-    lastUpdated: new Date(course.updatedAt).toISOString().split('T')[0],
-    level: difficultyMap[course.difficulty || ''] || 'BÁSICO',
+    lastUpdated: new Date(course.updated_at || course.updatedAt).toISOString().split('T')[0],
+    level: difficultyMap[course.difficulty_level || course.difficulty || ''] || 'BÁSICO',
     features: course.objectives?.slice(0, 4).map(obj => obj.toUpperCase()) || ['CONTEÚDO ATUALIZADO'],
     image: course.thumbnail || 'https://images.unsplash.com/photo-1589994965851-a8f479c573a9?w=400&h=250&fit=crop',
     badge: course.status === 'published' ? {
@@ -145,8 +145,13 @@ export default function CoursesPage() {
 
   // Carregar cursos da API
   useEffect(() => {
-    loadCourses();
-    checkEnrolledCourses();
+    const loadData = async () => {
+      // Primeiro, verificar matrículas
+      const enrollmentData = await checkEnrolledCourses();
+      // Depois, carregar cursos com os dados de matrícula
+      await loadCourses(enrollmentData);
+    };
+    loadData();
   }, []);
 
   // Verificar quais cursos o usuário já está matriculado e seu progresso
@@ -154,25 +159,31 @@ export default function CoursesPage() {
     try {
       const response = await courseService.getEnrolledCourses();
       if (response.success && response.data) {
-        const enrolledIds = new Set(response.data.map((course: any) => course.id));
+        const enrolledIds = new Set(response.data.map((enrollment: any) => enrollment.course_id || enrollment.course?.id));
         const progressMap = new Map();
         
         // Mapear progresso de cada curso
-        response.data.forEach((course: any) => {
-          if (course.progress !== undefined) {
-            progressMap.set(course.id, course.progress);
+        response.data.forEach((enrollment: any) => {
+          const courseId = enrollment.course_id || enrollment.course?.id;
+          if (courseId && enrollment.progress?.percentage !== undefined) {
+            progressMap.set(courseId, enrollment.progress.percentage);
           }
         });
         
         setEnrolledCourses(enrolledIds);
         setCourseProgress(progressMap);
+        
+        // Retornar os dados para uso imediato
+        return { enrolledIds, progressMap };
       }
     } catch (error) {
       console.error('Erro ao verificar matrículas:', error);
     }
+    
+    return { enrolledIds: new Set(), progressMap: new Map() };
   };
 
-  const loadCourses = async () => {
+  const loadCourses = async (enrollmentData?: { enrolledIds: Set<string>, progressMap: Map<string, number> }) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -182,16 +193,28 @@ export default function CoursesPage() {
       });
       
       if (response.success && response.data) {
+        // Use os dados passados ou os estados atuais
+        const enrolledIds = enrollmentData?.enrolledIds || enrolledCourses;
+        const progressMap = enrollmentData?.progressMap || courseProgress;
+        
         const transformedCourses = response.data.map(course => {
           const transformed = transformCourseFromAPI(course);
           // Check if user is enrolled in this course
-          transformed.enrolled = enrolledCourses.has(course.id);
-          // Set progress if available
-          transformed.progress = courseProgress.get(course.id) || 0;
+          const isEnrolled = enrolledIds.has(course.id);
+          const progress = progressMap.get(course.id) || 0;
+          
+          transformed.enrolled = isEnrolled;
+          transformed.progress = progress;
+          
+          // Log for debugging
+          console.log(`Course ${course.title}: enrolled=${isEnrolled}, progress=${progress}%`);
+          
           return transformed;
         });
         setCourses(transformedCourses);
         setTotalCourses(transformedCourses.length);
+        
+        console.log(`Total de cursos carregados: ${transformedCourses.length}`);
       } else {
         setError(response.message || 'Erro ao carregar cursos');
         setCourses([]);
@@ -253,7 +276,7 @@ export default function CoursesPage() {
     }
 
     return filtered;
-  }, [searchTerm, selectedCategory, selectedLevel, sortBy, showOnlyEnrolled]);
+  }, [courses, searchTerm, selectedCategory, selectedLevel, sortBy, showOnlyEnrolled]);
 
   const CourseCard = ({ course, index }: { course: Course; index: number }) => (
     <motion.div
@@ -261,7 +284,7 @@ export default function CoursesPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
     >
-      <Card className="h-full hover:shadow-xl transition-all duration-300 group overflow-hidden bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+      <Card className="h-full flex flex-col hover:shadow-xl transition-all duration-300 group overflow-hidden bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
         {/* Imagem do curso */}
         <div className="relative h-48 overflow-hidden">
           <img
@@ -291,7 +314,7 @@ export default function CoursesPage() {
           )}
         </div>
 
-        <CardContent className="p-6">
+        <CardContent className="p-6 flex flex-col flex-1">
           {/* Categoria e Nível */}
           <div className="flex items-center gap-2 mb-3">
             <Badge variant="secondary" className="text-xs font-police-body font-semibold uppercase tracking-wider">
@@ -313,23 +336,24 @@ export default function CoursesPage() {
           </p>
 
           {/* Instrutor */}
-          <p className="text-sm font-police-body text-gray-500 dark:text-gray-500 mb-4 uppercase tracking-wider">
-            POR {course.instructor}
+          <p className="text-xs font-police-body text-gray-500 dark:text-gray-500 mb-3 flex items-center gap-1">
+            <Shield className="w-3 h-3" />
+            <span className="uppercase tracking-wider">{course.instructor}</span>
           </p>
 
           {/* Estatísticas */}
-          <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
-            <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400 font-police-numbers">
-              <Clock className="w-4 h-4" />
-              <span>{course.duration}</span>
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+              <Clock className="w-4 h-4 text-gray-500 mb-1" />
+              <span className="text-xs font-police-numbers font-semibold text-gray-700 dark:text-gray-300">{course.duration}</span>
             </div>
-            <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400 font-police-numbers">
-              <Users className="w-4 h-4" />
-              <span>{course.students.toLocaleString()}</span>
+            <div className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+              <BookOpen className="w-4 h-4 text-gray-500 mb-1" />
+              <span className="text-xs font-police-numbers font-semibold text-gray-700 dark:text-gray-300">{course.modules} mód</span>
             </div>
-            <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400 font-police-numbers">
-              <Star className="w-4 h-4 text-yellow-500 fill-current" />
-              <span>{course.rating}</span>
+            <div className="flex flex-col items-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+              <Target className="w-4 h-4 text-gray-500 mb-1" />
+              <span className="text-xs font-police-numbers font-semibold text-gray-700 dark:text-gray-300">{course.questions} aulas</span>
             </div>
           </div>
 
@@ -347,8 +371,11 @@ export default function CoursesPage() {
             )}
           </div>
 
-          {/* Preço e Ação */}
-          <div className="flex items-center justify-between mt-auto">
+          {/* Spacer to push footer down */}
+          <div className="flex-1" />
+          
+          {/* Preço e Ação - Footer fixo */}
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div>
               {course.originalPrice && (
                 <span className="text-sm text-gray-400 dark:text-gray-500 line-through font-police-numbers">
@@ -360,40 +387,21 @@ export default function CoursesPage() {
               </div>
             </div>
             {course.enrolled ? (
-              <div className="flex flex-col gap-2">
-                <Link to={`/courses/${course.id}`}>
-                  <Button 
-                    size="sm" 
-                    variant="secondary"
-                    className="w-full gap-2 font-police-body uppercase tracking-wider"
-                  >
-                    CONTINUAR
-                    <Play className="w-4 h-4" />
-                  </Button>
-                </Link>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={enrollmentLoading === course.id}
-                  onClick={() => handleUnenrollment(course.id)}
-                  className="w-full text-xs font-police-body uppercase tracking-wider text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
+              <Link to={`/courses/${course.id}`}>
+                <Button 
+                  size="sm" 
+                  className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white font-police-body font-semibold uppercase tracking-wider gap-2"
                 >
-                  {enrollmentLoading === course.id ? (
-                    <>
-                      <div className="w-3 h-3 border border-red-600/30 border-t-red-600 rounded-full animate-spin mr-1" />
-                      PAUSANDO...
-                    </>
-                  ) : (
-                    'PAUSAR OPERAÇÃO'
-                  )}
+                  CONTINUAR
+                  <Play className="w-4 h-4" />
                 </Button>
-              </div>
+              </Link>
             ) : (
               <Button 
                 size="sm"
                 disabled={enrollmentLoading === course.id}
                 onClick={() => handleEnrollment(course.id)}
-                className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-accent-500 hover:bg-accent-600 dark:bg-gray-100 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white font-police-body font-semibold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {enrollmentLoading === course.id ? (
                   <>
@@ -461,19 +469,22 @@ export default function CoursesPage() {
                 </p>
 
                 {/* Instrutor e Stats */}
-                <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-500">
-                  <span className="font-police-body uppercase tracking-wider">POR {course.instructor}</span>
+                <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-500">
+                  <div className="flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    <span className="font-police-body uppercase tracking-wider">{course.instructor}</span>
+                  </div>
                   <div className="flex items-center gap-1 font-police-numbers">
-                    <Clock className="w-4 h-4" />
+                    <Clock className="w-3 h-3" />
                     <span>{course.duration}</span>
                   </div>
                   <div className="flex items-center gap-1 font-police-numbers">
-                    <Users className="w-4 h-4" />
-                    <span>{course.students.toLocaleString()}</span>
+                    <BookOpen className="w-3 h-3" />
+                    <span>{course.modules} módulos</span>
                   </div>
                   <div className="flex items-center gap-1 font-police-numbers">
-                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                    <span>{course.rating}</span>
+                    <Target className="w-3 h-3" />
+                    <span>{course.questions} aulas</span>
                   </div>
                 </div>
               </div>
@@ -489,40 +500,21 @@ export default function CoursesPage() {
                   R$ {course.price}
                 </div>
                 {course.enrolled ? (
-                  <div className="flex flex-col gap-2">
-                    <Link to={`/courses/${course.id}`}>
-                      <Button 
-                        size="sm" 
-                        variant="secondary"
-                        className="w-full gap-2 font-police-body uppercase tracking-wider"
-                      >
-                        CONTINUAR
-                        <Play className="w-4 h-4" />
-                      </Button>
-                    </Link>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={enrollmentLoading === course.id}
-                      onClick={() => handleUnenrollment(course.id)}
-                      className="w-full text-xs font-police-body uppercase tracking-wider text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
+                  <Link to={`/courses/${course.id}`}>
+                    <Button 
+                      size="sm" 
+                      className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white font-police-body font-semibold uppercase tracking-wider gap-2"
                     >
-                      {enrollmentLoading === course.id ? (
-                        <>
-                          <div className="w-3 h-3 border border-red-600/30 border-t-red-600 rounded-full animate-spin mr-1" />
-                          PAUSANDO...
-                        </>
-                      ) : (
-                        'PAUSAR OPERAÇÃO'
-                      )}
+                      CONTINUAR
+                      <Play className="w-4 h-4" />
                     </Button>
-                  </div>
+                  </Link>
                 ) : (
                   <Button 
                     size="sm"
                     disabled={enrollmentLoading === course.id}
                     onClick={() => handleEnrollment(course.id)}
-                    className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-accent-500 hover:bg-accent-600 dark:bg-gray-100 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white font-police-body font-semibold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {enrollmentLoading === course.id ? (
                       <>
@@ -558,7 +550,8 @@ export default function CoursesPage() {
     </motion.div>
   );
 
-  const handleUnenrollment = async (courseId: string) => {
+  // Função removida - não permite pausar curso
+  /* const handleUnenrollment = async (courseId: string) => {
     try {
       setEnrollmentLoading(courseId);
       
@@ -603,7 +596,7 @@ export default function CoursesPage() {
     } finally {
       setEnrollmentLoading(null);
     }
-  };
+  }; */
 
   const handleEnrollment = async (courseId: string) => {
     try {

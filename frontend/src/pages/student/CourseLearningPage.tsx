@@ -4,6 +4,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { courseProgressService, type CourseProgress, type ModuleProgress } from '@/services/courseProgressService';
 import { courseService } from '@/services/courseService';
+import { CommentSectionSimple } from '@/components/CommentSectionSimple';
 import toast from 'react-hot-toast';
 import {
   Play,
@@ -239,6 +240,41 @@ export default function CourseLearningPage() {
     return totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
   };
 
+  // Verificar se deve mostrar botão "MISSÃO COMPLETA"
+  const shouldShowCompleteButton = () => {
+    if (!courseProgress?.modules || !currentLessonId) return false;
+    
+    // Listar todas as aulas do curso em ordem
+    const allLessons = courseProgress.modules
+      .sort((a, b) => a.order_index - b.order_index)
+      .flatMap(module => 
+        module.lessons.sort((a, b) => a.order_index - b.order_index)
+      );
+    
+    if (allLessons.length === 0) return false;
+    
+    // Verificar se está na última aula
+    const lastLesson = allLessons[allLessons.length - 1];
+    const isLastLesson = currentLessonId === lastLesson.id;
+    
+    if (!isLastLesson) return false;
+    
+    // Verificar se a aula atual está concluída
+    const currentLesson = allLessons.find(l => l.id === currentLessonId);
+    const isCurrentLessonCompleted = currentLesson?.progress?.completed || 
+                                   currentLesson?.progress?.watched_percentage >= 90;
+    
+    if (isCurrentLessonCompleted) return false; // Se já está completa, não mostrar botão
+    
+    // Verificar se todas as aulas anteriores estão concluídas
+    const previousLessons = allLessons.slice(0, -1); // Todas exceto a última
+    const allPreviousCompleted = previousLessons.every(lesson => 
+      lesson.progress?.completed || lesson.progress?.watched_percentage >= 90
+    );
+    
+    return allPreviousCompleted;
+  };
+
   // Carregegar progresso específico da aula atual
   useEffect(() => {
     const loadLessonProgress = async () => {
@@ -455,7 +491,7 @@ export default function CourseLearningPage() {
 
     try {
       // Salvar progresso final da aula atual antes de trocar
-      if (currentLessonId && duration > 0) {
+      if (currentLessonId) {
         const watchedPercentage = courseProgressService.calculateWatchedPercentage(currentTime, duration);
         
         // Se está avançando para próxima aula, marcar atual como completa
@@ -484,25 +520,33 @@ export default function CourseLearningPage() {
         }
         
         if (isAdvancing) {
-            await courseProgressService.updateLessonProgress(courseId, currentLessonId, {
-              currentTime: duration,
-              duration,
-              watchedPercentage: 100,
-              completed: true
-            });
-            
-            toast.success('✅ Missão anterior marcada como concluída!', { duration: 2000 });
-          } else {
-            // Apenas salvar progresso sem marcar como completa
-            await courseProgressService.updateLessonProgress(courseId, currentLessonId, {
-              currentTime,
-              duration,
-              watchedPercentage,
-              completed: watchedPercentage >= 90
-            });
+          // Marcar aula atual como completa
+          await courseProgressService.updateLessonProgress(courseId, currentLessonId, {
+            currentTime: duration || 0,
+            duration: duration || 0,
+            watchedPercentage: 100,
+            completed: true
+          });
+          
+          // Chamar API para marcar como completa no backend também
+          await courseService.markLessonComplete(courseId, currentLessonId);
+          
+          // Atualizar o progresso local imediatamente
+          if (courseProgress) {
+            const updatedModules = courseProgress.modules.map(module => ({
+              ...module,
+              lessons: module.lessons.map(lesson => 
+                lesson.id === currentLessonId 
+                  ? { ...lesson, progress: { ...lesson.progress, completed: true, watched_percentage: 100 } }
+                  : lesson
+              )
+            }));
+            setCourseProgress({ ...courseProgress, modules: updatedModules });
           }
+          
+          toast.success('✅ Missão anterior marcada como concluída!', { duration: 2000 });
         } else {
-          // Caso não encontre o módulo, apenas salvar progresso
+          // Apenas salvar progresso sem marcar como completa
           await courseProgressService.updateLessonProgress(courseId, currentLessonId, {
             currentTime,
             duration,
@@ -518,6 +562,12 @@ export default function CourseLearningPage() {
       
       if (videoRef.current) {
         videoRef.current.currentTime = 0;
+      }
+
+      // Recarregar progresso do curso para garantir sincronização
+      const updatedProgress = await courseProgressService.getCourseProgress(courseId);
+      if (updatedProgress) {
+        setCourseProgress(updatedProgress);
       }
 
       toast.success('📚 Nova missão carregada!', {
@@ -1162,15 +1212,17 @@ Junte-se à operação e domine os concursos! 💪`;
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={markLessonComplete}
-                    className="bg-accent-500 hover:bg-accent-600 text-black dark:text-black border-accent-600 font-police-body font-semibold uppercase tracking-wider"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    MISSÃO COMPLETA
-                  </Button>
+                  {shouldShowCompleteButton() && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={markLessonComplete}
+                      className="bg-accent-500 hover:bg-accent-600 text-black dark:text-black border-accent-600 font-police-body font-semibold uppercase tracking-wider"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      MISSÃO COMPLETA
+                    </Button>
+                  )}
                   <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-400 hover:text-accent-500 hover:bg-white/10">
                     <Flag className="w-4 h-4" />
                   </Button>
@@ -1258,6 +1310,14 @@ Junte-se à operação e domine os concursos! 💪`;
                     OPERAÇÃO FINALIZADA!
                   </Button>
                 )}
+              </div>
+
+              {/* Seção de Comentários */}
+              <div className="mt-8">
+                <CommentSectionSimple 
+                  courseId={courseId!} 
+                  currentLessonId={currentLessonId || undefined}
+                />
               </div>
             </div>
           </div>

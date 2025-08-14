@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { authMiddleware, optionalAuth, AuthRequest } from '../middleware/auth.middleware';
+import { commentService } from '../services/commentService';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -44,6 +45,7 @@ const upload = multer({
 const COURSES_FILE = path.join(__dirname, '../../data/courses.json');
 const MODULES_FILE = path.join(__dirname, '../../data/modules.json');
 const LESSONS_FILE = path.join(__dirname, '../../data/lessons.json');
+const USERS_FILE = path.join(__dirname, '../../data/users.json');
 
 // Utility functions for data persistence
 const readJsonFile = (filepath: string): any[] => {
@@ -74,10 +76,12 @@ const writeJsonFile = (filepath: string, data: any[]): void => {
 const getCourses = (): any[] => readJsonFile(COURSES_FILE);
 const getModules = (): any[] => readJsonFile(MODULES_FILE);
 const getLessons = (): any[] => readJsonFile(LESSONS_FILE);
+const getUsers = (): any[] => readJsonFile(USERS_FILE);
 
 const saveCourses = (courses: any[]): void => writeJsonFile(COURSES_FILE, courses);
 const saveModules = (modules: any[]): void => writeJsonFile(MODULES_FILE, modules);
 const saveLessons = (lessons: any[]): void => writeJsonFile(LESSONS_FILE, lessons);
+const saveUsers = (users: any[]): void => writeJsonFile(USERS_FILE, users);
 
 // Initialize default data if files don't exist
 if (!fs.existsSync(COURSES_FILE)) {
@@ -1522,6 +1526,43 @@ router.post('/:courseId/lessons/:lessonId/complete', authMiddleware,
         enrollment.progress.last_accessed = new Date().toISOString();
         enrollment.updated_at = new Date().toISOString();
         
+        // Also create/update lesson progress record
+        const progressRecords = getLessonProgress();
+        const existingProgressIndex = progressRecords.findIndex(p => 
+          p.user_id === userId && 
+          p.course_id === req.params.courseId && 
+          p.lesson_id === req.params.lessonId
+        );
+        
+        if (existingProgressIndex >= 0) {
+          // Update existing progress
+          progressRecords[existingProgressIndex] = {
+            ...progressRecords[existingProgressIndex],
+            current_time: lesson.duration_minutes ? lesson.duration_minutes * 60 : 0,
+            duration: lesson.duration_minutes ? lesson.duration_minutes * 60 : 0,
+            watched_percentage: 100,
+            completed: true,
+            last_accessed: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+        } else {
+          // Create new progress record
+          progressRecords.push({
+            id: `progress-${userId}-${req.params.lessonId}-${Date.now()}`,
+            user_id: userId,
+            course_id: req.params.courseId,
+            lesson_id: req.params.lessonId,
+            current_time: lesson.duration_minutes ? lesson.duration_minutes * 60 : 0,
+            duration: lesson.duration_minutes ? lesson.duration_minutes * 60 : 0,
+            watched_percentage: 100,
+            completed: true,
+            last_accessed: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        }
+        saveLessonProgress(progressRecords);
+        
         // Calculate new progress percentage (basic calculation)
         const modules = getModules().filter(m => m.course_id === req.params.courseId);
         const moduleIds = modules.map(m => m.id);
@@ -1607,5 +1648,266 @@ router.get('/my-enrollments', authMiddleware, (req: AuthRequest, res: Response):
     res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
   }
 });
+
+// ===================== COMMENTS ENDPOINTS =====================
+
+// GET /api/v1/courses/:courseId/comments - Get comments for course or lesson
+router.get('/:courseId/comments', authMiddleware, 
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.user?.id;
+      const { lesson_id, page = 1, limit = 20 } = req.query;
+      const courseId = parseInt(req.params.courseId);
+      
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+        return;
+      }
+      
+      if (isNaN(courseId)) {
+        res.status(400).json({ success: false, message: 'ID DO CURSO INVÁLIDO' });
+        return;
+      }
+      
+      // Verify enrollment
+      const isEnrolled = await commentService.checkUserEnrollment(userId, courseId);
+      if (!isEnrolled) {
+        res.status(404).json({ success: false, message: 'MATRÍCULA NÃO ENCONTRADA' });
+        return;
+      }
+      
+      // Prepare parameters
+      const params = {
+        course_id: courseId,
+        user_id: userId,
+        page: parseInt(page as string),
+        limit: parseInt(limit as string)
+      };
+      
+      // Add lesson filter if specified
+      if (lesson_id) {
+        const lessonIdNum = parseInt(lesson_id as string);
+        if (!isNaN(lessonIdNum)) {
+          params.lesson_id = lessonIdNum;
+        }
+      }
+      
+      const { comments, total } = await commentService.getComments(params);
+      
+      res.json({
+        success: true,
+        data: comments,
+        pagination: {
+          page: params.page,
+          limit: params.limit,
+          total,
+          pages: Math.ceil(total / params.limit)
+        },
+        message: `${total} RELATÓRIOS ENCONTRADOS`
+      });
+    } catch (error) {
+      console.error('Error getting comments:', error);
+      res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
+    }
+  }
+);
+
+// POST /api/v1/courses/:courseId/comments - Create new comment
+router.post('/:courseId/comments', authMiddleware, 
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.user?.id;
+      const { content, lesson_id, parent_id } = req.body;
+      const courseId = parseInt(req.params.courseId);
+      
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+        return;
+      }
+      
+      if (isNaN(courseId)) {
+        res.status(400).json({ success: false, message: 'ID DO CURSO INVÁLIDO' });
+        return;
+      }
+      
+      if (!content || content.trim().length === 0) {
+        res.status(400).json({ success: false, message: 'CONTEÚDO DO RELATÓRIO OBRIGATÓRIO' });
+        return;
+      }
+      
+      if (content.length > 1000) {
+        res.status(400).json({ success: false, message: 'RELATÓRIO MUITO EXTENSO (MÁX 1000 CARACTERES)' });
+        return;
+      }
+      
+      // Verify enrollment
+      const isEnrolled = await commentService.checkUserEnrollment(userId, courseId);
+      if (!isEnrolled) {
+        res.status(404).json({ success: false, message: 'MATRÍCULA NÃO ENCONTRADA' });
+        return;
+      }
+      
+      // If lesson_id is provided, verify lesson exists
+      if (lesson_id) {
+        const lessonIdNum = parseInt(lesson_id);
+        if (!isNaN(lessonIdNum)) {
+          const lessonExists = await commentService.checkLessonExists(lessonIdNum);
+          if (!lessonExists) {
+            res.status(404).json({ success: false, message: 'MISSÃO NÃO ENCONTRADA' });
+            return;
+          }
+        }
+      }
+      
+      // If parent_id is provided, verify parent comment exists
+      if (parent_id) {
+        const parentIdNum = parseInt(parent_id);
+        if (!isNaN(parentIdNum)) {
+          const parentExists = await commentService.checkParentCommentExists(parentIdNum);
+          if (!parentExists) {
+            res.status(404).json({ success: false, message: 'RELATÓRIO PRINCIPAL NÃO ENCONTRADO' });
+            return;
+          }
+        }
+      }
+      
+      // Create comment data
+      const commentData = {
+        user_id: userId,
+        course_id: courseId,
+        lesson_id: lesson_id ? parseInt(lesson_id) : undefined,
+        parent_id: parent_id ? parseInt(parent_id) : undefined,
+        content: content.trim(),
+        is_instructor_reply: req.user?.role === 'instructor' || req.user?.role === 'admin'
+      };
+      
+      const newComment = await commentService.createComment(commentData);
+      
+      res.status(201).json({
+        success: true,
+        data: newComment,
+        message: 'RELATÓRIO OPERACIONAL CRIADO COM SUCESSO'
+      });
+    } catch (error) {
+      console.error('Error creating comment:', error);
+      res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
+    }
+  }
+);
+
+// PUT /api/v1/courses/:courseId/comments/:commentId - Update comment
+router.put('/:courseId/comments/:commentId', authMiddleware, 
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.user?.id;
+      const { content } = req.body;
+      const commentId = parseInt(req.params.commentId);
+      
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+        return;
+      }
+      
+      if (isNaN(commentId)) {
+        res.status(400).json({ success: false, message: 'ID DO COMENTÁRIO INVÁLIDO' });
+        return;
+      }
+      
+      if (!content || content.trim().length === 0) {
+        res.status(400).json({ success: false, message: 'CONTEÚDO DO RELATÓRIO OBRIGATÓRIO' });
+        return;
+      }
+      
+      if (content.length > 1000) {
+        res.status(400).json({ success: false, message: 'RELATÓRIO MUITO EXTENSO (MÁX 1000 CARACTERES)' });
+        return;
+      }
+      
+      const updatedComment = await commentService.updateComment(commentId, userId, content.trim());
+      
+      res.json({
+        success: true,
+        data: updatedComment,
+        message: 'RELATÓRIO ATUALIZADO COM SUCESSO'
+      });
+    } catch (error) {
+      console.error('Error updating comment:', error);
+      if (error.message === 'Comentário não encontrado ou sem permissão') {
+        res.status(404).json({ success: false, message: 'RELATÓRIO NÃO ENCONTRADO OU SEM PERMISSÃO' });
+      } else {
+        res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
+      }
+    }
+  }
+);
+
+// DELETE /api/v1/courses/:courseId/comments/:commentId - Delete comment
+router.delete('/:courseId/comments/:commentId', authMiddleware, 
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.user?.id;
+      const commentId = parseInt(req.params.commentId);
+      
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+        return;
+      }
+      
+      if (isNaN(commentId)) {
+        res.status(400).json({ success: false, message: 'ID DO COMENTÁRIO INVÁLIDO' });
+        return;
+      }
+      
+      await commentService.deleteComment(commentId, userId);
+      
+      res.json({
+        success: true,
+        message: 'RELATÓRIO REMOVIDO COM SUCESSO'
+      });
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      if (error.message === 'Comentário não encontrado ou sem permissão') {
+        res.status(404).json({ success: false, message: 'RELATÓRIO NÃO ENCONTRADO OU SEM PERMISSÃO' });
+      } else {
+        res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
+      }
+    }
+  }
+);
+
+// POST /api/v1/courses/:courseId/comments/:commentId/like - Like/Unlike comment
+router.post('/:courseId/comments/:commentId/like', authMiddleware, 
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.user?.id;
+      const commentId = parseInt(req.params.commentId);
+      
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'AGENTE NÃO IDENTIFICADO' });
+        return;
+      }
+      
+      if (isNaN(commentId)) {
+        res.status(400).json({ success: false, message: 'ID DO COMENTÁRIO INVÁLIDO' });
+        return;
+      }
+      
+      const { liked, likes_count } = await commentService.toggleLike(commentId, userId);
+      
+      res.json({
+        success: true,
+        data: {
+          comment_id: commentId,
+          likes_count,
+          user_liked: liked
+        },
+        message: liked ? 'APOIO REGISTRADO' : 'APOIO REMOVIDO'
+      });
+    } catch (error) {
+      console.error('Error liking comment:', error);
+      res.status(500).json({ success: false, message: 'ERRO NO SISTEMA OPERACIONAL' });
+    }
+  }
+);
 
 export default router;

@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "user_id": 2,
+    "course_id": "88c9efca-98ae-43e7-848c-091f38703915",
+    "lesson_id": "lesson-001",
+    "current_time": 0,
+    "duration": 0,
+    "watched_percentage": 100,
+    "completed": true,
+    "last_accessed": "2025-08-14T05:29:49.440Z",
+    "sessions": [
+      {
+        "start_time": "2025-08-14T05:29:49.442Z",
+        "watch_time": 0,
+        "completed_session": true
+      }
+    ],
+    "total_watch_time": 0,
+    "id": "443f6c2b-f6d5-45ab-b369-d948df3e61b0",
+    "created_at": "2025-08-14T05:29:49.442Z"
+  },
+  {
+    "user_id": 2,
+    "course_id": "88c9efca-98ae-43e7-848c-091f38703915",
+    "lesson_id": "lesson-002",
+    "current_time": 0,
+    "duration": 0,
+    "watched_percentage": 0,
+    "completed": true,
+    "last_accessed": "2025-08-14T05:29:57.209Z",
+    "sessions": [
+      {
+        "start_time": "2025-08-14T05:29:57.209Z",
+        "watch_time": 0,
+        "completed_session": true
+      }
+    ],
+    "total_watch_time": 0,
+    "id": "bcebd987-9f86-4e9e-87c7-0ebc34ecc01a",
+    "created_at": "2025-08-14T05:29:57.209Z"
+  }
+]

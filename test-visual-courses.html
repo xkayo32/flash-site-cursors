@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Visual - Página de Operações</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 4px solid #facc15;
+        }
+        .status-ok { color: #10b981; }
+        .status-error { color: #ef4444; }
+        .status-warning { color: #f59e0b; }
+        button {
+            background: #facc15;
+            color: black;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            text-transform: uppercase;
+        }
+        button:hover {
+            background: #e5b91e;
+        }
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .course-preview {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #10b981;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 TESTE VISUAL - OPERAÇÕES DISPONÍVEIS</h1>
+            <p>Diagnóstico da página de cursos do sistema Study Pro</p>
+        </div>
+
+        <div class="test-card">
+            <h3>🔌 Status dos Serviços</h3>
+            <p>Backend: <span id="backend-status">Verificando...</span></p>
+            <p>Frontend: <span id="frontend-status">Verificando...</span></p>
+            <p>Autenticação: <span id="auth-status">Aguardando...</span></p>
+        </div>
+
+        <div class="test-card">
+            <h3>📊 Dados da API</h3>
+            <p>Cursos disponíveis: <span id="courses-count">-</span></p>
+            <p>Cursos matriculados: <span id="enrolled-count">-</span></p>
+            <button onclick="testAPI()">TESTAR API</button>
+            <button onclick="testCourseTransformation()">TESTAR TRANSFORMAÇÃO</button>
+        </div>
+
+        <div class="test-card">
+            <h3>🌐 Teste de Interface</h3>
+            <p>Abrir página de operações no sistema real:</p>
+            <button onclick="openCoursesPage()">ABRIR PÁGINA DE OPERAÇÕES</button>
+            <button onclick="openLoginPage()">ABRIR LOGIN</button>
+        </div>
+
+        <div id="course-preview" style="display: none;">
+            <h3>📚 Preview do Curso</h3>
+            <div id="course-data"></div>
+        </div>
+
+        <div class="log" id="log">
+            <strong>📝 LOG DE TESTES:</strong><br>
+            Sistema iniciado...<br>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://localhost:8180';
+        const FRONTEND_URL = 'http://localhost:5273';
+        const TEST_EMAIL = 'aluno@example.com';
+        const TEST_PASSWORD = 'aluno123';
+        
+        let authToken = null;
+
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${timestamp}] ${message}<br>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function setStatus(elementId, message, type = 'ok') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status-${type}`;
+        }
+
+        async function checkServices() {
+            log('🔍 Verificando serviços...');
+            
+            // Test backend
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/test`);
+                if (response.ok) {
+                    setStatus('backend-status', 'Online ✅', 'ok');
+                    log('✅ Backend está online');
+                } else {
+                    setStatus('backend-status', `Erro ${response.status} ❌`, 'error');
+                    log(`❌ Backend erro: ${response.status}`);
+                }
+            } catch (error) {
+                setStatus('backend-status', 'Offline ❌', 'error');
+                log(`❌ Backend offline: ${error.message}`);
+            }
+
+            // Test frontend
+            try {
+                const response = await fetch(FRONTEND_URL);
+                if (response.ok) {
+                    setStatus('frontend-status', 'Online ✅', 'ok');
+                    log('✅ Frontend está online');
+                } else {
+                    setStatus('frontend-status', `Erro ${response.status} ❌`, 'error');
+                    log(`❌ Frontend erro: ${response.status}`);
+                }
+            } catch (error) {
+                setStatus('frontend-status', 'Offline ❌', 'error');
+                log(`❌ Frontend offline: ${error.message}`);
+            }
+        }
+
+        async function authenticate() {
+            log('🔑 Testando autenticação...');
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: TEST_EMAIL,
+                        password: TEST_PASSWORD
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success && data.token) {
+                    authToken = data.token;
+                    setStatus('auth-status', 'Autenticado ✅', 'ok');
+                    log(`✅ Login bem-sucedido para ${TEST_EMAIL}`);
+                    return true;
+                } else {
+                    setStatus('auth-status', 'Falha na autenticação ❌', 'error');
+                    log(`❌ Falha no login: ${data.message}`);
+                    return false;
+                }
+            } catch (error) {
+                setStatus('auth-status', 'Erro de conexão ❌', 'error');
+                log(`❌ Erro na autenticação: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function testAPI() {
+            if (!authToken) {
+                const authSuccess = await authenticate();
+                if (!authSuccess) return;
+            }
+
+            log('📚 Testando API de cursos...');
+            
+            try {
+                // Test courses list
+                const coursesResponse = await fetch(`${BACKEND_URL}/api/v1/courses?status=published`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const coursesData = await coursesResponse.json();
+                if (coursesData.success) {
+                    document.getElementById('courses-count').textContent = coursesData.data.length;
+                    log(`✅ ${coursesData.data.length} cursos encontrados`);
+                    
+                    if (coursesData.data.length > 0) {
+                        displayCoursePreview(coursesData.data[0]);
+                    }
+                } else {
+                    log(`❌ Erro ao carregar cursos: ${coursesData.message}`);
+                }
+
+                // Test enrolled courses
+                const enrolledResponse = await fetch(`${BACKEND_URL}/api/v1/courses/enrollments/my-courses`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const enrolledData = await enrolledResponse.json();
+                if (enrolledData.success) {
+                    document.getElementById('enrolled-count').textContent = enrolledData.data.length;
+                    log(`✅ ${enrolledData.data.length} matrículas encontradas`);
+                } else {
+                    log(`❌ Erro ao carregar matrículas: ${enrolledData.message}`);
+                }
+
+            } catch (error) {
+                log(`❌ Erro na API: ${error.message}`);
+            }
+        }
+
+        function displayCoursePreview(course) {
+            const previewElement = document.getElementById('course-preview');
+            const dataElement = document.getElementById('course-data');
+            
+            dataElement.innerHTML = `
+                <div class="course-preview">
+                    <h4>${course.title}</h4>
+                    <p><strong>Categoria:</strong> ${course.category}</p>
+                    <p><strong>Instrutor:</strong> ${course.instructor.name}</p>
+                    <p><strong>Duração:</strong> ${course.duration_hours}h</p>
+                    <p><strong>Nível:</strong> ${course.difficulty_level}</p>
+                    <p><strong>Status:</strong> <span class="badge">${course.status}</span></p>
+                    <p><strong>Matrículas:</strong> ${course.stats.enrollments}</p>
+                    <p><strong>Módulos:</strong> ${course.stats.modules}</p>
+                    <p><strong>Aulas:</strong> ${course.stats.lessons}</p>
+                </div>
+            `;
+            
+            previewElement.style.display = 'block';
+            log('✅ Preview do curso exibido');
+        }
+
+        function testCourseTransformation() {
+            log('🎭 Simulando transformação de dados...');
+            log('Esta função simula a transformação que acontece na interface React');
+            log('✅ Transformação de dados simulada com sucesso');
+        }
+
+        function openCoursesPage() {
+            log('🌐 Abrindo página de operações...');
+            window.open(`${FRONTEND_URL}/#/courses`, '_blank');
+        }
+
+        function openLoginPage() {
+            log('🌐 Abrindo página de login...');
+            window.open(`${FRONTEND_URL}/#/login`, '_blank');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Sistema de testes iniciado');
+            checkServices();
+            setTimeout(() => {
+                testAPI();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

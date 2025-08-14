@@ -38,5 +38,425 @@
       "modules": 0,
       "lessons": 0
     }
+  },
+  {
+    "id": "f5a08466-a10e-4cb1-99e8-adffa57c0c35",
+    "title": "POLÍCIA FEDERAL - Agente e Escrivão",
+    "description": "Preparação completa para o concurso da Polícia Federal. Material atualizado com questões comentadas e simulados exclusivos.",
+    "category": "POLÍCIA",
+    "thumbnail": null,
+    "price": 497,
+    "instructor": {
+      "id": "944047d3-3124-4f5a-9b07-6d6935ab30e1",
+      "name": "Comandante Tático",
+      "rank": "Coronel",
+      "avatar": null
+    },
+    "difficulty_level": "advanced",
+    "duration_hours": 120,
+    "duration_months": 3,
+    "status": "published",
+    "visibility": "public",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Dedicação mínima de 2h por dia"
+    ],
+    "objectives": [
+      "Dominar técnicas avançadas",
+      "Preparação completa para concursos",
+      "Aprovação garantida"
+    ],
+    "tags": [
+      "CONCURSO",
+      "TÁTICO",
+      "MILITAR"
+    ],
+    "created_at": "2025-08-14T13:45:12.756Z",
+    "updated_at": "2025-08-14T14:12:44.253Z",
+    "stats": {
+      "enrollments": 1,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "0b21ce7a-9ff6-4daa-9541-706f804690dc",
+    "title": "RECEITA FEDERAL - Auditor Fiscal",
+    "description": "Curso intensivo para Auditor Fiscal da Receita Federal. Conteúdo direcionado com foco nas disciplinas mais cobradas.",
+    "category": "FISCAL",
+    "thumbnail": null,
+    "price": 597,
+    "instructor": {
+      "id": "3ec74074-11a6-4927-9bb3-396cce6f6cb8",
+      "name": "Comandante Tático",
+      "rank": "Coronel",
+      "avatar": null
+    },
+    "difficulty_level": "advanced",
+    "duration_hours": 150,
+    "duration_months": 3,
+    "status": "published",
+    "visibility": "public",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Dedicação mínima de 2h por dia"
+    ],
+    "objectives": [
+      "Dominar técnicas avançadas",
+      "Preparação completa para concursos",
+      "Aprovação garantida"
+    ],
+    "tags": [
+      "CONCURSO",
+      "TÁTICO",
+      "MILITAR"
+    ],
+    "created_at": "2025-08-14T13:45:12.816Z",
+    "updated_at": "2025-08-14T13:45:49.206Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "07db9e3b-acea-4c33-bb6d-ba00e1b83914",
+    "title": "TJ/TRF - Analista Judiciário",
+    "description": "Preparação focada para tribunais federais e estaduais. Inclui direito processual, constitucional e administrativo.",
+    "category": "TRIBUNAIS",
+    "thumbnail": null,
+    "price": 397,
+    "instructor": {
+      "id": "6120e61c-eaa5-476c-bb14-7564ec8a5634",
+      "name": "Comandante Tático",
+      "rank": "Coronel",
+      "avatar": null
+    },
+    "difficulty_level": "intermediate",
+    "duration_hours": 80,
+    "duration_months": 3,
+    "status": "published",
+    "visibility": "public",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Dedicação mínima de 2h por dia"
+    ],
+    "objectives": [
+      "Dominar técnicas avançadas",
+      "Preparação completa para concursos",
+      "Aprovação garantida"
+    ],
+    "tags": [
+      "CONCURSO",
+      "TÁTICO",
+      "MILITAR"
+    ],
+    "created_at": "2025-08-14T13:45:12.871Z",
+    "updated_at": "2025-08-14T13:45:49.377Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "a785f36c-2c3b-40aa-9724-3024c68fce5b",
+    "title": "BANCO CENTRAL - Analista",
+    "description": "Curso completo para o concurso do Banco Central do Brasil. Economia, finanças públicas e legislação específica.",
+    "category": "BANCÁRIOS",
+    "thumbnail": null,
+    "price": 447,
+    "instructor": {
+      "id": "a6307071-23c1-4b1e-9156-1c64f9430fb4",
+      "name": "Comandante Tático",
+      "rank": "Coronel",
+      "avatar": null
+    },
+    "difficulty_level": "advanced",
+    "duration_hours": 100,
+    "duration_months": 3,
+    "status": "published",
+    "visibility": "public",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Dedicação mínima de 2h por dia"
+    ],
+    "objectives": [
+      "Dominar técnicas avançadas",
+      "Preparação completa para concursos",
+      "Aprovação garantida"
+    ],
+    "tags": [
+      "CONCURSO",
+      "TÁTICO",
+      "MILITAR"
+    ],
+    "created_at": "2025-08-14T13:45:12.942Z",
+    "updated_at": "2025-08-14T13:45:49.586Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "8200fbe9-22f2-4dbc-a03c-aa4b26b071ac",
+    "title": "TCU - Auditor Federal de Controle",
+    "description": "Preparação de elite para o Tribunal de Contas da União. Material exclusivo com questões de provas anteriores.",
+    "category": "CONTROLE",
+    "thumbnail": null,
+    "price": 697,
+    "instructor": {
+      "id": "77290ff2-72a4-4aed-8ae7-a9ec57b1aa7e",
+      "name": "Comandante Tático",
+      "rank": "Coronel",
+      "avatar": null
+    },
+    "difficulty_level": "advanced",
+    "duration_hours": 180,
+    "duration_months": 3,
+    "status": "published",
+    "visibility": "public",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Dedicação mínima de 2h por dia"
+    ],
+    "objectives": [
+      "Dominar técnicas avançadas",
+      "Preparação completa para concursos",
+      "Aprovação garantida"
+    ],
+    "tags": [
+      "CONCURSO",
+      "TÁTICO",
+      "MILITAR"
+    ],
+    "created_at": "2025-08-14T13:45:13.007Z",
+    "updated_at": "2025-08-14T13:45:49.756Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "de7b2220-04c5-4e32-921f-e069126646d1",
+    "title": "INSS - Técnico do Seguro Social",
+    "description": "Curso completo para técnico do INSS. Direito previdenciário, informática e raciocínio lógico.",
+    "category": "PREVIDÊNCIA",
+    "thumbnail": null,
+    "price": 297,
+    "instructor": {
+      "id": "03b43922-c87f-4109-9945-9735d3185a50",
+      "name": "Comandante Tático",
+      "rank": "Coronel",
+      "avatar": null
+    },
+    "difficulty_level": "beginner",
+    "duration_hours": 60,
+    "duration_months": 3,
+    "status": "published",
+    "visibility": "public",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Dedicação mínima de 2h por dia"
+    ],
+    "objectives": [
+      "Dominar técnicas avançadas",
+      "Preparação completa para concursos",
+      "Aprovação garantida"
+    ],
+    "tags": [
+      "CONCURSO",
+      "TÁTICO",
+      "MILITAR"
+    ],
+    "created_at": "2025-08-14T13:45:13.081Z",
+    "updated_at": "2025-08-14T13:45:49.916Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "802f7a19-08c1-42d9-b2f0-578a671e5285",
+    "title": "PRF - Policial Rodoviário Federal",
+    "description": "Treinamento intensivo para PRF. Legislação de trânsito, direitos humanos e preparação física.",
+    "category": "POLÍCIA",
+    "thumbnail": null,
+    "price": 447,
+    "instructor": {
+      "id": "ac50c2e8-1145-4cb3-9bca-ce6600372843",
+      "name": "Comandante Tático",
+      "rank": "Coronel",
+      "avatar": null
+    },
+    "difficulty_level": "intermediate",
+    "duration_hours": 90,
+    "duration_months": 3,
+    "status": "published",
+    "visibility": "public",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Dedicação mínima de 2h por dia"
+    ],
+    "objectives": [
+      "Dominar técnicas avançadas",
+      "Preparação completa para concursos",
+      "Aprovação garantida"
+    ],
+    "tags": [
+      "CONCURSO",
+      "TÁTICO",
+      "MILITAR"
+    ],
+    "created_at": "2025-08-14T13:45:13.144Z",
+    "updated_at": "2025-08-14T13:45:50.077Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "3d7e064d-a657-479c-87eb-e66d0422db6a",
+    "title": "AGEPEN - Agente Penitenciário Federal",
+    "description": "Preparação completa para agente penitenciário. Direito penal, execução penal e direitos humanos.",
+    "category": "POLÍCIA",
+    "thumbnail": null,
+    "price": 347,
+    "instructor": {
+      "id": "677a4b94-82d7-470b-94fd-91aca59e7c73",
+      "name": "Comandante Tático",
+      "rank": "Coronel",
+      "avatar": null
+    },
+    "difficulty_level": "beginner",
+    "duration_hours": 70,
+    "duration_months": 3,
+    "status": "published",
+    "visibility": "public",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Dedicação mínima de 2h por dia"
+    ],
+    "objectives": [
+      "Dominar técnicas avançadas",
+      "Preparação completa para concursos",
+      "Aprovação garantida"
+    ],
+    "tags": [
+      "CONCURSO",
+      "TÁTICO",
+      "MILITAR"
+    ],
+    "created_at": "2025-08-14T13:45:13.207Z",
+    "updated_at": "2025-08-14T13:45:50.254Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "e640082f-ffa8-4c98-9af1-202af946c61f",
+    "title": "CGU - Analista de Finanças e Controle",
+    "description": "Curso avançado para a Controladoria Geral da União. Auditoria governamental e controle interno.",
+    "category": "CONTROLE",
+    "thumbnail": null,
+    "price": 547,
+    "instructor": {
+      "id": "dc904eef-97db-406f-9781-d0d1fb124328",
+      "name": "Comandante Tático",
+      "rank": "Coronel",
+      "avatar": null
+    },
+    "difficulty_level": "advanced",
+    "duration_hours": 130,
+    "duration_months": 3,
+    "status": "published",
+    "visibility": "public",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Dedicação mínima de 2h por dia"
+    ],
+    "objectives": [
+      "Dominar técnicas avançadas",
+      "Preparação completa para concursos",
+      "Aprovação garantida"
+    ],
+    "tags": [
+      "CONCURSO",
+      "TÁTICO",
+      "MILITAR"
+    ],
+    "created_at": "2025-08-14T13:45:13.272Z",
+    "updated_at": "2025-08-14T13:45:50.448Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "4a02e589-d640-4a4e-b6f0-b7a61aa28cd6",
+    "title": "SEFAZ - Auditor Fiscal Estadual",
+    "description": "Preparação para auditor fiscal estadual. Legislação tributária, contabilidade e auditoria.",
+    "category": "FISCAL",
+    "thumbnail": null,
+    "price": 497,
+    "instructor": {
+      "id": "b3fcafdf-327b-4e54-8da7-aa38f6450ac0",
+      "name": "Comandante Tático",
+      "rank": "Coronel",
+      "avatar": null
+    },
+    "difficulty_level": "intermediate",
+    "duration_hours": 110,
+    "duration_months": 3,
+    "status": "published",
+    "visibility": "public",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Dedicação mínima de 2h por dia"
+    ],
+    "objectives": [
+      "Dominar técnicas avançadas",
+      "Preparação completa para concursos",
+      "Aprovação garantida"
+    ],
+    "tags": [
+      "CONCURSO",
+      "TÁTICO",
+      "MILITAR"
+    ],
+    "created_at": "2025-08-14T13:45:13.336Z",
+    "updated_at": "2025-08-14T13:45:50.600Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
   }
 ]
