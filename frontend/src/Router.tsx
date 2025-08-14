@@ -50,6 +50,9 @@ import MockExamManagerSimple from './pages/admin/MockExamManagerSimple';
 import PreviousExamsManagerSimple from './pages/admin/PreviousExamsManagerSimple';
 import MockExamsPageSimple from './pages/student/MockExamsPageSimple';
 import PreviousExamsMilitary from './pages/student/PreviousExamsMilitary';
+import SimulationDetailsPage from './pages/student/SimulationDetailsPage';
+import ExamAttemptPage from './pages/student/ExamAttemptPage';
+import ExamResultsDetailPage from './pages/student/ExamResultsDetailPage';
 import AdminLayout from './components/layout/AdminLayout';
 
 // Componente para rotas protegidas
@@ -146,6 +149,9 @@ function Router() {
         <Route path="/my-courses" element={<MyCoursesPage />} />
         <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/simulations" element={<MockExamsPageSimple />} />
+        <Route path="/simulations/:examId/details" element={<SimulationDetailsPage />} />
+        <Route path="/exam/:attemptId" element={<ExamAttemptPage />} />
+        <Route path="/exam-results/:attemptId" element={<ExamResultsDetailPage />} />
         <Route path="/flashcards" element={<FlashcardsPage />} />
         <Route path="/questions" element={<QuestionsPage />} />
         <Route path="/previous-exams" element={<PreviousExamsMilitary />} />
