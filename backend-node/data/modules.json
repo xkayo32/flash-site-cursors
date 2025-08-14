@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "c19ba101-47b8-4341-8540-677653fdc551",
+    "course_id": "88c9efca-98ae-43e7-848c-091f38703915",
+    "title": "Módulo 1: Princípios Constitucionais",
+    "description": "Introdução aos princípios fundamentais",
+    "order_index": 1,
+    "is_published": true,
+    "created_at": "2025-08-14T02:26:29.848Z",
+    "updated_at": "2025-08-14T02:26:29.848Z"
+  }
+]

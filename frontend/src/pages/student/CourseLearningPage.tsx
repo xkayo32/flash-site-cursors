@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { courseProgressService, type CourseProgress, type ModuleProgress } from '@/services/courseProgressService';
 import { courseService } from '@/services/courseService';
@@ -37,7 +37,9 @@ import {
   Copy,
   Send,
   Mail,
-  AlertTriangle
+  AlertTriangle,
+  ArrowLeft,
+  Home
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -121,6 +123,7 @@ interface CourseData {
 
 export default function CourseLearningPage() {
   const { courseId } = useParams();
+  const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   
   // Estados do player
@@ -697,13 +700,48 @@ Junte-se à operação e domine os concursos! 💪`;
   if (!course || !courseProgress || !currentLesson) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
-            DADOS INDISPONÍVEIS
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
-            Não foi possível carregar os dados do curso
-          </p>
+        <div className="text-center space-y-6 p-8 bg-white dark:bg-gray-900 rounded-lg shadow-xl border-2 border-accent-500/20 max-w-md">
+          {/* Ícone de aviso */}
+          <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+            <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+          </div>
+          
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+              DADOS INDISPONÍVEIS
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+              Não foi possível carregar os dados do curso
+            </p>
+          </div>
+
+          {/* Botões de navegação */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => navigate('/my-courses')}
+              className="px-6 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-police-body font-semibold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Meus Cursos
+            </button>
+            
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="px-6 py-3 bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <Home className="w-4 h-4" />
+              Painel do Aluno
+            </button>
+          </div>
+
+          {/* Botão de tentar novamente */}
+          <button
+            onClick={() => window.location.reload()}
+            className="text-accent-500 hover:text-accent-600 font-police-body uppercase tracking-wider text-sm flex items-center justify-center gap-2 mx-auto transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Tentar Novamente
+          </button>
         </div>
       </div>
     );
