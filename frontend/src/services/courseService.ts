@@ -779,7 +779,7 @@ class CourseService {
   async getEnrolledCourses(): Promise<{ success: boolean; data?: any[]; message?: string }> {
     try {
       // First try the dedicated enrolled courses endpoint
-      let response = await fetch(`${API_ENDPOINTS.courses.list}/my-enrollments`, {
+      let response = await fetch(`${API_ENDPOINTS.courses.list}/enrollments/my-courses`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
