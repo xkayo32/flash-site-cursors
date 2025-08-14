@@ -168,7 +168,7 @@ function buildQueryString(params: Record<string, any>): string {
 }
 
 class ScheduleService {
-  private baseUrl = `${API_BASE_URL}/schedule`;
+  private baseUrl = `${API_BASE_URL}/api/v1/schedule`;
 
   // Tasks API
   async getTasks(filters: TaskFilters = {}): Promise<Task[]> {
