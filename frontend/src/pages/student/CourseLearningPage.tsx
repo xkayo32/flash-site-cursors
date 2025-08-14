@@ -111,7 +111,7 @@ interface Module {
 interface CourseData {
   id: string;
   title: string;
-  instructor: string;
+  instructor: string | { id: string; name: string; avatar?: string };
   category: string;
   progress: number;
   modules: Module[];
@@ -758,7 +758,7 @@ Junte-se à operação e domine os concursos! 💪`;
             </Link>
             <div className="hidden md:block">
               <h1 className="text-lg font-semibold line-clamp-1 font-police-title uppercase tracking-wider">{course.title}</h1>
-              <p className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider">COMANDANTE: {course.instructor}</p>
+              <p className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider">COMANDANTE: {typeof course.instructor === 'string' ? course.instructor : course.instructor?.name || 'Desconhecido'}</p>
             </div>
           </div>
           
@@ -1048,7 +1048,7 @@ Junte-se à operação e domine os concursos! 💪`;
                       <Clock className="w-4 h-4 text-accent-500" />
                       DURAÇÃO: {currentLesson?.duration}
                     </span>
-                    <span className="font-police-body uppercase tracking-wider">COMANDANTE: {course.instructor}</span>
+                    <span className="font-police-body uppercase tracking-wider">COMANDANTE: {typeof course.instructor === 'string' ? course.instructor : course.instructor?.name || 'Desconhecido'}</span>
                   </div>
                 </div>
 
