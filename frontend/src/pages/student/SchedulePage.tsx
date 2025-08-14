@@ -28,13 +28,21 @@ import {
   Edit,
   CalendarDays,
   Filter,
-  RotateCcw
+  RotateCcw,
+  Sparkles,
+  TrendingDown,
+  Activity,
+  Timer,
+  PlayCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 import { scheduleService, Task, ScheduleStats, StudySession, DailyGoal } from '@/services/scheduleService';
+import { courseService } from '@/services/courseService';
+import StudyPlanner from '@/components/StudyPlanner';
+import toast from 'react-hot-toast';
 
 // Tipos locais
 interface StudyRecord {
@@ -69,38 +77,36 @@ interface DailyStudyLog {
   };
 }
 
-interface ExamInfo {
-  name: string;
-  date: string;
-  daysLeft: number;
-  totalTopics: number;
-  completedTopics: number;
-  subjects: {
-    name: string;
-    weight: number;
-    progress: number;
-    hoursNeeded: number;
+
+// Interface para dados reais do progresso
+interface CourseProgress {
+  id: string;
+  title: string;
+  progress: number;
+  totalLessons: number;
+  completedLessons: number;
+  nextLesson?: string;
+  estimatedTime: number;
+  modules?: {
+    id: string;
+    title: string;
+    lessonsCount: number;
+    completedLessons: number;
   }[];
 }
 
-// Dados mockados para informações do exame (temporário)
-const examInfo: ExamInfo = {
-  name: 'OPERAÇÃO PF - AGENTE TÁTICO',
-  date: '2024-05-15',
-  daysLeft: 117,
-  totalTopics: 156,
-  completedTopics: 42,
-  subjects: [
-    { name: 'DIREITO CONSTITUCIONAL TÁTICO', weight: 20, progress: 35, hoursNeeded: 120 },
-    { name: 'DIREITO PENAL OPERACIONAL', weight: 15, progress: 28, hoursNeeded: 90 },
-    { name: 'DIREITO ADMINISTRATIVO', weight: 15, progress: 22, hoursNeeded: 90 },
-    { name: 'INTELIGÊNCIA DIGITAL', weight: 10, progress: 45, hoursNeeded: 60 },
-    { name: 'COMUNICAÇÃO TÁTICA', weight: 10, progress: 55, hoursNeeded: 60 },
-    { name: 'RACIOCÍNIO LÓGICO TÁTICO', weight: 10, progress: 18, hoursNeeded: 60 },
-    { name: 'CONTABILIDADE OPERACIONAL', weight: 10, progress: 15, hoursNeeded: 60 },
-    { name: 'ECONOMIA ESTRATÉGICA', weight: 10, progress: 12, hoursNeeded: 60 }
-  ]
-};
+// Interface para estatísticas gerais
+interface OverallStats {
+  totalCourses: number;
+  activeCourses: number;
+  completedCourses: number;
+  totalLessons: number;
+  completedLessons: number;
+  averageProgress: number;
+  hoursStudied: number;
+  tasksToday: number;
+  tasksCompleted: number;
+}
 
 
 
@@ -112,6 +118,19 @@ export default function SchedulePage() {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
+  const [showPlanner, setShowPlanner] = useState(false);
+  const [coursesProgress, setCoursesProgress] = useState<CourseProgress[]>([]);
+  const [overallStats, setOverallStats] = useState<OverallStats>({
+    totalCourses: 0,
+    activeCourses: 0,
+    completedCourses: 0,
+    totalLessons: 0,
+    completedLessons: 0,
+    averageProgress: 0,
+    hoursStudied: 0,
+    tasksToday: 0,
+    tasksCompleted: 0
+  });
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -135,6 +154,280 @@ export default function SchedulePage() {
   useEffect(() => {
     loadScheduleData();
   }, [selectedDate]);
+  
+  useEffect(() => {
+    loadCoursesProgress();
+  }, [scheduleStats]); // Recarregar progress quando stats mudam
+
+  const loadCoursesProgress = async () => {
+    try {
+      const response = await courseService.getEnrolledCourses();
+      
+      // Verificar se a resposta tem a estrutura correta
+      if (!response.success || !response.data || !Array.isArray(response.data)) {
+        console.warn('No enrolled courses found or invalid response:', response);
+        setCoursesProgress([]);
+        setOverallStats({
+          totalCourses: 0,
+          activeCourses: 0,
+          completedCourses: 0,
+          totalLessons: 0,
+          completedLessons: 0,
+          averageProgress: 0,
+          hoursStudied: scheduleStats?.weekly.study_time_hours || 0,
+          tasksToday: scheduleStats?.today.tasks.total || 0,
+          tasksCompleted: scheduleStats?.today.tasks.completed || 0
+        });
+        return;
+      }
+      
+      const courses = response.data;
+      const progress = courses.map((enrollment: any, index: number) => ({
+        id: enrollment.course_id || enrollment.course?.id || `course-${index}`,
+        title: enrollment.course?.title || enrollment.title,
+        progress: enrollment.progress?.percentage || 0,
+        totalLessons: enrollment.course?.stats?.lessons || enrollment.course?.duration_hours || 40, // Fallback para duração
+        completedLessons: enrollment.progress?.completed_lessons?.length || 0,
+        nextLesson: enrollment.progress?.next_lesson,
+        estimatedTime: (enrollment.course?.duration_hours || 40) * 60, // Converter horas para minutos
+        modules: enrollment.course?.modules?.map((m: any, moduleIndex: number) => ({
+          id: m.id || `module-${index}-${moduleIndex}`,
+          title: m.title,
+          lessonsCount: m.lessons_count || 0,
+          completedLessons: m.completed_lessons || 0
+        })) || []
+      }));
+      setCoursesProgress(progress);
+      
+      // Calcular estatísticas gerais
+      const stats: OverallStats = {
+        totalCourses: courses.length,
+        activeCourses: courses.filter((e: any) => e.status === 'active').length,
+        completedCourses: courses.filter((e: any) => e.status === 'completed').length,
+        totalLessons: progress.reduce((sum, c) => sum + c.totalLessons, 0),
+        completedLessons: progress.reduce((sum, c) => sum + c.completedLessons, 0),
+        averageProgress: courses.length > 0 ? 
+          progress.reduce((sum, c) => sum + c.progress, 0) / courses.length : 0,
+        hoursStudied: scheduleStats?.weekly.study_time_hours || 0,
+        tasksToday: scheduleStats?.today.tasks.total || 0,
+        tasksCompleted: scheduleStats?.today.tasks.completed || 0
+      };
+      setOverallStats(stats);
+      
+      // DESABILITADO TEMPORARIAMENTE: Parar criação de tarefas automáticas duplicadas
+      // Se houver aulas concluídas recentemente, marcar automaticamente no cronograma
+      // if (courses.length > 0) {
+      //   markRecentCompletedLessons(courses);
+      // }
+    } catch (error) {
+      console.error('Error loading courses progress:', error);
+      setCoursesProgress([]);
+      setOverallStats({
+        totalCourses: 0,
+        activeCourses: 0,
+        completedCourses: 0,
+        totalLessons: 0,
+        completedLessons: 0,
+        averageProgress: 0,
+        hoursStudied: scheduleStats?.weekly.study_time_hours || 0,
+        tasksToday: scheduleStats?.today.tasks.total || 0,
+        tasksCompleted: scheduleStats?.today.tasks.completed || 0
+      });
+    }
+  };
+
+  // Função para marcar automaticamente aulas concluídas no cronograma
+  // Calcular distribuição tática real baseada nas atividades do usuário
+  const calculateTacticalDistribution = () => {
+    if (!tasks.length) return [];
+    
+    const completedTasks = tasks.filter(t => t.status === 'completed');
+    const total = completedTasks.length;
+    
+    if (total === 0) return [];
+    
+    // Contar tarefas por tipo
+    const distribution = {
+      'BRIEFINGS': 0,      // Tarefas de estudo/aulas
+      'INTELIGÊNCIA': 0,   // Tarefas de pesquisa/leitura  
+      'TREINAMENTO': 0,    // Exercícios/práticas/simulados
+      'RECONHECIMENTO': 0  // Revisões
+    };
+    
+    completedTasks.forEach(task => {
+      switch (task.type) {
+        case 'study':
+        case 'lesson':
+          distribution['BRIEFINGS']++;
+          break;
+        case 'research':
+        case 'reading':
+          distribution['INTELIGÊNCIA']++;
+          break;
+        case 'practice':
+        case 'exercise':
+        case 'simulation':
+          distribution['TREINAMENTO']++;
+          break;
+        case 'review':
+        case 'revision':
+          distribution['RECONHECIMENTO']++;
+          break;
+        default:
+          // Classificar por palavras-chave no título/descrição
+          const content = `${task.title} ${task.description}`.toLowerCase();
+          if (content.includes('estudo') || content.includes('aula') || content.includes('módulo')) {
+            distribution['BRIEFINGS']++;
+          } else if (content.includes('exercício') || content.includes('simulado') || content.includes('questão')) {
+            distribution['TREINAMENTO']++;
+          } else if (content.includes('revisão') || content.includes('revisar')) {
+            distribution['RECONHECIMENTO']++;
+          } else {
+            distribution['INTELIGÊNCIA']++;
+          }
+          break;
+      }
+    });
+    
+    // Converter para percentuais
+    return [
+      { 
+        type: 'BRIEFINGS', 
+        percent: Math.round((distribution['BRIEFINGS'] / total) * 100), 
+        color: 'bg-blue-500',
+        count: distribution['BRIEFINGS']
+      },
+      { 
+        type: 'INTELIGÊNCIA', 
+        percent: Math.round((distribution['INTELIGÊNCIA'] / total) * 100), 
+        color: 'bg-green-500',
+        count: distribution['INTELIGÊNCIA'] 
+      },
+      { 
+        type: 'TREINAMENTO', 
+        percent: Math.round((distribution['TREINAMENTO'] / total) * 100), 
+        color: 'bg-purple-500',
+        count: distribution['TREINAMENTO']
+      },
+      { 
+        type: 'RECONHECIMENTO', 
+        percent: Math.round((distribution['RECONHECIMENTO'] / total) * 100), 
+        color: 'bg-accent-500',
+        count: distribution['RECONHECIMENTO']
+      }
+    ].filter(item => item.count > 0); // Mostrar apenas tipos com atividades
+  };
+
+  // Função para alternar conclusão de tarefas
+  const toggleTaskCompletion = async (taskId: string) => {
+    try {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const newStatus = task.status === 'completed' ? 'pending' : 'completed';
+      const updatedTask = await scheduleService.updateTask(taskId, { status: newStatus });
+      
+      // Atualizar estado local
+      setTasks(prev => prev.map(t => 
+        t.id === taskId ? updatedTask : t
+      ));
+    } catch (error) {
+      console.error('Error toggling task completion:', error);
+      toast.error('Erro ao atualizar tarefa');
+    }
+  };
+
+  const markRecentCompletedLessons = async (enrollments: any[]) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      
+      // Para cada enrollment, verificar se houve progresso recente
+      for (const enrollment of enrollments) {
+        if (enrollment.progress?.last_accessed && enrollment.progress?.completed_lessons?.length > 0) {
+          const lastAccessedDate = new Date(enrollment.progress.last_accessed).toISOString().split('T')[0];
+          
+          // Se teve atividade hoje ou ontem, criar/atualizar tarefa automaticamente
+          if (lastAccessedDate === today || lastAccessedDate === yesterdayStr) {
+            const courseTitle = enrollment.course?.title || 'Curso';
+            const completedCount = enrollment.progress.completed_lessons.length;
+            const taskTitle = `${courseTitle} - ${completedCount} aula(s) concluída(s)`;
+            
+            // Verificar se já existe uma tarefa para este curso no dia (via API para garantir)
+            const existingTasksAPI = await scheduleService.getTasksForDate(lastAccessedDate);
+            const existingTasks = existingTasksAPI.filter((t: any) => 
+              t.course_id === enrollment.course_id && 
+              t.date === lastAccessedDate &&
+              t.title.includes(courseTitle)
+            );
+            
+            // Se não existe, criar uma tarefa marcada como concluída
+            if (existingTasks.length === 0 && completedCount > 0) {
+              try {
+                const taskData = {
+                  title: taskTitle,
+                  description: `Progresso registrado automaticamente`,
+                  date: lastAccessedDate,
+                  time: '20:00', // Horário padrão
+                  duration: completedCount * 45, // 45min por aula
+                  type: 'study' as const,
+                  priority: 'medium' as const,
+                  subject: courseTitle,
+                  course_id: enrollment.course_id
+                };
+                
+                const createdTask = await scheduleService.createTask(taskData);
+                
+                // Marcar imediatamente como concluída
+                await scheduleService.completeTask(createdTask.id, true, 'Progresso do curso registrado automaticamente');
+                
+                // Atualizar lista local de tarefas
+                const completedTask = { ...createdTask, status: 'completed' as const };
+                setTasks(prev => [...prev, completedTask]);
+                
+                console.log(`Auto-created completed task for: ${taskTitle}`);
+              } catch (err) {
+                console.warn('Error auto-creating task:', err);
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error marking completed lessons:', error);
+    }
+  };
+
+  // Função para corrigir títulos undefined
+  const fixUndefinedTitles = (tasksList: Task[]): Task[] => {
+    return tasksList.map(task => {
+      if (task.title.includes('undefined')) {
+        // Corrigir título quebrado
+        const correctedTitle = task.title.replace('undefined', task.subject || 'Curso');
+        return { ...task, title: correctedTitle };
+      }
+      return task;
+    });
+  };
+
+  // Função para limpar tarefas duplicadas
+  const removeDuplicateTasks = (tasksList: Task[]): Task[] => {
+    const uniqueTasks = new Map();
+    
+    tasksList.forEach(task => {
+      // Criar chave única baseada em conteúdo relevante (não apenas ID)
+      const key = `${task.course_id || 'no-course'}_${task.date}_${task.title.replace(/\d+\s*aula\(s\)\s*concluída\(s\)/, 'X aulas concluídas')}`;
+      
+      // Manter apenas a primeira ocorrência ou a mais recente
+      if (!uniqueTasks.has(key) || new Date(task.created_at) > new Date(uniqueTasks.get(key).created_at)) {
+        uniqueTasks.set(key, task);
+      }
+    });
+    
+    return Array.from(uniqueTasks.values());
+  };
 
   const loadScheduleData = async () => {
     setLoading(true);
@@ -150,10 +443,18 @@ export default function SchedulePage() {
         scheduleService.getTodayGoal()
       ]);
 
-      setTasks(tasksData);
+      // Corrigir títulos undefined e limpar tarefas duplicadas
+      const tasksWithFixedTitles = fixUndefinedTitles(tasksData);
+      const uniqueTasks = removeDuplicateTasks(tasksWithFixedTitles);
+      setTasks(uniqueTasks);
       setStudySessions(sessionsData);
       setScheduleStats(statsData);
       setDailyGoal(goalsData);
+      
+      // Após carregar dados do cronograma, carregar progress dos cursos se ainda não foi carregado
+      if (coursesProgress.length === 0) {
+        await loadCoursesProgress();
+      }
     } catch (err) {
       console.error('Error loading schedule data:', err);
       setError('Erro ao carregar dados do cronograma');
@@ -520,14 +821,15 @@ export default function SchedulePage() {
           <Button 
             variant="outline"
             className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
+            onClick={() => setShowPlanner(true)}
           >
-            <Download className="w-4 h-4 mr-2" />
-            EXPORTAR RELATÓRIO
+            <Sparkles className="w-4 h-4 mr-2" />
+            PLANEJAR CURSO
           </Button>
         </div>
       </motion.div>
 
-      {/* Informações do Concurso */}
+      {/* Progresso dos Cursos e Estatísticas */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -541,45 +843,137 @@ export default function SchedulePage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
-                    <Target className="w-5 h-5 text-gray-700 dark:text-accent-500" />
+                  <div className="w-10 h-10 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center">
+                    <Target className="w-5 h-5 text-black" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">{examInfo.name}</h3>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">CENTRAL DE COMANDO</h3>
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 font-police-body tracking-wider">
-                  DATA DA OPERAÇÃO: {new Date(examInfo.date).toLocaleDateString('pt-BR')}
+                  {overallStats.activeCourses} OPERAÇÕES ATIVAS • {overallStats.completedCourses} CONCLUÍDAS
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white font-police-numbers">{examInfo.daysLeft}</div>
-                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">DIAS PARA MISSÃO</div>
+                <div className="flex items-center gap-2 justify-end mb-1">
+                  {overallStats.averageProgress >= 75 ? (
+                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  ) : overallStats.averageProgress >= 50 ? (
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                  ) : overallStats.averageProgress >= 25 ? (
+                    <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
+                  ) : (
+                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                  )}
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                    {Math.round(overallStats.averageProgress)}%
+                  </span>
+                </div>
+                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
+                  EFICIÊNCIA OPERACIONAL
+                </div>
               </div>
             </div>
             
+            {/* Progresso Visual */}
+            <div className="mt-4">
+              <div className="flex justify-between text-xs mb-2">
+                <span className="font-police-body text-gray-600 dark:text-gray-400">PROGRESSO GERAL</span>
+                <span className="font-police-numbers font-bold text-gray-900 dark:text-white">
+                  {overallStats.completedLessons} de {overallStats.totalLessons} missões
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-accent-500 to-accent-400 h-full rounded-full transition-all duration-1000 relative"
+                  style={{ width: `${(overallStats.completedLessons / Math.max(overallStats.totalLessons, 1)) * 100}%` }}
+                >
+                  <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+
             <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
+              <div className="text-center bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
                 <div className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                  {Math.round((examInfo.completedTopics / examInfo.totalTopics) * 100)}%
+                  {overallStats.totalCourses}
                 </div>
-                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">PROGRESSO GERAL</div>
+                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">OPERAÇÕES TOTAIS</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {overallStats.activeCourses} ativas
+                </div>
               </div>
-              <div className="text-center">
+              <div className="text-center bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                <div className="text-xl font-bold font-police-numbers">
+                  <span className={cn(
+                    overallStats.completedLessons >= overallStats.totalLessons * 0.7 ? "text-green-600 dark:text-green-400" :
+                    overallStats.completedLessons >= overallStats.totalLessons * 0.3 ? "text-yellow-600 dark:text-yellow-400" :
+                    "text-red-600 dark:text-red-400"
+                  )}>
+                    {overallStats.completedLessons}
+                  </span>
+                  <span className="text-gray-500">/{overallStats.totalLessons}</span>
+                </div>
+                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">MISSÕES COMPLETAS</div>
+              </div>
+              <div className="text-center bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
                 <div className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                  {examInfo.completedTopics}/{examInfo.totalTopics}
+                  {scheduleStats ? scheduleStats.today.study_time.completed_hours.toFixed(1) : '0.0'}h
                 </div>
-                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">ALVOS NEUTRALIZADOS</div>
+                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">TREINO HOJE</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {scheduleStats ? scheduleStats.weekly.study_time_hours.toFixed(1) : '0'}h esta semana
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                  {scheduleStats ? scheduleStats.today.study_time.completed_hours.toFixed(1) : '0'}h
+              <div className="text-center bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                <div className="text-xl font-bold font-police-numbers">
+                  <span className="text-accent-500">
+                    {scheduleStats ? scheduleStats.today.tasks.completed : '0'}
+                  </span>
+                  <span className="text-gray-500">/{scheduleStats ? scheduleStats.today.tasks.total : '0'}</span>
                 </div>
-                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">ESTUDO HOJE</div>
+                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">TAREFAS HOJE</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {scheduleStats ? Math.round(scheduleStats.today.tasks.completion_rate * 10) / 10 : 0}% taxa
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-xl font-bold text-accent-500 font-police-numbers">
-                  {scheduleStats ? scheduleStats.weekly.tasks_completed : '0'}
+            </div>
+            
+            {/* Status Operacional */}
+            <div className="mt-6 flex items-center justify-between bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                {overallStats.averageProgress >= 75 ? (
+                  <>
+                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-police-body text-green-700 dark:text-green-400 uppercase tracking-wider font-bold">
+                      STATUS: OPERACIONAL ÓTIMO
+                    </span>
+                  </>
+                ) : overallStats.averageProgress >= 50 ? (
+                  <>
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-police-body text-yellow-700 dark:text-yellow-400 uppercase tracking-wider font-bold">
+                      STATUS: OPERACIONAL BOM
+                    </span>
+                  </>
+                ) : overallStats.averageProgress >= 25 ? (
+                  <>
+                    <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-police-body text-orange-700 dark:text-orange-400 uppercase tracking-wider font-bold">
+                      STATUS: REQUER ATENÇÃO
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-police-body text-red-700 dark:text-red-400 uppercase tracking-wider font-bold">
+                      STATUS: AÇÃO IMEDIATA NECESSÁRIA
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">
+                  ÚLTIMA ATUALIZAÇÃO: {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                 </div>
-                <div className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">TAREFAS SEMANA</div>
               </div>
             </div>
           </CardContent>
@@ -737,63 +1131,89 @@ export default function SchedulePage() {
             </motion.div>
           ) : (
             /* Modo Lista */
-            <div className="space-y-6">
-              {studyHistory
-                .filter(day => {
+            <div className="space-y-4">
+              {tasks
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                .filter(task => {
                   if (filter === 'all') return true;
-                  // No diário todos os registros são de atividades já realizadas
-                  return filter === 'completed';
+                  if (filter === 'completed') return task.status === 'completed';
+                  return task.status === 'pending'; // pending
                 })
-                .map((day) => (
+                .map((task, index) => (
                   <motion.div
-                    key={day.date}
+                    key={`${task.id}-${index}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
+                    className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
                   >
-                    <Card className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800">
-                      <CardHeader className="border-b-2 border-gray-200 dark:border-accent-500/30">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
-                              {new Date(day.date).toLocaleDateString('pt-BR', { 
-                                weekday: 'long', 
-                                day: 'numeric', 
-                                month: 'long' 
-                              }).toUpperCase()}
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body tracking-wider">
-                              {(day.totalMinutes / 60).toFixed(1)}H EXECUTADAS • {day.records.length} ATIVIDADES
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">
-                              {day.records.length} MISSÕES
-                            </div>
-                            <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                              <div
-                                className="bg-accent-500 h-full rounded-full transition-all"
-                                style={{ width: `${Math.min(100, (day.totalMinutes / 240) * 100)}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-3 p-4">
-                        {day.records.map((record) => (
-                          <StudyRecordCard key={record.id} record={record} />
-                        ))}
-                        
-                        <button 
-                          onClick={() => setShowNewTaskModal(true)}
-                          className="w-full py-2 px-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:border-accent-500 hover:text-accent-500 transition-all duration-300 flex items-center justify-center gap-2 font-police-body uppercase tracking-wider"
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={cn(
+                          "w-4 h-4 rounded-full border-2 flex items-center justify-center cursor-pointer",
+                          task.status === 'completed'
+                            ? "bg-green-500 border-green-500" 
+                            : "border-gray-300 dark:border-gray-600"
+                        )}
+                        onClick={() => toggleTaskCompletion(task.id)}
                         >
-                          <Plus className="w-4 h-4" />
-                          ADICIONAR TAREFA
-                        </button>
-                      </CardContent>
-                    </Card>
+                          {task.status === 'completed' && <Check className="w-3 h-3 text-white" />}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-900 dark:text-white font-police-subtitle">
+                            {task.title}
+                          </h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {task.description}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">
+                          {task.time}
+                        </div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 uppercase">
+                          {new Date(task.date).toLocaleDateString('pt-BR', { 
+                            day: '2-digit',
+                            month: 'short' 
+                          }).toUpperCase()}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Badges de status */}
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="outline" className="text-xs">
+                        {task.subject || 'Tarefa Geral'}
+                      </Badge>
+                      <Badge 
+                        variant="secondary" 
+                        className={cn(
+                          "text-xs",
+                          task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                          task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-green-100 text-green-700'
+                        )}
+                      >
+                        {task.priority === 'high' ? 'ALTA' : 
+                         task.priority === 'medium' ? 'MÉDIA' : 'BAIXA'} PRIORIDADE
+                      </Badge>
+                      {task.duration && (
+                        <Badge variant="outline" className="text-xs">
+                          {task.duration}min
+                        </Badge>
+                      )}
+                    </div>
                   </motion.div>
                 ))}
+              
+              {/* Botão adicionar tarefa */}
+              <button 
+                onClick={() => setShowNewTaskModal(true)}
+                className="w-full py-3 px-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:border-accent-500 hover:text-accent-500 transition-all duration-300 flex items-center justify-center gap-2 font-police-body uppercase tracking-wider"
+              >
+                <Plus className="w-4 h-4" />
+                ADICIONAR NOVA MISSÃO
+              </button>
             </div>
           )}
         </div>
@@ -846,38 +1266,52 @@ export default function SchedulePage() {
                     <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
                       DISTRIBUIÇÃO TÁTICA
                     </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {tasks.filter(t => t.status === 'completed').length} MISSÕES CONCLUÍDAS
+                    </span>
                   </div>
                   <div className="space-y-3">
-                    {[
-                      { type: 'BRIEFINGS', percent: 35, color: 'bg-blue-500' },
-                      { type: 'INTELIGÊNCIA', percent: 25, color: 'bg-green-500' },
-                      { type: 'TREINAMENTO', percent: 30, color: 'bg-purple-500' },
-                      { type: 'RECONHECIMENTO', percent: 10, color: 'bg-accent-500' }
-                    ].map((item) => (
-                      <div key={item.type} className="space-y-1">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs font-police-body uppercase tracking-wider text-gray-700 dark:text-gray-300">
-                            {item.type}
-                          </span>
-                          <span className="text-xs font-police-numbers font-bold text-gray-900 dark:text-white">
-                            {item.percent}%
-                          </span>
+                    {calculateTacticalDistribution().length > 0 ? (
+                      calculateTacticalDistribution().map((item) => (
+                        <div key={item.type} className="space-y-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-police-body uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                              {item.type}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {item.count}
+                              </span>
+                              <span className="text-xs font-police-numbers font-bold text-gray-900 dark:text-white">
+                                {item.percent}%
+                              </span>
+                            </div>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                            <div
+                              className={cn("h-full rounded-full transition-all", item.color)}
+                              style={{ width: `${item.percent}%` }}
+                            />
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                          <div
-                            className={cn("h-full rounded-full transition-all", item.color)}
-                            style={{ width: `${item.percent}%` }}
-                          />
+                      ))
+                    ) : (
+                      <div className="text-center py-4">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                          NENHUMA MISSÃO CONCLUÍDA
+                        </div>
+                        <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                          Complete tarefas para ver a distribuição tática
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Progresso por Disciplina Tática */}
+          {/* Progresso por Curso */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -887,54 +1321,73 @@ export default function SchedulePage() {
               <CardHeader className="flex flex-row items-center justify-between border-b-2 border-gray-200 dark:border-accent-500/30">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
                   <Layers className="w-5 h-5 text-accent-500" />
-                  PROGRESSO POR DISCIPLINA
+                  PROGRESSO POR CURSO
                 </h3>
               </CardHeader>
               <CardContent className="space-y-3 p-4">
-                {examInfo.subjects.slice(0, 5).map((subject) => (
-                  <div key={subject.name} className="space-y-2">
+                {coursesProgress.slice(0, 5).map((course, index) => (
+                  <div key={`${course.id}-${index}`} className="space-y-2">
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-sm font-police-body uppercase tracking-wider text-gray-900 dark:text-white">
-                          {subject.name}
+                          {course.title}
                         </p>
                         <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">
-                          {subject.hoursNeeded}H • PESO: {subject.weight}%
+                          {course.completedLessons}/{course.totalLessons} AULAS • {Math.round(course.estimatedTime / 60)}H TOTAL
                         </p>
                       </div>
                       <Badge 
                         variant="secondary"
                         className={cn(
                           "font-police-numbers font-bold",
-                          subject.progress >= 50 ? "text-green-700 dark:text-green-400" :
-                          subject.progress >= 30 ? "text-yellow-700 dark:text-yellow-400" :
+                          course.progress >= 50 ? "text-green-700 dark:text-green-400" :
+                          course.progress >= 30 ? "text-yellow-700 dark:text-yellow-400" :
                           "text-red-700 dark:text-red-400"
                         )}
                       >
-                        {subject.progress}%
+                        {Math.round(course.progress)}%
                       </Badge>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                       <div
                         className={cn(
                           "h-full rounded-full transition-all",
-                          subject.progress >= 50 ? "bg-green-500" :
-                          subject.progress >= 30 ? "bg-yellow-500" :
+                          course.progress >= 50 ? "bg-green-500" :
+                          course.progress >= 30 ? "bg-yellow-500" :
                           "bg-red-500"
                         )}
-                        style={{ width: `${subject.progress}%` }}
+                        style={{ width: `${course.progress}%` }}
                       />
                     </div>
                   </div>
                 ))}
                 
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full mt-4 font-police-body uppercase tracking-wider hover:text-accent-500"
-                >
-                  VER TODAS AS DISCIPLINAS
-                </Button>
+                {coursesProgress.length === 0 && (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-police-body">
+                      NENHUM CURSO MATRICULADO
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2 font-police-body uppercase tracking-wider hover:text-accent-500"
+                      onClick={() => window.location.href = '/student/courses'}
+                    >
+                      EXPLORAR CURSOS
+                    </Button>
+                  </div>
+                )}
+                
+                {coursesProgress.length > 5 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full mt-4 font-police-body uppercase tracking-wider hover:text-accent-500"
+                    onClick={() => window.location.href = '/student/courses'}
+                  >
+                    VER TODOS OS CURSOS ({coursesProgress.length})
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -1009,12 +1462,12 @@ export default function SchedulePage() {
         </div>
       </div>
 
-      {/* Call to Action */}
+      {/* Tactical Command Center */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="mt-8 bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 text-white text-center relative overflow-hidden"
+        className="mt-8 bg-gradient-to-r from-gray-900 via-[#14242f] to-gray-800 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 text-white relative overflow-hidden border border-accent-500/20"
       >
         {/* Background pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -1029,33 +1482,141 @@ export default function SchedulePage() {
           }} />
         </div>
         
+        {/* Corner tactical accents */}
+        <div className="absolute top-0 left-0 w-12 h-12 border-t-2 border-l-2 border-accent-500/30"></div>
+        <div className="absolute top-0 right-0 w-12 h-12 border-t-2 border-r-2 border-accent-500/30"></div>
+        <div className="absolute bottom-0 left-0 w-12 h-12 border-b-2 border-l-2 border-accent-500/30"></div>
+        <div className="absolute bottom-0 right-0 w-12 h-12 border-b-2 border-r-2 border-accent-500/30"></div>
+        
         <div className="relative z-10">
-          <Calendar className="w-12 h-12 mx-auto mb-4 text-accent-500" />
-          <h2 className="text-2xl font-bold mb-2 font-police-title uppercase tracking-wider">
-MANTENHA O FOCO E A DISCIPLINA MILITAR!
-        </h2>
-            <p className="text-gray-300 mb-6 max-w-2xl mx-auto font-police-body tracking-wider">
-              SEU PLANO TÁTICO É ATUALIZADO DIARIAMENTE PELA IA PARA MAXIMIZAR SUAS CHANCES DE SUCESSO
-            </p>
-            <div className="flex gap-3 justify-center">
-              <Button 
-                size="lg" 
-                className="bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider"
-              >
-                <Trophy className="w-5 h-5 mr-2" />
-                VER METAS DA SEMANA
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="border-gray-300 text-white hover:bg-white hover:text-gray-900 font-police-body font-semibold uppercase tracking-wider"
-              >
-                <BarChart3 className="w-5 h-5 mr-2" />
-                RELATÓRIO DETALHADO
-              </Button>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Target className="w-8 h-8 text-accent-500 mr-2" />
+                <span className="text-3xl font-bold font-police-numbers text-accent-500">
+                  {tasks.filter(t => t.status === 'completed').length}
+                </span>
+              </div>
+              <p className="text-sm text-gray-300 font-police-body uppercase tracking-wider">
+                MISSÕES CONCLUÍDAS
+              </p>
             </div>
+            
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Timer className="w-8 h-8 text-accent-500 mr-2" />
+                <span className="text-3xl font-bold font-police-numbers text-accent-500">
+                  {Math.round((tasks.filter(t => t.status === 'completed').length / Math.max(1, tasks.length)) * 100)}%
+                </span>
+              </div>
+              <p className="text-sm text-gray-300 font-police-body uppercase tracking-wider">
+                EFICIÊNCIA TÁTICA
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Activity className="w-8 h-8 text-accent-500 mr-2" />
+                <span className="text-3xl font-bold font-police-numbers text-accent-500">
+                  {tasks.filter(t => t.status === 'pending').length}
+                </span>
+              </div>
+              <p className="text-sm text-gray-300 font-police-body uppercase tracking-wider">
+                OPERAÇÕES ATIVAS
+              </p>
+            </div>
+          </div>
+
+          {/* Title and Description */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-2 h-8 bg-accent-500 mr-3"></div>
+              <Calendar className="w-10 h-10 text-accent-500 mr-3" />
+              <div className="w-2 h-8 bg-accent-500"></div>
+            </div>
+            
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 font-police-title uppercase tracking-wider">
+              CENTRO DE COMANDO TÁTICO
+            </h2>
+            
+            <p className="text-gray-300 mb-2 max-w-3xl mx-auto font-police-body tracking-wider">
+              MONITORE SEU PROGRESSO E MANTENHA O FOCO NOS OBJETIVOS
+            </p>
+            
+            <div className="w-24 h-1 bg-accent-500 mx-auto"></div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button 
+              size="lg" 
+              onClick={() => setShowPlanner(true)}
+              className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black hover:text-white dark:hover:text-white font-police-body font-semibold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl min-w-[200px]"
+            >
+              <Trophy className="w-5 h-5 mr-2" />
+              CRIAR PLANO TÁTICO
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => {
+                const today = new Date().toLocaleDateString('pt-BR');
+                const completedToday = tasks.filter(t => {
+                  if (!t.completed_at) return false;
+                  const completedDate = new Date(t.completed_at).toLocaleDateString('pt-BR');
+                  return completedDate === today;
+                });
+                
+                toast.success(`📊 RELATÓRIO TÁTICO\n\n✅ ${completedToday.length} missões concluídas hoje\n⏳ ${tasks.filter(t => t.status === 'pending').length} operações pendentes\n🎯 ${Math.round((tasks.filter(t => t.status === 'completed').length / Math.max(1, tasks.length)) * 100)}% eficiência geral`, {
+                  duration: 8000,
+                  style: {
+                    background: '#14242f',
+                    color: 'white',
+                    fontSize: '14px',
+                    fontFamily: 'monospace',
+                    whiteSpace: 'pre-line'
+                  }
+                });
+              }}
+              className="border-accent-500/50 hover:border-accent-500 text-white hover:bg-accent-500/10 font-police-body font-semibold uppercase tracking-wider transition-all duration-300 min-w-[200px]"
+            >
+              <BarChart3 className="w-5 h-5 mr-2" />
+              RELATÓRIO TÁTICO
+            </Button>
+          </div>
+
+          {/* Progress Indicator */}
+          <div className="mt-8">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-300 font-police-body uppercase">STATUS OPERACIONAL:</span>
+              <span className="text-sm font-bold text-accent-500 font-police-numbers">
+                {tasks.filter(t => t.status === 'completed').length}/{tasks.length} CONCLUÍDAS
+              </span>
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ 
+                  width: `${Math.round((tasks.filter(t => t.status === 'completed').length / Math.max(1, tasks.length)) * 100)}%` 
+                }}
+                transition={{ duration: 1, delay: 0.8 }}
+                className="bg-gradient-to-r from-accent-500 to-yellow-400 h-full rounded-full shadow-lg"
+              />
+            </div>
+          </div>
         </div>
       </motion.div>
+
+      {/* Study Planner Modal */}
+      {showPlanner && (
+        <StudyPlanner onClose={() => {
+          setShowPlanner(false);
+          loadScheduleData();
+          loadCoursesProgress();
+        }} />
+      )}
 
       {/* Modal de Nova Tarefa */}
       <AnimatePresence>
@@ -1194,22 +1755,25 @@ MANTENHA O FOCO E A DISCIPLINA MILITAR!
                   />
                 </div>
 
-                {/* Matéria */}
+                {/* Curso/Matéria */}
                 <div>
                   <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
-                    ÁREA OPERACIONAL
+                    CURSO / MATÉRIA
                   </label>
                   <select
                     value={newTask.subject}
                     onChange={(e) => setNewTask({ ...newTask, subject: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors focus:outline-none focus:border-accent-500"
                   >
-                    <option value="">SELECIONE A ÁREA...</option>
-                    {examInfo.subjects.map((subject) => (
-                      <option key={subject.name} value={subject.name}>
-                        {subject.name}
+                    <option value="">SELECIONE O CURSO...</option>
+                    {coursesProgress.map((course, index) => (
+                      <option key={`${course.id}-option-${index}`} value={course.title}>
+                        {course.title}
                       </option>
                     ))}
+                    <option value="REVISÃO GERAL">REVISÃO GERAL</option>
+                    <option value="SIMULAÇÃO">SIMULAÇÃO</option>
+                    <option value="QUESTÕES">QUESTÕES</option>
                   </select>
                 </div>
               </div>
