@@ -131,6 +131,87 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Carregar dados da API na montagem
+  useEffect(() => {
+    loadScheduleData();
+  }, [selectedDate]);
+
+  const loadScheduleData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      
+      // Carregar dados do cronograma
+      const [tasksData, sessionsData, statsData, goalsData] = await Promise.all([
+        scheduleService.getTasksForDate(dateStr),
+        scheduleService.getStudySessionsForDate(dateStr),
+        scheduleService.getStats(dateStr),
+        scheduleService.getTodayGoal()
+      ]);
+
+      setTasks(tasksData);
+      setStudySessions(sessionsData);
+      setScheduleStats(statsData);
+      setDailyGoal(goalsData);
+    } catch (err) {
+      console.error('Error loading schedule data:', err);
+      setError('Erro ao carregar dados do cronograma');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Generate study history from API sessions
+  const generateStudyHistory = (): DailyStudyLog[] => {
+    // Agrupar sessões por data
+    const sessionsByDate: { [date: string]: StudySession[] } = {};
+    
+    studySessions.forEach(session => {
+      if (!sessionsByDate[session.date]) {
+        sessionsByDate[session.date] = [];
+      }
+      sessionsByDate[session.date].push(session);
+    });
+
+    // Converter para formato DailyStudyLog
+    return Object.entries(sessionsByDate).map(([date, sessions]) => {
+      const records: StudyRecord[] = sessions.map(session => ({
+        id: session.id,
+        timestamp: session.created_at,
+        subject: session.subject || 'Sem matéria',
+        title: session.title,
+        type: session.type,
+        duration: session.duration,
+        progress: session.progress,
+        score: session.score,
+        courseId: session.course_id,
+        lessonId: session.lesson_id,
+        completed: session.status === 'completed',
+        details: session.notes ? {
+          topicsReviewed: [session.notes]
+        } : undefined
+      }));
+
+      const totalMinutes = records.reduce((sum, r) => sum + r.duration, 0);
+      const questionsRecords = records.filter(r => r.type === 'questions');
+      
+      return {
+        date,
+        records,
+        totalMinutes,
+        achievements: {
+          coursesCompleted: records.filter(r => r.type === 'course' && r.completed).length,
+          lessonsWatched: records.filter(r => r.type === 'lesson').length,
+          questionsAnswered: questionsRecords.length,
+          averageScore: questionsRecords.length > 0 
+            ? questionsRecords.reduce((sum, r) => sum + (r.score || 0), 0) / questionsRecords.length
+            : 0
+        }
+      };
+    }).sort((a, b) => b.date.localeCompare(a.date)); // Ordenar por data decrescente
+  };
+
   // Generate study history from sessions
   const studyHistory = generateStudyHistory();
 
