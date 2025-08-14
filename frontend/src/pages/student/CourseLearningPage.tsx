@@ -457,12 +457,59 @@ export default function CourseLearningPage() {
       // Salvar progresso final da aula atual antes de trocar
       if (currentLessonId && duration > 0) {
         const watchedPercentage = courseProgressService.calculateWatchedPercentage(currentTime, duration);
-        await courseProgressService.updateLessonProgress(courseId, currentLessonId, {
-          currentTime,
-          duration,
-          watchedPercentage,
-          completed: watchedPercentage >= 90
-        });
+        
+        // Se está avançando para próxima aula, marcar atual como completa
+        const currentModule = courseProgress?.modules.find(m => 
+          m.lessons.some(l => l.id === currentLessonId)
+        );
+        const targetModule = courseProgress?.modules.find(m => 
+          m.lessons.some(l => l.id === lessonId)
+        );
+        
+        let isAdvancing = false;
+        
+        if (currentModule && targetModule) {
+          const currentModuleIndex = courseProgress?.modules.findIndex(m => m.id === currentModule.id) || 0;
+          const targetModuleIndex = courseProgress?.modules.findIndex(m => m.id === targetModule.id) || 0;
+          
+          if (targetModuleIndex > currentModuleIndex) {
+            // Avançando para próximo módulo
+            isAdvancing = true;
+          } else if (targetModuleIndex === currentModuleIndex) {
+            // Mesmo módulo, verificar se está avançando
+            const currentLessonIndex = currentModule.lessons.findIndex(l => l.id === currentLessonId);
+            const nextLessonIndex = currentModule.lessons.findIndex(l => l.id === lessonId);
+            isAdvancing = nextLessonIndex > currentLessonIndex;
+          }
+        }
+        
+        if (isAdvancing) {
+            await courseProgressService.updateLessonProgress(courseId, currentLessonId, {
+              currentTime: duration,
+              duration,
+              watchedPercentage: 100,
+              completed: true
+            });
+            
+            toast.success('✅ Missão anterior marcada como concluída!', { duration: 2000 });
+          } else {
+            // Apenas salvar progresso sem marcar como completa
+            await courseProgressService.updateLessonProgress(courseId, currentLessonId, {
+              currentTime,
+              duration,
+              watchedPercentage,
+              completed: watchedPercentage >= 90
+            });
+          }
+        } else {
+          // Caso não encontre o módulo, apenas salvar progresso
+          await courseProgressService.updateLessonProgress(courseId, currentLessonId, {
+            currentTime,
+            duration,
+            watchedPercentage,
+            completed: watchedPercentage >= 90
+          });
+        }
       }
 
       // Trocar para nova aula
