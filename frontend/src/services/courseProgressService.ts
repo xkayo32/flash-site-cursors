@@ -80,7 +80,7 @@ class CourseProgressService {
       const token = localStorage.getItem('token');
       
       const response = await fetch(
-        `${this.apiUrl}/courses/${courseId}/lessons/${lessonId}/progress`,
+        `${this.apiUrl}/api/v1/courses/${courseId}/lessons/${lessonId}/progress`,
         {
           method: 'POST',
           headers: {
@@ -120,7 +120,7 @@ class CourseProgressService {
       const token = localStorage.getItem('token');
       
       const response = await fetch(
-        `${this.apiUrl}/courses/${courseId}/lessons/${lessonId}/progress`,
+        `${this.apiUrl}/api/v1/courses/${courseId}/lessons/${lessonId}/progress`,
         {
           method: 'GET',
           headers: {
@@ -150,7 +150,7 @@ class CourseProgressService {
       const token = localStorage.getItem('token');
       
       const response = await fetch(
-        `${this.apiUrl}/courses/${courseId}/progress`,
+        `${this.apiUrl}/api/v1/courses/${courseId}/progress`,
         {
           method: 'GET',
           headers: {
@@ -183,7 +183,7 @@ class CourseProgressService {
       const token = localStorage.getItem('token');
       
       const response = await fetch(
-        `${this.apiUrl}/courses/${courseId}/lessons/${lessonId}/complete`,
+        `${this.apiUrl}/api/v1/courses/${courseId}/lessons/${lessonId}/complete`,
         {
           method: 'POST',
           headers: {
@@ -219,7 +219,7 @@ class CourseProgressService {
       const token = localStorage.getItem('token');
       
       const response = await fetch(
-        `${this.apiUrl}/courses/${courseId}/enrollment`,
+        `${this.apiUrl}/api/v1/courses/${courseId}/enrollment`,
         {
           method: 'GET',
           headers: {
@@ -253,7 +253,7 @@ class CourseProgressService {
       const token = localStorage.getItem('token');
       
       const response = await fetch(
-        `${this.apiUrl}/courses/${courseId}/enroll`,
+        `${this.apiUrl}/api/v1/courses/${courseId}/enroll`,
         {
           method: 'POST',
           headers: {

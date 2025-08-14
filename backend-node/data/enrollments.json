@@ -3,7 +3,7 @@
     "id": "f490f2c1-fb5e-4731-9eb1-fea2b9e3e10d",
     "user_id": 2,
     "course_id": "88c9efca-98ae-43e7-848c-091f38703915",
-    "status": "active",
+    "status": "paused",
     "progress": {
       "percentage": 0,
       "completed_modules": [],
@@ -11,9 +11,14 @@
       "last_accessed": "2025-08-12T20:06:01.505Z"
     },
     "enrolled_at": "2025-08-12T20:06:01.505Z",
-    "updated_at": "2025-08-12T20:06:01.505Z",
+    "updated_at": "2025-08-14T00:56:09.918Z",
     "completion_date": null,
     "certificate_issued": false,
-    "tactical_notes": []
+    "tactical_notes": [
+      {
+        "note": "Operação pausada temporariamente pelo agente",
+        "timestamp": "2025-08-14T00:56:09.918Z"
+      }
+    ]
   }
 ]
