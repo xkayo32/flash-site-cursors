@@ -19,7 +19,10 @@ import {
   Activity,
   Timer,
   Brain,
-  Sword
+  Sword,
+  Grid3x3,
+  List,
+  ArrowRight
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -43,6 +46,7 @@ export default function MockExamsPageSimple() {
   const [mockExams, setMockExams] = useState<MockExamDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Load mock exams from API
   useEffect(() => {
@@ -56,16 +60,34 @@ export default function MockExamsPageSimple() {
       const response = await mockExamService.getAvailableExams();
       
       if (response.success && response.data) {
-        // Transform API data to display format
-        const transformedExams: MockExamDisplay[] = response.data.map((exam: MockExamAPI) => ({
-          id: exam.id,
-          title: exam.title.toUpperCase(),
-          organization: `COMANDO ${exam.description ? exam.description.split(' ')[0] : 'GERAL'}`,
-          totalQuestions: exam.total_questions,
-          timeLimitMinutes: exam.duration,
-          difficulty: exam.difficulty,
-          isActive: exam.status === 'published'
-        }));
+        // Transform API data to display format with tactical naming
+        const transformedExams: MockExamDisplay[] = response.data.map((exam: MockExamAPI) => {
+          // Extract organization from title for tactical display
+          let organization = 'COMANDO GERAL';
+          if (exam.title.includes('Polícia Federal') || exam.title.includes('PF')) {
+            organization = 'COMANDO PF';
+          } else if (exam.title.includes('PRF') || exam.title.includes('Rodoviário')) {
+            organization = 'COMANDO PRF';
+          } else if (exam.title.includes('Polícia Civil')) {
+            organization = 'COMANDO PC';
+          } else if (exam.title.includes('Polícia Militar') || exam.title.includes('PM')) {
+            organization = 'COMANDO PM';
+          } else if (exam.title.includes('Tribunal')) {
+            organization = 'COMANDO TCU';
+          } else if (exam.title.includes('Constitucional')) {
+            organization = 'COMANDO JURÍDICO';
+          }
+
+          return {
+            id: exam.id,
+            title: exam.title.toUpperCase(),
+            organization,
+            totalQuestions: exam.total_questions,
+            timeLimitMinutes: exam.duration,
+            difficulty: exam.difficulty,
+            isActive: exam.status === 'published'
+          };
+        });
         
         setMockExams(transformedExams);
       } else {
@@ -130,6 +152,30 @@ export default function MockExamsPageSimple() {
           <Badge variant="outline" className="font-police-numbers border-accent-500 text-accent-500">
             {filteredExams.length} SIMULAÇÕES DISPONÍVEIS
           </Badge>
+          
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-white dark:bg-gray-700 text-accent-500 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              <Grid3x3 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white dark:bg-gray-700 text-accent-500 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </motion.div>
 
@@ -239,13 +285,16 @@ export default function MockExamsPageSimple() {
         </div>
       )}
 
-      {/* Simulados Grid */}
+      {/* Simulados Grid/List */}
       {!loading && !error && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className={viewMode === 'grid' 
+            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
+            : "space-y-4"
+          }
         >
           {filteredExams.map((exam, index) => (
             <motion.div
@@ -254,66 +303,167 @@ export default function MockExamsPageSimple() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * index }}
             >
-            <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white/90 dark:bg-gray-900/90 shadow-lg hover:shadow-xl relative overflow-hidden backdrop-blur-sm group">
-              {/* Tactical stripe */}
-              <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-              
-              <CardContent className="p-6">
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 font-police-title uppercase tracking-wider group-hover:text-accent-500 transition-colors">
-                      {exam.title}
-                    </h3>
-                    <Badge variant="outline" className="text-xs font-police-body border-gray-400 text-gray-600 dark:text-gray-400">
-                      {exam.organization}
+            {viewMode === 'grid' ? (
+              <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white/90 dark:bg-gray-900/90 shadow-lg hover:shadow-xl relative overflow-hidden backdrop-blur-sm group">
+                {/* Tactical stripe */}
+                <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+                
+                <CardContent className="p-6">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 font-police-title uppercase tracking-wider group-hover:text-accent-500 transition-colors">
+                        {exam.title}
+                      </h3>
+                      <Badge variant="outline" className="text-xs font-police-body border-gray-400 text-gray-600 dark:text-gray-400">
+                        {exam.organization}
+                      </Badge>
+                    </div>
+                    <Badge variant="secondary" className={`font-police-subtitle tracking-wider border-2 border-current ${getDifficultyColor(exam.difficulty)}`}>
+                      {exam.difficulty}
                     </Badge>
                   </div>
-                  <Badge variant="secondary" className={`font-police-subtitle tracking-wider border-2 border-current ${getDifficultyColor(exam.difficulty)}`}>
-                    {exam.difficulty}
-                  </Badge>
-                </div>
-                
-                {/* Stats */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4 text-accent-500" />
-                      <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">ALVOS:</span>
-                    </div>
-                    <span className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">{exam.totalQuestions}</span>
-                  </div>
                   
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-accent-500" />
-                      <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">DURAÇÃO:</span>
+                  {/* Stats */}
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Target className="w-4 h-4 text-accent-500" />
+                        <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">ALVOS:</span>
+                      </div>
+                      <span className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">{exam.totalQuestions}</span>
                     </div>
-                    <span className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">{exam.timeLimitMinutes} min</span>
+                    
+                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-accent-500" />
+                        <span className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">DURAÇÃO:</span>
+                      </div>
+                      <span className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">{exam.timeLimitMinutes} min</span>
+                    </div>
                   </div>
-                </div>
 
-                {/* Actions */}
-                <div className="space-y-2">
-                  <Button
-                    onClick={() => navigate(`/simulations/${exam.id}/take`)}
-                    className="w-full bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider gap-2 transition-all duration-300 hover:scale-105"
-                  >
-                    <Play className="w-4 h-4" />
-                    INICIAR OPERAÇÃO
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/simulations/${exam.id}/details`)}
-                    className="w-full font-police-body uppercase tracking-wider gap-2 hover:border-accent-500 hover:text-accent-500"
-                  >
-                    DETALHES TÁTICOS
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                  {/* Actions */}
+                  <div className="space-y-2">
+                    <Button
+                      onClick={async () => {
+                        try {
+                          setLoading(true);
+                          const response = await mockExamService.startExam(exam.id);
+                          if (response.success && response.data) {
+                            // Navigate to exam taking page with attempt ID
+                            navigate(`/exam/${response.data.attempt_id}`);
+                          } else {
+                            setError('Erro ao iniciar simulado. Tente novamente.');
+                          }
+                        } catch (err: any) {
+                          console.error('Erro ao iniciar simulado:', err);
+                          setError(err.message || 'Erro ao iniciar simulado. Verifique sua conexão.');
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      className="w-full bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white font-police-body font-semibold uppercase tracking-wider gap-2 transition-all duration-300 hover:scale-105 shadow-lg"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4" />
+                      )}
+                      {loading ? 'INICIANDO...' : 'INICIAR OPERAÇÃO'}
+                      {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate(`/simulations/${exam.id}/details`)}
+                      className="w-full font-police-body uppercase tracking-wider gap-2 hover:border-accent-500 hover:text-accent-500"
+                    >
+                      DETALHES TÁTICOS
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              /* List View */
+              <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white/90 dark:bg-gray-900/90 shadow-lg hover:shadow-xl relative overflow-hidden backdrop-blur-sm">
+                <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
+                            {exam.title}
+                          </h3>
+                          <div className="flex items-center gap-4 mt-2">
+                            <Badge variant="outline" className="text-xs font-police-body border-gray-400 text-gray-600 dark:text-gray-400">
+                              {exam.organization}
+                            </Badge>
+                            <Badge variant="secondary" className={`font-police-subtitle tracking-wider ${getDifficultyColor(exam.difficulty)}`}>
+                              {exam.difficulty}
+                            </Badge>
+                            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                              <div className="flex items-center gap-1">
+                                <Target className="w-4 h-4 text-accent-500" />
+                                <span className="font-police-numbers">{exam.totalQuestions} ALVOS</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4 text-accent-500" />
+                                <span className="font-police-numbers">{exam.timeLimitMinutes} MIN</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={async () => {
+                          try {
+                            setLoading(true);
+                            const response = await mockExamService.startExam(exam.id);
+                            if (response.success && response.data) {
+                              navigate(`/exam/${response.data.attempt_id}`);
+                            } else {
+                              setError('Erro ao iniciar simulado. Tente novamente.');
+                            }
+                          } catch (err: any) {
+                            console.error('Erro ao iniciar simulado:', err);
+                            setError(err.message || 'Erro ao iniciar simulado. Verifique sua conexão.');
+                          } finally {
+                            setLoading(false);
+                          }
+                        }}
+                        className="bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white font-police-body font-semibold uppercase tracking-wider gap-2 transition-all duration-300 shadow-lg"
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Play className="w-4 h-4" />
+                        )}
+                        {loading ? 'INICIANDO...' : 'INICIAR OPERAÇÃO'}
+                        {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/simulations/${exam.id}/details`)}
+                        className="font-police-body uppercase tracking-wider gap-2 hover:border-accent-500 hover:text-accent-500"
+                      >
+                        DETALHES
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             </motion.div>
           ))}
         </motion.div>
@@ -421,18 +571,35 @@ export default function MockExamsPageSimple() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
                 size="lg" 
-                onClick={() => {
-                  // Find a random active exam
-                  const activeExams = mockExams.filter(e => e.isActive);
-                  if (activeExams.length > 0) {
-                    const randomExam = activeExams[Math.floor(Math.random() * activeExams.length)];
-                    navigate(`/simulations/${randomExam.id}/take`);
+                onClick={async () => {
+                  try {
+                    const activeExams = mockExams.filter(e => e.isActive);
+                    if (activeExams.length > 0) {
+                      const randomExam = activeExams[Math.floor(Math.random() * activeExams.length)];
+                      setLoading(true);
+                      const response = await mockExamService.startExam(randomExam.id);
+                      if (response.success && response.data) {
+                        navigate(`/exam/${response.data.attempt_id}`);
+                      } else {
+                        setError('Erro ao iniciar simulado aleatório. Tente novamente.');
+                      }
+                    }
+                  } catch (err: any) {
+                    console.error('Erro ao iniciar missão aleatória:', err);
+                    setError(err.message || 'Erro ao iniciar missão aleatória.');
+                  } finally {
+                    setLoading(false);
                   }
                 }}
-                className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black hover:text-white dark:hover:text-white font-police-body font-semibold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl min-w-[220px]"
+                className="bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white font-police-body font-semibold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl min-w-[220px]"
+                disabled={loading}
               >
-                <Zap className="w-5 h-5 mr-2" />
-                MISSÃO ALEATÓRIA
+                {loading ? (
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                ) : (
+                  <Zap className="w-5 h-5 mr-2" />
+                )}
+                {loading ? 'INICIANDO...' : 'MISSÃO ALEATÓRIA'}
               </Button>
               
               <Button 
