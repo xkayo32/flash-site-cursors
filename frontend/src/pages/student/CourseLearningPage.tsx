@@ -220,6 +220,25 @@ export default function CourseLearningPage() {
 
   // ===================== PROGRESSO DA AULA =====================
 
+  // Calcular progresso total do curso
+  const calculateTotalProgress = () => {
+    if (!courseProgress?.modules) return 0;
+    
+    let totalLessons = 0;
+    let completedLessons = 0;
+    
+    courseProgress.modules.forEach(module => {
+      totalLessons += module.lessons.length;
+      module.lessons.forEach(lesson => {
+        if (lesson.progress?.completed || lesson.progress?.watched_percentage >= 90) {
+          completedLessons++;
+        }
+      });
+    });
+    
+    return totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  };
+
   // Carregegar progresso específico da aula atual
   useEffect(() => {
     const loadLessonProgress = async () => {
@@ -311,9 +330,52 @@ export default function CourseLearningPage() {
     setIsPlaying(!isPlaying);
   };
 
-  const handleVideoEnd = () => {
+  const handleVideoEnd = async () => {
     setIsPlaying(false);
+    
+    // Marcar aula como completa
+    if (courseId && currentLessonId) {
+      await courseProgressService.updateLessonProgress(courseId, currentLessonId, {
+        currentTime: duration,
+        duration: duration,
+        completed: true,
+        watchedPercentage: 100
+      });
+      
+      // Atualizar progresso local
+      const updatedProgress = await courseProgressService.getCourseProgress(courseId);
+      setCourseProgress(updatedProgress);
+    }
+    
     // Auto-advance to next lesson
+    const currentModule = courseProgress?.modules.find(m => 
+      m.lessons.some(l => l.id === currentLessonId)
+    );
+    
+    if (currentModule) {
+      const currentLessonIndex = currentModule.lessons.findIndex(l => l.id === currentLessonId);
+      
+      // Tentar próxima aula no mesmo módulo
+      if (currentLessonIndex < currentModule.lessons.length - 1) {
+        const nextLesson = currentModule.lessons[currentLessonIndex + 1];
+        setCurrentLessonId(nextLesson.id);
+        toast.success('🎯 Avançando para próxima missão!', { duration: 2000 });
+      } else {
+        // Tentar próximo módulo
+        const currentModuleIndex = courseProgress?.modules.findIndex(m => m.id === currentModule.id) || 0;
+        if (currentModuleIndex < (courseProgress?.modules.length || 0) - 1) {
+          const nextModule = courseProgress?.modules[currentModuleIndex + 1];
+          if (nextModule && nextModule.lessons.length > 0) {
+            setCurrentLessonId(nextModule.lessons[0].id);
+            toast.success('🎯 Avançando para próximo módulo!', { duration: 2000 });
+          } else {
+            toast.success('🏆 OPERAÇÃO COMPLETA! Todas as missões foram concluídas!', { duration: 5000 });
+          }
+        } else {
+          toast.success('🏆 OPERAÇÃO COMPLETA! Todas as missões foram concluídas!', { duration: 5000 });
+        }
+      }
+    }
     const nextLesson = getNextLesson();
     if (nextLesson) {
       setTimeout(() => {
@@ -817,12 +879,12 @@ Junte-se à operação e domine os concursos! 💪`;
               
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium font-police-body uppercase tracking-wider text-accent-500">PROGRESSO DA OPERAÇÃO</span>
-                <span className="text-sm text-accent-400 font-police-numbers font-bold">{course.progress}%</span>
+                <span className="text-sm text-accent-400 font-police-numbers font-bold">{calculateTotalProgress()}%</span>
               </div>
               <div className="w-full bg-gray-700/50 rounded-full h-3 border border-accent-500/20">
                 <div
                   className="bg-gradient-to-r from-accent-500 to-accent-600 h-full rounded-full transition-all duration-500 shadow-lg shadow-accent-500/20"
-                  style={{ width: `${course.progress}%` }}
+                  style={{ width: `${calculateTotalProgress()}%` }}
                 />
               </div>
               
