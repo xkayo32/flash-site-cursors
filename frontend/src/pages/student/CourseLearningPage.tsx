@@ -186,7 +186,7 @@ export default function CourseLearningPage() {
 
         // Carregar dados do curso
         const [courseData, progressData] = await Promise.all([
-          courseService.getCourseById(courseId),
+          courseService.getCourse(courseId),
           courseProgressService.getCourseProgress(courseId)
         ]);
 
