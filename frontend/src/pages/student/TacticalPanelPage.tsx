@@ -111,6 +111,8 @@ export default function TacticalPanelPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState('30days');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<string[]>(['performance', 'subjects']);
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
 
   // Load analytics data
   const loadAnalytics = async (period: string = selectedPeriod) => {
@@ -222,11 +224,6 @@ const treemapData = [
 ];
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
-
-export default function TacticalPanelPage() {
-  const [selectedPeriod, setSelectedPeriod] = useState('7days');
-  const [expandedSections, setExpandedSections] = useState<string[]>(['performance', 'subjects']);
-  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
 
   // Toggle seção expandida
   const toggleSection = (section: string) => {
