@@ -90,6 +90,63 @@ export default function QuestionsPage() {
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [notebookName, setNotebookName] = useState('');
   const [notebookDescription, setNotebookDescription] = useState('');
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [showReviewMode, setShowReviewMode] = useState(false);
+
+  // Chave para localStorage
+  const STORAGE_KEY = 'questions_answers';
+
+  // Carregar respostas salvas do localStorage
+  useEffect(() => {
+    const savedAnswers = localStorage.getItem(STORAGE_KEY);
+    if (savedAnswers) {
+      try {
+        const parsed = JSON.parse(savedAnswers);
+        // Será aplicado após carregar as questões
+        setSavedAnswers(parsed);
+      } catch (error) {
+        console.error('Erro ao carregar respostas salvas:', error);
+      }
+    }
+  }, []);
+
+  const [savedAnswers, setSavedAnswers] = useState<Record<string, {
+    userAnswer: number;
+    isCorrect: boolean;
+    timestamp: string;
+  }>>({});
+
+  // Salvar respostas no localStorage sempre que mudarem
+  const saveAnswer = (questionId: string, userAnswer: number, isCorrect: boolean) => {
+    const newAnswers = {
+      ...savedAnswers,
+      [questionId]: {
+        userAnswer,
+        isCorrect,
+        timestamp: new Date().toISOString()
+      }
+    };
+    setSavedAnswers(newAnswers);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newAnswers));
+  };
+
+  // Resetar todas as respostas
+  const resetAllAnswers = () => {
+    if (confirm('Tem certeza que deseja resetar todas as respostas? Esta ação não pode ser desfeita.')) {
+      setSavedAnswers({});
+      localStorage.removeItem(STORAGE_KEY);
+      
+      // Resetar estado das questões
+      setQuestions(questions.map(q => ({
+        ...q,
+        userAnswer: undefined,
+        isAnswered: false,
+        isCorrect: false
+      })));
+      
+      toast.success('RESPOSTAS RESETADAS COM SUCESSO!', { icon: '🔄' });
+    }
+  };
 
   // Carregamento inicial das questões
   useEffect(() => {
@@ -115,14 +172,17 @@ export default function QuestionsPage() {
       
       // API retorna data e pagination em estrutura diferente
       if (response.success && response.data) {
-        const localQuestions: LocalQuestion[] = response.data.map(q => ({
-          ...q,
-          userAnswer: undefined,
-          isAnswered: false,
-          isCorrect: false,
-          isFavorite: false,
-          timeSpent: undefined
-        }));
+        const localQuestions: LocalQuestion[] = response.data.map(q => {
+          const savedAnswer = savedAnswers[q.id];
+          return {
+            ...q,
+            userAnswer: savedAnswer?.userAnswer,
+            isAnswered: !!savedAnswer,
+            isCorrect: savedAnswer?.isCorrect || false,
+            isFavorite: false,
+            timeSpent: undefined
+          };
+        });
         
         setQuestions(localQuestions);
         setTotalQuestions(response.pagination?.total || response.data.length);
@@ -144,6 +204,15 @@ export default function QuestionsPage() {
     setQuestions(prev => prev.map(q => {
       if (q.id === questionId) {
         const isCorrect = answerIndex === q.correct_answer;
+        
+        // Salvar resposta no localStorage
+        saveAnswer(questionId, answerIndex, isCorrect);
+        
+        // Enviar para o backend para estatísticas
+        questionService.recordAnswer(questionId, isCorrect).catch(err => {
+          console.error('Erro ao registrar resposta:', err);
+        });
+        
         return {
           ...q,
           userAnswer: answerIndex,
@@ -545,6 +614,37 @@ export default function QuestionsPage() {
           </div>
           
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={resetAllAnswers}
+              className="font-police-body uppercase tracking-wider hover:border-red-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+              disabled={Object.keys(savedAnswers).length === 0}
+            >
+              <AlertCircle className="w-4 h-4 mr-2" />
+              RESETAR RESPOSTAS ({Object.keys(savedAnswers).length})
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={() => setShowStatsModal(true)}
+              className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              ESTATÍSTICAS
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={() => setShowReviewMode(!showReviewMode)}
+              className={cn(
+                "font-police-body uppercase tracking-wider",
+                showReviewMode && "bg-accent-500 text-black border-accent-500"
+              )}
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              {showReviewMode ? 'MODO ESTUDO' : 'MODO REVISÃO'}
+            </Button>
+            
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
@@ -994,6 +1094,193 @@ export default function QuestionsPage() {
           </Button>
         </div>
       </motion.div>
+
+      {/* Modal de Estatísticas Detalhadas */}
+      {showStatsModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowStatsModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-gradient-to-br from-gray-900 via-[#14242f] to-gray-900 rounded-xl shadow-2xl max-w-4xl w-full p-8 border-2 border-accent-500/50 relative overflow-hidden max-h-[90vh] overflow-y-auto"
+          >
+            {/* Tactical stripe */}
+            <div className="absolute top-0 right-0 w-2 h-full bg-accent-500" />
+            
+            <div className="text-center mb-6">
+              <div className="flex items-center justify-center mb-4">
+                <BarChart3 className="w-12 h-12 text-accent-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-white font-police-title uppercase tracking-ultra-wide mb-2">
+                RELATÓRIO DE INTELIGÊNCIA TÁTICA
+              </h3>
+              <div className="w-24 h-1 bg-accent-500 mx-auto" />
+            </div>
+
+            {/* Estatísticas Gerais */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-5 h-5 text-blue-500" />
+                  <span className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider">Total Respondidas</span>
+                </div>
+                <p className="text-2xl font-bold text-blue-500 font-police-numbers">
+                  {Object.keys(savedAnswers).length}
+                </p>
+              </div>
+
+              <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  <span className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider">Acertos</span>
+                </div>
+                <p className="text-2xl font-bold text-green-500 font-police-numbers">
+                  {Object.values(savedAnswers).filter(a => a.isCorrect).length}
+                </p>
+              </div>
+
+              <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <XCircle className="w-5 h-5 text-red-500" />
+                  <span className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider">Erros</span>
+                </div>
+                <p className="text-2xl font-bold text-red-500 font-police-numbers">
+                  {Object.values(savedAnswers).filter(a => !a.isCorrect).length}
+                </p>
+              </div>
+
+              <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="w-5 h-5 text-amber-500" />
+                  <span className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider">Taxa de Acerto</span>
+                </div>
+                <p className="text-2xl font-bold text-amber-500 font-police-numbers">
+                  {Object.keys(savedAnswers).length > 0 
+                    ? Math.round((Object.values(savedAnswers).filter(a => a.isCorrect).length / Object.keys(savedAnswers).length) * 100)
+                    : 0}%
+                </p>
+              </div>
+            </div>
+
+            {/* Desempenho por Matéria */}
+            <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 mb-6">
+              <h4 className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider mb-3">
+                DESEMPENHO POR MATÉRIA
+              </h4>
+              <div className="space-y-3">
+                {(() => {
+                  // Calcular desempenho por matéria
+                  const performanceBySubject: Record<string, { correct: number; total: number }> = {};
+                  
+                  questions.forEach(q => {
+                    if (savedAnswers[q.id]) {
+                      if (!performanceBySubject[q.subject]) {
+                        performanceBySubject[q.subject] = { correct: 0, total: 0 };
+                      }
+                      performanceBySubject[q.subject].total++;
+                      if (savedAnswers[q.id].isCorrect) {
+                        performanceBySubject[q.subject].correct++;
+                      }
+                    }
+                  });
+
+                  return Object.entries(performanceBySubject).map(([subject, stats]) => {
+                    const percentage = Math.round((stats.correct / stats.total) * 100);
+                    return (
+                      <div key={subject}>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm text-gray-300 font-police-body">{subject}</span>
+                          <span className="text-sm text-accent-500 font-police-numbers">
+                            {stats.correct}/{stats.total} ({percentage}%)
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-700 rounded-full h-2">
+                          <div 
+                            className={cn(
+                              "h-full rounded-full",
+                              percentage >= 80 ? "bg-green-500" :
+                              percentage >= 60 ? "bg-amber-500" : "bg-red-500"
+                            )}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+
+            {/* Últimas Respostas */}
+            <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 mb-6">
+              <h4 className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider mb-3">
+                ÚLTIMAS 5 OPERAÇÕES
+              </h4>
+              <div className="space-y-2">
+                {Object.entries(savedAnswers)
+                  .sort((a, b) => new Date(b[1].timestamp).getTime() - new Date(a[1].timestamp).getTime())
+                  .slice(0, 5)
+                  .map(([questionId, answer]) => {
+                    const question = questions.find(q => q.id === questionId);
+                    if (!question) return null;
+                    return (
+                      <div key={questionId} className="flex items-center justify-between p-2 bg-gray-900/50 rounded">
+                        <span className="text-sm text-gray-300 font-police-body truncate flex-1">
+                          {question.title.substring(0, 50)}...
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {answer.isCorrect ? (
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <XCircle className="w-4 h-4 text-red-500" />
+                          )}
+                          <span className="text-xs text-gray-500 font-police-numbers">
+                            {new Date(answer.timestamp).toLocaleTimeString()}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-4">
+              <Button
+                onClick={() => {
+                  // Exportar dados para CSV
+                  const csv = Object.entries(savedAnswers).map(([id, answer]) => {
+                    const q = questions.find(q => q.id === id);
+                    return `"${q?.title || id}","${answer.isCorrect ? 'Correto' : 'Incorreto'}","${answer.timestamp}"`;
+                  }).join('\n');
+                  
+                  const blob = new Blob([csv], { type: 'text/csv' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'respostas_questoes.csv';
+                  a.click();
+                }}
+                variant="outline"
+                className="border-accent-500 text-accent-500 hover:bg-accent-500 hover:text-black font-police-body uppercase tracking-wider"
+              >
+                EXPORTAR DADOS
+              </Button>
+              
+              <Button
+                onClick={() => setShowStatsModal(false)}
+                className="bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider px-8"
+              >
+                FECHAR RELATÓRIO
+              </Button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }
