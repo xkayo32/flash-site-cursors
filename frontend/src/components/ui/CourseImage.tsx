@@ -25,12 +25,12 @@ export function CourseImage({ src, alt, className = '', fallbackCategory }: Cour
 
     // If it starts with /, prepend the API base URL
     if (src.startsWith('/')) {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8182';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8180';
       return `${apiUrl}${src}`;
     }
 
     // Otherwise, assume it's a relative path and prepend the API URL
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8182';
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8180';
     return `${apiUrl}/${src}`;
   };
 

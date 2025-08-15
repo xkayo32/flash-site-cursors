@@ -73,7 +73,7 @@ interface SettingsStore {
   clearError: () => void;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8182';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8180';
 
 export const useSettingsStore = create<SettingsStore>()(
   persist(

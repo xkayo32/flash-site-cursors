@@ -3,7 +3,7 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { useTheme } from '@/contexts/ThemeContext';
 
 // Base URL for static assets (uploads) - WITHOUT /api/v1 prefix
-const STATIC_BASE_URL = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8182';
+const STATIC_BASE_URL = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8180';
 
 interface LogoSettings {
   logoLight: string | null;

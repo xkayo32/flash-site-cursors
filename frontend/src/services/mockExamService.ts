@@ -178,7 +178,7 @@ export interface ApiResponse<T> {
 }
 
 class MockExamService {
-  private baseUrl = '/api/v1/mockexams';
+  private baseUrl = '/mockexams';
 
   // Mock Exam Management (Admin)
   async getAllMockExams(params: {
