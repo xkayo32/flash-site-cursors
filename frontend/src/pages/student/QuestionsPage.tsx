@@ -976,7 +976,7 @@ export default function QuestionsPage() {
                         {Math.round(
                           questions
                             .filter(q => selectedQuestions.includes(q.id))
-                            .reduce((acc, q) => acc + q.stats.avgTime, 0) / 60
+                            .reduce((acc, q) => acc + (q.timeSpent || 60), 0) / 60
                         )}min
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">TEMPO ESTIMADO</div>
