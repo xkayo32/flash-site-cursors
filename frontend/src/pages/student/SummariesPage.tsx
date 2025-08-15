@@ -714,7 +714,7 @@ export default function SummariesPage() {
 
       {/* Conteúdo do resumo */}
       <div className="space-y-6">
-        {exampleContent.map((section) => (
+        {(summary.sections || []).map((section) => (
           <Card key={section.id}>
             <CardHeader 
               className="cursor-pointer"
@@ -747,8 +747,8 @@ export default function SummariesPage() {
                       </p>
                       
                       {/* Items embutidos */}
-                      {section.embeddedItems?.map((item) => (
-                        <div key={item.id} className="my-4">
+                      {(section as any).embeddedItems?.map((item: any, index: number) => (
+                        <div key={item.id || `item-${index}`} className="my-4">
                           {item.type === 'flashcard' ? (
                             <Card className="bg-blue-50 border-blue-200">
                               <CardContent className="p-4">
@@ -767,7 +767,7 @@ export default function SummariesPage() {
                                       </div>
                                       
                                       <AnimatePresence>
-                                        {showFlashcardAnswers[item.id] && (
+                                        {showFlashcardAnswers[item.id || `item-${index}`] && (
                                           <motion.div
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: 'auto' }}
@@ -787,9 +787,9 @@ export default function SummariesPage() {
                                         size="sm" 
                                         variant="outline" 
                                         className="w-full"
-                                        onClick={() => toggleFlashcardAnswer(item.id)}
+                                        onClick={() => toggleFlashcardAnswer(item.id || `item-${index}`)}
                                       >
-                                        {showFlashcardAnswers[item.id] ? (
+                                        {showFlashcardAnswers[item.id || `item-${index}`] ? (
                                           <>
                                             <EyeOff className="w-4 h-4 mr-1" />
                                             Ocultar resposta
