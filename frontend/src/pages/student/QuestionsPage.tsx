@@ -113,17 +113,23 @@ export default function QuestionsPage() {
       
       const response = await questionService.getQuestions(filters);
       
-      const localQuestions: LocalQuestion[] = response.questions.map(q => ({
-        ...q,
-        userAnswer: undefined,
-        isAnswered: false,
-        isCorrect: false,
-        isFavorite: false,
-        timeSpent: undefined
-      }));
-      
-      setQuestions(localQuestions);
-      setTotalQuestions(response.total);
+      // API retorna data e pagination em estrutura diferente
+      if (response.success && response.data) {
+        const localQuestions: LocalQuestion[] = response.data.map(q => ({
+          ...q,
+          userAnswer: undefined,
+          isAnswered: false,
+          isCorrect: false,
+          isFavorite: false,
+          timeSpent: undefined
+        }));
+        
+        setQuestions(localQuestions);
+        setTotalQuestions(response.pagination?.total || response.data.length);
+      } else {
+        setQuestions([]);
+        setTotalQuestions(0);
+      }
     } catch (err) {
       console.error('Erro ao carregar questões:', err);
       setError('Erro ao carregar questões. Tente novamente.');
