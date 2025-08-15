@@ -498,6 +498,33 @@ Implementação total dos 7 tipos de flashcard com interface profissional para a
 
 **Sistema 100% funcional e pronto para apresentação profissional.**
 
+### **2025-08-15**: Padronização StatCard + Correção API Mockexams
+Padronização de todos os status cards das páginas do aluno com StatCard component:
+
+#### **StatCard Component Padronizado:**
+- **Tamanho**: `size="sm"` para adaptação a monitores menores
+- **Variant**: `variant="tactical"` com tactical stripes
+- **Design**: Tema militar/policial consistente com fonts
+- **Props**: `title`, `value`, `icon`, `color`, `variant`, `size`
+
+#### **Páginas Atualizadas:**
+- ✅ `SummariesPage.tsx` - Cards de briefings e estatísticas 
+- ✅ `FlashcardsPage.tsx` - Cards de arsenal e progresso
+- ✅ `CoursesPage.tsx` - Cards de operações e modalidade
+- ✅ `MyCoursesPage.tsx` - Cards de horas, sequência, missões, eficiência
+
+#### **Benefícios:**
+- **Responsivo**: Melhor adaptação para monitores menores
+- **Consistente**: Design tático uniforme em todas as páginas
+- **Compacto**: Tamanho otimizado baseado nos cards de provas
+- **Acessível**: Tactical stripes e cores para hierarquia visual
+
+#### **Correção da API de Simulados:**
+- ✅ **Porta Corrigida**: Atualização de 8182 → 8180 em todas as configurações
+- ✅ **BaseURL Ajustado**: mockExamService.ts `/api/v1/mockexams` → `/mockexams`
+- ✅ **Erro 404 Resolvido**: Endpoint `/api/v1/mockexams/available` agora retorna 200
+- ✅ **Arquivos Atualizados**: 9 arquivos de configuração da API corrigidos
+
 ### **2025-08-05**: Logo do Sistema Integrada aos Flashcards + Documentação Completa
 Integração da logo oficial do sistema nos flashcards de estudo e criação de documentação completa das páginas:
 
