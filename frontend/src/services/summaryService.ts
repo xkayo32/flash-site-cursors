@@ -162,7 +162,32 @@ class SummaryService {
       headers: this.getAuthHeaders()
     });
 
-    return this.handleResponse<SummaryListResponse>(response);
+    const result = await this.handleResponse<any>(response);
+    
+    // Handle different response formats from backend
+    if (result.success && result.data) {
+      return {
+        summaries: result.data,
+        total: result.pagination?.total || result.data.length,
+        page: result.pagination?.page || 1,
+        limit: result.pagination?.limit || 20,
+        totalPages: result.pagination?.pages || 1
+      };
+    }
+    
+    // If already in expected format
+    if (result.summaries) {
+      return result;
+    }
+    
+    // Fallback for direct array response
+    return {
+      summaries: Array.isArray(result) ? result : [],
+      total: Array.isArray(result) ? result.length : 0,
+      page: 1,
+      limit: 20,
+      totalPages: 1
+    };
   }
 
   async getById(id: string): Promise<SingleSummaryResponse> {
@@ -307,7 +332,32 @@ class SummaryService {
       headers: this.getAuthHeaders()
     });
 
-    return this.handleResponse<SummaryListResponse>(response);
+    const result = await this.handleResponse<any>(response);
+    
+    // Handle different response formats from backend
+    if (result.success && result.data) {
+      return {
+        summaries: result.data,
+        total: result.pagination?.total || result.data.length,
+        page: result.pagination?.page || 1,
+        limit: result.pagination?.limit || 20,
+        totalPages: result.pagination?.pages || 1
+      };
+    }
+    
+    // If already in expected format
+    if (result.summaries) {
+      return result;
+    }
+    
+    // Fallback for direct array response
+    return {
+      summaries: Array.isArray(result) ? result : [],
+      total: Array.isArray(result) ? result.length : 0,
+      page: 1,
+      limit: 20,
+      totalPages: 1
+    };
   }
 
   async startStudySession(summaryId: string): Promise<{ session: SummaryStudySession }> {

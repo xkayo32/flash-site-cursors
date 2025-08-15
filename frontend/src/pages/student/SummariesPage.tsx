@@ -120,20 +120,23 @@ export default function SummariesPage() {
         ? await summaryService.getAll(filters)
         : await summaryService.getAvailable(filters);
       
-      const localSummaries: LocalSummary[] = response.summaries.map(s => ({
+      // Now response will always have summaries array from the service
+      const summariesData = response.summaries || [];
+      
+      const localSummaries: LocalSummary[] = summariesData.map(s => ({
         ...s,
         progress: Math.floor(Math.random() * 100), // Progress simulado
         isFavorite: Math.random() > 0.7, // Favoritos simulados
         stats: {
-          views: Math.floor(Math.random() * 5000) + 100,
-          rating: Math.round((Math.random() * 2 + 3) * 10) / 10, // 3.0 - 5.0
+          views: s.statistics?.views || Math.floor(Math.random() * 5000) + 100,
+          rating: s.statistics?.average_rating || Math.round((Math.random() * 2 + 3) * 10) / 10,
           flashcards: Math.floor(Math.random() * 30) + 5,
           questions: Math.floor(Math.random() * 25) + 3
         }
       }));
       
       setSummaries(localSummaries);
-      setTotalSummaries(response.total);
+      setTotalSummaries(response.total || localSummaries.length);
     } catch (err) {
       console.error('Erro ao carregar resumos:', err);
       setError('Erro ao carregar resumos. Tente novamente.');
