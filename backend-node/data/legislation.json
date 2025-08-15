@@ -1,0 +1,174 @@
+[
+  {
+    "id": "cf88",
+    "title": "Constituição Federal de 1988",
+    "type": "Constitution",
+    "category": "Direito Constitucional",
+    "year": 1988,
+    "status": "vigente",
+    "authority": "Congresso Nacional",
+    "description": "A Constituição da República Federativa do Brasil, promulgada em 5 de outubro de 1988, estabelece os fundamentos do Estado brasileiro.",
+    "chapters": [
+      {
+        "id": "cap1",
+        "number": "I",
+        "title": "Dos Princípios Fundamentais",
+        "articles": [
+          {
+            "id": "art1",
+            "number": "1º",
+            "title": "Fundamentos da República Federativa do Brasil",
+            "content": "A República Federativa do Brasil, formada pela união indissolúvel dos Estados e Municípios e do Distrito Federal, constitui-se em Estado Democrático de Direito e tem como fundamentos:\nI - a soberania;\nII - a cidadania;\nIII - a dignidade da pessoa humana;\nIV - os valores sociais do trabalho e da livre iniciativa;\nV - o pluralismo político."
+          },
+          {
+            "id": "art2",
+            "number": "2º",
+            "title": "Poderes da União",
+            "content": "São Poderes da União, independentes e harmônicos entre si, o Legislativo, o Executivo e o Judiciário."
+          },
+          {
+            "id": "art3",
+            "number": "3º",
+            "title": "Objetivos fundamentais da República",
+            "content": "Constituem objetivos fundamentais da República Federativa do Brasil:\nI - construir uma sociedade livre, justa e solidária;\nII - garantir o desenvolvimento nacional;\nIII - erradicar a pobreza e a marginalização e reduzir as desigualdades sociais e regionais;\nIV - promover o bem de todos, sem preconceitos de origem, raça, sexo, cor, idade e quaisquer outras formas de discriminação."
+          }
+        ]
+      },
+      {
+        "id": "cap5",
+        "number": "V",
+        "title": "Dos Direitos e Deveres Individuais e Coletivos",
+        "articles": [
+          {
+            "id": "art5",
+            "number": "5º",
+            "title": "Direitos e garantias fundamentais",
+            "content": "Todos são iguais perante a lei, sem distinção de qualquer natureza, garantindo-se aos brasileiros e aos estrangeiros residentes no País a inviolabilidade do direito à vida, à liberdade, à igualdade, à segurança e à propriedade, nos termos seguintes:\nI - homens e mulheres são iguais em direitos e obrigações, nos termos desta Constituição;\nII - ninguém será obrigado a fazer ou deixar de fazer alguma coisa senão em virtude de lei;\nIII - ninguém será submetido a tortura nem a tratamento desumano ou degradante;"
+          }
+        ]
+      }
+    ],
+    "created_at": "2024-08-15T10:00:00Z",
+    "updated_at": "2024-08-15T10:00:00Z"
+  },
+  {
+    "id": "cp40",
+    "title": "Código Penal - Decreto-Lei 2.848/40",
+    "type": "Code",
+    "category": "Direito Penal",
+    "year": 1940,
+    "status": "vigente",
+    "authority": "Poder Executivo",
+    "description": "Código Penal brasileiro, estabelece os crimes e suas respectivas sanções.",
+    "chapters": [
+      {
+        "id": "cp_cap1",
+        "number": "I",
+        "title": "Da Aplicação da Lei Penal",
+        "articles": [
+          {
+            "id": "cp_art1",
+            "number": "1º",
+            "title": "Anterioridade da Lei",
+            "content": "Não há crime sem lei anterior que o defina. Não há pena sem prévia cominação legal."
+          },
+          {
+            "id": "cp_art2",
+            "number": "2º",
+            "title": "Lei penal no tempo",
+            "content": "Ninguém pode ser punido por fato que lei posterior deixa de considerar crime, cessando em virtude dela a execução e os efeitos penais da sentença condenatória.\nParágrafo único - A lei posterior, que de qualquer modo favorecer o agente, aplica-se aos fatos anteriores, ainda que decididos por sentença condenatória transitada em julgado."
+          }
+        ]
+      }
+    ],
+    "created_at": "2024-08-15T10:00:00Z",
+    "updated_at": "2024-08-15T10:00:00Z"
+  },
+  {
+    "id": "law8112",
+    "title": "Lei 8.112/90 - Regime Jurídico dos Servidores Públicos",
+    "type": "Law",
+    "category": "Direito Administrativo",
+    "year": 1990,
+    "status": "vigente",
+    "authority": "Congresso Nacional",
+    "description": "Dispõe sobre o regime jurídico dos servidores públicos civis da União, das autarquias e das fundações públicas federais.",
+    "chapters": [
+      {
+        "id": "law8112_cap1",
+        "number": "I",
+        "title": "Das Disposições Preliminares",
+        "articles": [
+          {
+            "id": "law8112_art1",
+            "number": "1º",
+            "title": "Âmbito de aplicação",
+            "content": "Esta Lei institui o Regime Jurídico dos Servidores Públicos Civis da União, das autarquias, inclusive as em regime especial, e das fundações públicas federais."
+          },
+          {
+            "id": "law8112_art2",
+            "number": "2º",
+            "title": "Conceito de servidor",
+            "content": "Para os efeitos desta Lei, servidor é a pessoa legalmente investida em cargo público."
+          }
+        ]
+      }
+    ],
+    "created_at": "2024-08-15T10:00:00Z",
+    "updated_at": "2024-08-15T10:00:00Z"
+  },
+  {
+    "id": "ctb97",
+    "title": "Código de Trânsito Brasileiro - Lei 9.503/97",
+    "type": "Code",
+    "category": "Legislação de Trânsito",
+    "year": 1997,
+    "status": "vigente",
+    "authority": "Congresso Nacional",
+    "description": "Institui o Código de Trânsito Brasileiro.",
+    "chapters": [
+      {
+        "id": "ctb_cap1",
+        "number": "I",
+        "title": "Disposições Preliminares",
+        "articles": [
+          {
+            "id": "ctb_art1",
+            "number": "1º",
+            "title": "Âmbito e finalidade",
+            "content": "O trânsito de qualquer natureza nas vias terrestres do território nacional, abertas à circulação, rege-se por este Código.\n§ 1º Considera-se trânsito a utilização das vias por pessoas, veículos e animais, isolados ou em grupos, conduzidos ou não, para fins de circulação, parada, estacionamento e operação de carga ou descarga.\n§ 2º O trânsito, em condições seguras, é um direito de todos e dever dos órgãos e entidades componentes do Sistema Nacional de Trânsito, a estes cabendo, no âmbito das respectivas competências, adotar as medidas destinadas a assegurar esse direito."
+          }
+        ]
+      }
+    ],
+    "created_at": "2024-08-15T10:00:00Z",
+    "updated_at": "2024-08-15T10:00:00Z"
+  },
+  {
+    "id": "law12016",
+    "title": "Lei 12.016/09 - Mandado de Segurança",
+    "type": "Law",
+    "category": "Direito Constitucional",
+    "year": 2009,
+    "status": "vigente",
+    "authority": "Congresso Nacional",
+    "description": "Disciplina o mandado de segurança individual e coletivo e dá outras providências.",
+    "chapters": [
+      {
+        "id": "law12016_cap1",
+        "number": "I",
+        "title": "Do Mandado de Segurança",
+        "articles": [
+          {
+            "id": "law12016_art1",
+            "number": "1º",
+            "title": "Cabimento",
+            "content": "Conceder-se-á mandado de segurança para proteger direito líquido e certo, não amparado por habeas corpus ou habeas data, sempre que, ilegalmente ou com abuso de poder, qualquer pessoa física ou jurídica sofrer violação ou houver justo receio de sofrê-la por parte de autoridade, seja de que categoria for e sejam quais forem as funções que exerça."
+          }
+        ]
+      }
+    ],
+    "created_at": "2024-08-15T10:00:00Z",
+    "updated_at": "2024-08-15T10:00:00Z"
+  }
+]

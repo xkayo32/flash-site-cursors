@@ -26,6 +26,7 @@ import legislationRoutes from './routes/legislation.routes';
 import examSessionsRoutes from './routes/exam-sessions.routes';
 import scheduleRoutes from './routes/schedule.routes';
 import paymentRoutes from './routes/payment.routes';
+import analyticsRoutes from './routes/analytics.routes';
 
 // Load environment variables
 dotenv.config();
@@ -77,6 +78,7 @@ app.use('/api/v1/exam-sessions', examSessionsRoutes);
 app.use('/api/v1/schedule', scheduleRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/v1/subscription', paymentRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
 
 // Root endpoint
 app.get('/', (_req, res) => {

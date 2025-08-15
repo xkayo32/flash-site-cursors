@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { legislationService, Legislation } from '@/services/legislationService';
+import legislationService, { LegislationDocument } from '@/services/legislationService';
 import toast from 'react-hot-toast';
 import {
   Scale,
@@ -45,38 +45,11 @@ import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 
 // Tipos de estado local
-interface LocalLegislation extends Legislation {
+interface LocalLegislation extends LegislationDocument {
   isFavorite?: boolean;
   lastViewed?: string;
   readingProgress?: number;
-  category: string;
-  date: string;
-  status: 'ATIVO' | 'REVOGADO' | 'ALTERADO';
-  summary: string;
-  articles: number;
-  lastUpdate?: string;
-  relatedExams: string[];
-  tags: string[];
-  views: number;
-  isFavorite?: boolean;
-  chapters?: Chapter[];
-}
-
-interface Chapter {
-  id: string;
-  number: string;
-  title: string;
-  articles: Article[];
-}
-
-interface Article {
-  id: string;
-  number: string;
-  text: string;
-  paragraphs?: string[];
-  items?: string[];
-  notes?: string[];
-  lastUpdate?: string;
+  relatedExams?: string[];
 }
 
 interface Comment {
@@ -106,154 +79,6 @@ interface Highlight {
   timestamp: string;
 }
 
-// Dados mockados
-const categories = ['Todos', 'Direito Constitucional', 'Direito Penal', 'Direito Administrativo', 'Direito Civil', 'Direito do Trabalho'];
-const types = ['Todos', 'Lei', 'Decreto', 'Medida Provisória', 'Constituição', 'Código', 'Estatuto'];
-const statuses = ['Todos', 'Vigente', 'Revogada', 'Alterada'];
-
-// Dados mockados da Constituição
-const mockLegislationData = [
-  {
-    id: '1',
-    number: 'I',
-    title: 'Dos Princípios Fundamentais',
-    articles: [
-      {
-        id: '1',
-        number: '1º',
-        text: 'A República Federativa do Brasil, formada pela união indissolúvel dos Estados e Municípios e do Distrito Federal, constitui-se em Estado Democrático de Direito e tem como fundamentos:',
-        items: [
-          'I - a soberania;',
-          'II - a cidadania;',
-          'III - a dignidade da pessoa humana;',
-          'IV - os valores sociais do trabalho e da livre iniciativa;',
-          'V - o pluralismo político.'
-        ],
-        paragraphs: [
-          'Parágrafo único. Todo o poder emana do povo, que o exerce por meio de representantes eleitos ou diretamente, nos termos desta Constituição.'
-        ]
-      },
-      {
-        id: '2',
-        number: '2º',
-        text: 'São Poderes da União, independentes e harmônicos entre si, o Legislativo, o Executivo e o Judiciário.'
-      }
-    ]
-  },
-  {
-    id: '2',
-    number: 'II',
-    title: 'Dos Direitos e Garantias Fundamentais',
-    articles: [
-      {
-        id: '5',
-        number: '5º',
-        text: 'Todos são iguais perante a lei, sem distinção de qualquer natureza, garantindo-se aos brasileiros e aos estrangeiros residentes no País a inviolabilidade do direito à vida, à liberdade, à igualdade, à segurança e à propriedade, nos termos seguintes:',
-        items: [
-          'I - homens e mulheres são iguais em direitos e obrigações, nos termos desta Constituição;',
-          'II - ninguém será obrigado a fazer ou deixar de fazer alguma coisa senão em virtude de lei;',
-          'III - ninguém será submetido a tortura nem a tratamento desumano ou degradante;'
-        ],
-        notes: [
-          'Este artigo é conhecido como o princípio da isonomia ou igualdade.',
-          'Os direitos fundamentais são cláusulas pétreas.'
-        ]
-      }
-    ]
-  }
-];
-
-// Comentários mockados por capítulo
-const mockChapterComments: { [key: string]: Comment[] } = {
-  '1': [
-    {
-      id: '1',
-      userId: 'user1',
-      userName: 'AGENTE MIRANDA',
-      userRole: 'student',
-      content: 'Os fundamentos do Estado Democrático de Direito são essenciais para compreender a estrutura constitucional. A soberania e cidadania aparecem frequentemente em provas.',
-      timestamp: '2024-01-20T10:30:00Z',
-      likes: 15,
-      dislikes: 1,
-      isLiked: true,
-      replies: [
-        {
-          id: '1-1',
-          userId: 'instructor1',
-          userName: 'COMANDANTE ALVES',
-          userRole: 'instructor',
-          content: 'Excelente observação! Recomendo focar também na dignidade da pessoa humana, que é o princípio mais cobrado.',
-          timestamp: '2024-01-20T11:00:00Z',
-          likes: 8,
-          dislikes: 0,
-          isReplyTo: '1'
-        }
-      ]
-    },
-    {
-      id: '2',
-      userId: 'user2',
-      userName: 'SOLDADO COSTA',
-      userRole: 'student',
-      content: 'Alguém poderia explicar melhor a diferença entre soberania interna e externa? Sempre confundo esses conceitos.',
-      timestamp: '2024-01-19T15:45:00Z',
-      likes: 5,
-      dislikes: 0
-    }
-  ],
-  '2': [
-    {
-      id: '3',
-      userId: 'admin1',
-      userName: 'COMANDO TÁTICO',
-      userRole: 'admin',
-      content: 'Este capítulo é FUNDAMENTAL para todas as operações de concurso. Os direitos fundamentais são cláusulas pétreas e aparecem em 80% das provas.',
-      timestamp: '2024-01-18T09:20:00Z',
-      likes: 23,
-      dislikes: 0,
-      replies: [
-        {
-          id: '3-1',
-          userId: 'user3',
-          userName: 'CABO SILVA',
-          userRole: 'student',
-          content: 'Obrigado pelo destaque! Vou focar mais neste capítulo nos meus estudos.',
-          timestamp: '2024-01-18T10:15:00Z',
-          likes: 3,
-          dislikes: 0,
-          isReplyTo: '3'
-        }
-      ]
-    }
-  ]
-};
-
-// Destaques mockados
-const mockHighlights: Highlight[] = [
-  {
-    id: '1',
-    articleId: '1',
-    userId: 'current-user',
-    text: 'Estado Democrático de Direito',
-    color: 'yellow',
-    startIndex: 56,
-    endIndex: 82,
-    note: 'Conceito fundamental - cai muito em prova',
-    timestamp: '2024-01-20T14:30:00Z'
-  },
-  {
-    id: '2',
-    articleId: '1',
-    userId: 'current-user',
-    text: 'dignidade da pessoa humana',
-    color: 'green',
-    startIndex: 200,
-    endIndex: 226,
-    note: 'Princípio mais importante',
-    timestamp: '2024-01-20T14:35:00Z'
-  }
-];
-
 const highlightColors = [
   { name: 'Amarelo', value: 'yellow', class: 'bg-yellow-200 dark:bg-yellow-900/30' },
   { name: 'Verde', value: 'green', class: 'bg-green-200 dark:bg-green-900/30' },
@@ -276,8 +101,8 @@ export default function LegislationPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [expandedChapters, setExpandedChapters] = useState<string[]>([]);
   const [copiedArticle, setCopiedArticle] = useState<string | null>(null);
-  const [highlights, setHighlights] = useState<Highlight[]>(mockHighlights);
-  const [chapterComments, setChapterComments] = useState<{ [key: string]: Comment[] }>(mockChapterComments);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
+  const [chapterComments, setChapterComments] = useState<{ [key: string]: Comment[] }>({});
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
@@ -285,18 +110,174 @@ export default function LegislationPage() {
   const [showHighlightMenu, setShowHighlightMenu] = useState(false);
   const [highlightPosition, setHighlightPosition] = useState({ x: 0, y: 0 });
   const [currentArticleId, setCurrentArticleId] = useState<string>('');
-
-  // Filtrar legislações
-  const filteredLegislations = legislations.filter(legislation => {
-    const matchesSearch = legislation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         legislation.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         legislation.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = selectedCategory === 'Todos' || legislation.category === selectedCategory;
-    const matchesType = selectedType === 'Todos' || legislation.type === selectedType;
-    const matchesStatus = selectedStatus === 'Todos' || legislation.status === selectedStatus;
-    
-    return matchesSearch && matchesCategory && matchesType && matchesStatus;
+  const [searchDebounceTimer, setSearchDebounceTimer] = useState<NodeJS.Timeout | null>(null);
+  const [statsData, setStatsData] = useState({
+    viewedLaws: 0,
+    favorites: 0,
+    updates: 0,
+    articlesRead: 0
   });
+  
+  // Estados dos filtros dinâmicos
+  const [categories, setCategories] = useState<string[]>(['Todos']);
+  const [types, setTypes] = useState<string[]>(['Todos']);
+  const [statuses] = useState<string[]>(['Todos', 'Vigente', 'Revogada', 'Alterada']);
+
+  // Carregar dados das legislações
+  const loadLegislations = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const params: any = {
+        limit: 50,
+        offset: 0
+      };
+      
+      if (selectedCategory !== 'Todos') {
+        params.subject_area = selectedCategory;
+      }
+      
+      if (selectedType !== 'Todos') {
+        params.type = selectedType.toLowerCase();
+      }
+      
+      if (selectedStatus !== 'Todos') {
+        params.status = selectedStatus === 'Vigente' ? 'active' : 
+                       selectedStatus === 'Revogada' ? 'revoked' : 'superseded';
+      }
+      
+      if (searchTerm.trim()) {
+        const searchResult = await legislationService.search({
+          q: searchTerm,
+          limit: 50,
+          ...params
+        });
+        
+        const mapped = searchResult.results.map(leg => ({
+          ...leg,
+          isFavorite: false,
+          relatedExams: [] // Will be populated from API if available
+        }));
+        
+        setLegislations(mapped);
+        setTotalLegislations(searchResult.total);
+      } else {
+        const response = await legislationService.getAll(params);
+        
+        const mapped = response.legislation.map(leg => ({
+          ...leg,
+          isFavorite: false,
+          relatedExams: [] // Will be populated from API if available
+        }));
+        
+        setLegislations(mapped);
+        setTotalLegislations(response.pagination.total);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar legislações:', err);
+      setError('Erro ao carregar legislações. Tente novamente.');
+      toast.error('Erro ao carregar legislações');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Carregar categorias e tipos
+  const loadFilters = async () => {
+    try {
+      const [typesData, subjectsData] = await Promise.all([
+        legislationService.getTypes(),
+        legislationService.getSubjects()
+      ]);
+      
+      const typeNames = ['Todos', ...typesData.map(t => legislationService.getTypeDisplayName(t.type))];
+      const subjectNames = ['Todos', ...subjectsData.map(s => s.subject)];
+      
+      setTypes(typeNames);
+      setCategories(subjectNames);
+    } catch (err) {
+      console.error('Erro ao carregar filtros:', err);
+    }
+  };
+  
+  // Carregar estatísticas
+  const loadStats = async () => {
+    try {
+      const bookmarks = await legislationService.getBookmarks();
+      setStatsData(prev => ({
+        ...prev,
+        favorites: bookmarks.length,
+        viewedLaws: legislations.length,
+        updates: 5, // Mock value - can be calculated from real data
+        articlesRead: bookmarks.reduce((acc, b) => acc + (b.article_id ? 1 : 0), 0)
+      }));
+    } catch (err) {
+      console.error('Erro ao carregar estatísticas:', err);
+    }
+  };
+  
+  // Debounced search
+  const debouncedSearch = (term: string) => {
+    if (searchDebounceTimer) {
+      clearTimeout(searchDebounceTimer);
+    }
+    
+    const timer = setTimeout(() => {
+      loadLegislations();
+    }, 500);
+    
+    setSearchDebounceTimer(timer);
+  };
+  
+  // Efeitos
+  useEffect(() => {
+    loadFilters();
+  }, []);
+  
+  useEffect(() => {
+    loadLegislations();
+  }, [selectedCategory, selectedType, selectedStatus]);
+  
+  useEffect(() => {
+    if (searchTerm === '') {
+      loadLegislations();
+    } else {
+      debouncedSearch(searchTerm);
+    }
+  }, [searchTerm]);
+  
+  useEffect(() => {
+    if (legislations.length > 0) {
+      loadStats();
+    }
+  }, [legislations]);
+  
+  // Filtrar legislações (agora apenas para busca local rápida)
+  const filteredLegislations = legislations;
+
+  // Toggle favorito
+  const toggleFavorite = async (legislationId: string) => {
+    try {
+      const current = legislations.find(l => l.id === legislationId);
+      if (current?.isFavorite) {
+        await legislationService.removeBookmark(legislationId);
+        toast.success('Removido dos favoritos');
+      } else {
+        await legislationService.addBookmark(legislationId);
+        toast.success('Adicionado aos favoritos');
+      }
+      
+      setLegislations(prev => prev.map(l => 
+        l.id === legislationId 
+          ? { ...l, isFavorite: !l.isFavorite }
+          : l
+      ));
+    } catch (err) {
+      console.error('Erro ao alterar favorito:', err);
+      toast.error('Erro ao alterar favorito');
+    }
+  };
 
   // Toggle capítulo expandido
   const toggleChapter = (chapterId: string) => {
@@ -485,7 +466,7 @@ export default function LegislationPage() {
   };
 
   // Card de legislação
-  const LegislationCard = ({ legislation }: { legislation: Legislation }) => (
+  const LegislationCard = ({ legislation }: { legislation: LocalLegislation }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -498,15 +479,11 @@ export default function LegislationPage() {
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary">{legislation.type}</Badge>
+                <Badge variant="secondary">{legislationService.getTypeDisplayName(legislation.type)}</Badge>
                 <Badge 
-                  className={cn(
-                    legislation.status === 'Vigente' && "bg-green-100 text-green-700",
-                    legislation.status === 'Revogada' && "bg-red-100 text-red-700",
-                    legislation.status === 'Alterada' && "bg-yellow-100 text-yellow-700"
-                  )}
+                  className={legislationService.getStatusColor(legislation.status)}
                 >
-                  {legislation.status}
+                  {legislationService.getStatusDisplayName(legislation.status)}
                 </Badge>
               </div>
               
@@ -515,14 +492,12 @@ export default function LegislationPage() {
               </h3>
               
               <p className="text-sm text-primary-600 mb-2">
-                {legislation.number}
+                {legislationService.formatLegislationNumber(legislation)}
               </p>
             </div>
             
             <button
-              onClick={() => {
-                // Toggle favorite
-              }}
+              onClick={() => toggleFavorite(legislation.id)}
               className="p-1 hover:bg-gray-100 rounded"
             >
               <Bookmark 
@@ -536,22 +511,22 @@ export default function LegislationPage() {
 
           {/* Resumo */}
           <p className="text-sm text-primary-600 mb-4 line-clamp-2">
-            {legislation.summary}
+            {legislation.summary || legislation.description}
           </p>
 
           {/* Metadados */}
           <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
             <div className="flex items-center gap-1 text-primary-600">
               <FileText className="w-4 h-4" />
-              <span>{legislation.articles} artigos</span>
+              <span>{legislation.articles?.length || 0} artigos</span>
             </div>
             <div className="flex items-center gap-1 text-primary-600">
               <Calendar className="w-4 h-4" />
-              <span>{new Date(legislation.date).getFullYear()}</span>
+              <span>{legislation.year}</span>
             </div>
             <div className="flex items-center gap-1 text-primary-600">
               <Eye className="w-4 h-4" />
-              <span>{legislation.views.toLocaleString()} views</span>
+              <span>{legislation.statistics?.views?.toLocaleString() || 0} views</span>
             </div>
             <div className="flex items-center gap-1 text-primary-600">
               <Clock className="w-4 h-4" />
@@ -559,19 +534,19 @@ export default function LegislationPage() {
             </div>
           </div>
 
-          {/* Concursos relacionados */}
-          {legislation.relatedExams.length > 0 && (
+          {/* Keywords como tags */}
+          {legislation.keywords && legislation.keywords.length > 0 && (
             <div className="mb-4">
-              <p className="text-xs text-primary-600 mb-1">Relevante para:</p>
+              <p className="text-xs text-primary-600 mb-1">Palavras-chave:</p>
               <div className="flex flex-wrap gap-1">
-                {legislation.relatedExams.slice(0, 3).map((exam, idx) => (
+                {legislation.keywords.slice(0, 3).map((keyword, idx) => (
                   <Badge key={idx} variant="outline" className="text-xs">
-                    {exam}
+                    {keyword}
                   </Badge>
                 ))}
-                {legislation.relatedExams.length > 3 && (
+                {legislation.keywords.length > 3 && (
                   <span className="text-xs text-primary-500">
-                    +{legislation.relatedExams.length - 3}
+                    +{legislation.keywords.length - 3}
                   </span>
                 )}
               </div>
@@ -599,21 +574,19 @@ export default function LegislationPage() {
           </div>
 
           {/* Última atualização */}
-          {legislation.lastUpdate && (
-            <div className="mt-4 pt-4 border-t flex items-center justify-between text-xs text-primary-500">
-              <span className="flex items-center gap-1">
-                <History className="w-3 h-3" />
-                Última atualização: {new Date(legislation.lastUpdate).toLocaleDateString('pt-BR')}
-              </span>
-            </div>
-          )}
+          <div className="mt-4 pt-4 border-t flex items-center justify-between text-xs text-primary-500">
+            <span className="flex items-center gap-1">
+              <History className="w-3 h-3" />
+              Atualizada: {legislationService.formatDate(legislation.updated_at)}
+            </span>
+          </div>
         </CardContent>
       </Card>
     </motion.div>
   );
 
   // Visualização de leitura
-  const ReadingView = ({ legislation }: { legislation: Legislation }) => (
+  const ReadingView = ({ legislation }: { legislation: LocalLegislation }) => (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <Card className="mb-6">
@@ -631,16 +604,12 @@ export default function LegislationPage() {
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-3">
-                <Badge variant="secondary">{legislation.type}</Badge>
-                <Badge>{legislation.category}</Badge>
+                <Badge variant="secondary">{legislationService.getTypeDisplayName(legislation.type)}</Badge>
+                <Badge>{legislation.subject_area}</Badge>
                 <Badge 
-                  className={cn(
-                    legislation.status === 'Vigente' && "bg-green-100 text-green-700",
-                    legislation.status === 'Revogada' && "bg-red-100 text-red-700",
-                    legislation.status === 'Alterada' && "bg-yellow-100 text-yellow-700"
-                  )}
+                  className={legislationService.getStatusColor(legislation.status)}
                 >
-                  {legislation.status}
+                  {legislationService.getStatusDisplayName(legislation.status)}
                 </Badge>
               </div>
               
@@ -649,28 +618,26 @@ export default function LegislationPage() {
               </h1>
               
               <p className="text-primary-600 mb-2">
-                {legislation.number}
+                {legislationService.formatLegislationNumber(legislation)}
               </p>
               
               <p className="text-primary-600 mb-4">
-                {legislation.summary}
+                {legislation.summary || legislation.description}
               </p>
               
               <div className="flex items-center gap-6 text-sm text-primary-600">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  Publicada em {new Date(legislation.date).toLocaleDateString('pt-BR')}
+                  Publicada em {legislationService.formatDate(legislation.publication_date)}
                 </span>
                 <span className="flex items-center gap-1">
                   <FileText className="w-4 h-4" />
-                  {legislation.articles} artigos
+                  {legislation.articles?.length || 0} artigos
                 </span>
-                {legislation.lastUpdate && (
-                  <span className="flex items-center gap-1">
-                    <History className="w-4 h-4" />
-                    Atualizada em {new Date(legislation.lastUpdate).toLocaleDateString('pt-BR')}
-                  </span>
-                )}
+                <span className="flex items-center gap-1">
+                  <History className="w-4 h-4" />
+                  Atualizada em {legislationService.formatDate(legislation.updated_at)}
+                </span>
               </div>
             </div>
             
@@ -693,7 +660,7 @@ export default function LegislationPage() {
       </Card>
 
       {/* Aviso para legislação revogada */}
-      {legislation.status === 'Revogada' && (
+      {legislation.status === 'revoked' && (
         <Card className="mb-6 border-red-200 bg-red-50">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -706,410 +673,169 @@ export default function LegislationPage() {
         </Card>
       )}
 
-      {/* Capítulos e artigos */}
+      {/* Artigos */}
       <div className="space-y-4">
-        {exampleChapters.map((chapter) => (
-          <Card key={chapter.id}>
-            <CardHeader 
-              className="cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={() => toggleChapter(chapter.id)}
-            >
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-primary-900">
-                  Capítulo {chapter.number} - {chapter.title}
-                </h2>
-                {expandedChapters.includes(chapter.id) ? (
-                  <ChevronUp className="w-5 h-5 text-primary-600" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-primary-600" />
+        {legislation.articles && legislation.articles.length > 0 ? (
+          legislation.articles.map((article) => (
+            <Card key={article.id}>
+            <CardContent className="p-6">
+              <div className="border-l-4 border-accent-500 pl-4 bg-white dark:bg-gray-800 rounded-lg p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-bold text-gray-900 dark:text-white font-police-title">
+                    {article.number}
+                  </h3>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyArticle(article.number, article.content)}
+                      className="gap-1 font-police-body"
+                    >
+                      {copiedArticle === article.number ? (
+                        <>
+                          <Check className="w-3 h-3" />
+                          COPIADO
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" />
+                          COPIAR
+                        </>
+                      )}
+                    </Button>
+                    <Badge className="bg-accent-500/20 text-accent-600 border-accent-500/50 font-police-body">
+                      <Highlighter className="w-3 h-3 mr-1" />
+                      {highlights.filter(h => h.articleId === article.id).length} DESTAQUES
+                    </Badge>
+                  </div>
+                </div>
+                
+                {article.title && (
+                  <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                    {article.title}
+                  </h4>
                 )}
-              </div>
-            </CardHeader>
-            
-            <AnimatePresence>
-              {expandedChapters.includes(chapter.id) && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
+                
+                <div 
+                  className="text-gray-800 dark:text-gray-200 mb-3 leading-relaxed cursor-text select-text"
+                  onMouseUp={(e) => handleTextSelection(e, article.id)}
                 >
-                  <CardContent className="space-y-6 pt-0">
-                    {chapter.articles.map((article) => (
-                      <div key={article.id} className="border-l-4 border-accent-500 pl-4 bg-white dark:bg-gray-800 rounded-lg p-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-bold text-gray-900 dark:text-white font-police-title">
-                            Art. {article.number}
-                          </h3>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => copyArticle(article.number, article.text)}
-                              className="gap-1 font-police-body"
-                            >
-                              {copiedArticle === article.number ? (
-                                <>
-                                  <Check className="w-3 h-3" />
-                                  COPIADO
-                                </>
-                              ) : (
-                                <>
-                                  <Copy className="w-3 h-3" />
-                                  COPIAR
-                                </>
-                              )}
-                            </Button>
-                            <Badge className="bg-accent-500/20 text-accent-600 border-accent-500/50 font-police-body">
-                              <Highlighter className="w-3 h-3 mr-1" />
-                              {highlights.filter(h => h.articleId === article.id).length} DESTAQUES
-                            </Badge>
-                          </div>
+                  {article.content}
+                </div>
+                
+                {/* Destaques existentes */}
+                {highlights.filter(h => h.articleId === article.id).length > 0 && (
+                  <div className="mb-3 space-y-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 font-police-body uppercase">
+                      SEUS DESTAQUES:
+                    </p>
+                    {highlights.filter(h => h.articleId === article.id).map(highlight => (
+                      <div key={highlight.id} className="flex items-center justify-between p-2 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center gap-2">
+                          <div className={cn(
+                            "w-4 h-4 rounded",
+                            highlight.color === 'yellow' && 'bg-yellow-400',
+                            highlight.color === 'green' && 'bg-green-400',
+                            highlight.color === 'blue' && 'bg-blue-400',
+                            highlight.color === 'pink' && 'bg-pink-400',
+                            highlight.color === 'purple' && 'bg-purple-400'
+                          )} />
+                          <span className="text-sm text-gray-700 dark:text-gray-300 font-police-body">"{highlight.text}"</span>
+                          {highlight.note && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400 italic">- {highlight.note}</span>
+                          )}
                         </div>
-                        
-                        <div 
-                          className="text-gray-800 dark:text-gray-200 mb-3 leading-relaxed cursor-text select-text"
-                          onMouseUp={(e) => handleTextSelection(e, article.id)}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeHighlight(highlight.id)}
+                          className="p-1 h-6 w-6"
                         >
-                          {article.text}
-                        </div>
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Parágrafos */}
+                {article.paragraphs && article.paragraphs.length > 0 && (
+                  <div className="space-y-3 mb-4">
+                    {article.paragraphs.map((paragraph) => (
+                      <div key={paragraph.id} className="ml-4">
+                        <p className="text-primary-700 font-medium mb-1">
+                          {paragraph.number}
+                        </p>
+                        <p className="text-primary-700 italic mb-2">
+                          {paragraph.content}
+                        </p>
                         
-                        {/* Destaques existentes */}
-                        {highlights.filter(h => h.articleId === article.id).length > 0 && (
-                          <div className="mb-3 space-y-2">
-                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 font-police-body uppercase">
-                              SEUS DESTAQUES:
-                            </p>
-                            {highlights.filter(h => h.articleId === article.id).map(highlight => (
-                              <div key={highlight.id} className="flex items-center justify-between p-2 rounded-lg border border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center gap-2">
-                                  <div className={cn(
-                                    "w-4 h-4 rounded",
-                                    highlight.color === 'yellow' && 'bg-yellow-400',
-                                    highlight.color === 'green' && 'bg-green-400',
-                                    highlight.color === 'blue' && 'bg-blue-400',
-                                    highlight.color === 'pink' && 'bg-pink-400',
-                                    highlight.color === 'purple' && 'bg-purple-400'
-                                  )} />
-                                  <span className="text-sm text-gray-700 dark:text-gray-300 font-police-body">"{highlight.text}"</span>
-                                  {highlight.note && (
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 italic">- {highlight.note}</span>
-                                  )}
-                                </div>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => removeHighlight(highlight.id)}
-                                  className="p-1 h-6 w-6"
-                                >
-                                  <X className="w-3 h-3" />
-                                </Button>
+                        {/* Itens do parágrafo */}
+                        {paragraph.items && paragraph.items.length > 0 && (
+                          <div className="ml-4 space-y-1">
+                            {paragraph.items.map((item) => (
+                              <div key={item.id} className="text-primary-700">
+                                <span className="font-medium">{item.number}</span> {item.content}
+                                
+                                {/* Subitens */}
+                                {item.subitems && item.subitems.length > 0 && (
+                                  <div className="ml-4 mt-1 space-y-1">
+                                    {item.subitems.map((subitem) => (
+                                      <p key={subitem.id} className="text-primary-600">
+                                        <span className="font-medium">{subitem.number}</span> {subitem.content}
+                                      </p>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
-                        )}
-                        
-                        {article.items && (
-                          <div className="ml-4 space-y-1 mb-3">
-                            {article.items.map((item, idx) => (
-                              <p key={idx} className="text-primary-700">
-                                {item}
-                              </p>
-                            ))}
-                          </div>
-                        )}
-                        
-                        {article.paragraphs && (
-                          <div className="space-y-2 mb-3">
-                            {article.paragraphs.map((paragraph, idx) => (
-                              <p key={idx} className="text-primary-700 italic">
-                                {paragraph}
-                              </p>
-                            ))}
-                          </div>
-                        )}
-                        
-                        {article.notes && (
-                          <div className="bg-blue-50 rounded-lg p-3 mt-3">
-                            <p className="text-sm font-medium text-blue-900 mb-1">
-                              📝 Notas de estudo:
-                            </p>
-                            {article.notes.map((note, idx) => (
-                              <p key={idx} className="text-sm text-blue-800">
-                                • {note}
-                              </p>
-                            ))}
-                          </div>
-                        )}
-                        
-                        {article.lastUpdate && (
-                          <p className="text-xs text-primary-500 mt-2">
-                            Artigo alterado em {new Date(article.lastUpdate).toLocaleDateString('pt-BR')}
-                          </p>
                         )}
                       </div>
                     ))}
-                    
-                    {/* Seção de comentários do capítulo */}
-                    <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                      <div className="mb-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="text-lg font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider flex items-center gap-3">
-                            <MessageCircle className="w-5 h-5 text-accent-500" />
-                            DISCUSSÃO TÁTICA - CAPÍTULO {chapter.number}
-                            <Badge className="bg-accent-500/20 text-accent-600 border-accent-500/50 font-police-body">
-                              {chapterComments[chapter.id]?.length || 0} COMENTÁRIOS
-                            </Badge>
-                          </h4>
-                        </div>
-                        
-                        {/* Formulário para novo comentário */}
-                        <div className="mb-6">
-                          <div className="flex gap-3">
-                            <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-                              <User className="w-5 h-5 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <textarea
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                                placeholder="COMPARTILHE SUA ANÁLISE SOBRE ESTE CAPÍTULO..."
-                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-police-body"
-                                rows={3}
-                              />
-                              <div className="flex justify-end mt-2">
-                                <Button
-                                  onClick={() => addChapterComment(chapter.id)}
-                                  disabled={!newComment.trim()}
-                                  size="sm"
-                                  className="font-police-body uppercase tracking-wider bg-accent-500 hover:bg-accent-600 text-black"
-                                >
-                                  <Send className="w-4 h-4 mr-2" />
-                                  ENVIAR COMENTÁRIO
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Lista de comentários */}
-                        <div className="space-y-4">
-                          {chapterComments[chapter.id]?.length > 0 ? (
-                            chapterComments[chapter.id].map((comment) => (
-                              <motion.div
-                                key={comment.id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800"
-                              >
-                                <div className="flex items-start gap-3">
-                                  <div className={cn(
-                                    "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm font-police-title",
-                                    comment.userRole === 'admin' && "bg-red-600",
-                                    comment.userRole === 'instructor' && "bg-blue-600", 
-                                    comment.userRole === 'student' && "bg-gray-700"
-                                  )}>
-                                    {comment.userRole === 'admin' && <Shield className="w-5 h-5" />}
-                                    {comment.userRole === 'instructor' && <Star className="w-5 h-5" />}
-                                    {comment.userRole === 'student' && <User className="w-5 h-5" />}
-                                  </div>
-                                  
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <span className="font-medium text-gray-900 dark:text-white font-police-body">
-                                        {comment.userName}
-                                      </span>
-                                      <Badge 
-                                        className={cn(
-                                          "text-xs font-police-body",
-                                          comment.userRole === 'admin' && "bg-red-100 text-red-700 border-red-500",
-                                          comment.userRole === 'instructor' && "bg-blue-100 text-blue-700 border-blue-500",
-                                          comment.userRole === 'student' && "bg-gray-100 text-gray-700 border-gray-500"
-                                        )}
-                                      >
-                                        {comment.userRole === 'admin' && 'COMANDO'}
-                                        {comment.userRole === 'instructor' && 'INSTRUTOR'}
-                                        {comment.userRole === 'student' && 'AGENTE'}
-                                      </Badge>
-                                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                                        {formatTime(comment.timestamp)}
-                                      </span>
-                                    </div>
-                                    
-                                    <p className="text-gray-800 dark:text-gray-200 mb-3 leading-relaxed">
-                                      {comment.content}
-                                    </p>
-                                    
-                                    <div className="flex items-center gap-4">
-                                      <button
-                                        onClick={() => toggleReaction(chapter.id, comment.id, 'like')}
-                                        className={cn(
-                                          "flex items-center gap-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded transition-colors",
-                                          comment.isLiked ? "text-green-600 bg-green-50 dark:bg-green-900/20" : "text-gray-600 dark:text-gray-400"
-                                        )}
-                                      >
-                                        <ThumbsUp className="w-4 h-4" />
-                                        <span className="font-police-numbers">{comment.likes}</span>
-                                      </button>
-                                      
-                                      <button
-                                        onClick={() => toggleReaction(chapter.id, comment.id, 'dislike')}
-                                        className={cn(
-                                          "flex items-center gap-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded transition-colors",
-                                          comment.isDisliked ? "text-red-600 bg-red-50 dark:bg-red-900/20" : "text-gray-600 dark:text-gray-400"
-                                        )}
-                                      >
-                                        <ThumbsDown className="w-4 h-4" />
-                                        <span className="font-police-numbers">{comment.dislikes}</span>
-                                      </button>
-                                      
-                                      <button
-                                        onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                                        className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded transition-colors font-police-body"
-                                      >
-                                        <Reply className="w-4 h-4" />
-                                        RESPONDER
-                                      </button>
-                                    </div>
-                                    
-                                    {/* Form de resposta */}
-                                    {replyingTo === comment.id && (
-                                      <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
-                                      >
-                                        <div className="flex gap-3">
-                                          <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
-                                            <User className="w-4 h-4 text-white" />
-                                          </div>
-                                          <div className="flex-1">
-                                            <textarea
-                                              value={replyText}
-                                              onChange={(e) => setReplyText(e.target.value)}
-                                              placeholder="DIGITE SUA RESPOSTA..."
-                                              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-police-body"
-                                              rows={2}
-                                            />
-                                            <div className="flex justify-end gap-2 mt-2">
-                                              <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => {
-                                                  setReplyingTo(null);
-                                                  setReplyText('');
-                                                }}
-                                                className="font-police-body uppercase"
-                                              >
-                                                CANCELAR
-                                              </Button>
-                                              <Button
-                                                size="sm"
-                                                onClick={() => addReply(chapter.id, comment.id)}
-                                                disabled={!replyText.trim()}
-                                                className="font-police-body uppercase bg-accent-500 hover:bg-accent-600 text-black"
-                                              >
-                                                <Send className="w-4 h-4 mr-1" />
-                                                RESPONDER
-                                              </Button>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </motion.div>
-                                    )}
-                                    
-                                    {/* Respostas */}
-                                    {comment.replies && comment.replies.length > 0 && (
-                                      <div className="mt-4 space-y-3">
-                                        {comment.replies.map(reply => (
-                                          <div key={reply.id} className="ml-8 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border-l-4 border-l-accent-500">
-                                            <div className="flex items-center gap-2 mb-2">
-                                              <div className={cn(
-                                                "w-6 h-6 rounded-full flex items-center justify-center text-white text-xs",
-                                                reply.userRole === 'admin' && "bg-red-600",
-                                                reply.userRole === 'instructor' && "bg-blue-600", 
-                                                reply.userRole === 'student' && "bg-gray-600"
-                                              )}>
-                                                {reply.userRole === 'admin' && <Shield className="w-3 h-3" />}
-                                                {reply.userRole === 'instructor' && <Star className="w-3 h-3" />}
-                                                {reply.userRole === 'student' && <User className="w-3 h-3" />}
-                                              </div>
-                                              <span className="font-medium text-gray-900 dark:text-white text-sm font-police-body">
-                                                {reply.userName}
-                                              </span>
-                                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                {formatTime(reply.timestamp)}
-                                              </span>
-                                            </div>
-                                            <p className="text-sm text-gray-800 dark:text-gray-200 mb-2">
-                                              {reply.content}
-                                            </p>
-                                            <div className="flex items-center gap-3">
-                                              <button
-                                                onClick={() => toggleReaction(chapter.id, reply.id, 'like', true, comment.id)}
-                                                className={cn(
-                                                  "flex items-center gap-1 text-xs hover:bg-gray-200 dark:hover:bg-gray-700 px-2 py-1 rounded transition-colors",
-                                                  reply.isLiked ? "text-green-600" : "text-gray-500 dark:text-gray-400"
-                                                )}
-                                              >
-                                                <ThumbsUp className="w-3 h-3" />
-                                                <span className="font-police-numbers">{reply.likes}</span>
-                                              </button>
-                                              <button
-                                                onClick={() => toggleReaction(chapter.id, reply.id, 'dislike', true, comment.id)}
-                                                className={cn(
-                                                  "flex items-center gap-1 text-xs hover:bg-gray-200 dark:hover:bg-gray-700 px-2 py-1 rounded transition-colors",
-                                                  reply.isDisliked ? "text-red-600" : "text-gray-500 dark:text-gray-400"
-                                                )}
-                                              >
-                                                <ThumbsDown className="w-3 h-3" />
-                                                <span className="font-police-numbers">{reply.dislikes}</span>
-                                              </button>
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </motion.div>
-                            ))
-                          ) : (
-                            <div className="text-center py-8">
-                              <MessageCircle className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 font-police-title">
-                                NENHUMA DISCUSSÃO INICIADA
-                              </h4>
-                              <p className="text-gray-600 dark:text-gray-400 font-police-body">
-                                Seja o primeiro a comentar sobre este capítulo
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  </div>
+                )}
+                
+                {/* Comentários do artigo */}
+                {article.comments && (
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mt-3">
+                    <p className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">
+                      📝 Comentários:
+                    </p>
+                    <p className="text-sm text-blue-800 dark:text-blue-300">
+                      {article.comments}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Jurisprudência */}
+                {article.jurisprudence && article.jurisprudence.length > 0 && (
+                  <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 mt-3">
+                    <p className="text-sm font-medium text-purple-900 dark:text-purple-200 mb-1">
+                      ⚖️ Jurisprudência relacionada:
+                    </p>
+                    {article.jurisprudence.map((jur, idx) => (
+                      <p key={idx} className="text-sm text-purple-800 dark:text-purple-300">
+                        • {jur}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card className="p-12 text-center">
+            <FileText className="w-16 h-16 text-primary-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-primary-900 mb-2">
+              Artigos não disponíveis
+            </h3>
+            <p className="text-primary-600 mb-6">
+              O conteúdo desta legislação ainda não foi carregado.
+            </p>
           </Card>
-        ))}
-      </div>
-
-      {/* Navegação entre capítulos */}
-      <div className="mt-8 flex items-center justify-between">
-        <Button variant="outline" disabled>
-          <ChevronRight className="w-4 h-4 rotate-180 mr-2" />
-          Capítulo anterior
-        </Button>
-        <span className="text-sm text-primary-600">
-          Capítulo 1 de 10
-        </span>
-        <Button variant="outline">
-          Próximo capítulo
-          <ChevronRight className="w-4 h-4 ml-2" />
-        </Button>
+        )}
       </div>
     </div>
   );
@@ -1134,7 +860,7 @@ export default function LegislationPage() {
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-lg px-4 py-2">
                   <Scale className="w-5 h-5 mr-2" />
-                  {legislations.length} legislações
+                  {totalLegislations} legislações
                 </Badge>
               </div>
             </div>
@@ -1146,7 +872,7 @@ export default function LegislationPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-primary-600">Leis consultadas</p>
-                      <p className="text-2xl font-bold text-primary-900">23</p>
+                      <p className="text-2xl font-bold text-primary-900">{statsData.viewedLaws}</p>
                     </div>
                     <BookOpen className="w-8 h-8 text-blue-500" />
                   </div>
@@ -1158,7 +884,7 @@ export default function LegislationPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-primary-600">Favoritas</p>
-                      <p className="text-2xl font-bold text-primary-900">8</p>
+                      <p className="text-2xl font-bold text-primary-900">{statsData.favorites}</p>
                     </div>
                     <Bookmark className="w-8 h-8 text-yellow-500" />
                   </div>
@@ -1170,7 +896,7 @@ export default function LegislationPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-primary-600">Atualizações</p>
-                      <p className="text-2xl font-bold text-primary-900">5</p>
+                      <p className="text-2xl font-bold text-primary-900">{statsData.updates}</p>
                     </div>
                     <History className="w-8 h-8 text-purple-500" />
                   </div>
@@ -1182,7 +908,7 @@ export default function LegislationPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-primary-600">Artigos lidos</p>
-                      <p className="text-2xl font-bold text-primary-900">342</p>
+                      <p className="text-2xl font-bold text-primary-900">{statsData.articlesRead}</p>
                     </div>
                     <FileText className="w-8 h-8 text-green-500" />
                   </div>
@@ -1239,13 +965,46 @@ export default function LegislationPage() {
             </div>
           </motion.div>
 
-          {/* Grid de legislações */}
-          {filteredLegislations.length > 0 ? (
+          {/* Loading State */}
+          {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredLegislations.map((legislation) => (
-                <LegislationCard key={legislation.id} legislation={legislation} />
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="p-6 animate-pulse">
+                  <div className="h-4 bg-gray-300 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-300 rounded mb-4 w-3/4"></div>
+                  <div className="h-8 bg-gray-300 rounded"></div>
+                </Card>
               ))}
             </div>
+          ) : error ? (
+            <Card className="p-12 text-center">
+              <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-red-900 mb-2">
+                Erro ao carregar legislações
+              </h3>
+              <p className="text-red-600 mb-6">
+                {error}
+              </p>
+              <Button onClick={loadLegislations}>
+                Tentar novamente
+              </Button>
+            </Card>
+          ) : filteredLegislations.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredLegislations.map((legislation) => (
+                  <LegislationCard key={legislation.id} legislation={legislation} />
+                ))}
+              </div>
+              
+              {/* Paginação info */}
+              <div className="mt-8 text-center text-gray-600 dark:text-gray-400">
+                <p className="font-police-body">
+                  Mostrando {legislations.length} de {totalLegislations} legislações
+                </p>
+              </div>
+            </>
           ) : (
             <Card className="p-12 text-center">
               <Scale className="w-16 h-16 text-primary-300 mx-auto mb-4" />

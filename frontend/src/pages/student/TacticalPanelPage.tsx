@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { analyticsService, AnalyticsResponse } from '@/services/analyticsService';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Target,
@@ -103,112 +104,97 @@ interface StudyPattern {
   productivity: number;
 }
 
-// Dados mockados
-const performanceHistory: PerformanceData[] = [
-  { date: '2024-01-15', questions: 45, correct: 38, accuracy: 84.4, studyTime: 2.5 },
-  { date: '2024-01-16', questions: 52, correct: 41, accuracy: 78.8, studyTime: 3.0 },
-  { date: '2024-01-17', questions: 38, correct: 32, accuracy: 84.2, studyTime: 2.0 },
-  { date: '2024-01-18', questions: 60, correct: 51, accuracy: 85.0, studyTime: 3.5 },
-  { date: '2024-01-19', questions: 48, correct: 42, accuracy: 87.5, studyTime: 2.8 },
-  { date: '2024-01-20', questions: 55, correct: 49, accuracy: 89.1, studyTime: 3.2 },
-  { date: '2024-01-21', questions: 42, correct: 38, accuracy: 90.5, studyTime: 2.5 }
-];
+// State management for analytics data
+export default function TacticalPanelPage() {
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState('30days');
+  const [isUpdating, setIsUpdating] = useState(false);
 
-const subjectPerformance: SubjectPerformance[] = [
-  {
-    subject: 'DIREITO CONSTITUCIONAL',
-    accuracy: 87.5,
-    questions: 234,
-    improvement: 12.3,
-    weakPoints: ['CONTROLE DE CONSTITUCIONALIDADE', 'PROCESSO LEGISLATIVO']
-  },
-  {
-    subject: 'DIREITO ADMINISTRATIVO',
-    accuracy: 82.1,
-    questions: 189,
-    improvement: 8.7,
-    weakPoints: ['LICITAÇÕES', 'IMPROBIDADE ADMINISTRATIVA']
-  },
-  {
-    subject: 'DIREITO PENAL',
-    accuracy: 79.3,
-    questions: 156,
-    improvement: -2.1,
-    weakPoints: ['CRIMES CONTRA A ADMINISTRAÇÃO', 'TEORIA DO CRIME']
-  },
-  {
-    subject: 'PORTUGUÊS TÁTICO',
-    accuracy: 91.2,
-    questions: 178,
-    improvement: 5.4,
-    weakPoints: ['CONCORDÂNCIA VERBAL']
-  },
-  {
-    subject: 'INFORMÁTICA MILITAR',
-    accuracy: 76.8,
-    questions: 142,
-    improvement: 15.2,
-    weakPoints: ['SEGURANÇA DA INFORMAÇÃO', 'REDES TÁTICAS']
-  }
-];
+  // Load analytics data
+  const loadAnalytics = async (period: string = selectedPeriod) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await analyticsService.getAnalytics(period);
+      setAnalyticsData(data);
+    } catch (err: any) {
+      console.error('Error loading analytics:', err);
+      setError(err.message || 'Erro ao carregar dados táticos');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const competitors: CompetitorData[] = [
-  { rank: 1, user: 'COMANDANTE SILVA', score: 9234, accuracy: 92.3, questionsAnswered: 1234 },
-  { rank: 2, user: 'CAPITÃ SANTOS', score: 9156, accuracy: 91.8, questionsAnswered: 1189 },
-  { rank: 3, user: 'SARGENTO OLIVEIRA', score: 8987, accuracy: 90.5, questionsAnswered: 1156 },
-  { rank: 4, user: 'OPERADOR', score: 8876, accuracy: 89.1, questionsAnswered: 1098, isCurrentUser: true },
-  { rank: 5, user: 'AGENTE COSTA', score: 8654, accuracy: 88.7, questionsAnswered: 1076 },
-  { rank: 6, user: 'TENENTE MENDES', score: 8543, accuracy: 87.9, questionsAnswered: 1045 }
-];
+  // Refresh analytics
+  const handleRefresh = async () => {
+    try {
+      setIsUpdating(true);
+      await analyticsService.refreshAnalytics();
+      await loadAnalytics();
+      toast.success('DADOS TÁTICOS ATUALIZADOS!', { 
+        icon: '🎯',
+        style: {
+          background: '#14242f',
+          color: '#facc15',
+          border: '2px solid #facc15'
+        }
+      });
+    } catch (err: any) {
+      toast.error('Erro ao atualizar dados', {
+        style: {
+          background: '#330000',
+          color: '#ff6666',
+          border: '2px solid #ff6666'
+        }
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
-const weakPoints: WeakPoint[] = [
-  {
-    id: '1',
-    subject: 'DIREITO PENAL',
-    topic: 'CRIMES CONTRA A ADMINISTRAÇÃO PÚBLICA',
-    accuracy: 65.2,
-    totalQuestions: 23,
-    priority: 'high',
-    recommendation: 'REVISAR ARTS. 312-337 DO CÓDIGO PENAL COM FOCO EM PECULATO E CORRUPÇÃO'
-  },
-  {
-    id: '2',
-    subject: 'DIREITO ADMINISTRATIVO',
-    topic: 'LEI DE LICITAÇÕES',
-    accuracy: 68.9,
-    totalQuestions: 45,
-    priority: 'high',
-    recommendation: 'ESTUDAR MODALIDADES DE LICITAÇÃO E CASOS DE DISPENSA/INEXIGIBILIDADE'
-  },
-  {
-    id: '3',
-    subject: 'INFORMÁTICA MILITAR',
-    topic: 'PROTOCOLOS DE REDE TÁTICA',
-    accuracy: 71.4,
-    totalQuestions: 28,
-    priority: 'medium',
-    recommendation: 'FOCAR EM TCP/IP, HTTP/HTTPS E PROTOCOLOS DE COMUNICAÇÃO DIGITAL'
-  },
-  {
-    id: '4',
-    subject: 'DIREITO CONSTITUCIONAL',
-    topic: 'CONTROLE DE CONSTITUCIONALIDADE',
-    accuracy: 74.3,
-    totalQuestions: 35,
-    priority: 'medium',
-    recommendation: 'REVISAR ADI, ADC, ADPF E CONTROLE DIFUSO'
-  }
-];
+  // Export data
+  const handleExport = async () => {
+    try {
+      await analyticsService.exportData('pdf');
+      toast.success('RELATÓRIO TÁTICO EXPORTADO!', { 
+        icon: '📥',
+        style: {
+          background: '#14242f',
+          color: '#facc15',
+          border: '2px solid #facc15'
+        }
+      });
+    } catch (err: any) {
+      toast.error('Erro ao exportar relatório', {
+        style: {
+          background: '#330000',
+          color: '#ff6666',
+          border: '2px solid #ff6666'
+        }
+      });
+    }
+  };
 
-const studyPatterns: StudyPattern[] = [
-  { dayOfWeek: 'SEG', avgHours: 3.2, productivity: 85 },
-  { dayOfWeek: 'TER', avgHours: 2.8, productivity: 88 },
-  { dayOfWeek: 'QUA', avgHours: 3.5, productivity: 82 },
-  { dayOfWeek: 'QUI', avgHours: 2.5, productivity: 90 },
-  { dayOfWeek: 'SEX', avgHours: 2.0, productivity: 78 },
-  { dayOfWeek: 'SAB', avgHours: 4.2, productivity: 92 },
-  { dayOfWeek: 'DOM', avgHours: 3.8, productivity: 87 }
-];
+  // Handle period change
+  const handlePeriodChange = (period: string) => {
+    setSelectedPeriod(period);
+    loadAnalytics(period);
+  };
+
+  // Load data on mount
+  useEffect(() => {
+    loadAnalytics();
+  }, []);
+
+  // Calculate derived data
+  const performanceHistory = analyticsData?.performance || [];
+  const subjectPerformance = analyticsData?.subjectPerformance || [];
+  const competitors = analyticsData?.competitors || [];
+  const weakPoints = analyticsData?.weakPoints || [];
+  const studyPatterns = analyticsData?.studyPatterns || [];
+  const stats = analyticsData?.stats;
 
 // Dados para radar chart
 const radarData = [
@@ -251,12 +237,46 @@ export default function TacticalPanelPage() {
     );
   };
 
-  // Calcular métricas
-  const totalQuestions = performanceHistory.reduce((acc, d) => acc + d.questions, 0);
-  const totalCorrect = performanceHistory.reduce((acc, d) => acc + d.correct, 0);
-  const avgAccuracy = (totalCorrect / totalQuestions * 100).toFixed(1);
-  const totalStudyTime = performanceHistory.reduce((acc, d) => acc + d.studyTime, 0);
-  const avgStudyTime = (totalStudyTime / performanceHistory.length).toFixed(1);
+  // Loading and error states
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-accent-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+              CARREGANDO DADOS TÁTICOS...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-black p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <p className="text-red-600 dark:text-red-400 font-police-body uppercase tracking-wider mb-4">
+              {error}
+            </p>
+            <Button onClick={() => loadAnalytics()} variant="outline">
+              TENTAR NOVAMENTE
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Calcular métricas usando dados reais da API
+  const totalQuestions = performanceHistory.reduce((acc, d) => acc + (d.totalQuestions || 0), 0);
+  const totalCorrect = performanceHistory.reduce((acc, d) => acc + (d.correctAnswers || 0), 0);
+  const avgAccuracy = totalQuestions > 0 ? (totalCorrect / totalQuestions * 100).toFixed(1) : '0.0';
+  const totalStudyTime = performanceHistory.reduce((acc, d) => acc + (d.studyTime || 0), 0);
+  const avgStudyTime = performanceHistory.length > 0 ? (totalStudyTime / performanceHistory.length).toFixed(1) : '0.0';
 
   // Componente de métrica
   const MetricCard = ({ 
@@ -310,7 +330,7 @@ export default function TacticalPanelPage() {
           <div className="flex items-center gap-3">
             <select
               value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
+              onChange={(e) => handlePeriodChange(e.target.value)}
               className="px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-police-body"
             >
               <option value="7days">ÚLTIMOS 7 DIAS</option>
@@ -321,15 +341,16 @@ export default function TacticalPanelPage() {
             <Button 
               variant="outline" 
               className="gap-2 font-police-body uppercase tracking-wider"
-              onClick={() => toast.success('INTELIGÊNCIA ATUALIZADA!', { icon: '🔄' })}
+              onClick={handleRefresh}
+              disabled={isUpdating}
             >
-              <RefreshCw className="w-4 h-4" />
-              ATUALIZAR
+              <RefreshCw className={`w-4 h-4 ${isUpdating ? 'animate-spin' : ''}`} />
+              {isUpdating ? 'ATUALIZANDO...' : 'ATUALIZAR'}
             </Button>
             <Button 
               variant="outline" 
               className="gap-2 font-police-body uppercase tracking-wider"
-              onClick={() => toast.success('RELATÓRIO EXPORTADO!', { icon: '📥' })}
+              onClick={handleExport}
             >
               <Download className="w-4 h-4" />
               EXPORTAR
@@ -347,8 +368,8 @@ export default function TacticalPanelPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <MetricCard
             title="PRECISÃO TÁTICA"
-            value={`${avgAccuracy}%`}
-            change={5.2}
+            value={`${stats?.averageScore || 0}%`}
+            change={stats?.improvement || 0}
             icon={Target}
             color="bg-blue-500"
           />
