@@ -34,6 +34,7 @@ import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { StatCard } from '@/components/student';
 
 // Tipos
 interface Course {
@@ -695,6 +696,49 @@ export default function CoursesPage() {
         <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
           SELECIONE SUA MISSÃO IDEAL PARA PREPARAÇÃO TÁTICA E ACELERE SUA APROVAÇÃO
         </p>
+      </motion.div>
+
+      {/* Status Cards */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="mb-6"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard
+            title="OPERAÇÕES ATIVAS"
+            value={totalCourses}
+            icon={Shield}
+            color="blue"
+            variant="tactical"
+            size="sm"
+          />
+          <StatCard
+            title="EM ANDAMENTO"
+            value={enrolledCourses.size}
+            icon={Activity}
+            color="green"
+            variant="tactical"
+            size="sm"
+          />
+          <StatCard
+            title="FILTRO ATIVO"
+            value={filteredCourses.length}
+            icon={Crosshair}
+            color="orange"
+            variant="tactical"
+            size="sm"
+          />
+          <StatCard
+            title="MODALIDADE"
+            value={viewMode === 'grid' ? 'GRADE' : 'LISTA'}
+            icon={viewMode === 'grid' ? Grid : List}
+            color="purple"
+            variant="tactical"
+            size="sm"
+          />
+        </div>
       </motion.div>
 
       {/* Barra de busca e filtros */}

@@ -36,6 +36,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
+import { StatCard } from '@/components/student';
 
 // Tipos
 interface EnrolledCourse {
@@ -553,53 +554,38 @@ export default function MyCoursesPage() {
         
         {/* Cards de estatísticas operacionais */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">HORAS OPERACIONAIS</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">{learningStats.totalHours}H</p>
-                </div>
-                <Clock className="w-8 h-8 text-gray-500 dark:text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">SEQUÊNCIA ATIVA</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">{learningStats.currentStreak} DIAS</p>
-                </div>
-                <Activity className="w-8 h-8 text-gray-500 dark:text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">MISSÕES COMPLETAS</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">{learningStats.coursesCompleted}</p>
-                </div>
-                <CheckCircle className="w-8 h-8 text-gray-500 dark:text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">EFICIÊNCIA MÉDIA</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">{learningStats.averageProgress}%</p>
-                </div>
-                <Crosshair className="w-8 h-8 text-gray-500 dark:text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="HORAS OPERACIONAIS"
+            value={`${learningStats.totalHours}H`}
+            icon={Clock}
+            color="blue"
+            variant="tactical"
+            size="sm"
+          />
+          <StatCard
+            title="SEQUÊNCIA ATIVA"
+            value={`${learningStats.currentStreak} DIAS`}
+            icon={Activity}
+            color="green"
+            variant="tactical"
+            size="sm"
+          />
+          <StatCard
+            title="MISSÕES COMPLETAS"
+            value={learningStats.coursesCompleted}
+            icon={CheckCircle}
+            color="purple"
+            variant="tactical"
+            size="sm"
+          />
+          <StatCard
+            title="EFICIÊNCIA MÉDIA"
+            value={`${learningStats.averageProgress}%`}
+            icon={Crosshair}
+            color="orange"
+            variant="tactical"
+            size="sm"
+          />
         </div>
 
         {/* Filtros e busca */}
