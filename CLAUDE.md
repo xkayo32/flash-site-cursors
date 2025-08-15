@@ -526,6 +526,9 @@ Padronização de todos os status cards das páginas do aluno com StatCard compo
 - ✅ **Arquivos Atualizados**: 9 arquivos de configuração da API corrigidos
 - ✅ **SummariesPage Corrigida**: Erro 'exampleContent is not defined' resolvido
 - ✅ **Type Safety**: Adicionado type assertions para propriedades opcionais
+- ✅ **Layout Resumo Interativo**: Barra de progresso não sobrepõe mais o conteúdo
+- ✅ **Comentários Collapsible**: Botão ocultar/mostrar com animação suave
+- ✅ **Responsividade**: Barra de progresso adaptada para telas menores
 
 ### **2025-08-05**: Logo do Sistema Integrada aos Flashcards + Documentação Completa
 Integração da logo oficial do sistema nos flashcards de estudo e criação de documentação completa das páginas:
