@@ -14,10 +14,19 @@ import {
   AlertTriangle,
   Star,
   CheckCircle,
-  Loader2
+  Loader2,
+  X,
+  Trophy,
+  BookOpen,
+  Activity,
+  Calendar,
+  Shield,
+  Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { motion } from 'framer-motion';
+import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { motion, AnimatePresence } from 'framer-motion';
 import { StatCard, EmptyState } from '@/components/student';
 import { studentPreviousExamService, type PreviousExam } from '@/services/previousExamService';
 import { examService } from '@/services/examService';
@@ -58,6 +67,8 @@ export default function PreviousExamsMilitary() {
   const [previousExams, setPreviousExams] = useState<PreviousExamDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedExamDetails, setSelectedExamDetails] = useState<PreviousExamDisplay | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   // Load previous exams from API
   useEffect(() => {
@@ -381,6 +392,7 @@ export default function PreviousExamsMilitary() {
           {filteredExams.map((exam, index) => (
             <motion.div
               key={exam.id}
+              data-exam-id={exam.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * index }}
@@ -489,8 +501,8 @@ export default function PreviousExamsMilitary() {
                           border: '2px solid #facc15'
                         }
                       });
-                      // Por enquanto, mostra estatísticas locais
-                      alert(`DETALHES DA OPERAÇÃO\n\n📋 ${exam.title}\n🏢 ${exam.organization}\n📅 Ano: ${exam.year}\n📊 Total de Questões: ${exam.totalQuestions}\n⚡ Dificuldade: ${exam.difficulty}\n\nEstatísticas:\n✅ Taxa de Aprovação: ${exam.approvalRate}%\n📈 Pontuação Média: ${exam.averageScore}%\n👥 Total de Tentativas: ${exam.attempts}`);
+                      setSelectedExamDetails(exam);
+                      setShowDetailsModal(true);
                     }}
                     className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
                     title="Ver detalhes da prova"
@@ -583,6 +595,237 @@ export default function PreviousExamsMilitary() {
           </div>
         </motion.div>
       </div>
+
+      {/* Modal de Detalhes da Operação */}
+      <AnimatePresence>
+        {showDetailsModal && selectedExamDetails && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowDetailsModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
+            >
+              {/* Header Tático */}
+              <div className="bg-gradient-to-r from-gray-900 via-[#14242f] to-gray-900 text-white p-6 rounded-t-lg relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 via-accent-400 to-accent-500" />
+                <div className="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-accent-500/20" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-accent-500/20" />
+                
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Target className="w-6 h-6 text-accent-500" />
+                      <h2 className="text-xl font-bold font-police-title uppercase tracking-wider">
+                        BRIEFING OPERACIONAL
+                      </h2>
+                    </div>
+                    <p className="text-accent-500 font-police-subtitle uppercase tracking-wider text-sm">
+                      ANÁLISE COMPLETA DA MISSÃO
+                    </p>
+                  </div>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowDetailsModal(false)}
+                    className="text-white hover:text-red-400 hover:bg-red-500/10"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Conteúdo */}
+              <div className="p-6 space-y-6">
+                {/* Informações Principais */}
+                <Card className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-accent-500/20">
+                  <CardHeader className="pb-3">
+                    <h3 className="text-lg font-bold font-police-title text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-accent-500" />
+                      {selectedExamDetails.title}
+                    </h3>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center gap-2">
+                        <Building className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <span className="font-police-body text-sm text-gray-700 dark:text-gray-300">
+                          {selectedExamDetails.organization}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <span className="font-police-body text-sm text-gray-700 dark:text-gray-300">
+                          ANO {selectedExamDetails.year}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <span className="font-police-body text-sm text-gray-700 dark:text-gray-300">
+                          {selectedExamDetails.totalQuestions} QUESTÕES
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <Badge 
+                          variant="outline" 
+                          className={`font-police-body text-xs uppercase ${
+                            selectedExamDetails.difficulty === 'RECRUTA' ? 'text-green-600 border-green-600' :
+                            selectedExamDetails.difficulty === 'CABO' ? 'text-amber-600 border-amber-600' :
+                            'text-red-600 border-red-600'
+                          }`}
+                        >
+                          {selectedExamDetails.difficulty}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Estatísticas de Performance */}
+                <Card className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
+                  <CardHeader className="pb-3">
+                    <h3 className="text-lg font-bold font-police-title text-blue-900 dark:text-blue-300 uppercase tracking-wider flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-blue-600" />
+                      RELATÓRIO DE INTELIGÊNCIA
+                    </h3>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                        <Trophy className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                        <div className="text-2xl font-bold font-police-numbers text-green-600">
+                          {selectedExamDetails.approvalRate}%
+                        </div>
+                        <div className="text-xs font-police-body uppercase text-gray-600 dark:text-gray-400">
+                          Taxa Aprovação
+                        </div>
+                      </div>
+                      
+                      <div className="text-center p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                        <TrendingUp className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+                        <div className="text-2xl font-bold font-police-numbers text-blue-600">
+                          {selectedExamDetails.averageScore}%
+                        </div>
+                        <div className="text-xs font-police-body uppercase text-gray-600 dark:text-gray-400">
+                          Média Geral
+                        </div>
+                      </div>
+                      
+                      <div className="text-center p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                        <Users className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+                        <div className="text-2xl font-bold font-police-numbers text-purple-600">
+                          {selectedExamDetails.attempts}
+                        </div>
+                        <div className="text-xs font-police-body uppercase text-gray-600 dark:text-gray-400">
+                          Operadores
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Seu Histórico */}
+                <Card className="bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
+                  <CardHeader className="pb-3">
+                    <h3 className="text-lg font-bold font-police-title text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                      <Award className="w-5 h-5 text-amber-600" />
+                      SEU HISTÓRICO TÁTICO
+                    </h3>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                        <div className="text-xl font-bold font-police-numbers text-amber-600">
+                          {selectedExamDetails.userAttempts}
+                        </div>
+                        <div className="text-xs font-police-body uppercase text-gray-600 dark:text-gray-400">
+                          Suas Tentativas
+                        </div>
+                      </div>
+                      
+                      <div className="text-center p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                        <div className="text-xl font-bold font-police-numbers text-green-600">
+                          {selectedExamDetails.bestScore ? `${selectedExamDetails.bestScore}%` : '--'}
+                        </div>
+                        <div className="text-xs font-police-body uppercase text-gray-600 dark:text-gray-400">
+                          Melhor Score
+                        </div>
+                      </div>
+                      
+                      <div className="text-center p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                        <div className="text-sm font-bold font-police-numbers text-gray-600 dark:text-gray-400">
+                          {selectedExamDetails.lastAttempt ? 
+                            new Date(selectedExamDetails.lastAttempt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) 
+                            : '--'
+                          }
+                        </div>
+                        <div className="text-xs font-police-body uppercase text-gray-600 dark:text-gray-400">
+                          Última Operação
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Ações */}
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    onClick={async () => {
+                      setShowDetailsModal(false);
+                      try {
+                        toast.success('INICIANDO OPERAÇÃO TÁTICA! 🎯', {
+                          style: {
+                            background: '#14242f',
+                            color: '#facc15',
+                            border: '2px solid #facc15'
+                          }
+                        });
+                        
+                        // Start exam session
+                        const session = await examService.startExamSession(selectedExamDetails.id, 'previous');
+                        
+                        // Navigate to exam taking page with session ID
+                        navigate(`/simulations/previous/${selectedExamDetails.id}/take`, { 
+                          state: { sessionId: session.id }
+                        });
+                      } catch (error) {
+                        console.error('Erro ao iniciar sessão:', error);
+                        toast.error('Erro ao iniciar operação tática', {
+                          style: {
+                            background: '#330000',
+                            color: '#ff6666',
+                            border: '2px solid #ff6666'
+                          }
+                        });
+                      }
+                    }}
+                    className="flex-1 bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white font-police-body uppercase tracking-wider gap-2"
+                  >
+                    <Play className="w-4 h-4" />
+                    EXECUTAR MISSÃO
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDetailsModal(false)}
+                    className="font-police-body uppercase tracking-wider"
+                  >
+                    FECHAR
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
