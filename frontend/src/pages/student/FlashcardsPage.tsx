@@ -32,6 +32,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 import { StudyProLogo } from '@/components/ui/StudyProLogo';
+import { StatCard } from '@/components/student';
 import flashcardService, { Flashcard as APIFlashcard, FlashcardType } from '@/services/flashcardService';
 import flashcardDeckService from '@/services/flashcardDeckService';
 
@@ -1371,61 +1372,41 @@ export default function FlashcardsPage() {
 
         {/* Cards de estatísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
-            {/* Tactical stripe */}
-            <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">ARSENAL PENDENTE</p>
-                  <p className="text-2xl font-bold text-red-600 font-police-numbers">{studyStats.dueToday}</p>
-                </div>
-                <Clock className="w-8 h-8 text-red-500" />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="ARSENAL PENDENTE"
+            value={studyStats.dueToday}
+            icon={Clock}
+            color="red"
+            variant="tactical"
+            size="sm"
+          />
 
-          <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
-            {/* Tactical stripe */}
-            <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">ARSENAL NOVO</p>
-                  <p className="text-2xl font-bold text-green-600 font-police-numbers">{studyStats.newCards}</p>
-                </div>
-                <Plus className="w-8 h-8 text-green-500" />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="ARSENAL NOVO"
+            value={studyStats.newCards}
+            icon={Plus}
+            color="green"
+            variant="tactical"
+            size="sm"
+          />
 
-          <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
-            {/* Tactical stripe */}
-            <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">EXECUTADOS HOJE</p>
-                  <p className="text-2xl font-bold text-blue-600 font-police-numbers">{studyStats.cardsStudiedToday}</p>
-                </div>
-                <CheckCircle className="w-8 h-8 text-blue-500" />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="EXECUTADOS HOJE"
+            value={studyStats.cardsStudiedToday}
+            icon={CheckCircle}
+            color="blue"
+            variant="tactical"
+            size="sm"
+          />
 
-          <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
-            {/* Tactical stripe */}
-            <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">TEMPO OPERACIONAL</p>
-                  <p className="text-2xl font-bold text-purple-600 font-police-numbers">{formatTime(studyStats.timeStudiedToday)}</p>
-                </div>
-                <Brain className="w-8 h-8 text-purple-500" />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="TEMPO OPERACIONAL"
+            value={formatTime(studyStats.timeStudiedToday)}
+            icon={Brain}
+            color="purple"
+            variant="tactical"
+            size="sm"
+          />
         </div>
 
         {/* Tabs de navegação */}

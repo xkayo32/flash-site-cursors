@@ -71,12 +71,15 @@ export const StatCard = ({
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ y: -2, scale: 1.02 }}
         className={cn(
-          "bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg",
+          "bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg border-2 border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg relative overflow-hidden",
           onClick && "cursor-pointer",
           classes.container
         )}
         onClick={onClick}
       >
+        {/* Tactical stripe */}
+        <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+        
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <p className={`${classes.title} text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider mb-1`}>
@@ -99,7 +102,7 @@ export const StatCard = ({
             </div>
 
             {subtitle && (
-              <p className={`${classes.subtitle} text-gray-500 dark:text-gray-400 mt-1`}>
+              <p className={`${classes.subtitle} text-gray-500 dark:text-gray-400 mt-1 font-police-body`}>
                 {subtitle}
               </p>
             )}

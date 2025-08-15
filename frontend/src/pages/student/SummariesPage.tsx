@@ -43,6 +43,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
+import { StatCard } from '@/components/student';
 
 // Tipos de estado local
 interface LocalSummary extends Summary {
@@ -924,61 +925,41 @@ export default function SummariesPage() {
 
             {/* Estatísticas */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
-                {/* Tactical stripe */}
-                <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">BRIEFINGS LIDOS</p>
-                      <p className="text-2xl font-bold text-blue-600 font-police-numbers">12</p>
-                    </div>
-                    <BookOpen className="w-8 h-8 text-blue-500" />
-                  </div>
-                </CardContent>
-              </Card>
+              <StatCard
+                title="BRIEFINGS LIDOS"
+                value={12}
+                icon={BookOpen}
+                color="blue"
+                variant="tactical"
+                size="sm"
+              />
               
-              <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
-                {/* Tactical stripe */}
-                <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">EM PROGRESSO</p>
-                      <p className="text-2xl font-bold text-yellow-600 font-police-numbers">3</p>
-                    </div>
-                    <TrendingUp className="w-8 h-8 text-yellow-500" />
-                  </div>
-                </CardContent>
-              </Card>
+              <StatCard
+                title="EM PROGRESSO"
+                value={3}
+                icon={TrendingUp}
+                color="orange"
+                variant="tactical"
+                size="sm"
+              />
               
-              <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
-                {/* Tactical stripe */}
-                <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">TEMPO OPERACIONAL</p>
-                      <p className="text-2xl font-bold text-purple-600 font-police-numbers">18h</p>
-                    </div>
-                    <Clock className="w-8 h-8 text-purple-500" />
-                  </div>
-                </CardContent>
-              </Card>
+              <StatCard
+                title="TEMPO OPERACIONAL"
+                value="18h"
+                icon={Clock}
+                color="purple"
+                variant="tactical"
+                size="sm"
+              />
               
-              <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
-                {/* Tactical stripe */}
-                <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">ITENS CONCLUÍDOS</p>
-                      <p className="text-2xl font-bold text-green-600 font-police-numbers">234</p>
-                    </div>
-                    <CheckCircle className="w-8 h-8 text-green-500" />
-                  </div>
-                </CardContent>
-              </Card>
+              <StatCard
+                title="ITENS CONCLUÍDOS"
+                value={234}
+                icon={CheckCircle}
+                color="green"
+                variant="tactical"
+                size="sm"
+              />
             </div>
 
             {/* Barra de busca e filtros */}
