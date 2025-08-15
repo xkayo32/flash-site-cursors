@@ -445,7 +445,7 @@ export default function PreviousExamsMilitary() {
                 <div className="flex gap-2">
                   <Button
                     size="sm"
-                    className="flex-1 gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-all duration-300 hover:scale-105"
+                    className="flex-1 gap-2 bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white font-police-body font-semibold uppercase tracking-wider transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
                     onClick={async () => {
                       try {
                         toast.success('INICIANDO OPERAÇÃO TÁTICA! 🎯', {
@@ -482,16 +482,18 @@ export default function PreviousExamsMilitary() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      toast('ACESSANDO RELATÓRIO TÁTICO 📊', {
+                      toast('VISUALIZANDO DETALHES DA OPERAÇÃO 🔍', {
                         style: {
                           background: '#14242f',
                           color: '#facc15',
                           border: '2px solid #facc15'
                         }
                       });
-                      navigate(`/simulations/previous/${exam.id}/results`);
+                      // Por enquanto, mostra estatísticas locais
+                      alert(`DETALHES DA OPERAÇÃO\n\n📋 ${exam.title}\n🏢 ${exam.organization}\n📅 Ano: ${exam.year}\n📊 Total de Questões: ${exam.totalQuestions}\n⚡ Dificuldade: ${exam.difficulty}\n\nEstatísticas:\n✅ Taxa de Aprovação: ${exam.approvalRate}%\n📈 Pontuação Média: ${exam.averageScore}%\n👥 Total de Tentativas: ${exam.attempts}`);
                     }}
                     className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
+                    title="Ver detalhes da prova"
                   >
                     <Eye className="w-4 h-4" />
                   </Button>
