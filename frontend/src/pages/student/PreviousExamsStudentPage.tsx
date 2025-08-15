@@ -585,7 +585,7 @@ export default function PreviousExamsStudentPage() {
                           border: '2px solid #facc15'
                         }
                       });
-                      navigate(`/simulations/${exam.id}/take`);
+                      navigate(`/simulations/previous/${exam.id}/take`);
                     }}
                   >
                     <Play className="w-4 h-4" />

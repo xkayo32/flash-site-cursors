@@ -171,7 +171,7 @@ export default function MockExamsPage() {
       navigate('/student/subscription');
     } else {
       toast.success('INICIANDO OPERAÇÃO SIMULADA!', { icon: '🎯' });
-      navigate(`/student/simulations/${exam.id}/take`);
+      navigate(`/simulations/mock/${exam.id}/take`);
     }
   };
 

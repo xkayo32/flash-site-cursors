@@ -262,7 +262,7 @@ export default function MockExamsImproved() {
   };
 
   const startExam = (examId: string) => {
-    navigate(`/simulations/${examId}/take`);
+    navigate(`/simulations/mock/${examId}/take`);
   };
 
   return (

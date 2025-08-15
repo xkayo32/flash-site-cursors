@@ -146,5 +146,291 @@
     "timeSpent": 0,
     "totalQuestions": 4,
     "status": "active"
+  },
+  {
+    "id": "session_me13_2_1755228208990",
+    "examId": "me13",
+    "examType": "mock",
+    "userId": 2,
+    "title": "Treinamento Recruta - Fundamentos",
+    "questions": [
+      {
+        "id": "q_sample_66",
+        "number": 1,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 66 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 66"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 66"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 66"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 66"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 66. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_15",
+        "number": 2,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 15 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 15"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 15"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 15"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 15"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 15. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_1754939169061_285",
+        "number": 3,
+        "subject": "Direito Constitucional",
+        "statement": "O mandato do Presidente da República no Brasil é de 4 anos.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Verdadeiro"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Falso"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Correto. O mandato presidencial é de 4 anos, conforme art. 82 da CF/88.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FCC"
+      }
+    ],
+    "answers": {},
+    "flaggedQuestions": [],
+    "startedAt": "2025-08-15T03:23:28.990Z",
+    "duration": 45,
+    "timeSpent": 0,
+    "totalQuestions": 3,
+    "status": "active"
+  },
+  {
+    "id": "session_me12_2_1755228233924",
+    "examId": "me12",
+    "examType": "mock",
+    "userId": 2,
+    "title": "Arsenal de Conhecimento - Questões Mistas",
+    "questions": [
+      {
+        "id": "q_sample_49",
+        "number": 1,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 49 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 49"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 49"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 49"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 49"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 49. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_52",
+        "number": 2,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 52 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 52"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 52"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 52"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 52"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 52. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_23",
+        "number": 3,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 23 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 23"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 23"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 23"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 23"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 23. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_54",
+        "number": 4,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 54 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 54"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 54"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 54"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 54"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 54. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_74",
+        "number": 5,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 74 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 74"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 74"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 74"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 74"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 74. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      }
+    ],
+    "answers": {},
+    "flaggedQuestions": [],
+    "startedAt": "2025-08-15T03:23:53.924Z",
+    "duration": 90,
+    "timeSpent": 0,
+    "totalQuestions": 5,
+    "status": "active"
   }
 ]

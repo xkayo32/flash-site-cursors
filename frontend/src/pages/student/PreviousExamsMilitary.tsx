@@ -420,7 +420,7 @@ export default function PreviousExamsMilitary() {
                           border: '2px solid #facc15'
                         }
                       });
-                      navigate(`/simulations/${exam.id}/take`);
+                      navigate(`/simulations/previous/${exam.id}/take`);
                     }}
                   >
                     <Play className="w-4 h-4" />
@@ -437,7 +437,7 @@ export default function PreviousExamsMilitary() {
                           border: '2px solid #facc15'
                         }
                       });
-                      navigate(`/simulations/${exam.id}/results`);
+                      navigate(`/simulations/previous/${exam.id}/results`);
                     }}
                     className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
                   >

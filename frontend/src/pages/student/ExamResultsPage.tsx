@@ -161,7 +161,7 @@ export default function ExamResultsPage() {
   });
 
   const handleRetakeExam = () => {
-    navigate(`/simulations/${examId}/take`);
+    navigate(`/simulations/mock/${examId}/take`);
   };
 
   const handleShareResults = async () => {
