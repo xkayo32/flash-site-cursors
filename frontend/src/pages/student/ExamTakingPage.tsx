@@ -74,7 +74,10 @@ export default function ExamTakingPage() {
   // Initialize exam session
   useEffect(() => {
     const initializeExam = async () => {
+      console.log('🚀 [EXAM DEBUG] Iniciando exame. examId:', examId, 'examType:', examType);
+      
       if (!examId || !examType) {
+        console.error('❌ [EXAM DEBUG] ID ou tipo não encontrado');
         setError('ID do exame ou tipo não encontrado');
         setLoading(false);
         return;
@@ -82,7 +85,9 @@ export default function ExamTakingPage() {
 
       try {
         setLoading(true);
+        console.log('🔄 [EXAM DEBUG] Chamando examService.resumeOrStartSession...');
         const session = await examService.resumeOrStartSession(examId, examType as 'mock' | 'previous');
+        console.log('✅ [EXAM DEBUG] Sessão criada/recuperada:', session);
         
         // Convert API session to local session format
         const localSession: ExamSession = {
@@ -94,14 +99,17 @@ export default function ExamTakingPage() {
         };
 
         setExamSession(localSession);
+        console.log('✅ [EXAM DEBUG] Estado local atualizado com sessão');
         
         // Start time tracking
         examService.startTimeTracking(session.id);
+        console.log('✅ [EXAM DEBUG] Tracking de tempo iniciado');
         
       } catch (err: any) {
-        console.error('Error initializing exam:', err);
+        console.error('❌ [EXAM DEBUG] Erro ao inicializar exame:', err);
         setError(err.message || 'Erro ao carregar o exame');
       } finally {
+        console.log('🏁 [EXAM DEBUG] setLoading(false) - finalizando carregamento');
         setLoading(false);
       }
     };
@@ -113,6 +121,36 @@ export default function ExamTakingPage() {
       examService.stopTimeTracking();
     };
   }, [examId, examType]);
+
+  // Submit exam function - must be defined before conditional returns
+  const handleSubmitExam = useCallback(async (autoSubmit = false) => {
+    if (!examSession) return;
+    
+    const answeredQuestions = Object.keys(examSession.answers).length;
+    const totalQuestions = examSession.questions.length;
+    
+    if (!autoSubmit && answeredQuestions < totalQuestions) {
+      setShowWarningDialog(true);
+      return;
+    }
+
+    try {
+      const timeSpent = examSession.duration * 60 - examSession.timeRemaining;
+      
+      // Stop time tracking
+      examService.stopTimeTracking();
+      
+      // Submit exam to API
+      const result = await examService.submitExam(examSession.id, timeSpent);
+      
+      // Navigate to results page with sessionId
+      navigate(`/simulations/${examId}/results/${result.sessionId}`);
+      
+    } catch (error: any) {
+      console.error('Error submitting exam:', error);
+      setError(error.message || 'Erro ao submeter o exame');
+    }
+  }, [examSession, navigate, examId, setShowWarningDialog, setError]);
 
   if (loading) {
     return (
@@ -164,32 +202,18 @@ export default function ExamTakingPage() {
     examSession.answers[currentQuestionId] !== ''
   ) : false;
 
-  // Submit exam function - defined early to be used in useEffect
-  const handleSubmitExam = useCallback(async (autoSubmit = false) => {
-    if (!autoSubmit && answeredQuestions < totalQuestions) {
-      setShowWarningDialog(true);
-      return;
-    }
+  // handleSubmitExam já foi definido antes dos returns condicionais
 
-    if (!examSession) return;
-
-    try {
-      const timeSpent = examSession.duration * 60 - examSession.timeRemaining;
-      
-      // Stop time tracking
-      examService.stopTimeTracking();
-      
-      // Submit exam to API
-      const result = await examService.submitExam(examSession.id, timeSpent);
-      
-      // Navigate to results page with sessionId
-      navigate(`/simulations/${examId}/results/${result.sessionId}`);
-      
-    } catch (error: any) {
-      console.error('Error submitting exam:', error);
-      setError(error.message || 'Erro ao submeter o exame');
-    }
-  }, [answeredQuestions, totalQuestions, navigate, examId, examSession]);
+  // Debug render state
+  useEffect(() => {
+    console.log('📊 [EXAM DEBUG] Estado de renderização:', {
+      loading,
+      error,
+      hasSession: !!examSession,
+      questionsCount: examSession?.questions?.length || 0,
+      currentIndex: currentQuestionIndex
+    });
+  }, [loading, error, examSession, currentQuestionIndex]);
 
   // Timer effect
   useEffect(() => {

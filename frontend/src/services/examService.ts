@@ -88,7 +88,7 @@ class ExamService {
    */
   async startExamSession(examId: string, examType: 'mock' | 'previous'): Promise<ExamSession> {
     try {
-      const response = await api.post(`/exams/${examType}/${examId}/sessions`);
+      const response = await api.post(`/exam-sessions/${examType}/${examId}/sessions`);
       return response.data;
     } catch (error: any) {
       console.error('Error starting exam session:', error);

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Frontend Loading</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #000; color: #0f0; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #333; }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+        .warning { color: #ff0; }
+    </style>
+</head>
+<body>
+    <h1>🔍 DEBUG: Frontend Loading Issue</h1>
+    <div id="results"></div>
+
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        async function debugFrontendLoading() {
+            log('🚀 Iniciando debug do frontend...');
+            
+            // 1. Verificar localStorage
+            log('1. Verificando dados de autenticação...');
+            const authStorage = localStorage.getItem('auth-storage');
+            const directToken = localStorage.getItem('token');
+            
+            if (!authStorage && !directToken) {
+                log('❌ PROBLEMA: Nenhum token de autenticação encontrado', 'error');
+                log('Você precisa estar logado. Acesse: http://173.208.151.106:5273/login', 'warning');
+                return;
+            }
+            
+            let token = null;
+            if (authStorage) {
+                try {
+                    const parsed = JSON.parse(authStorage);
+                    token = parsed.state?.token;
+                    log(`✅ Auth storage encontrado. Token: ${token ? 'EXISTS' : 'NOT FOUND'}`, 'success');
+                } catch (e) {
+                    log('❌ Erro ao parsear auth storage', 'error');
+                }
+            }
+            
+            if (!token && directToken) {
+                token = directToken;
+                log('✅ Token direto encontrado', 'success');
+            }
+            
+            if (!token) {
+                log('❌ PROBLEMA: Token não encontrado em nenhum lugar', 'error');
+                return;
+            }
+            
+            // 2. Testar API
+            log('2. Testando API previousexams...');
+            try {
+                const apiUrl = 'http://173.208.151.106:8182/api/v1/previousexams';
+                log(`📡 Fazendo requisição para: ${apiUrl}`);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log(`📥 Status da resposta: ${response.status} ${response.statusText}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log(`❌ PROBLEMA: API retornou erro ${response.status}`, 'error');
+                    log(`Detalhes: ${errorText}`, 'error');
+                    
+                    if (response.status === 401) {
+                        log('🔑 Token pode estar expirado. Tente fazer login novamente.', 'warning');
+                    }
+                    return;
+                }
+                
+                const data = await response.json();
+                log('✅ API respondeu com sucesso!', 'success');
+                log(`📊 Estrutura da resposta: ${JSON.stringify(Object.keys(data))}`);
+                
+                if (data.exams) {
+                    log(`🎯 ${data.exams.length} exames encontrados:`, 'success');
+                    data.exams.forEach((exam, i) => {
+                        log(`   ${i+1}. ${exam.title} (ID: ${exam.id})`);
+                    });
+                } else {
+                    log('❌ PROBLEMA: Campo "exams" não encontrado na resposta', 'error');
+                    log(`Campos disponíveis: ${Object.keys(data).join(', ')}`, 'warning');
+                }
+                
+                // 3. Verificar CORS
+                log('3. Verificando headers CORS...');
+                const corsHeaders = [];
+                response.headers.forEach((value, key) => {
+                    if (key.toLowerCase().includes('cors') || key.toLowerCase().includes('access-control')) {
+                        corsHeaders.push(`${key}: ${value}`);
+                    }
+                });
+                
+                if (corsHeaders.length > 0) {
+                    log('✅ Headers CORS encontrados:', 'success');
+                    corsHeaders.forEach(header => log(`   ${header}`));
+                } else {
+                    log('⚠️ Nenhum header CORS explícito encontrado', 'warning');
+                }
+                
+                // 4. Teste de transformação de dados
+                log('4. Testando transformação de dados...');
+                if (data.exams && data.exams.length > 0) {
+                    const testExam = data.exams[0];
+                    const transformed = {
+                        id: testExam.id,
+                        title: `OPERAÇÃO ${testExam.organization.toUpperCase()} - ${testExam.position.toUpperCase()} ${testExam.year}`,
+                        organization: testExam.organization,
+                        totalQuestions: testExam.total_questions,
+                        difficulty: 'medium'
+                    };
+                    log('✅ Transformação de dados funcionou:', 'success');
+                    log(`   Original: ${testExam.title}`);
+                    log(`   Transformado: ${transformed.title}`);
+                }
+                
+            } catch (error) {
+                log(`❌ ERRO na requisição: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+            }
+            
+            log('🏁 Debug concluído. Verifique os resultados acima.');
+        }
+        
+        // Executar debug automaticamente
+        debugFrontendLoading();
+        
+        // Função para executar novamente
+        window.runDebug = debugFrontendLoading;
+        log('💡 Para executar novamente: runDebug()', 'warning');
+    </script>
+</body>
+</html>

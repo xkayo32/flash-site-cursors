@@ -432,5 +432,3614 @@
     "timeSpent": 0,
     "totalQuestions": 5,
     "status": "active"
+  },
+  {
+    "id": "session_pe1_2_1755268333941",
+    "examId": "pe1",
+    "examType": "previous",
+    "userId": 2,
+    "title": "Polícia Federal - Agente 2021",
+    "questions": [
+      {
+        "id": "q_sample_55",
+        "number": 1,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 55 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 55"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 55"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 55"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 55"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 55. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_60",
+        "number": 2,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 60 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 60"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 60"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 60"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 60"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 60. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_57",
+        "number": 3,
+        "subject": "Informática",
+        "statement": "Questão de exemplo 57 sobre Informática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 57"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 57"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 57"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 57"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 57. Resposta correta baseada nos conceitos de Informática.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_84",
+        "number": 4,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 84 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 84"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 84"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 84"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 84"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 84. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_1754939169061_285",
+        "number": 5,
+        "subject": "Direito Constitucional",
+        "statement": "O mandato do Presidente da República no Brasil é de 4 anos.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Verdadeiro"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Falso"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Correto. O mandato presidencial é de 4 anos, conforme art. 82 da CF/88.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_48",
+        "number": 6,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 48 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 48"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 48"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 48"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 48"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 48. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_53",
+        "number": 7,
+        "subject": "Informática",
+        "statement": "Questão de exemplo 53 sobre Informática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 53"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 53"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 53"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 53"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 53. Resposta correta baseada nos conceitos de Informática.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_1754939169304_97_0",
+        "number": 8,
+        "subject": "Direito Constitucional",
+        "statement": "Complete: A República Federativa do Brasil é formada pela união _______ dos Estados, Municípios e Distrito Federal.",
+        "alternatives": [],
+        "correctAnswer": "a",
+        "explanation": "Art. 1º da CF/88: A República Federativa do Brasil é formada pela união indissolúvel dos Estados, Municípios e Distrito Federal.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_58",
+        "number": 9,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 58 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 58"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 58"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 58"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 58"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 58. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_74",
+        "number": 10,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 74 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 74"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 74"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 74"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 74"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 74. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_65",
+        "number": 11,
+        "subject": "Legislação de Trânsito",
+        "statement": "Questão de exemplo 65 sobre Legislação de Trânsito. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 65"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 65"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 65"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 65"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 65. Resposta correta baseada nos conceitos de Legislação de Trânsito.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_26",
+        "number": 12,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 26 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 26"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 26"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 26"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 26"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 26. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_100",
+        "number": 13,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 100 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 100"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 100"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 100"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 100"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 100. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q4",
+        "number": 14,
+        "subject": "Direito Constitucional",
+        "statement": "Explique o conceito de separação dos poderes e sua importância no Estado Democrático de Direito.",
+        "alternatives": [],
+        "correctAnswer": "a",
+        "explanation": "Resposta deve abordar: conceito, três poderes (funções), sistema de freios e contrapesos, importância democrática.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_14",
+        "number": 15,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 14 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 14"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 14"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 14"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 14"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 14. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_62",
+        "number": 16,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 62 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 62"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 62"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 62"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 62"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 62. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_5",
+        "number": 17,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 5 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 5"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 5"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 5"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 5"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 5. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_20",
+        "number": 18,
+        "subject": "Matemática",
+        "statement": "Questão de exemplo 20 sobre Matemática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 20"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 20"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 20"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 20"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 20. Resposta correta baseada nos conceitos de Matemática.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_54",
+        "number": 19,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 54 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 54"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 54"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 54"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 54"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 54. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_25",
+        "number": 20,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 25 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 25"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 25"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 25"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 25"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 25. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_23",
+        "number": 21,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 23 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 23"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 23"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 23"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 23"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 23. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_85",
+        "number": 22,
+        "subject": "Legislação de Trânsito",
+        "statement": "Questão de exemplo 85 sobre Legislação de Trânsito. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 85"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 85"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 85"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 85"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 85. Resposta correta baseada nos conceitos de Legislação de Trânsito.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_63",
+        "number": 23,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 63 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 63"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 63"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 63"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 63"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 63. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_99",
+        "number": 24,
+        "subject": "Legislação de Trânsito",
+        "statement": "Questão de exemplo 99 sobre Legislação de Trânsito. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 99"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 99"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 99"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 99"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 99. Resposta correta baseada nos conceitos de Legislação de Trânsito.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_46",
+        "number": 25,
+        "subject": "Português",
+        "statement": "Questão de exemplo 46 sobre Português. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 46"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 46"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 46"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 46"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 46. Resposta correta baseada nos conceitos de Português.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_4",
+        "number": 26,
+        "subject": "Português",
+        "statement": "Questão de exemplo 4 sobre Português. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 4"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 4"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 4"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 4"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 4. Resposta correta baseada nos conceitos de Português.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q1",
+        "number": 27,
+        "subject": "Direito Constitucional",
+        "statement": "Qual é o princípio constitucional que garante a igualdade perante a lei?",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Princípio da Legalidade"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Princípio da Isonomia"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Princípio da Moralidade"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Princípio da Publicidade"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "O Princípio da Isonomia estabelece que todos são iguais perante a lei, conforme previsto no art. 5º da Constituição Federal.",
+        "difficulty": "CABO",
+        "year": 2023,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_27",
+        "number": 28,
+        "subject": "Português",
+        "statement": "Questão de exemplo 27 sobre Português. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 27"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 27"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 27"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 27"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 27. Resposta correta baseada nos conceitos de Português.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_70",
+        "number": 29,
+        "subject": "Legislação de Trânsito",
+        "statement": "Questão de exemplo 70 sobre Legislação de Trânsito. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 70"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 70"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 70"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 70"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 70. Resposta correta baseada nos conceitos de Legislação de Trânsito.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_64",
+        "number": 30,
+        "subject": "Informática",
+        "statement": "Questão de exemplo 64 sobre Informática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 64"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 64"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 64"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 64"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 64. Resposta correta baseada nos conceitos de Informática.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_67",
+        "number": 31,
+        "subject": "Legislação de Trânsito",
+        "statement": "Questão de exemplo 67 sobre Legislação de Trânsito. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 67"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 67"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 67"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 67"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 67. Resposta correta baseada nos conceitos de Legislação de Trânsito.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_80",
+        "number": 32,
+        "subject": "Informática",
+        "statement": "Questão de exemplo 80 sobre Informática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 80"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 80"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 80"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 80"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 80. Resposta correta baseada nos conceitos de Informática.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_1",
+        "number": 33,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 1 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 1"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 1"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 1"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 1"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 1. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_3",
+        "number": 34,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 3 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 3"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 3"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 3"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 3"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 3. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_83",
+        "number": 35,
+        "subject": "Português",
+        "statement": "Questão de exemplo 83 sobre Português. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 83"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 83"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 83"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 83"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 83. Resposta correta baseada nos conceitos de Português.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_24",
+        "number": 36,
+        "subject": "Português",
+        "statement": "Questão de exemplo 24 sobre Português. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 24"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 24"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 24"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 24"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 24. Resposta correta baseada nos conceitos de Português.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_36",
+        "number": 37,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 36 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 36"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 36"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 36"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 36"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 36. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_76",
+        "number": 38,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 76 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 76"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 76"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 76"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 76"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 76. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_96",
+        "number": 39,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 96 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 96"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 96"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 96"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 96"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 96. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_28",
+        "number": 40,
+        "subject": "Legislação de Trânsito",
+        "statement": "Questão de exemplo 28 sobre Legislação de Trânsito. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 28"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 28"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 28"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 28"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 28. Resposta correta baseada nos conceitos de Legislação de Trânsito.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_41",
+        "number": 41,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 41 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 41"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 41"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 41"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 41"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 41. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_11",
+        "number": 42,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 11 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 11"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 11"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 11"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 11"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 11. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_79",
+        "number": 43,
+        "subject": "Português",
+        "statement": "Questão de exemplo 79 sobre Português. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 79"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 79"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 79"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 79"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 79. Resposta correta baseada nos conceitos de Português.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_38",
+        "number": 44,
+        "subject": "Informática",
+        "statement": "Questão de exemplo 38 sobre Informática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 38"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 38"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 38"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 38"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 38. Resposta correta baseada nos conceitos de Informática.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_30",
+        "number": 45,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 30 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 30"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 30"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 30"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 30"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 30. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_87",
+        "number": 46,
+        "subject": "Legislação de Trânsito",
+        "statement": "Questão de exemplo 87 sobre Legislação de Trânsito. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 87"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 87"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 87"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 87"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 87. Resposta correta baseada nos conceitos de Legislação de Trânsito.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_9",
+        "number": 47,
+        "subject": "Legislação de Trânsito",
+        "statement": "Questão de exemplo 9 sobre Legislação de Trânsito. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 9"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 9"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 9"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 9"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 9. Resposta correta baseada nos conceitos de Legislação de Trânsito.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_50",
+        "number": 48,
+        "subject": "Informática",
+        "statement": "Questão de exemplo 50 sobre Informática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 50"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 50"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 50"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 50"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 50. Resposta correta baseada nos conceitos de Informática.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_88",
+        "number": 49,
+        "subject": "Matemática",
+        "statement": "Questão de exemplo 88 sobre Matemática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 88"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 88"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 88"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 88"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 88. Resposta correta baseada nos conceitos de Matemática.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_22",
+        "number": 50,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 22 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 22"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 22"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 22"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 22"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 22. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_2",
+        "number": 51,
+        "subject": "Informática",
+        "statement": "Questão de exemplo 2 sobre Informática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 2"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 2"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 2"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 2"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 2. Resposta correta baseada nos conceitos de Informática.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_39",
+        "number": 52,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 39 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 39"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 39"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 39"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 39"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 39. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_6",
+        "number": 53,
+        "subject": "Informática",
+        "statement": "Questão de exemplo 6 sobre Informática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 6"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 6"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 6"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 6"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 6. Resposta correta baseada nos conceitos de Informática.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_37",
+        "number": 54,
+        "subject": "Português",
+        "statement": "Questão de exemplo 37 sobre Português. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 37"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 37"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 37"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 37"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 37. Resposta correta baseada nos conceitos de Português.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_61",
+        "number": 55,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 61 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 61"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 61"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 61"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 61"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 61. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_81",
+        "number": 56,
+        "subject": "Matemática",
+        "statement": "Questão de exemplo 81 sobre Matemática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 81"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 81"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 81"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 81"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 81. Resposta correta baseada nos conceitos de Matemática.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q3",
+        "number": 57,
+        "subject": "Direito Constitucional",
+        "statement": "Complete: Os direitos fundamentais podem ser _______ em situações excepcionais.",
+        "alternatives": [],
+        "correctAnswer": "a",
+        "explanation": "Os direitos fundamentais podem ser suspensos durante estado de defesa ou sítio, conforme arts. 136 e 139 da CF/88.",
+        "difficulty": "SARGENTO",
+        "year": 2023,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q2",
+        "number": 58,
+        "subject": "Direito Constitucional",
+        "statement": "A Constituição Federal de 1988 estabelece o sistema presidencialista de governo.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Verdadeiro"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Falso"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Correto. O Brasil adota o sistema presidencialista, onde o Presidente é chefe de Estado e de Governo.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_31",
+        "number": 59,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 31 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 31"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 31"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 31"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 31"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 31. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_59",
+        "number": 60,
+        "subject": "Português",
+        "statement": "Questão de exemplo 59 sobre Português. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 59"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 59"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 59"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 59"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 59. Resposta correta baseada nos conceitos de Português.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_72",
+        "number": 61,
+        "subject": "Matemática",
+        "statement": "Questão de exemplo 72 sobre Matemática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 72"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 72"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 72"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 72"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 72. Resposta correta baseada nos conceitos de Matemática.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_43",
+        "number": 62,
+        "subject": "Matemática",
+        "statement": "Questão de exemplo 43 sobre Matemática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 43"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 43"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 43"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 43"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 43. Resposta correta baseada nos conceitos de Matemática.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_90",
+        "number": 63,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 90 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 90"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 90"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 90"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 90"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 90. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_86",
+        "number": 64,
+        "subject": "Informática",
+        "statement": "Questão de exemplo 86 sobre Informática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 86"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 86"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 86"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 86"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 86. Resposta correta baseada nos conceitos de Informática.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_12",
+        "number": 65,
+        "subject": "Matemática",
+        "statement": "Questão de exemplo 12 sobre Matemática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 12"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 12"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 12"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 12"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 12. Resposta correta baseada nos conceitos de Matemática.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_91",
+        "number": 66,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 91 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 91"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 91"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 91"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 91"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 91. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_77",
+        "number": 67,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 77 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 77"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 77"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 77"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 77"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 77. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_92",
+        "number": 68,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 92 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 92"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 92"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 92"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 92"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 92. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_16",
+        "number": 69,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 16 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 16"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 16"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 16"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 16"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 16. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_94",
+        "number": 70,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 94 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 94"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 94"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 94"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 94"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 94. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_18",
+        "number": 71,
+        "subject": "Português",
+        "statement": "Questão de exemplo 18 sobre Português. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 18"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 18"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 18"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 18"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 18. Resposta correta baseada nos conceitos de Português.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_47",
+        "number": 72,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 47 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 47"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 47"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 47"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 47"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 47. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_13",
+        "number": 73,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 13 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 13"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 13"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 13"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 13"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 13. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_52",
+        "number": 74,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 52 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 52"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 52"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 52"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 52"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 52. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_73",
+        "number": 75,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 73 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 73"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 73"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 73"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 73"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 73. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_15",
+        "number": 76,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 15 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 15"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 15"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 15"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 15"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 15. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_95",
+        "number": 77,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 95 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 95"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 95"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 95"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 95"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 95. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_66",
+        "number": 78,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 66 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 66"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 66"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 66"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 66"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 66. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_1755216523880_114",
+        "number": 79,
+        "subject": "Direito Administrativo",
+        "statement": "10. A competência para a realização do processo licitatório de alienação de material de interesse exclusivo da praça nacional é do GAL.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Verdadeiro"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Falso"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "A competência para a realização do processo licitatório de alienação de material de interesse exclusivo da praça nacional é do GAL.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_56",
+        "number": 80,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 56 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 56"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 56"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 56"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 56"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 56. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_10",
+        "number": 81,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 10 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 10"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 10"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 10"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 10"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 10. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_42",
+        "number": 82,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 42 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 42"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 42"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 42"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 42"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 42. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_69",
+        "number": 83,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 69 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 69"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 69"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 69"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 69"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 69. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_71",
+        "number": 84,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 71 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 71"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 71"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 71"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 71"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 71. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_82",
+        "number": 85,
+        "subject": "Português",
+        "statement": "Questão de exemplo 82 sobre Português. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 82"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 82"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 82"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 82"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 82. Resposta correta baseada nos conceitos de Português.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_8",
+        "number": 86,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 8 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 8"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 8"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 8"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 8"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 8. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_45",
+        "number": 87,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 45 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 45"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 45"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 45"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 45"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 45. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_68",
+        "number": 88,
+        "subject": "Matemática",
+        "statement": "Questão de exemplo 68 sobre Matemática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 68"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 68"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 68"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 68"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 68. Resposta correta baseada nos conceitos de Matemática.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_32",
+        "number": 89,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 32 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 32"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 32"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 32"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 32"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 32. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_44",
+        "number": 90,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 44 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 44"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 44"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 44"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 44"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 44. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_75",
+        "number": 91,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 75 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 75"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 75"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 75"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 75"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 75. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_89",
+        "number": 92,
+        "subject": "Matemática",
+        "statement": "Questão de exemplo 89 sobre Matemática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 89"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 89"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 89"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 89"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 89. Resposta correta baseada nos conceitos de Matemática.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_21",
+        "number": 93,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 21 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 21"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 21"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 21"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 21"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 21. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_40",
+        "number": 94,
+        "subject": "Matemática",
+        "statement": "Questão de exemplo 40 sobre Matemática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 40"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 40"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 40"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 40"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 40. Resposta correta baseada nos conceitos de Matemática.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_51",
+        "number": 95,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 51 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 51"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 51"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 51"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 51"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 51. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_78",
+        "number": 96,
+        "subject": "Matemática",
+        "statement": "Questão de exemplo 78 sobre Matemática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 78"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 78"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 78"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 78"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 78. Resposta correta baseada nos conceitos de Matemática.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_97",
+        "number": 97,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 97 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 97"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 97"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 97"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 97"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 97. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_35",
+        "number": 98,
+        "subject": "Matemática",
+        "statement": "Questão de exemplo 35 sobre Matemática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 35"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 35"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 35"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 35"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 35. Resposta correta baseada nos conceitos de Matemática.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_19",
+        "number": 99,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 19 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 19"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 19"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 19"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 19"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 19. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_17",
+        "number": 100,
+        "subject": "Informática",
+        "statement": "Questão de exemplo 17 sobre Informática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 17"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 17"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 17"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 17"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 17. Resposta correta baseada nos conceitos de Informática.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_98",
+        "number": 101,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 98 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 98"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 98"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 98"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 98"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 98. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q5",
+        "number": 102,
+        "subject": "Direito Administrativo",
+        "statement": "Qual das alternativas apresenta corretamente os princípios da Administração Pública?",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Legalidade, Personalidade, Moralidade, Publicidade e Eficácia"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Constitucionalidade, Impessoalidade, Ética, Publicidade e Eficiência"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Legalidade, Pessoalidade, Moralidade, Transparência e Eficiência"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Os princípios expressos da Administração Pública estão previstos no art. 37, caput, da CF/88: LIMPE (Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência).",
+        "difficulty": "CABO",
+        "year": 2023,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_93",
+        "number": 103,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 93 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 93"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 93"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 93"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 93"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 93. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "VUNESP"
+      },
+      {
+        "id": "q_sample_34",
+        "number": 104,
+        "subject": "Informática",
+        "statement": "Questão de exemplo 34 sobre Informática. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 34"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 34"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 34"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 34"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 34. Resposta correta baseada nos conceitos de Informática.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FUNRIO"
+      },
+      {
+        "id": "q_sample_33",
+        "number": 105,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 33 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 33"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 33"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 33"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 33"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 33. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_49",
+        "number": 106,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 49 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 49"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 49"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 49"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 49"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 49. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_7",
+        "number": 107,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 7 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 7"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 7"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 7"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 7"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 7. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "RECRUTA",
+        "year": 2024,
+        "institution": "FGV"
+      },
+      {
+        "id": "q_sample_29",
+        "number": 108,
+        "subject": "Legislação de Trânsito",
+        "statement": "Questão de exemplo 29 sobre Legislação de Trânsito. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 29"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 29"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 29"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 29"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 29. Resposta correta baseada nos conceitos de Legislação de Trânsito.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "VUNESP"
+      }
+    ],
+    "answers": {
+      "q_sample_55": "b",
+      "q_sample_60": "d",
+      "q_sample_57": "b"
+    },
+    "flaggedQuestions": [],
+    "startedAt": "2025-08-15T14:32:13.941Z",
+    "duration": 180,
+    "timeSpent": 11523,
+    "totalQuestions": 108,
+    "status": "active"
+  },
+  {
+    "id": "session_test-exam_2_1755279881484",
+    "examId": "test-exam",
+    "examType": "previous",
+    "userId": 2,
+    "title": "TESTE RÁPIDO - 3 Questões",
+    "questions": [
+      {
+        "id": "q1",
+        "number": 1,
+        "subject": "Direito Constitucional",
+        "statement": "Qual é o princípio constitucional que garante a igualdade perante a lei?",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Princípio da Legalidade"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Princípio da Isonomia"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Princípio da Moralidade"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Princípio da Publicidade"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "O Princípio da Isonomia estabelece que todos são iguais perante a lei, conforme previsto no art. 5º da Constituição Federal.",
+        "difficulty": "CABO",
+        "year": 2023,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_33",
+        "number": 2,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 33 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 33"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 33"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 33"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 33"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 33. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_14",
+        "number": 3,
+        "subject": "Ética no Serviço Público",
+        "statement": "Questão de exemplo 14 sobre Ética no Serviço Público. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 14"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 14"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 14"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 14"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 14. Resposta correta baseada nos conceitos de Ética no Serviço Público.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FGV"
+      }
+    ],
+    "answers": {
+      "q1": "c",
+      "q_sample_33": "b"
+    },
+    "flaggedQuestions": [],
+    "startedAt": "2025-08-15T17:44:41.484Z",
+    "duration": 10,
+    "timeSpent": 0,
+    "totalQuestions": 3,
+    "status": "active"
   }
 ]

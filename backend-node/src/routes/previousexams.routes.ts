@@ -7,7 +7,7 @@ import { Question } from './questions.routes';
 const router = Router();
 
 // Previous exams data storage
-const previousExamsPath = '/tmp/previousexams.json';
+const previousExamsPath = path.join(__dirname, '../../data/previousexams.json');
 const examAttemptsPath = '/tmp/previous-exam-attempts.json';
 const questionsPath = path.join(__dirname, '../../data/questions.json');
 

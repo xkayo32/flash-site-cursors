@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useTheme } from '@/contexts/ThemeContext';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8180';
+// Base URL for static assets (uploads) - WITHOUT /api/v1 prefix
+const STATIC_BASE_URL = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8182';
 
 interface LogoSettings {
   logoLight: string | null;
@@ -31,9 +32,9 @@ export function useLogoSettings(): LogoSettings {
       return path;
     }
     
-    // If it starts with /uploads/, prepend the API base URL
+    // If it starts with /uploads/, prepend the static base URL
     if (path.startsWith('/uploads/')) {
-      return `${API_BASE_URL}${path}`;
+      return `${STATIC_BASE_URL}${path}`;
     }
     
     // Otherwise return the path as is (for local assets)

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
@@ -18,15 +18,17 @@ import {
   AlertTriangle,
   Star,
   ExternalLink,
-  CheckCircle
+  CheckCircle,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
 import { StatCard, EmptyState } from '@/components/student';
+import { studentPreviousExamService, type PreviousExam } from '@/services/previousExamService';
 import toast from 'react-hot-toast';
 
-interface PreviousExam {
-  id: number;
+interface PreviousExamDisplay {
+  id: string;
   title: string;
   organization: string;
   examBoard: string;
@@ -47,177 +49,6 @@ interface PreviousExam {
   passingScore: number;
 }
 
-// Dados de exemplo - Arsenal Tático de Provas
-const previousExams: PreviousExam[] = [
-  {
-    id: 1,
-    title: 'OPERAÇÃO PF - AGENTE 2021',
-    organization: 'Polícia Federal',
-    examBoard: 'CESPE',
-    year: 2021,
-    examDate: '2021-05-23',
-    position: 'Agente de Polícia Federal',
-    totalQuestions: 120,
-    difficulty: 'hard',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    rating: 4.8,
-    views: 15420,
-    userAttempts: 3,
-    bestScore: 78.5,
-    lastAttempt: '2024-01-18',
-    avgScore: 58.5,
-    totalAttempts: 3250,
-    passingScore: 60
-  },
-  {
-    id: 2,
-    title: 'OPERAÇÃO PRF - POLICIAL RODOVIÁRIO 2021',
-    organization: 'Polícia Rodoviária Federal',
-    examBoard: 'CESPE',
-    year: 2021,
-    examDate: '2021-08-15',
-    position: 'Policial Rodoviário Federal',
-    totalQuestions: 120,
-    difficulty: 'hard',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    rating: 4.6,
-    views: 12350,
-    userAttempts: 1,
-    bestScore: 52.3,
-    lastAttempt: '2024-01-10',
-    avgScore: 52.3,
-    totalAttempts: 2840,
-    passingScore: 50
-  },
-  {
-    id: 3,
-    title: 'OPERAÇÃO PCSP - ESCRIVÃO 2023',
-    organization: 'Polícia Civil SP',
-    examBoard: 'VUNESP',
-    year: 2023,
-    examDate: '2023-03-12',
-    position: 'Escrivão de Polícia',
-    totalQuestions: 100,
-    difficulty: 'medium',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    rating: 4.4,
-    views: 8930,
-    userAttempts: 0,
-    bestScore: null,
-    lastAttempt: null,
-    avgScore: 61.2,
-    totalAttempts: 1950,
-    passingScore: 50
-  },
-  {
-    id: 4,
-    title: 'OPERAÇÃO PMSP - SOLDADO 2022',
-    organization: 'Polícia Militar SP',
-    examBoard: 'VUNESP',
-    year: 2022,
-    examDate: '2022-11-20',
-    position: 'Soldado PM 2ª Classe',
-    totalQuestions: 80,
-    difficulty: 'medium',
-    hasAnswerSheet: true,
-    hasPDF: false,
-    rating: 4.2,
-    views: 6750,
-    userAttempts: 2,
-    bestScore: 65.8,
-    lastAttempt: '2024-01-05',
-    avgScore: 65.8,
-    totalAttempts: 1420,
-    passingScore: 50
-  },
-  {
-    id: 5,
-    title: 'OPERAÇÃO PCDF - AGENTE 2023',
-    organization: 'Polícia Civil DF',
-    examBoard: 'CESPE',
-    year: 2023,
-    examDate: '2023-06-18',
-    position: 'Agente de Polícia',
-    totalQuestions: 120,
-    difficulty: 'hard',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    rating: 4.7,
-    views: 9840,
-    userAttempts: 0,
-    bestScore: null,
-    lastAttempt: null,
-    avgScore: 56.8,
-    totalAttempts: 2180,
-    passingScore: 60
-  },
-  {
-    id: 6,
-    title: 'OPERAÇÃO PMBA - OFICIAL 2022',
-    organization: 'Polícia Militar BA',
-    examBoard: 'IBFC',
-    year: 2022,
-    examDate: '2022-09-25',
-    position: 'Oficial PM',
-    totalQuestions: 100,
-    difficulty: 'expert',
-    hasAnswerSheet: true,
-    hasPDF: false,
-    rating: 4.5,
-    views: 5670,
-    userAttempts: 1,
-    bestScore: 72.0,
-    lastAttempt: '2024-01-12',
-    avgScore: 72.0,
-    totalAttempts: 1340,
-    passingScore: 70
-  },
-  {
-    id: 7,
-    title: 'OPERAÇÃO PENAL - AGEPEN 2022',
-    organization: 'Agente Penitenciário',
-    examBoard: 'FCC',
-    year: 2022,
-    examDate: '2022-04-10',
-    position: 'Agente Penitenciário',
-    totalQuestions: 80,
-    difficulty: 'medium',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    rating: 4.3,
-    views: 4320,
-    userAttempts: 2,
-    bestScore: 68.5,
-    lastAttempt: '2024-01-08',
-    avgScore: 63.7,
-    totalAttempts: 980,
-    passingScore: 50
-  },
-  {
-    id: 8,
-    title: 'OPERAÇÃO BOPE - CURSO ESPECIAL 2023',
-    organization: 'BOPE/PMERJ',
-    examBoard: 'IBADE',
-    year: 2023,
-    examDate: '2023-10-15',
-    position: 'Curso de Operações Especiais',
-    totalQuestions: 150,
-    difficulty: 'expert',
-    hasAnswerSheet: false,
-    hasPDF: true,
-    rating: 4.9,
-    views: 18920,
-    userAttempts: 0,
-    bestScore: null,
-    lastAttempt: null,
-    avgScore: 45.2,
-    totalAttempts: 890,
-    passingScore: 70
-  }
-];
 
 export default function PreviousExamsStudentPage() {
   const navigate = useNavigate();
@@ -226,6 +57,66 @@ export default function PreviousExamsStudentPage() {
   const [selectedOrganization, setSelectedOrganization] = useState<string>('all');
   const [selectedExamBoard, setSelectedExamBoard] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [previousExams, setPreviousExams] = useState<PreviousExamDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load previous exams from API
+  useEffect(() => {
+    loadPreviousExams();
+  }, []);
+
+  const loadPreviousExams = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await studentPreviousExamService.getAvailable();
+      
+      if (response.exams) {
+        // Transform API data to display format with tactical naming and mock stats
+        const transformedExams: PreviousExamDisplay[] = response.exams.map((exam: PreviousExam) => {
+          // Generate mock difficulty based on approval rate or default to medium
+          let difficulty: 'easy' | 'medium' | 'hard' | 'expert' = 'medium';
+          const approvalRate = exam.statistics?.approval_rate || 50;
+          if (approvalRate >= 70) difficulty = 'easy';
+          else if (approvalRate >= 40) difficulty = 'medium';
+          else if (approvalRate >= 20) difficulty = 'hard';
+          else difficulty = 'expert';
+
+          return {
+            id: exam.id,
+            title: `OPERAÇÃO ${exam.organization.toUpperCase()} - ${exam.position.toUpperCase()} ${exam.year}`,
+            organization: exam.organization,
+            examBoard: exam.exam_board,
+            year: exam.year,
+            examDate: exam.application_date || `${exam.year}-01-01`,
+            position: exam.position,
+            totalQuestions: exam.total_questions,
+            difficulty,
+            hasAnswerSheet: true, // Assume all have answer sheets
+            hasPDF: !!exam.metadata?.pdf_url,
+            rating: 4.0 + (Math.random() * 1.0), // Generate mock rating 4.0-5.0
+            views: exam.statistics?.total_attempts ? exam.statistics.total_attempts * 5 : Math.floor(Math.random() * 10000) + 1000,
+            userAttempts: exam.user_stats?.attempts_count || 0,
+            bestScore: exam.user_stats?.best_score || null,
+            lastAttempt: exam.user_stats?.last_attempt || null,
+            avgScore: exam.statistics?.average_score || Math.floor(Math.random() * 40) + 40,
+            totalAttempts: exam.statistics?.total_attempts || Math.floor(Math.random() * 3000) + 500,
+            passingScore: 60 // Standard passing score
+          };
+        });
+        
+        setPreviousExams(transformedExams);
+      } else {
+        throw new Error('Formato de resposta inválido');
+      }
+    } catch (err: any) {
+      console.error('Erro ao carregar provas anteriores:', err);
+      setError(err.message || 'Erro ao carregar provas anteriores. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const years = Array.from(new Set(previousExams.map(exam => exam.year))).sort((a, b) => b - a);
   const organizations = Array.from(new Set(previousExams.map(exam => exam.organization)));
@@ -434,8 +325,46 @@ export default function PreviousExamsStudentPage() {
           </motion.div>
         )}
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg shadow-lg border-2 border-gray-200 dark:border-gray-800 p-8 relative overflow-hidden backdrop-blur-sm">
+              <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-6 h-6 text-accent-500 animate-spin" />
+                <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                  CARREGANDO ARSENAL TÁTICO...
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="flex items-center justify-center py-12">
+            <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg shadow-lg border-2 border-red-200 dark:border-red-800 p-8 relative overflow-hidden backdrop-blur-sm">
+              <div className="absolute top-0 right-0 w-1 h-full bg-red-500" />
+              <div className="text-center">
+                <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                <p className="text-red-600 dark:text-red-400 font-police-body uppercase tracking-wider mb-4">
+                  {error}
+                </p>
+                <Button
+                  onClick={loadPreviousExams}
+                  variant="outline"
+                  className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
+                >
+                  TENTAR NOVAMENTE
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Exams Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {!loading && !error && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredExams.map((exam, index) => (
             <motion.div
               key={exam.id}
@@ -603,7 +532,7 @@ export default function PreviousExamsStudentPage() {
                           border: '2px solid #facc15'
                         }
                       });
-                      navigate(`/simulations/${exam.id}/results`);
+                      navigate(`/simulations/previous/${exam.id}/results`);
                     }}
                     className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
                   >
@@ -638,9 +567,10 @@ export default function PreviousExamsStudentPage() {
               </div>
             </motion.div>
           ))}
-        </div>
+          </div>
+        )}
 
-        {filteredExams.length === 0 && (
+        {!loading && !error && filteredExams.length === 0 && (
           <EmptyState
             icon={FileText}
             title="NENHUMA OPERAÇÃO ENCONTRADA"

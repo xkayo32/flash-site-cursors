@@ -14,7 +14,7 @@ import CoursesPage from './pages/student/CoursesPage';
 import CourseDetailsPage from './pages/student/CourseDetailsPage';
 import MyCoursesPage from './pages/student/MyCoursesPage';
 import CourseLearningPage from './pages/student/CourseLearningPage';
-import ExamTakingPage from './pages/student/ExamTakingPage';
+import ExamTakingPageNew from './pages/student/ExamTakingPageNew';
 import ExamResultsPage from './pages/student/ExamResultsPage';
 import FlashcardsPage from './pages/student/FlashcardsPage';
 import SchedulePage from './pages/student/SchedulePage';
@@ -113,7 +113,7 @@ function Router() {
         path="/simulations/:examType/:examId/take" 
         element={
           <ProtectedRoute>
-            <ExamTakingPage />
+            <ExamTakingPageNew />
           </ProtectedRoute>
         } 
       />
@@ -130,7 +130,7 @@ function Router() {
         path="/simulations/:examId/take" 
         element={
           <ProtectedRoute>
-            <ExamTakingPage />
+            <ExamTakingPageNew />
           </ProtectedRoute>
         } 
       />
@@ -150,6 +150,7 @@ function Router() {
         <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/simulations" element={<MockExamsPageSimple />} />
         <Route path="/simulations/:examId/details" element={<SimulationDetailsPage />} />
+        {/* Removidas rotas duplicadas - usando as rotas fora do Layout */}
         <Route path="/exam/:attemptId" element={<ExamAttemptPage />} />
         <Route path="/exam-results/:attemptId" element={<ExamResultsDetailPage />} />
         <Route path="/flashcards" element={<FlashcardsPage />} />

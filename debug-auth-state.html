@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Auth State</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #111; color: #0f0; }
+        .step { margin: 15px 0; padding: 15px; border: 1px solid #333; border-radius: 5px; }
+        .error { background: #330000; color: #ff6666; }
+        .success { background: #003300; color: #66ff66; }
+        .warning { background: #333300; color: #ffff66; }
+        .info { background: #000033; color: #6666ff; }
+        button { padding: 10px; margin: 5px; background: #333; color: #0f0; border: 1px solid #555; cursor: pointer; }
+        button:hover { background: #555; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug: Auth State & API Loading</h1>
+    
+    <div class="step info">
+        <strong>1. Verificando localStorage</strong>
+        <div id="auth-check"></div>
+    </div>
+    
+    <div class="step info">
+        <strong>2. Testando API</strong>
+        <div id="api-check"></div>
+        <button onclick="testAPI()">🔄 Testar API Novamente</button>
+    </div>
+    
+    <div class="step info">
+        <strong>3. Simulando React Component</strong>
+        <div id="react-simulation"></div>
+        <button onclick="simulateReactFlow()">🔄 Simular React Flow</button>
+    </div>
+
+    <script>
+        // 1. Verificar auth state
+        function checkAuthState() {
+            const authDiv = document.getElementById('auth-check');
+            const authStorage = localStorage.getItem('auth-storage');
+            const directToken = localStorage.getItem('token');
+            
+            let html = '';
+            
+            if (authStorage) {
+                try {
+                    const parsed = JSON.parse(authStorage);
+                    html += `<div class="success">✅ auth-storage encontrado</div>`;
+                    html += `<div>Token: ${parsed.state?.token ? '✅ EXISTS' : '❌ NOT FOUND'}</div>`;
+                    html += `<div>User: ${parsed.state?.user ? '✅ EXISTS' : '❌ NOT FOUND'}</div>`;
+                    html += `<div>isAuthenticated: ${parsed.state?.isAuthenticated ? '✅ TRUE' : '❌ FALSE'}</div>`;
+                    
+                    if (parsed.state?.user) {
+                        html += `<div>User details: ${parsed.state.user.name} (${parsed.state.user.email}) - ${parsed.state.user.role}</div>`;
+                    }
+                } catch (e) {
+                    html += `<div class="error">❌ Erro ao parsear auth-storage: ${e.message}</div>`;
+                }
+            } else {
+                html += `<div class="warning">⚠️ auth-storage não encontrado</div>`;
+            }
+            
+            if (directToken) {
+                html += `<div class="success">✅ Token direto encontrado</div>`;
+            } else {
+                html += `<div class="warning">⚠️ Token direto não encontrado</div>`;
+            }
+            
+            authDiv.innerHTML = html;
+            
+            // Retornar dados para usar em outros testes
+            let token = null;
+            let isAuthenticated = false;
+            
+            if (authStorage) {
+                try {
+                    const parsed = JSON.parse(authStorage);
+                    token = parsed.state?.token;
+                    isAuthenticated = parsed.state?.isAuthenticated || false;
+                } catch (e) {
+                    // ignore
+                }
+            }
+            
+            if (!token && directToken) {
+                token = directToken;
+                isAuthenticated = true;
+            }
+            
+            return { token, isAuthenticated };
+        }
+        
+        // 2. Testar API
+        async function testAPI() {
+            const apiDiv = document.getElementById('api-check');
+            apiDiv.innerHTML = '<div class="info">🔄 Testando API...</div>';
+            
+            const authData = checkAuthState();
+            
+            if (!authData.token) {
+                apiDiv.innerHTML = '<div class="error">❌ Não é possível testar API sem token. Faça login primeiro.</div>';
+                return null;
+            }
+            
+            try {
+                const response = await fetch('http://173.208.151.106:8182/api/v1/previousexams', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authData.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let html = `<div>Status: ${response.status} ${response.statusText}</div>`;
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    html += `<div class="error">❌ API Error: ${errorText}</div>`;
+                    apiDiv.innerHTML = html;
+                    return null;
+                }
+                
+                const data = await response.json();
+                html += `<div class="success">✅ API Success!</div>`;
+                html += `<div>Response keys: ${Object.keys(data).join(', ')}</div>`;
+                
+                if (data.exams) {
+                    html += `<div class="success">✅ ${data.exams.length} exames encontrados</div>`;
+                    data.exams.forEach((exam, i) => {
+                        html += `<div>  ${i+1}. ${exam.title} (${exam.id})</div>`;
+                    });
+                } else {
+                    html += `<div class="error">❌ Campo 'exams' não encontrado</div>`;
+                }
+                
+                apiDiv.innerHTML = html;
+                return data;
+                
+            } catch (error) {
+                apiDiv.innerHTML = `<div class="error">❌ Network Error: ${error.message}</div>`;
+                return null;
+            }
+        }
+        
+        // 3. Simular fluxo React
+        async function simulateReactFlow() {
+            const reactDiv = document.getElementById('react-simulation');
+            reactDiv.innerHTML = '<div class="info">🔄 Simulando fluxo React...</div>';
+            
+            let html = '<div class="info">📋 Simulação do Component PreviousExamsMilitary:</div>';
+            
+            // Step 1: Check auth
+            const authData = checkAuthState();
+            html += `<div>1. useAuthStore.isAuthenticated: ${authData.isAuthenticated}</div>`;
+            
+            if (!authData.isAuthenticated) {
+                html += '<div class="warning">❌ Component redirecionaria para login</div>';
+                reactDiv.innerHTML = html;
+                return;
+            }
+            
+            html += '<div class="success">2. ✅ Usuário autenticado, prosseguindo...</div>';
+            
+            // Step 2: Test API call
+            html += '<div>3. 🔄 Chamando studentPreviousExamService.getAvailable()...</div>';
+            reactDiv.innerHTML = html;
+            
+            const apiData = await testAPI();
+            
+            if (!apiData) {
+                html += '<div class="error">4. ❌ API call failed - component ficaria em loading</div>';
+                reactDiv.innerHTML = html;
+                return;
+            }
+            
+            html += '<div class="success">4. ✅ API call successful</div>';
+            
+            // Step 3: Transform data
+            if (apiData.exams && apiData.exams.length > 0) {
+                html += `<div>5. 🔄 Transformando ${apiData.exams.length} exames...</div>`;
+                
+                const transformedExams = apiData.exams.map((exam, i) => ({
+                    id: exam.id,
+                    title: `OPERAÇÃO ${exam.organization.toUpperCase()} - ${exam.position.toUpperCase()} ${exam.year}`,
+                    organization: exam.organization,
+                    year: exam.year,
+                    totalQuestions: exam.total_questions
+                }));
+                
+                html += `<div class="success">6. ✅ Dados transformados com sucesso!</div>`;
+                html += `<div>7. 📊 Resultado final:</div>`;
+                
+                transformedExams.forEach((exam, i) => {
+                    html += `<div>   ${i+1}. ${exam.title}</div>`;
+                });
+                
+                html += '<div class="success">8. ✅ setPreviousExams() seria executado</div>';
+                html += '<div class="success">9. ✅ setLoading(false) seria executado</div>';
+                html += '<div class="success">🎉 COMPONENT DEVERIA MOSTRAR OS EXAMES!</div>';
+                
+            } else {
+                html += '<div class="error">5. ❌ Nenhum exame encontrado na API</div>';
+            }
+            
+            reactDiv.innerHTML = html;
+        }
+        
+        // Executar verificações iniciais
+        window.onload = function() {
+            checkAuthState();
+            setTimeout(() => {
+                testAPI();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

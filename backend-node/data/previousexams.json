@@ -28,5 +28,17 @@
     "year": 2023,
     "total_questions": 100,
     "status": "published"
+  },
+  {
+    "id": "test-exam",
+    "title": "TESTE RÁPIDO - 3 Questões",
+    "organization": "Sistema de Teste",
+    "exam_board": "TESTE",
+    "position": "Teste Rápido",
+    "year": 2025,
+    "total_questions": 3,
+    "duration": 10,
+    "status": "published",
+    "question_ids": ["q1", "q2", "q3"]
   }
 ]

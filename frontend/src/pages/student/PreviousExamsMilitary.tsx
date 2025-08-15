@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
@@ -13,15 +13,19 @@ import {
   FileText,
   AlertTriangle,
   Star,
-  CheckCircle
+  CheckCircle,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
 import { StatCard, EmptyState } from '@/components/student';
+import { studentPreviousExamService, type PreviousExam } from '@/services/previousExamService';
+import { examService } from '@/services/examService';
+import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 
-interface PreviousExam {
-  id: number;
+interface PreviousExamDisplay {
+  id: string;
   title: string;
   organization: string;
   examBoard: string;
@@ -42,100 +46,91 @@ interface PreviousExam {
   passingScore: number;
 }
 
-const previousExams: PreviousExam[] = [
-  {
-    id: 1,
-    title: 'OPERAÇÃO PF - AGENTE 2021',
-    organization: 'Polícia Federal',
-    examBoard: 'CESPE',
-    year: 2021,
-    examDate: '2021-05-23',
-    position: 'Agente de Polícia Federal',
-    totalQuestions: 120,
-    difficulty: 'hard',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    rating: 4.8,
-    views: 15420,
-    userAttempts: 3,
-    bestScore: 78.5,
-    lastAttempt: '2024-01-18',
-    avgScore: 58.5,
-    totalAttempts: 3250,
-    passingScore: 60
-  },
-  {
-    id: 2,
-    title: 'OPERAÇÃO PRF - POLICIAL 2021',
-    organization: 'Polícia Rodoviária Federal',
-    examBoard: 'CESPE',
-    year: 2021,
-    examDate: '2021-08-15',
-    position: 'Policial Rodoviário Federal',
-    totalQuestions: 120,
-    difficulty: 'hard',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    rating: 4.6,
-    views: 12350,
-    userAttempts: 1,
-    bestScore: 52.3,
-    lastAttempt: '2024-01-10',
-    avgScore: 52.3,
-    totalAttempts: 2840,
-    passingScore: 50
-  },
-  {
-    id: 3,
-    title: 'OPERAÇÃO PCSP - ESCRIVÃO 2023',
-    organization: 'Polícia Civil SP',
-    examBoard: 'VUNESP',
-    year: 2023,
-    examDate: '2023-03-12',
-    position: 'Escrivão de Polícia',
-    totalQuestions: 100,
-    difficulty: 'medium',
-    hasAnswerSheet: true,
-    hasPDF: true,
-    rating: 4.4,
-    views: 8930,
-    userAttempts: 0,
-    bestScore: null,
-    lastAttempt: null,
-    avgScore: 61.2,
-    totalAttempts: 1950,
-    passingScore: 50
-  },
-  {
-    id: 4,
-    title: 'OPERAÇÃO PMSP - SOLDADO 2022',
-    organization: 'Polícia Militar SP',
-    examBoard: 'VUNESP',
-    year: 2022,
-    examDate: '2022-11-20',
-    position: 'Soldado PM 2ª Classe',
-    totalQuestions: 80,
-    difficulty: 'medium',
-    hasAnswerSheet: true,
-    hasPDF: false,
-    rating: 4.2,
-    views: 6750,
-    userAttempts: 2,
-    bestScore: 65.8,
-    lastAttempt: '2024-01-05',
-    avgScore: 65.8,
-    totalAttempts: 1420,
-    passingScore: 50
-  }
-];
 
 export default function PreviousExamsMilitary() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [selectedOrganization, setSelectedOrganization] = useState<string>('all');
   const [selectedExamBoard, setSelectedExamBoard] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [previousExams, setPreviousExams] = useState<PreviousExamDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load previous exams from API
+  useEffect(() => {
+    console.log('🚀 [DEBUG] useEffect executado. isAuthenticated:', isAuthenticated);
+    if (!isAuthenticated) {
+      console.log('❌ [DEBUG] Usuário não autenticado, redirecionando para login');
+      // Redirect to login if not authenticated
+      navigate('/login');
+      return;
+    }
+    console.log('✅ [DEBUG] Usuário autenticado, carregando exames...');
+    loadPreviousExams();
+  }, [isAuthenticated]);
+
+  const loadPreviousExams = async () => {
+    try {
+      console.log('🔄 [DEBUG] Iniciando loadPreviousExams...');
+      setLoading(true);
+      setError(null);
+      console.log('🔄 [DEBUG] Chamando API studentPreviousExamService.getAvailable...');
+      const response = await studentPreviousExamService.getAvailable();
+      console.log('📥 [DEBUG] Resposta da API recebida:', response);
+      
+      if (response.exams) {
+        console.log('✅ [DEBUG] Campo response.exams encontrado com', response.exams.length, 'itens');
+        // Transform API data to display format with tactical naming and mock stats
+        const transformedExams: PreviousExamDisplay[] = response.exams.map((exam: PreviousExam) => {
+          // Generate mock difficulty based on approval rate or default to medium
+          let difficulty: 'easy' | 'medium' | 'hard' | 'expert' = 'medium';
+          const approvalRate = exam.statistics?.approval_rate || 50;
+          if (approvalRate >= 70) difficulty = 'easy';
+          else if (approvalRate >= 40) difficulty = 'medium';
+          else if (approvalRate >= 20) difficulty = 'hard';
+          else difficulty = 'expert';
+
+          return {
+            id: exam.id,
+            title: `OPERAÇÃO ${exam.organization.toUpperCase()} - ${exam.position.toUpperCase()} ${exam.year}`,
+            organization: exam.organization,
+            examBoard: exam.exam_board,
+            year: exam.year,
+            examDate: exam.application_date || `${exam.year}-01-01`,
+            position: exam.position,
+            totalQuestions: exam.total_questions,
+            difficulty,
+            hasAnswerSheet: true, // Assume all have answer sheets
+            hasPDF: !!exam.metadata?.pdf_url,
+            rating: 4.0 + (Math.random() * 1.0), // Generate mock rating 4.0-5.0
+            views: exam.statistics?.total_attempts ? exam.statistics.total_attempts * 5 : Math.floor(Math.random() * 10000) + 1000,
+            userAttempts: exam.user_stats?.attempts_count || 0,
+            bestScore: exam.user_stats?.best_score || null,
+            lastAttempt: exam.user_stats?.last_attempt || null,
+            avgScore: exam.statistics?.average_score || Math.floor(Math.random() * 40) + 40,
+            totalAttempts: exam.statistics?.total_attempts || Math.floor(Math.random() * 3000) + 500,
+            passingScore: 60 // Standard passing score
+          };
+        });
+        
+        console.log('🔄 [DEBUG] Dados transformados:', transformedExams.length, 'exames');
+        setPreviousExams(transformedExams);
+        console.log('✅ [DEBUG] setPreviousExams executado com sucesso');
+      } else {
+        console.error('❌ [DEBUG] response.exams não encontrado. Estrutura da resposta:', Object.keys(response));
+        throw new Error('Formato de resposta inválido');
+      }
+    } catch (err: any) {
+      console.error('❌ [DEBUG] Erro ao carregar provas anteriores:', err);
+      setError(err.message || 'Erro ao carregar provas anteriores. Tente novamente.');
+    } finally {
+      console.log('🏁 [DEBUG] setLoading(false) - finalizando carregamento');
+      setLoading(false);
+    }
+  };
 
   const years = Array.from(new Set(previousExams.map(exam => exam.year))).sort((a, b) => b - a);
   const organizations = Array.from(new Set(previousExams.map(exam => exam.organization)));
@@ -151,6 +146,7 @@ export default function PreviousExamsMilitary() {
     
     return matchesSearch && matchesYear && matchesOrganization && matchesExamBoard;
   });
+
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -342,8 +338,46 @@ export default function PreviousExamsMilitary() {
           </motion.div>
         )}
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg shadow-lg border-2 border-gray-200 dark:border-gray-800 p-8 relative overflow-hidden backdrop-blur-sm">
+              <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-6 h-6 text-accent-500 animate-spin" />
+                <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                  CARREGANDO ARSENAL TÁTICO...
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="flex items-center justify-center py-12">
+            <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg shadow-lg border-2 border-red-200 dark:border-red-800 p-8 relative overflow-hidden backdrop-blur-sm">
+              <div className="absolute top-0 right-0 w-1 h-full bg-red-500" />
+              <div className="text-center">
+                <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                <p className="text-red-600 dark:text-red-400 font-police-body uppercase tracking-wider mb-4">
+                  {error}
+                </p>
+                <Button
+                  onClick={loadPreviousExams}
+                  variant="outline"
+                  className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
+                >
+                  TENTAR NOVAMENTE
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Exams Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {!loading && !error && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredExams.map((exam, index) => (
             <motion.div
               key={exam.id}
@@ -412,15 +446,33 @@ export default function PreviousExamsMilitary() {
                   <Button
                     size="sm"
                     className="flex-1 gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-all duration-300 hover:scale-105"
-                    onClick={() => {
-                      toast.success('INICIANDO OPERAÇÃO TÁTICA! 🎯', {
-                        style: {
-                          background: '#14242f',
-                          color: '#facc15',
-                          border: '2px solid #facc15'
-                        }
-                      });
-                      navigate(`/simulations/previous/${exam.id}/take`);
+                    onClick={async () => {
+                      try {
+                        toast.success('INICIANDO OPERAÇÃO TÁTICA! 🎯', {
+                          style: {
+                            background: '#14242f',
+                            color: '#facc15',
+                            border: '2px solid #facc15'
+                          }
+                        });
+                        
+                        // Start exam session
+                        const session = await examService.startExamSession(exam.id, 'previous');
+                        
+                        // Navigate to exam taking page with session ID
+                        navigate(`/simulations/previous/${exam.id}/take`, { 
+                          state: { sessionId: session.id }
+                        });
+                      } catch (error) {
+                        console.error('Erro ao iniciar sessão:', error);
+                        toast.error('Erro ao iniciar operação tática', {
+                          style: {
+                            background: '#330000',
+                            color: '#ff6666',
+                            border: '2px solid #ff6666'
+                          }
+                        });
+                      }
                     }}
                   >
                     <Play className="w-4 h-4" />
@@ -465,9 +517,10 @@ export default function PreviousExamsMilitary() {
               </div>
             </motion.div>
           ))}
-        </div>
+          </div>
+        )}
 
-        {filteredExams.length === 0 && (
+        {!loading && !error && filteredExams.length === 0 && (
           <EmptyState
             icon={FileText}
             title="NENHUMA OPERAÇÃO ENCONTRADA"

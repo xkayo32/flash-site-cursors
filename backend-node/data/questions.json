@@ -3484,13 +3484,13 @@
       "simulado"
     ],
     "status": "published",
-    "times_answered": 99,
-    "times_correct": 465,
-    "correct_rate": 469.7,
+    "times_answered": 101,
+    "times_correct": 467,
+    "correct_rate": 462.4,
     "author_id": "1",
     "author_name": "Sistema Automático",
     "created_at": "2025-08-14T16:56:28.515Z",
-    "updated_at": "2025-08-15T01:51:05.977Z"
+    "updated_at": "2025-08-15T04:22:01.994Z"
   },
   {
     "id": "q_sample_97",
@@ -3518,13 +3518,13 @@
       "simulado"
     ],
     "status": "published",
-    "times_answered": 861,
-    "times_correct": 133,
-    "correct_rate": 59,
+    "times_answered": 863,
+    "times_correct": 135,
+    "correct_rate": 15.6,
     "author_id": "1",
     "author_name": "Sistema Automático",
     "created_at": "2025-08-14T16:56:28.515Z",
-    "updated_at": "2025-08-14T16:56:28.515Z"
+    "updated_at": "2025-08-15T04:22:04.336Z"
   },
   {
     "id": "q_sample_98",
@@ -3552,13 +3552,13 @@
       "simulado"
     ],
     "status": "published",
-    "times_answered": 148,
-    "times_correct": 439,
-    "correct_rate": 59,
+    "times_answered": 150,
+    "times_correct": 441,
+    "correct_rate": 294,
     "author_id": "1",
     "author_name": "Sistema Automático",
     "created_at": "2025-08-14T16:56:28.515Z",
-    "updated_at": "2025-08-14T16:56:28.515Z"
+    "updated_at": "2025-08-15T04:22:07.386Z"
   },
   {
     "id": "q_sample_99",
@@ -3586,13 +3586,13 @@
       "simulado"
     ],
     "status": "published",
-    "times_answered": 923,
-    "times_correct": 5,
-    "correct_rate": 43,
+    "times_answered": 925,
+    "times_correct": 7,
+    "correct_rate": 0.8,
     "author_id": "1",
     "author_name": "Sistema Automático",
     "created_at": "2025-08-14T16:56:28.515Z",
-    "updated_at": "2025-08-14T16:56:28.515Z"
+    "updated_at": "2025-08-15T04:22:09.479Z"
   },
   {
     "id": "q_sample_100",

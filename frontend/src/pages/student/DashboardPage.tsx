@@ -142,7 +142,7 @@ export default function DashboardPage() {
   };
 
   // Helper to construct proper image URL
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8180';
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://173.208.151.106:8182';
   const getImageUrl = (path: string | undefined | null): string | null => {
     if (!path) return null;
     

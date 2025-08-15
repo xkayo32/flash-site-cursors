@@ -463,15 +463,15 @@ export default function AdminSettings() {
                         profileSettings.avatar 
                           ? profileSettings.avatar.startsWith('data:') || profileSettings.avatar.startsWith('http')
                             ? profileSettings.avatar
-                            : `http://173.208.151.106:8180${profileSettings.avatar}`
-                          : 'http://173.208.151.106:8180/default-avatar.png'
+                            : `http://173.208.151.106:8182${profileSettings.avatar}`
+                          : 'http://173.208.151.106:8182/default-avatar.png'
                       }
                       alt="Avatar"
                       className="w-24 h-24 rounded-full object-cover border-2 border-accent-500"
                       onError={(e) => {
                         // First fallback: try backend default avatar
                         if (!e.currentTarget.src.includes('default-avatar.png')) {
-                          e.currentTarget.src = 'http://173.208.151.106:8180/default-avatar.png';
+                          e.currentTarget.src = 'http://173.208.151.106:8182/default-avatar.png';
                         } else {
                           // Ultimate fallback: use data URL for a simple avatar
                           e.currentTarget.src = 'data:image/svg+xml;base64,' + btoa(`
