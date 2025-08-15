@@ -16,6 +16,7 @@ import categoriesRoutes from './routes/categories.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import questionsRoutes from './routes/questions.routes';
 import flashcardsRoutes from './routes/flashcards.routes';
+import flashcardDecksRoutes from './routes/flashcard-decks.routes';
 import mockexamsRoutes from './routes/mockexams.routes';
 import mockexamsStatsRoutes from './routes/mockexams-stats.routes';
 import previousexamsRoutes from './routes/previousexams.routes';
@@ -64,6 +65,7 @@ app.use('/api/v1/categories', categoriesRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/questions', questionsRoutes);
 app.use('/api/v1/flashcards', flashcardsRoutes);
+app.use('/api/v1/flashcard-decks', flashcardDecksRoutes);
 app.use('/api/v1/mockexams', mockexamsRoutes);
 app.use('/api/v1/mockexams-stats', mockexamsStatsRoutes);
 app.use('/api/v1/previousexams', previousexamsRoutes);
@@ -93,6 +95,7 @@ app.get('/', (_req, res) => {
       '/api/v1/dashboard': 'Dashboard statistics',
       '/api/v1/questions': 'Questions management',
       '/api/v1/flashcards': 'Flashcards management',
+      '/api/v1/flashcard-decks': 'Flashcard decks/arsenals management',
       '/api/v1/mockexams': 'Mock exams management',
       '/api/v1/previousexams': 'Previous exams management',
       '/api/v1/summaries': 'Summaries management',

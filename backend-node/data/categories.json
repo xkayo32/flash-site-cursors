@@ -341,5 +341,19 @@
         "updated_at": "2025-08-11T18:21:10.902Z"
       }
     ]
+  },
+  {
+    "id": "cat_1755208897038_606",
+    "name": "PCA 400-110 (2013)",
+    "type": "subject",
+    "description": "PLANO DE ALIENAÇÃO DE MATERIAL",
+    "contentCount": {
+      "questions": 0,
+      "flashcards": 0,
+      "summaries": 0,
+      "courses": 0
+    },
+    "created_at": "2025-08-14T22:01:37.038Z",
+    "updated_at": "2025-08-14T22:01:37.038Z"
   }
 ]

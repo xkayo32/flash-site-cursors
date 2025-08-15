@@ -4,33 +4,27 @@ import {
   Brain,
   Plus,
   Search,
-  Filter,
-  Calendar,
   Clock,
-  TrendingUp,
-  Award,
-  RotateCcw,
   Eye,
-  EyeOff,
   BookOpen,
-  Star,
   Zap,
   CheckCircle,
   XCircle,
-  ChevronLeft,
   ChevronRight,
   Play,
-  Pause,
-  Settings,
-  BarChart3,
-  Target,
-  Flame,
   AlertTriangle,
-  AlertCircle,
+  Loader2,
+  RefreshCw,
+  Grid3X3,
+  List,
+  Edit,
+  Trash2,
+  Flame,
+  BarChart3,
+  Star,
   Info,
   Command,
-  Loader2,
-  RefreshCw
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
@@ -39,6 +33,7 @@ import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import flashcardService, { Flashcard as APIFlashcard, FlashcardType } from '@/services/flashcardService';
+import flashcardDeckService from '@/services/flashcardDeckService';
 
 // Tipos locais (compatíveis com a API)
 interface Flashcard {
@@ -137,7 +132,13 @@ export default function FlashcardsPage() {
   const [studySession, setStudySession] = useState<StudySession | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSubject, setFilterSubject] = useState('all');
+  const [filterType, setFilterType] = useState<'all' | FlashcardType>('all');
   const [deckFilter, setDeckFilter] = useState<'all' | 'my' | 'system'>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [editingDeck, setEditingDeck] = useState<FlashcardDeck | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deckToDelete, setDeckToDelete] = useState<FlashcardDeck | null>(null);
   const [sessionStats, setSessionStats] = useState({
     correct: 0,
     total: 0,
@@ -161,6 +162,7 @@ export default function FlashcardsPage() {
 
   // Estados para integração com API
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const [userDecks, setUserDecks] = useState<FlashcardDeck[]>([]);
   const [studyStats, setStudyStats] = useState<StudyStats>({
     totalCards: 0,
     dueToday: 0,
@@ -176,6 +178,17 @@ export default function FlashcardsPage() {
   const [loadingStats, setLoadingStats] = useState<LoadingState>('idle');
 
   // Funções de API
+  const loadDecks = async () => {
+    try {
+      const result = await flashcardDeckService.getDecks();
+      if (result.success) {
+        setUserDecks(result.data);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar decks:', error);
+    }
+  };
+
   const loadFlashcards = async () => {
     try {
       setLoadingState('loading');
@@ -185,11 +198,12 @@ export default function FlashcardsPage() {
         page: 1,
         limit: 100, // Carregar muitos para demonstração
         search: searchTerm || undefined,
-        category: filterSubject === 'all' ? undefined : filterSubject
+        category: filterSubject === 'all' ? undefined : filterSubject,
+        type: filterType === 'all' ? undefined : filterType
       });
       
       // Mapear dados da API para o formato local
-      const mappedFlashcards: Flashcard[] = response.data.flashcards.map((apiCard: APIFlashcard) => ({
+      const mappedFlashcards: Flashcard[] = response.data.map((apiCard: APIFlashcard) => ({
         id: apiCard.id,
         type: apiCard.type,
         front: apiCard.front || apiCard.question || '',
@@ -262,6 +276,7 @@ export default function FlashcardsPage() {
   useEffect(() => {
     loadFlashcards();
     loadStats();
+    loadDecks();
   }, []);
 
   // useEffect para recarregar quando filtros mudam
@@ -271,7 +286,7 @@ export default function FlashcardsPage() {
     }, 500);
 
     return () => clearTimeout(debounceTimer);
-  }, [searchTerm, filterSubject]);
+  }, [searchTerm, filterSubject, filterType]);
 
   // Função para gravar sessão de estudo
   const recordStudy = async (flashcardId: string, isCorrect: boolean, quality: number = 3) => {
@@ -294,8 +309,9 @@ export default function FlashcardsPage() {
       card.category.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesSubject = filterSubject === 'all' || card.category === filterSubject;
+    const matchesType = filterType === 'all' || card.type === filterType;
     
-    return matchesSearch && matchesSubject;
+    return matchesSearch && matchesSubject && matchesType;
   });
 
   // Organizar flashcards por categoria (similar ao conceito de decks)
@@ -308,7 +324,8 @@ export default function FlashcardsPage() {
     return acc;
   }, {} as Record<string, Flashcard[]>);
 
-  const filteredDecks = Object.entries(flashcardsByCategory).map(([category, cards]) => ({
+  // Decks virtuais baseados nas categorias
+  const virtualDecks = Object.entries(flashcardsByCategory).map(([category, cards]) => ({
     id: category.toLowerCase().replace(/\s+/g, '-'),
     name: `ARSENAL TÁTICO - ${category}`,
     description: `Flashcards sobre ${category.toLowerCase()}`,
@@ -325,16 +342,41 @@ export default function FlashcardsPage() {
     isUserDeck: false,
     author: 'SISTEMA TÁTICO'
   }));
+  
+  // Decks reais salvos pelo usuário
+  const realDecks = userDecks.map(deck => ({
+    id: deck.id,
+    name: deck.name,
+    description: deck.description || '',
+    subject: deck.subject,
+    totalCards: deck.total_cards || deck.flashcard_ids?.length || 0,
+    dueCards: 0,
+    newCards: 0,
+    color: 'bg-purple-500', // Cor diferente para decks do usuário
+    createdAt: deck.created_at,
+    isUserDeck: true,
+    author: deck.owner_name || 'VOCÊ'
+  }));
+  
+  // Combinar decks reais e virtuais
+  const filteredDecks = [...realDecks, ...virtualDecks];
 
   // Lista de matérias/categorias disponíveis 
   const subjects = ['all', ...new Set(flashcards.map(card => card.category))];
 
   // Aplicar filtros de origem nos decks
   const finalFilteredDecks = filteredDecks.filter(deck => {
+    // Filtro de origem (meus/sistema/todos)
     const matchesOrigin = deckFilter === 'all' || 
                            (deckFilter === 'my' && deck.isUserDeck) || 
                            (deckFilter === 'system' && !deck.isUserDeck);
-    return matchesOrigin;
+    
+    // Filtro de busca
+    const matchesSearch = !searchTerm || 
+                          deck.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          deck.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesOrigin && matchesSearch;
   });
 
   // Handle card selection
@@ -405,37 +447,104 @@ export default function FlashcardsPage() {
     setActiveTab('overview');
   };
 
-  const handleCreateDeck = () => {
+  const handleCreateDeck = async () => {
     if (selectedCards.length === 0 || !newDeckName.trim()) {
+      toast.error('Nome do arsenal e pelo menos 1 cartão são obrigatórios');
       return;
     }
 
-    // Simula criação do deck
-    const newDeck: FlashcardDeck = {
-      id: Date.now().toString(),
-      name: newDeckName,
-      description: newDeckDescription,
-      subject: newDeckSubject || 'Misto/Várias matérias',
-      totalCards: selectedCards.length,
-      dueCards: selectedCards.length,
-      newCards: selectedCards.length,
-      color: 'bg-indigo-500',
-      createdAt: new Date().toISOString(),
-      isUserDeck: true,
-      author: 'Você'
-    };
+    try {
+      // Criar o deck usando o serviço real
+      const result = await flashcardDeckService.createDeck({
+        name: newDeckName,
+        description: newDeckDescription,
+        subject: newDeckSubject || 'MISTO',
+        flashcard_ids: selectedCards,
+        is_public: false
+      });
 
-    toast.success(`ARSENAL "${newDeckName}" CRIADO COM SUCESSO!`, {
-      description: `${selectedCards.length} flashcard${selectedCards.length > 1 ? 's' : ''} adicionado${selectedCards.length > 1 ? 's' : ''}`,
-      icon: '🎯'
-    });
-    
-    // Reset form
-    setNewDeckName('');
-    setNewDeckDescription('');
-    setNewDeckSubject('');
-    setSelectedCards([]);
-    setActiveTab('overview');
+      if (result.success) {
+        toast.success(`Arsenal "${newDeckName}" criado com sucesso!`);
+        
+        // Recarregar decks
+        await loadDecks();
+        
+        // Limpar formulário
+        setSelectedCards([]);
+        setNewDeckName('');
+        setNewDeckDescription('');
+        setNewDeckSubject('');
+        setActiveTab('overview');
+      } else {
+        toast.error('Erro ao criar arsenal');
+      }
+    } catch (error) {
+      console.error('Erro ao criar deck:', error);
+      toast.error('Erro ao criar arsenal. Tente novamente.');
+    }
+  };
+
+  const handleEditDeck = async (deck: FlashcardDeck) => {
+    setEditingDeck(deck);
+    setNewDeckName(deck.name);
+    setNewDeckDescription(deck.description || '');
+    setNewDeckSubject(deck.subject);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateDeck = async () => {
+    if (!editingDeck || !newDeckName.trim()) {
+      toast.error('Nome do arsenal é obrigatório');
+      return;
+    }
+
+    try {
+      const result = await flashcardDeckService.updateDeck(editingDeck.id, {
+        name: newDeckName,
+        description: newDeckDescription,
+        subject: newDeckSubject || editingDeck.subject
+      });
+
+      if (result.success) {
+        toast.success('Arsenal atualizado com sucesso!');
+        await loadDecks();
+        setShowEditModal(false);
+        setEditingDeck(null);
+        setNewDeckName('');
+        setNewDeckDescription('');
+        setNewDeckSubject('');
+      } else {
+        toast.error('Erro ao atualizar arsenal');
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar deck:', error);
+      toast.error('Erro ao atualizar arsenal. Tente novamente.');
+    }
+  };
+
+  const handleDeleteDeck = async (deck: FlashcardDeck) => {
+    setDeckToDelete(deck);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteDeck = async () => {
+    if (!deckToDelete) return;
+
+    try {
+      const result = await flashcardDeckService.deleteDeck(deckToDelete.id);
+      
+      if (result.success) {
+        toast.success('Arsenal excluído com sucesso!');
+        await loadDecks();
+        setShowDeleteModal(false);
+        setDeckToDelete(null);
+      } else {
+        toast.error('Erro ao excluir arsenal');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir deck:', error);
+      toast.error('Erro ao excluir arsenal. Tente novamente.');
+    }
   };
 
   // Algoritmo SM-2 (SuperMemo 2) - Implementação completa como no Anki
@@ -681,102 +790,217 @@ export default function FlashcardsPage() {
   };
 
   const DeckCard = ({ deck }: { deck: FlashcardDeck }) => {
-    // Estilo especial para o deck guia
-    const isGuideDeck = deck.id === 'guide-flashcard-types';
-    
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -5, scale: isGuideDeck ? 1.02 : 1 }}
+        whileHover={{ y: -2 }}
         transition={{ duration: 0.3 }}
-        className={isGuideDeck ? 'relative' : ''}
+        className="h-full"
       >
-        {isGuideDeck && (
-          <>
-            {/* Efeito de brilho especial */}
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-purple-500/20 rounded-lg blur-sm animate-pulse" />
-            <div className="absolute -top-2 -right-2 z-10">
-              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-police-body text-xs uppercase tracking-wider animate-bounce">
-                🎓 TUTORIAL
-              </Badge>
-            </div>
-          </>
-        )}
-        
-        <Card className={cn(
-          "h-full hover:shadow-xl transition-all duration-300 overflow-hidden border-2 relative",
-          isGuideDeck 
-            ? "border-purple-500 dark:border-purple-400 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20 shadow-lg shadow-purple-200/50 dark:shadow-purple-900/30" 
-            : "border-gray-200 dark:border-gray-800"
-        )}>
+        <Card className="h-full flex flex-col relative overflow-hidden border-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm group transition-all duration-300 border-gray-200 dark:border-gray-700 hover:border-accent-500/50 hover:shadow-lg">
           {/* Tactical stripe */}
           <div className={cn(
             "absolute top-0 right-0 w-1 h-full",
-            isGuideDeck ? "bg-gradient-to-b from-purple-500 to-pink-500" : "bg-accent-500"
+            deck.isUserDeck ? "bg-purple-500" : "bg-accent-500"
           )} />
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center", deck.color)}>
-              <Brain className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              <Badge variant="secondary" className="font-police-body border-accent-500 text-accent-500">{deck.subject}</Badge>
-              {deck.isUserDeck && (
-                <Badge className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-700 text-xs font-police-subtitle tracking-wider border-2 border-current">
-                  MEU ARSENAL
+          
+          <CardHeader className="relative z-10 pb-3 flex-shrink-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white line-clamp-2 mb-1 text-sm">
+                  {deck.name}
+                </h3>
+                
+                <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 font-police-body">
+                  {deck.description}
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Badge 
+                  className={cn(
+                    "font-police-body text-xs uppercase tracking-wider border-2",
+                    deck.isUserDeck 
+                      ? "bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-500" 
+                      : "bg-gray-100 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400 border-gray-500"
+                  )}
+                >
+                  {deck.isUserDeck ? '👤' : '🏛️'}
                 </Badge>
+              </div>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="pt-0 pb-0 flex-1 flex flex-col relative z-10">
+            {/* Contadores */}
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                <div className="text-lg font-bold text-blue-600 font-police-numbers">{deck.totalCards}</div>
+                <div className="text-xs text-blue-600 dark:text-blue-400 font-police-body uppercase">TOTAL</div>
+              </div>
+              <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
+                <div className="text-lg font-bold text-green-600 font-police-numbers">{deck.dueCards}</div>
+                <div className="text-xs text-green-600 dark:text-green-400 font-police-body uppercase">DEVIDO</div>
+              </div>
+              <div className="text-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
+                <div className="text-lg font-bold text-purple-600 font-police-numbers">{deck.newCards}</div>
+                <div className="text-xs text-purple-600 dark:text-purple-400 font-police-body uppercase">NOVO</div>
+              </div>
+            </div>
+            
+            <div className="flex-1"></div>
+            
+            {/* Footer fixo com botões */}
+            <div className="mt-auto pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
+              <Button 
+                className="w-full bg-accent-500 hover:bg-accent-600 dark:bg-gray-100 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white font-police-body font-semibold uppercase tracking-wider text-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  startStudySession(deck);
+                }}
+              >
+                <Play className="w-4 h-4 mr-2" />
+                INICIAR OPERAÇÃO
+              </Button>
+              
+              {deck.isUserDeck && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-blue-500 hover:text-blue-600"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditDeck(deck);
+                    }}
+                  >
+                    <Edit className="w-3 h-3 mr-1" />
+                    EDITAR
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-red-500 hover:text-red-600"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteDeck(deck);
+                    }}
+                  >
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    EXCLUIR
+                  </Button>
+                </div>
               )}
             </div>
-          </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  };
 
-          <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-2 line-clamp-2 font-police-subtitle uppercase tracking-wider">
-            {deck.name}
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2 font-police-body">
-            {deck.description}
-          </p>
-          {deck.author && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 font-police-body uppercase tracking-wider">
-              COMANDANTE: {deck.author}
-            </p>
-          )}
-
-          {/* Estatísticas */}
-          <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
-            <div className="text-center">
-              <div className="font-bold text-gray-900 dark:text-white font-police-numbers">{deck.totalCards}</div>
-              <div className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider text-xs">TOTAL</div>
+  const DeckListItem = ({ deck }: { deck: FlashcardDeck }) => {
+    return (
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card className="relative overflow-hidden border-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm group transition-all duration-300 border-gray-200 dark:border-gray-700 hover:border-accent-500/50 hover:shadow-lg">
+          {/* Tactical stripe */}
+          <div className={cn(
+            "absolute top-0 right-0 w-1 h-full",
+            deck.isUserDeck ? "bg-purple-500" : "bg-accent-500"
+          )} />
+          
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              {/* Informações principais */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white text-sm truncate">
+                    {deck.name}
+                  </h3>
+                  <Badge 
+                    className={cn(
+                      "font-police-body text-xs uppercase tracking-wider border-2 flex-shrink-0",
+                      deck.isUserDeck 
+                        ? "bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-500" 
+                        : "bg-gray-100 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400 border-gray-500"
+                    )}
+                  >
+                    {deck.isUserDeck ? '👤' : '🏛️'}
+                  </Badge>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1 font-police-body">
+                  {deck.description}
+                </p>
+                <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  {deck.subject}
+                </div>
+              </div>
+              
+              {/* Contadores compactos */}
+              <div className="flex gap-3 flex-shrink-0">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-blue-600 font-police-numbers">{deck.totalCards}</div>
+                  <div className="text-xs text-blue-600 dark:text-blue-400 font-police-body uppercase">TOTAL</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-600 font-police-numbers">{deck.dueCards}</div>
+                  <div className="text-xs text-green-600 dark:text-green-400 font-police-body uppercase">DEVIDO</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-purple-600 font-police-numbers">{deck.newCards}</div>
+                  <div className="text-xs text-purple-600 dark:text-purple-400 font-police-body uppercase">NOVO</div>
+                </div>
+              </div>
+              
+              {/* Botões de ação */}
+              <div className="flex gap-2 flex-shrink-0">
+                <Button 
+                  size="sm"
+                  className="bg-accent-500 hover:bg-accent-600 dark:bg-gray-100 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white font-police-body font-semibold uppercase tracking-wider"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startStudy(deck);
+                  }}
+                >
+                  <Play className="w-3 h-3 mr-1" />
+                  INICIAR
+                </Button>
+                
+                {deck.isUserDeck && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-blue-500 hover:text-blue-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditDeck(deck);
+                      }}
+                    >
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-red-500 hover:text-red-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteDeck(deck);
+                      }}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
-            <div className="text-center">
-              <div className="font-bold text-red-600 font-police-numbers">{deck.dueCards}</div>
-              <div className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider text-xs">PENDENTES</div>
-            </div>
-            <div className="text-center">
-              <div className="font-bold text-green-600 font-police-numbers">{deck.newCards}</div>
-              <div className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider text-xs">NOVOS</div>
-            </div>
-          </div>
-
-          {/* Data do último estudo */}
-          {deck.lastStudied && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 font-police-body uppercase tracking-wider">
-              ÚLTIMA OPERAÇÃO: {new Date(deck.lastStudied).toLocaleDateString('pt-BR')}
-            </p>
-          )}
-
-          {/* Botão de estudo */}
-          <Button
-            onClick={() => startStudySession(deck)}
-            className="w-full gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
-            disabled={deck.dueCards === 0 && deck.newCards === 0}
-          >
-            <Play className="w-4 h-4" />
-            {deck.dueCards > 0 ? `EXECUTAR OPERAÇÃO (${deck.dueCards + deck.newCards})` : 'SEM ALVOS PENDENTES'}
-          </Button>
-        </CardContent>
-      </Card>
-    </motion.div>
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   };
 
@@ -910,7 +1134,7 @@ export default function FlashcardsPage() {
                 >
                   {getTypeName(card.type)}
                 </Badge>
-                <Badge variant="secondary" className="font-police-body border-accent-500 text-accent-500">{card.subject}</Badge>
+                <Badge variant="secondary" className="font-police-body border-accent-500 text-accent-500">{card.subcategory || card.category}</Badge>
               </div>
               <Badge 
                 className={cn(
@@ -1040,7 +1264,7 @@ export default function FlashcardsPage() {
                       <AlertTriangle className="w-5 h-5 text-yellow-600 mb-1" />
                       <span className="text-xs font-medium text-yellow-700 dark:text-yellow-400 font-police-subtitle uppercase tracking-wider">DIFIC.</span>
                       <span className="text-xs text-yellow-600 dark:text-yellow-500 font-police-body">ESFORÇO</span>
-                      <span className="text-[10px] text-yellow-500 mt-1 font-police-numbers">{Math.max(1, Math.round(currentCard.srsData.interval * 0.6))} dias</span>
+                      <span className="text-[10px] text-yellow-500 mt-1 font-police-numbers">{Math.max(1, Math.round((currentCard?.interval || 1) * 0.6))} dias</span>
                     </Button>
                   </div>
                   
@@ -1055,9 +1279,9 @@ export default function FlashcardsPage() {
                       <span className="text-xs font-medium text-blue-700 dark:text-blue-400 font-police-subtitle uppercase tracking-wider">BOM</span>
                       <span className="text-xs text-blue-600 dark:text-blue-500 font-police-body">ADEQUADO</span>
                       <span className="text-[10px] text-blue-500 mt-1">
-                        {currentCard.srsData.repetitions === 0 ? '1 dia' : 
-                         currentCard.srsData.repetitions === 1 ? '6 dias' : 
-                         `${Math.round(currentCard.srsData.interval * currentCard.srsData.easeFactor)} dias`}
+                        {currentCard?.times_studied === 0 ? '1 dia' : 
+                         currentCard?.times_studied === 1 ? '6 dias' : 
+                         `${Math.round((currentCard?.interval || 1) * (currentCard?.ease_factor || 2.5))} dias`}
                       </span>
                     </Button>
                     <Button
@@ -1069,9 +1293,9 @@ export default function FlashcardsPage() {
                       <span className="text-xs font-medium text-green-700 dark:text-green-400 font-police-subtitle uppercase tracking-wider">FÁCIL</span>
                       <span className="text-xs text-green-600 dark:text-green-500 font-police-body">SEM ESFORÇO</span>
                       <span className="text-[10px] text-green-500 mt-1">
-                        {Math.round((currentCard.srsData.repetitions === 0 ? 1 : 
-                         currentCard.srsData.repetitions === 1 ? 6 : 
-                         currentCard.srsData.interval * currentCard.srsData.easeFactor) * 1.15)} dias
+                        {Math.round((currentCard?.times_studied === 0 ? 1 : 
+                         currentCard?.times_studied === 1 ? 6 : 
+                         (currentCard?.interval || 1) * (currentCard?.ease_factor || 2.5)) * 1.15)} dias
                       </span>
                     </Button>
                     <Button
@@ -1083,9 +1307,9 @@ export default function FlashcardsPage() {
                       <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400 font-police-subtitle uppercase tracking-wider">EXPERT</span>
                       <span className="text-xs text-emerald-600 dark:text-emerald-500 font-police-body">INSTANTÂNEO</span>
                       <span className="text-[10px] text-emerald-500 mt-1">
-                        {Math.round((currentCard.srsData.repetitions === 0 ? 1 : 
-                         currentCard.srsData.repetitions === 1 ? 6 : 
-                         currentCard.srsData.interval * currentCard.srsData.easeFactor) * 1.3)} dias
+                        {Math.round((currentCard?.times_studied === 0 ? 1 : 
+                         currentCard?.times_studied === 1 ? 6 : 
+                         (currentCard?.interval || 1) * (currentCard?.ease_factor || 2.5)) * 1.3)} dias
                       </span>
                     </Button>
                   </div>
@@ -1095,9 +1319,9 @@ export default function FlashcardsPage() {
                 <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-600 dark:text-gray-400 text-center font-police-body">
                     <Info className="w-3 h-3 inline mr-1" />
-                    INTERVALO: {currentCard.srsData.interval} DIAS • 
-                    FATOR: {currentCard.srsData.easeFactor.toFixed(2)} • 
-                    REPETIÇÕES: {currentCard.srsData.repetitions}
+                    INTERVALO: {currentCard?.interval || 0} DIAS • 
+                    FATOR: {(currentCard?.ease_factor || 2.5).toFixed(2)} • 
+                    REPETIÇÕES: {currentCard?.times_studied || 0}
                   </p>
                 </div>
               </div>
@@ -1242,331 +1466,148 @@ export default function FlashcardsPage() {
             exit={{ opacity: 0 }}
             transition={{ delay: 0.1 }}
           >
-            {/* Filtros */}
-            <div className="mb-6 space-y-4">
-              <div className="flex flex-col lg:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                    <input
-                      type="text"
-                      placeholder="BUSCAR ARSENAL DE CARTÕES TÁTICOS..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent font-police-body placeholder:uppercase placeholder:tracking-wider hover:border-accent-500 transition-colors"
-                    />
-                  </div>
+            {/* Filtros Simplificados e Intuitivos */}
+            <div className="mb-4">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Buscar..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                  />
                 </div>
-                <div className="flex gap-2">
-                  <select
-                    value={deckFilter}
-                    onChange={(e) => setDeckFilter(e.target.value as any)}
-                    className="px-4 py-3 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors"
-                  >
-                    <option value="all">TODOS OS ARSENAIS</option>
-                    <option value="my">MEUS ARSENAIS</option>
-                    <option value="system">ARSENAIS DO SISTEMA</option>
-                  </select>
-                  <select
-                    value={filterSubject}
-                    onChange={(e) => setFilterSubject(e.target.value)}
-                    className="px-4 py-3 border border-gray-200 dark:border-accent-500/50 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 font-police-body uppercase tracking-wider hover:border-accent-500 transition-colors"
-                  >
-                    {subjects.map(subject => (
-                      <option key={subject} value={subject}>
-                        {subject === 'all' ? 'TODAS AS ÁREAS' : subject}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Demonstração dos tipos de flashcards */}
-            <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-lg relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-1 h-full bg-blue-500" />
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 font-police-title uppercase tracking-wider">
-                TIPOS DE CARTÕES TÁTICOS DISPONÍVEIS
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4 font-police-body">
-                NOSSO SISTEMA SUPORTA 7 TIPOS DIFERENTES DE FLASHCARDS PARA MAXIMIZAR SEU APRENDIZADO:
-              </p>
-              
-              {/* Loading e Error States */}
-              {loadingState === 'loading' && (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-8 h-8 animate-spin text-accent-500" />
-                  <span className="ml-2 text-accent-500 font-police-body uppercase tracking-wider">CARREGANDO ARSENAL...</span>
-                </div>
-              )}
-              
-              {errorMessage && (
-                <div className="bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg p-4 mb-4">
-                  <div className="flex items-center">
-                    <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
-                    <span className="text-red-700 dark:text-red-400 font-police-body">{errorMessage}</span>
-                    <Button 
-                      onClick={() => {
-                        loadFlashcards();
-                        loadStats();
-                      }}
-                      className="ml-auto bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm"
-                    >
-                      <RefreshCw className="w-4 h-4 mr-1" />
-                      TENTAR NOVAMENTE
-                    </Button>
-                  </div>
-                </div>
-              )}
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                {[
-                  { type: 'basic', name: 'BÁSICO', desc: 'Pergunta e resposta tradicional', count: flashcards.filter(c => c.type === 'basic').length, color: 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' },
-                  { type: 'basic_reversed', name: 'BÁSICO INVERTIDO', desc: 'Com cartão reverso automático', count: flashcards.filter(c => c.type === 'basic_reversed').length, color: 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' },
-                  { type: 'cloze', name: 'LACUNAS', desc: 'Preencher espaços em branco', count: flashcards.filter(c => c.type === 'cloze').length, color: 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' },
-                  { type: 'multiple_choice', name: 'MÚLTIPLA ESCOLHA', desc: '4 alternativas com explicação', count: flashcards.filter(c => c.type === 'multiple_choice').length, color: 'bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400' },
-                  { type: 'true_false', name: 'VERDADEIRO/FALSO', desc: 'Avaliação de afirmações', count: flashcards.filter(c => c.type === 'true_false').length, color: 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400' },
-                  { type: 'type_answer', name: 'DIGITE RESPOSTA', desc: 'Campo de texto com dica', count: flashcards.filter(c => c.type === 'type_answer').length, color: 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400' },
-                  { type: 'image_occlusion', name: 'OCLUSÃO IMAGEM', desc: 'Áreas ocultas em imagens', count: flashcards.filter(c => c.type === 'image_occlusion').length, color: 'bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400' }
-                ].map((cardType, index) => (
-                  <div key={cardType.type} className={cn("p-3 rounded-lg border-2", cardType.color)}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-police-subtitle uppercase tracking-wider font-bold">{cardType.name}</span>
-                      <Badge className="text-xs font-police-numbers bg-white/50 dark:bg-black/50 text-gray-700 dark:text-gray-300">
-                        {cardType.count}
-                      </Badge>
-                    </div>
-                    <p className="text-xs font-police-body">{cardType.desc}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 text-center">
-                <Button 
-                  onClick={() => setActiveTab('create')}
-                  variant="outline"
-                  className="gap-2 font-police-body uppercase tracking-wider hover:border-blue-500 hover:text-blue-500"
+                <select
+                  value={filterSubject}
+                  onChange={(e) => setFilterSubject(e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500"
                 >
-                  <Plus className="w-4 h-4" />
-                  EXPLORAR TODOS OS TIPOS
-                </Button>
-              </div>
-            </div>
-
-            {/* Destaque especial para o deck tutorial */}
-            <div className="mb-8">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="relative"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 rounded-2xl blur-sm animate-pulse" />
-                <Card className="relative border-2 border-purple-500 dark:border-purple-400 bg-gradient-to-br from-purple-50/80 to-pink-50/80 dark:from-purple-900/30 dark:to-pink-900/30 shadow-lg shadow-purple-200/50 dark:shadow-purple-900/30 overflow-hidden">
-                  <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-purple-500 to-pink-500" />
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-                        <span className="text-2xl">🎓</span>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
-                            GUIA TÁTICO - TIPOS DE FLASHCARDS
-                          </h3>
-                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-police-body text-xs uppercase tracking-wider animate-bounce">
-                            🎯 TUTORIAL OFICIAL
-                          </Badge>
-                        </div>
-                        <p className="text-gray-700 dark:text-gray-300 font-police-body">
-                          <strong>APRENDA TODOS OS 6 TIPOS DE FLASHCARDS</strong> disponíveis para criação. 
-                          Deck educativo com exemplos práticos demonstrando quando e como usar cada tipo.
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-2 mb-4">
-                      <Badge className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-police-body">🔵 BÁSICO</Badge>
-                      <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-police-body">🟢 INVERTIDO</Badge>
-                      <Badge className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs font-police-body">🟡 LACUNAS</Badge>
-                      <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-police-body">🟣 MÚLTIPLA</Badge>
-                      <Badge className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-police-body">🔴 V/F</Badge>
-                      <Badge className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-xs font-police-body">🟦 DIGITAR</Badge>
-                    </div>
-                    
-                    <div className="flex gap-3">
-                      <Button 
-                        onClick={() => {
-                          // Iniciar estudo com todos os flashcards disponíveis
-                          if (flashcards.length > 0) {
-                            const studyCards = flashcards.slice(0, 10); // Limitar para demonstração
-                            setStudyCards(studyCards);
-                            setCurrentCard(studyCards[0]);
-                            setCurrentCardIndex(0);
-                            setShowAnswer(false);
-                            setStudySession({
-                              deckName: 'ARSENAL TÁTICO - TODOS OS TIPOS',
-                              totalCards: studyCards.length,
-                              cardsStudied: 0,
-                              accuracy: 0,
-                              startTime: Date.now(),
-                              isActive: true
-                            });
-                            setActiveTab('study');
-                          } else {
-                            toast.error('Nenhum flashcard disponível para estudo');
-                          }
-                        }}
-                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-police-body font-semibold uppercase tracking-wider"
-                      >
-                        <Play className="w-4 h-4 mr-2" />
-                        INICIAR TUTORIAL (6 EXEMPLOS)
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        onClick={() => setActiveTab('create-card')}
-                        className="border-purple-500 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 font-police-body uppercase tracking-wider"
-                      >
-                        <Zap className="w-4 h-4 mr-2" />
-                        CRIAR MEU FLASHCARD
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
-
-            {/* Grid de decks */}
-            {finalFilteredDecks.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {finalFilteredDecks.map((deck) => (
-                  <DeckCard key={deck.id} deck={deck} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Brain className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 font-police-subtitle uppercase tracking-wider">
-                  NENHUM ARSENAL ENCONTRADO
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6 font-police-body">
-                  NÃO HÁ ARSENAIS DISPONÍVEIS PARA ESTA ÁREA NO MOMENTO.
-                  <br />
-                  NOVOS ARSENAIS SÃO ADICIONADOS REGULARMENTE PELOS COMANDANTES.
-                </p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setFilterSubject('all')}
-                  className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
+                  {subjects.map(subject => (
+                    <option key={subject} value={subject}>
+                      {subject === 'all' ? '📚 Todas as matérias' : subject}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value as any)}
+                  className="px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500"
                 >
-                  VER TODOS OS ARSENAIS
-                </Button>
+                  <option value="all">🎯 Todos os tipos</option>
+                  <option value="basic">🔵 Básico</option>
+                  <option value="basic_reversed">🟢 Invertido</option>
+                  <option value="cloze">🟡 Lacunas</option>
+                  <option value="multiple_choice">🟣 Múltipla Escolha</option>
+                  <option value="true_false">🔴 Verdadeiro/Falso</option>
+                  <option value="type_answer">🟦 Digite Resposta</option>
+                  <option value="image_occlusion">🟠 Oclusão Imagem</option>
+                </select>
+                
+                {/* Botões de view mode - Padrão das outras páginas */}
+                <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                  <button
+                    className={cn(
+                      "p-2 rounded transition-all",
+                      viewMode === 'grid'
+                        ? "bg-white dark:bg-gray-700 text-accent-500 shadow-sm"
+                        : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                    )}
+                    onClick={() => setViewMode('grid')}
+                  >
+                    <Grid3X3 className="w-4 h-4" />
+                  </button>
+                  <button
+                    className={cn(
+                      "p-2 rounded transition-all",
+                      viewMode === 'list'
+                        ? "bg-white dark:bg-gray-700 text-accent-500 shadow-sm"
+                        : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                    )}
+                    onClick={() => setViewMode('list')}
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Loading e Error States */}
+            {loadingState === 'loading' && (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-accent-500" />
+                <span className="ml-2 text-gray-600 dark:text-gray-400">Carregando...</span>
+              </div>
+            )}
+            
+            {errorMessage && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-3 mb-4">
+                <div className="flex items-center">
+                  <AlertTriangle className="w-4 h-4 text-red-500 mr-2" />
+                  <span className="text-red-700 dark:text-red-400 text-sm">{errorMessage}</span>
+                  <Button 
+                    onClick={() => {
+                      loadFlashcards();
+                      loadStats();
+                    }}
+                    className="ml-auto bg-accent-500 hover:bg-accent-600 dark:bg-gray-100 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white px-2 py-1 text-xs"
+                  >
+                    <RefreshCw className="w-3 h-3 mr-1" />
+                    Tentar novamente
+                  </Button>
+                </div>
               </div>
             )}
 
-            {/* Seção de Flashcards Individuais Criados pelo Usuário */}
-            <div className="mt-12">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">
-                    🎯 MEUS CARTÕES TÁTICOS
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 font-police-body">
-                    FLASHCARDS INDIVIDUAIS CRIADOS POR VOCÊ
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => setActiveTab('create-card')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-police-body uppercase tracking-wider"
-                >
-                  <Zap className="w-4 h-4 mr-2" />
-                  CRIAR CARTÃO
-                </Button>
-              </div>
-              
-              {/* Grid de flashcards individuais */}
-              {flashcards.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {flashcards
-                    .slice(0, 6)
-                    .map((card) => (
-                    <motion.div
-                      key={card.id}
-                      whileHover={{ scale: 1.02 }}
-                      className="bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 transition-colors cursor-pointer"
-                      onClick={() => {
-                        setStudyCards([card]);
-                        setCurrentCard(card);
-                        setCurrentCardIndex(0);
-                        setShowAnswer(false);
-                        setStudySession({
-                          deckName: 'Cartão Individual',
-                          totalCards: 1,
-                          cardsStudied: 0,
-                          accuracy: 0,
-                          startTime: Date.now(),
-                          isActive: true
-                        });
-                        setActiveTab('study');
-                      }}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <Badge className="bg-accent-500 text-black font-police-body text-xs uppercase tracking-wider">
-                          {card.type === 'basic' && '🔵 BÁSICO'}
-                          {card.type === 'basic_inverted' && '🟢 BÁSICO INV.'}
-                          {card.type === 'cloze' && '🟡 LACUNAS'}
-                          {card.type === 'multiple_choice' && '🟣 MÚLTIPLA'}
-                          {card.type === 'true_false' && '🔴 V/F'}
-                          {card.type === 'type_answer' && '🟦 DIGITAR'}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs font-police-numbers">
-                          {card.difficulty}
-                        </Badge>
-                      </div>
-                      
-                      <h4 className="font-police-subtitle font-semibold text-gray-900 dark:text-white mb-2 text-sm line-clamp-2">
-                        {card.front}
-                      </h4>
-                      
-                      <p className="text-gray-600 dark:text-gray-400 text-xs font-police-body mb-3 line-clamp-2">
-                        {card.back.length > 60 ? `${card.back.substring(0, 60)}...` : card.back}
-                      </p>
-                      
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-500 dark:text-gray-400 font-police-body uppercase tracking-wider">
-                          {card.subject}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-green-600 dark:text-green-400 font-police-numbers">
-                            {card.stats.totalReviews > 0 ? Math.round((card.stats.correctReviews / card.stats.totalReviews) * 100) : 0}%
-                          </span>
-                          <Eye className="w-3 h-3 text-gray-400" />
-                          <span className="text-gray-500 dark:text-gray-400 font-police-numbers">
-                            {card.stats.totalReviews}
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
+
+            {/* Grid de decks simplificado */}
+            {finalFilteredDecks.length > 0 ? (
+              viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {finalFilteredDecks.map((deck) => (
+                    <DeckCard key={deck.id} deck={deck} />
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
-                  <Zap className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 font-police-subtitle uppercase tracking-wider">
-                    NENHUM CARTÃO CRIADO AINDA
-                  </h4>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4 font-police-body">
-                    CRIE SEUS PRÓPRIOS FLASHCARDS PERSONALIZADOS PARA OTIMIZAR SEUS ESTUDOS
-                  </p>
+                <div className="space-y-3">
+                  {finalFilteredDecks.map((deck) => (
+                    <DeckListItem key={deck.id} deck={deck} />
+                  ))}
+                </div>
+              )
+            ) : (
+              <div className="text-center py-8">
+                <Brain className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Nenhum flashcard encontrado
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                  Tente ajustar os filtros ou criar novos flashcards
+                </p>
+                <div className="flex gap-2 justify-center">
                   <Button 
-                    onClick={() => setActiveTab('create-card')}
-                    className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body uppercase tracking-wider"
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setFilterSubject('all');
+                      setFilterType('all');
+                      setSearchTerm('');
+                    }}
                   >
-                    <Zap className="w-4 h-4 mr-2" />
-                    CRIAR PRIMEIRO CARTÃO
+                    Limpar filtros
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={() => setActiveTab('create-card')}
+                    className="bg-accent-500 hover:bg-accent-600 dark:bg-gray-100 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Criar flashcard
                   </Button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -2005,7 +2046,7 @@ export default function FlashcardsPage() {
                                     {getTypeName(card.type)}
                                   </Badge>
                                   <Badge variant="secondary" className="text-xs font-police-body border-accent-500 text-accent-500">
-                                    {card.subject}
+                                    {card.subcategory || card.category}
                                   </Badge>
                                   <Badge 
                                     className={cn(
@@ -2326,16 +2367,40 @@ export default function FlashcardsPage() {
                       <div className="text-sm text-blue-600 dark:text-blue-400 font-police-body uppercase tracking-wider">TOTAL DE CARTÕES</div>
                     </div>
                     <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
-                      <div className="text-2xl font-bold text-green-600 font-police-numbers">{studyStats.averageAccuracy}%</div>
+                      <div className="text-2xl font-bold text-green-600 font-police-numbers">{studyStats.averageAccuracy.toFixed(1)}%</div>
                       <div className="text-sm text-green-600 dark:text-green-400 font-police-body uppercase tracking-wider">PRECISÃO MÉDIA</div>
                     </div>
                     <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
-                      <div className="text-2xl font-bold text-purple-600 font-police-numbers">{formatTime(studyStats.totalStudyTime)}</div>
+                      <div className="text-2xl font-bold text-purple-600 font-police-numbers">{Math.floor(studyStats.totalStudyTime / 60)}h{Math.floor(studyStats.totalStudyTime % 60)}m</div>
                       <div className="text-sm text-purple-600 dark:text-purple-400 font-police-body uppercase tracking-wider">TEMPO TOTAL</div>
                     </div>
                     <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-700">
                       <div className="text-2xl font-bold text-orange-600 font-police-numbers">{studyStats.dailyStreak}</div>
                       <div className="text-sm text-orange-600 dark:text-orange-400 font-police-body uppercase tracking-wider">DIAS CONSECUTIVOS</div>
+                    </div>
+                  </div>
+                  
+                  {/* Estatísticas adicionais */}
+                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400 font-police-body">CARTÕES PARA HOJE:</span>
+                        <span className="font-semibold text-gray-900 dark:text-white font-police-numbers">{studyStats.dueToday}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400 font-police-body">CARTÕES NOVOS:</span>
+                        <span className="font-semibold text-gray-900 dark:text-white font-police-numbers">{studyStats.newCards}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400 font-police-body">CARTÕES DOMINADOS:</span>
+                        <span className="font-semibold text-gray-900 dark:text-white font-police-numbers">
+                          {flashcards.filter(card => card.times_studied >= 5 && card.correct_rate >= 80).length}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400 font-police-body">ARSENAIS CRIADOS:</span>
+                        <span className="font-semibold text-gray-900 dark:text-white font-police-numbers">{userDecks.length}</span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -2350,24 +2415,148 @@ export default function FlashcardsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {subjects.slice(1).map((subject, index) => (
-                      <div key={subject} className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white font-police-body">{subject}</span>
-                          <span className="text-sm text-gray-500 dark:text-gray-400 font-police-numbers">
-                            {Math.floor(Math.random() * 100)}%
-                          </span>
+                    {(() => {
+                      // Calcular estatísticas reais por categoria
+                      const categories = [...new Set(flashcards.map(card => card.category || 'GERAL'))];
+                      
+                      const categoryStats = categories.map(category => {
+                        const categoryCards = flashcards.filter(card => (card.category || 'GERAL') === category);
+                        const totalCards = categoryCards.length;
+                        const studiedCards = categoryCards.filter(card => card.times_studied > 0).length;
+                        const masteredCards = categoryCards.filter(card => card.times_studied >= 5 && card.correct_rate >= 80).length;
+                        
+                        const progress = totalCards > 0 
+                          ? Math.round((masteredCards / totalCards) * 100)
+                          : 0;
+                        
+                        return {
+                          category,
+                          progress,
+                          totalCards,
+                          studiedCards,
+                          masteredCards
+                        };
+                      }).filter(stat => stat.totalCards > 0).sort((a, b) => b.totalCards - a.totalCards); // Ordenar por quantidade
+                      
+                      if (categoryStats.length === 0) {
+                        return (
+                          <div className="text-center p-4 text-gray-500 dark:text-gray-400 font-police-body">
+                            <Info className="w-8 h-8 mx-auto mb-2" />
+                            NENHUM CARTÃO CRIADO AINDA
+                          </div>
+                        );
+                      }
+                      
+                      return categoryStats.map((stat, index) => (
+                        <div key={stat.category} className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white font-police-body">{stat.category}</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400 font-police-numbers">
+                              {stat.progress}% ({stat.masteredCards}/{stat.totalCards})
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${stat.progress}%` }}
+                              transition={{ duration: 1, delay: index * 0.1 }}
+                              className="bg-accent-500 h-full rounded-full"
+                            />
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${Math.floor(Math.random() * 100)}%` }}
-                            transition={{ duration: 1, delay: index * 0.1 }}
-                            className="bg-accent-500 h-full rounded-full"
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      ));
+                    })()}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Distribuição por tipo de cartão */}
+              <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden lg:col-span-2">
+                {/* Tactical stripe */}
+                <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+                <CardHeader>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">DISTRIBUIÇÃO TÁTICA</h3>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                    {(() => {
+                      const typeDistribution = [
+                        { type: 'basic', label: 'BÁSICO', color: 'blue', icon: '🔵' },
+                        { type: 'basic_reversed', label: 'INVERTIDO', color: 'green', icon: '🟢' },
+                        { type: 'cloze', label: 'LACUNAS', color: 'yellow', icon: '🟡' },
+                        { type: 'multiple_choice', label: 'MÚLTIPLA', color: 'purple', icon: '🟣' },
+                        { type: 'true_false', label: 'V/F', color: 'red', icon: '🔴' },
+                        { type: 'type_answer', label: 'DIGITE', color: 'indigo', icon: '🟦' },
+                        { type: 'image_occlusion', label: 'IMAGEM', color: 'orange', icon: '🟠' }
+                      ];
+                      
+                      return typeDistribution.map(item => {
+                        const count = flashcards.filter(card => card.type === item.type).length;
+                        const percentage = flashcards.length > 0 
+                          ? Math.round((count / flashcards.length) * 100)
+                          : 0;
+                        
+                        return (
+                          <div key={item.type} className="text-center">
+                            <div className={`p-3 bg-${item.color}-50 dark:bg-${item.color}-900/20 rounded-lg border border-${item.color}-200 dark:border-${item.color}-700`}>
+                              <div className="text-2xl mb-1">{item.icon}</div>
+                              <div className={`text-lg font-bold text-${item.color}-600 font-police-numbers`}>{count}</div>
+                              <div className={`text-xs text-${item.color}-600 dark:text-${item.color}-400 font-police-body uppercase`}>{item.label}</div>
+                              <div className={`text-xs text-${item.color}-500 font-police-numbers`}>{percentage}%</div>
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Desempenho por dificuldade */}
+              <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden lg:col-span-2">
+                {/* Tactical stripe */}
+                <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+                <CardHeader>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-wider">ANÁLISE DE DIFICULDADE</h3>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {(() => {
+                      const difficultyLevels = [
+                        { level: 'Fácil', color: 'green', min: 0, max: 33 },
+                        { level: 'Médio', color: 'yellow', min: 34, max: 66 },
+                        { level: 'Difícil', color: 'red', min: 67, max: 100 }
+                      ];
+                      
+                      return difficultyLevels.map((level, index) => {
+                        const cards = flashcards.filter(card => {
+                          const difficulty = 100 - (card.correct_rate || 50);
+                          return difficulty >= level.min && difficulty <= level.max;
+                        });
+                        
+                        const count = cards.length;
+                        const avgAccuracy = cards.length > 0
+                          ? Math.round(cards.reduce((sum, card) => sum + (card.correct_rate || 50), 0) / cards.length)
+                          : 0;
+                        
+                        return (
+                          <div key={level.level} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-3 h-3 rounded-full bg-${level.color}-500`} />
+                              <div>
+                                <span className="font-medium text-gray-900 dark:text-white font-police-body">{level.level}</span>
+                                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400 font-police-numbers">({count} cartões)</span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className={`text-sm font-semibold text-${level.color}-600 dark:text-${level.color}-400 font-police-numbers`}>
+                                {avgAccuracy}% acerto
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
                   </div>
                 </CardContent>
               </Card>
@@ -2376,49 +2565,167 @@ export default function FlashcardsPage() {
         )}
       </AnimatePresence>
 
-      {/* Call to Action */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="mt-12 bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black rounded-2xl p-8 text-white text-center border-2 border-accent-500/50 relative overflow-hidden"
-      >
-        {/* Tactical stripe */}
-        <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-        <Brain className="w-12 h-12 mx-auto mb-4 text-accent-500" />
-        <h2 className="text-2xl font-bold mb-2 font-police-title uppercase tracking-ultra-wide">
-          MAXIMIZE SUA MEMÓRIA COM SRS
-        </h2>
-        <p className="text-gray-300 mb-6 max-w-2xl mx-auto font-police-body">
-          O SISTEMA DE REPETIÇÃO ESPAÇADA OTIMIZA SEU TEMPO DE ESTUDO, MOSTRANDO OS CARTÕES NO MOMENTO IDEAL PARA FIXAÇÃO
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button 
-            size="lg" 
-            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
-            onClick={() => setActiveTab('create')}
+      {/* Call to Action - Mostrar apenas quando não há decks criados */}
+      {userDecks.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-12 bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black rounded-2xl p-8 text-white text-center border-2 border-accent-500/50 relative overflow-hidden"
+        >
+          {/* Tactical stripe */}
+          <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+          <Brain className="w-12 h-12 mx-auto mb-4 text-accent-500" />
+          <h2 className="text-2xl font-bold mb-2 font-police-title uppercase tracking-ultra-wide">
+            CRIE SEU PRIMEIRO ARSENAL
+          </h2>
+          <p className="text-gray-300 mb-6 max-w-2xl mx-auto font-police-body">
+            ORGANIZE SEUS CARTÕES EM ARSENAIS TEMÁTICOS PARA OTIMIZAR SEU ESTUDO
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button 
+              size="lg" 
+              className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider"
+              onClick={() => setActiveTab('create')}
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              CRIAR MEU PRIMEIRO ARSENAL
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Modal de Edição de Deck */}
+      <AnimatePresence>
+        {showEditModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowEditModal(false)}
           >
-            <Plus className="w-5 h-5 mr-2" />
-            CRIAR MEU ARSENAL
-          </Button>
-          <Button 
-            size="lg" 
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-police-body font-semibold uppercase tracking-wider border-2 border-blue-500"
-            onClick={() => setActiveTab('create-card')}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-police-title text-lg font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">
+                ✏️ EDITAR ARSENAL
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
+                    NOME DO ARSENAL
+                  </label>
+                  <input
+                    type="text"
+                    value={newDeckName}
+                    onChange={(e) => setNewDeckName(e.target.value)}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500"
+                    placeholder="Nome do arsenal..."
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
+                    DESCRIÇÃO
+                  </label>
+                  <textarea
+                    value={newDeckDescription}
+                    onChange={(e) => setNewDeckDescription(e.target.value)}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 min-h-[80px]"
+                    placeholder="Descrição do arsenal..."
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-police-subtitle uppercase tracking-wider">
+                    MATÉRIA
+                  </label>
+                  <input
+                    type="text"
+                    value={newDeckSubject}
+                    onChange={(e) => setNewDeckSubject(e.target.value)}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500"
+                    placeholder="Matéria..."
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <Button
+                  variant="outline"
+                  className="flex-1 font-police-body uppercase tracking-wider"
+                  onClick={() => setShowEditModal(false)}
+                >
+                  CANCELAR
+                </Button>
+                <Button
+                  className="flex-1 bg-accent-500 hover:bg-accent-600 text-black font-police-body uppercase tracking-wider"
+                  onClick={handleUpdateDeck}
+                >
+                  SALVAR
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Confirmação de Exclusão */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowDeleteModal(false)}
           >
-            <Zap className="w-5 h-5 mr-2" />
-            CRIAR CARTÃO TÁTICO
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="border-white text-white hover:bg-white hover:text-gray-900 font-police-body uppercase tracking-wider"
-            onClick={() => setActiveTab('overview')}
-          >
-            EXPLORAR ARSENAIS
-          </Button>
-        </div>
-      </motion.div>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-police-title text-lg font-bold text-red-600 mb-4 uppercase tracking-wider">
+                ⚠️ CONFIRMAR EXCLUSÃO
+              </h3>
+              
+              <p className="text-gray-700 dark:text-gray-300 mb-2 font-police-body">
+                Tem certeza que deseja excluir o arsenal:
+              </p>
+              <p className="font-bold text-gray-900 dark:text-white mb-4 font-police-subtitle">
+                "{deckToDelete?.name}"
+              </p>
+              <p className="text-sm text-red-600 dark:text-red-400 mb-6 font-police-body">
+                ⚠️ Esta ação não pode ser desfeita!
+              </p>
+              
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1 font-police-body uppercase tracking-wider"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  CANCELAR
+                </Button>
+                <Button
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white font-police-body uppercase tracking-wider"
+                  onClick={confirmDeleteDeck}
+                >
+                  EXCLUIR
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

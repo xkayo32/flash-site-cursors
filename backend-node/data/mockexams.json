@@ -8,9 +8,18 @@
     "duration": 240,
     "total_questions": 3,
     "filters": {
-      "subjects": ["Direito Constitucional", "Direito Administrativo", "Direito Penal"],
-      "exam_boards": ["CESPE"],
-      "years": [2023, 2024]
+      "subjects": [
+        "Direito Constitucional",
+        "Direito Administrativo",
+        "Direito Penal"
+      ],
+      "exam_boards": [
+        "CESPE"
+      ],
+      "years": [
+        2023,
+        2024
+      ]
     },
     "passing_score": 60,
     "max_attempts": 3,
@@ -146,7 +155,7 @@
     "title": "Simulado PRF - Policial Rodoviário 2024",
     "description": "Preparatório completo para concurso da Polícia Rodoviária Federal com questões atualizadas e foco nas disciplinas mais cobradas.",
     "type": "RANDOM",
-    "difficulty": "CABO",
+    "difficulty": "MIXED",
     "duration": 180,
     "total_questions": 80,
     "passing_score": 50,
@@ -155,7 +164,7 @@
     "created_by": "1",
     "created_at": "2024-02-01T00:00:00Z",
     "updated_at": "2024-02-01T00:00:00Z",
-    "total_attempts": 980,
+    "total_attempts": 981,
     "completed_attempts": 923,
     "average_score": 52.3,
     "pass_rate": 51.8
@@ -168,17 +177,22 @@
     "difficulty": "RECRUTA",
     "duration": 90,
     "total_questions": 30,
-    "questions": ["q1", "q2", "q3", "q4"],
+    "questions": [
+      "q1",
+      "q2",
+      "q3",
+      "q4"
+    ],
     "passing_score": 70,
     "max_attempts": 10,
     "status": "published",
     "created_by": "1",
     "created_at": "2024-02-15T00:00:00Z",
-    "updated_at": "2024-02-15T00:00:00Z",
+    "updated_at": "2025-08-14T23:20:51.084Z",
     "total_attempts": 650,
-    "completed_attempts": 612,
-    "average_score": 68.4,
-    "pass_rate": 73.5
+    "completed_attempts": 613,
+    "average_score": 50,
+    "pass_rate": 0
   },
   {
     "id": "me4",
@@ -189,9 +203,18 @@
     "duration": 180,
     "total_questions": 100,
     "filters": {
-      "subjects": ["Direito Constitucional", "Direito Administrativo", "Direito Penal"],
-      "exam_boards": ["VUNESP"],
-      "years": [2023, 2024]
+      "subjects": [
+        "Direito Constitucional",
+        "Direito Administrativo",
+        "Direito Penal"
+      ],
+      "exam_boards": [
+        "VUNESP"
+      ],
+      "years": [
+        2023,
+        2024
+      ]
     },
     "passing_score": 50,
     "max_attempts": 3,
@@ -231,7 +254,9 @@
     "difficulty": "SARGENTO",
     "duration": 150,
     "total_questions": 50,
-    "questions": ["q5"],
+    "questions": [
+      "q5"
+    ],
     "passing_score": 70,
     "max_attempts": 3,
     "status": "published",
@@ -252,9 +277,18 @@
     "duration": 210,
     "total_questions": 90,
     "filters": {
-      "subjects": ["Direito Constitucional", "Direito Administrativo"],
-      "exam_boards": ["CESPE", "FCC"],
-      "years": [2023, 2024]
+      "subjects": [
+        "Direito Constitucional",
+        "Direito Administrativo"
+      ],
+      "exam_boards": [
+        "CESPE",
+        "FCC"
+      ],
+      "years": [
+        2023,
+        2024
+      ]
     },
     "passing_score": 55,
     "max_attempts": 4,
@@ -271,11 +305,10 @@
     "id": "me8",
     "title": "Simulado Básico - Iniciantes",
     "description": "Simulado introdutório para quem está começando a estudar para concursos públicos.",
-    "type": "MANUAL",
-    "difficulty": "RECRUTA",
+    "type": "RANDOM",
+    "difficulty": "MIXED",
     "duration": 60,
     "total_questions": 20,
-    "questions": ["q1", "q2"],
     "passing_score": 50,
     "max_attempts": 10,
     "status": "published",
@@ -296,9 +329,18 @@
     "duration": 300,
     "total_questions": 150,
     "filters": {
-      "subjects": ["Direito Constitucional", "Direito Administrativo"],
-      "exam_boards": ["FCC", "CESPE"],
-      "years": [2023, 2024]
+      "subjects": [
+        "Direito Constitucional",
+        "Direito Administrativo"
+      ],
+      "exam_boards": [
+        "FCC",
+        "CESPE"
+      ],
+      "years": [
+        2023,
+        2024
+      ]
     },
     "passing_score": 65,
     "max_attempts": 2,
@@ -329,5 +371,24 @@
     "completed_attempts": 0,
     "average_score": 0,
     "pass_rate": 0
+  },
+  {
+    "id": "test1",
+    "title": "Teste Simples - 5 Questões",
+    "description": "Teste básico com apenas 5 questões para verificar funcionalidade.",
+    "type": "RANDOM",
+    "difficulty": "MIXED",
+    "duration": 30,
+    "total_questions": 5,
+    "passing_score": 60,
+    "max_attempts": 10,
+    "status": "published",
+    "created_by": "1",
+    "created_at": "2025-08-14T00:00:00Z",
+    "updated_at": "2025-08-14T17:19:51.229Z",
+    "total_attempts": 1,
+    "completed_attempts": 1,
+    "average_score": 60,
+    "pass_rate": 100
   }
 ]

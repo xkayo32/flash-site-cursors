@@ -151,6 +151,14 @@ export default function ExamTakingPage() {
   const totalQuestions = examSession.questions.length;
   const answeredQuestions = Object.keys(examSession.answers).length;
   const flaggedCount = examSession.flaggedQuestions.size;
+  
+  // Check if current question is answered
+  const currentQuestionId = currentQuestion?.id;
+  const isCurrentQuestionAnswered = currentQuestionId ? (
+    examSession.answers[currentQuestionId] !== undefined && 
+    examSession.answers[currentQuestionId] !== null && 
+    examSession.answers[currentQuestionId] !== ''
+  ) : false;
 
   // Submit exam function - defined early to be used in useEffect
   const handleSubmitExam = useCallback(async (autoSubmit = false) => {
@@ -614,6 +622,24 @@ export default function ExamTakingPage() {
                         Setas ← → para navegar • Ctrl + F para marcar questão
                       </p>
                     </div>
+
+                    {/* Answer Required Alert */}
+                    {!isCurrentQuestionAnswered && (
+                      <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 rounded-r-lg">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0">
+                            <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-sm text-amber-800 dark:text-amber-200 font-police-body uppercase tracking-wider">
+                              ⚠️ RESPOSTA OBRIGATÓRIA: Selecione uma opção para continuar
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
@@ -641,10 +667,18 @@ export default function ExamTakingPage() {
                 </div>
 
                 <Button
-                  variant="outline"
-                  onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
-                  disabled={currentQuestionIndex === totalQuestions - 1}
-                  className="gap-2 font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
+                  onClick={() => {
+                    if (isCurrentQuestionAnswered) {
+                      setCurrentQuestionIndex(prev => Math.min(totalQuestions - 1, prev + 1));
+                    }
+                  }}
+                  disabled={!isCurrentQuestionAnswered || currentQuestionIndex === totalQuestions - 1}
+                  className={`font-police-body uppercase tracking-wider transition-all duration-200 gap-2 ${
+                    isCurrentQuestionAnswered && currentQuestionIndex < totalQuestions - 1
+                      ? 'bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white cursor-pointer border-accent-500'
+                      : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50 border-gray-300 dark:border-gray-600'
+                  }`}
+                  title={!isCurrentQuestionAnswered ? 'Responda a questão antes de continuar' : ''}
                 >
                   PRÓXIMO
                   <ChevronRight className="w-4 h-4" />

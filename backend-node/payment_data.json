@@ -41,20 +41,6 @@
       "is_default": false,
       "created_at": "2025-08-13T03:13:31.888Z",
       "updated_at": "2025-08-13T03:13:31.888Z"
-    },
-    {
-      "id": "pm_1755054811923_t41qzwjg0",
-      "user_id": 2,
-      "type": "card",
-      "brand": "mastercard",
-      "last4": "5555",
-      "expiry_month": 8,
-      "expiry_year": 2027,
-      "holder_name": "João Silva",
-      "nickname": "CARTÃO DE RESERVA TÁTICA",
-      "is_default": false,
-      "created_at": "2025-08-13T03:13:31.923Z",
-      "updated_at": "2025-08-13T03:13:31.923Z"
     }
   ],
   "payment_history": [

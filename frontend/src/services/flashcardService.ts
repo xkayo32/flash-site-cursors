@@ -191,7 +191,17 @@ class FlashcardService {
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP ${response.status}`);
+      
+      // Handle specific error cases
+      if (response.status === 401) {
+        throw new Error('Não autorizado - Faça login novamente');
+      } else if (response.status === 403) {
+        throw new Error('Acesso negado');
+      } else if (response.status === 404) {
+        throw new Error('Recurso não encontrado');
+      }
+      
+      throw new Error(errorData.message || `Erro HTTP ${response.status}`);
     }
     return response.json();
   }

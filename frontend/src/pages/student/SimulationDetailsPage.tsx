@@ -101,7 +101,15 @@ export default function SimulationDetailsPage() {
       }
     } catch (err: any) {
       console.error('Erro ao iniciar simulado:', err);
-      setError(err.message || 'Erro ao iniciar simulado. Verifique sua conexão.');
+      
+      // Handle specific case where user has in-progress attempt
+      if (err.response?.status === 400 && err.response?.data?.data?.attempt_id) {
+        // User has in-progress attempt, redirect to continue it
+        const attemptId = err.response.data.data.attempt_id;
+        navigate(`/exam/${attemptId}`);
+      } else {
+        setError(err.response?.data?.message || err.message || 'Erro ao iniciar simulado. Verifique sua conexão.');
+      }
     } finally {
       setStartingExam(false);
     }

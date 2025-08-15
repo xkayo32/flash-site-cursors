@@ -372,6 +372,14 @@ export default function ExamAttemptPage() {
   const isLastQuestion = currentQuestionIndex === examData.questions.length - 1;
   const answeredCount = Object.keys(answers).length;
   const progress = (answeredCount / examData.questions.length) * 100;
+  
+  // Check if current question is answered
+  const currentQuestionId = currentQuestion?.id;
+  const isCurrentQuestionAnswered = currentQuestionId ? (
+    answers[currentQuestionId] !== undefined && 
+    answers[currentQuestionId] !== null && 
+    answers[currentQuestionId] !== ''
+  ) : false;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
@@ -459,6 +467,24 @@ export default function ExamAttemptPage() {
             <CardContent className="p-8">
               {renderQuestion(currentQuestion, currentQuestionIndex)}
               
+              {/* Answer Required Alert */}
+              {!isCurrentQuestionAnswered && (
+                <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 rounded-r-lg">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-amber-800 dark:text-amber-200 font-police-body uppercase tracking-wider">
+                        ⚠️ RESPOSTA OBRIGATÓRIA: Selecione uma opção para continuar
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Navigation */}
               <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <Button
@@ -482,8 +508,18 @@ export default function ExamAttemptPage() {
                     </Button>
                   ) : (
                     <Button
-                      onClick={() => setCurrentQuestionIndex(Math.min(examData.questions.length - 1, currentQuestionIndex + 1))}
-                      className="bg-accent-500 hover:bg-accent-600 text-black font-police-body uppercase tracking-wider"
+                      onClick={() => {
+                        if (isCurrentQuestionAnswered) {
+                          setCurrentQuestionIndex(Math.min(examData.questions.length - 1, currentQuestionIndex + 1));
+                        }
+                      }}
+                      disabled={!isCurrentQuestionAnswered}
+                      className={`font-police-body uppercase tracking-wider transition-all duration-200 ${
+                        isCurrentQuestionAnswered
+                          ? 'bg-accent-500 dark:bg-gray-100 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white cursor-pointer'
+                          : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50'
+                      }`}
+                      title={!isCurrentQuestionAnswered ? 'Responda a questão antes de continuar' : ''}
                     >
                       PRÓXIMA
                       <ChevronRight className="w-4 h-4 ml-2" />

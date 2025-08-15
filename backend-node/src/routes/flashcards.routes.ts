@@ -403,14 +403,9 @@ router.get('/', authMiddleware, (req: AuthRequest, res: Response): void => {
 // Get flashcard statistics and aggregations
 router.get('/stats', authMiddleware, (req: AuthRequest, res: Response): void => {
   try {
-    // Check if user is admin
-    if (req.user?.role !== 'admin') {
-      res.status(403).json({ 
-        success: false,
-        message: 'Acesso negado' 
-      });
-      return;
-    }
+    // Students can see basic stats, admins see detailed stats
+    const isAdmin = req.user?.role === 'admin';
+    const userId = req.user?.id;
 
     // Calculate statistics
     const total = flashcards.length;
@@ -450,21 +445,29 @@ router.get('/stats', authMiddleware, (req: AuthRequest, res: Response): void => 
       f.status === 'published' && new Date(f.next_review) <= new Date()
     ).length;
 
+    // Build response based on user role
+    const responseData: any = {
+      total_flashcards: published, // For students, only show published
+      average_correct_rate: avgCorrectRate,
+      due_for_review: dueForReview,
+      total_studies: totalStudies
+    };
+
+    // Add admin-specific data
+    if (isAdmin) {
+      responseData.total = total;
+      responseData.published = published;
+      responseData.draft = draft;
+      responseData.archived = archived;
+      responseData.byCategory = byCategory;
+      responseData.byDifficulty = byDifficulty;
+      responseData.byType = byType;
+      responseData.flashcardsWithStats = flashcardsWithStudies.length;
+    }
+
     res.json({
       success: true,
-      data: {
-        total,
-        published,
-        draft,
-        archived,
-        byCategory,
-        byDifficulty,
-        byType,
-        avgCorrectRate: Number(avgCorrectRate.toFixed(1)),
-        totalStudies,
-        flashcardsWithStats: flashcardsWithStudies.length,
-        dueForReview
-      }
+      data: responseData
     });
   } catch (error) {
     console.error('Error getting flashcard stats:', error);
