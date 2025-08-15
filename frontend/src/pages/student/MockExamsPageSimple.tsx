@@ -28,6 +28,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { mockExamService, type MockExam as MockExamAPI, type DifficultyLevel } from '@/services/mockExamService';
+import { examService } from '@/services/examService';
 
 interface MockExamDisplay {
   id: string;
@@ -350,24 +351,17 @@ export default function MockExamsPageSimple() {
                       onClick={async () => {
                         try {
                           setLoading(true);
-                          const response = await mockExamService.startExam(exam.id);
-                          if (response.success && response.data) {
-                            // Navigate to exam taking page with attempt ID
-                            navigate(`/exam/${response.data.attempt_id}`);
+                          // Use examService to start session instead of mockExamService
+                          const session = await examService.resumeOrStartSession(exam.id, 'mock');
+                          if (session) {
+                            // Navigate to exam taking page with correct route
+                            navigate(`/simulations/mock/${exam.id}/take`);
                           } else {
                             setError('Erro ao iniciar simulado. Tente novamente.');
                           }
                         } catch (err: any) {
                           console.error('Erro ao iniciar simulado:', err);
-                          
-                          // Handle specific case where user has in-progress attempt
-                          if (err.response?.status === 400 && err.response?.data?.data?.attempt_id) {
-                            // User has in-progress attempt, redirect to continue it
-                            const attemptId = err.response.data.data.attempt_id;
-                            navigate(`/exam/${attemptId}`);
-                          } else {
-                            setError(err.response?.data?.message || err.message || 'Erro ao iniciar simulado. Verifique sua conexão.');
-                          }
+                          setError(err.message || 'Erro ao iniciar simulado. Verifique sua conexão.');
                         } finally {
                           setLoading(false);
                         }
@@ -434,9 +428,11 @@ export default function MockExamsPageSimple() {
                         onClick={async () => {
                           try {
                             setLoading(true);
-                            const response = await mockExamService.startExam(exam.id);
-                            if (response.success && response.data) {
-                              navigate(`/exam/${response.data.attempt_id}`);
+                            // Use examService to start session instead of mockExamService
+                            const session = await examService.resumeOrStartSession(exam.id, 'mock');
+                            if (session) {
+                              // Navigate to exam taking page with correct route
+                              navigate(`/simulations/mock/${exam.id}/take`);
                             } else {
                               setError('Erro ao iniciar simulado. Tente novamente.');
                             }
@@ -586,9 +582,11 @@ export default function MockExamsPageSimple() {
                     if (activeExams.length > 0) {
                       const randomExam = activeExams[Math.floor(Math.random() * activeExams.length)];
                       setLoading(true);
-                      const response = await mockExamService.startExam(randomExam.id);
-                      if (response.success && response.data) {
-                        navigate(`/exam/${response.data.attempt_id}`);
+                      // Use examService to start session instead of mockExamService
+                      const session = await examService.resumeOrStartSession(randomExam.id, 'mock');
+                      if (session) {
+                        // Navigate to exam taking page with correct route
+                        navigate(`/simulations/mock/${randomExam.id}/take`);
                       } else {
                         setError('Erro ao iniciar simulado aleatório. Tente novamente.');
                       }
