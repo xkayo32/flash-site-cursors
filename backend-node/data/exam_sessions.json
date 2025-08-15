@@ -1,261 +1,150 @@
 [
   {
-    "id": "session_me1_undefined_1755032396673",
-    "examId": "me1",
-    "examType": "mock",
-    "title": "Simulado Polícia Federal - Agente 2024",
-    "questions": [
-      {
-        "id": "q1",
-        "number": 1,
-        "subject": "Direito Constitucional",
-        "statement": "Segundo a Constituição Federal de 1988, no que se refere aos direitos e garantias fundamentais, é correto afirmar que:",
-        "alternatives": [
-          {
-            "id": "a",
-            "letter": "A",
-            "text": "Os direitos fundamentais têm aplicação imediata, independentemente de regulamentação infraconstitucional."
-          },
-          {
-            "id": "b",
-            "letter": "B",
-            "text": "A casa é asilo inviolável do indivíduo, não podendo ninguém nela penetrar sem consentimento do morador, salvo em caso de flagrante delito ou desastre."
-          },
-          {
-            "id": "c",
-            "letter": "C",
-            "text": "É livre a manifestação do pensamento, sendo vedado o anonimato em qualquer circunstância."
-          },
-          {
-            "id": "d",
-            "letter": "D",
-            "text": "Todos são iguais perante a lei, sem distinção de qualquer natureza, garantindo-se aos brasileiros e aos estrangeiros residentes no País a inviolabilidade do direito à vida, à liberdade, à igualdade, à segurança e à propriedade."
-          },
-          {
-            "id": "e",
-            "letter": "E",
-            "text": "A liberdade de consciência e de crença é inviolável, mas o exercício dos cultos religiosos depende de autorização do Poder Público."
-          }
-        ],
-        "correctAnswer": "d",
-        "explanation": "A alternativa D está correta pois reproduz fielmente o caput do artigo 5º da Constituição Federal.",
-        "difficulty": "CABO",
-        "year": 2023,
-        "institution": "CESPE"
-      },
-      {
-        "id": "q2",
-        "number": 2,
-        "subject": "Direito Penal",
-        "statement": "João, funcionário público, solicitou e recebeu vantagem indevida de R$ 5.000,00 para acelerar um processo administrativo. Com base no Código Penal, analise as afirmativas:",
-        "alternatives": [
-          {
-            "id": "a",
-            "letter": "A",
-            "text": "João praticou crime de corrupção passiva, com pena de reclusão de 2 a 12 anos e multa."
-          },
-          {
-            "id": "b",
-            "letter": "B",
-            "text": "O crime consumou-se no momento em que João solicitou a vantagem, independentemente do recebimento."
-          },
-          {
-            "id": "c",
-            "letter": "C",
-            "text": "Configura-se concussão, pois houve exigência de vantagem indevida."
-          },
-          {
-            "id": "d",
-            "letter": "D",
-            "text": "Não há crime, pois o valor é inferior ao limite estabelecido pela jurisprudência."
-          },
-          {
-            "id": "e",
-            "letter": "E",
-            "text": "João deve responder por prevaricação, pois retardou ato de ofício."
-          }
-        ],
-        "correctAnswer": "a",
-        "explanation": "A resposta correta é A. Trata-se de corrupção passiva, prevista no art. 317 do CP, pois o funcionário solicitou e recebeu vantagem indevida.",
-        "difficulty": "SARGENTO",
-        "year": 2022,
-        "institution": "CESPE"
-      },
-      {
-        "id": "q3",
-        "number": 3,
-        "subject": "Informática",
-        "statement": "Em relação aos conceitos de segurança da informação, é correto afirmar que:",
-        "alternatives": [
-          {
-            "id": "a",
-            "letter": "A",
-            "text": "A criptografia simétrica utiliza chaves diferentes para cifrar e decifrar os dados."
-          },
-          {
-            "id": "b",
-            "letter": "B",
-            "text": "O protocolo HTTPS garante apenas a integridade dos dados transmitidos."
-          },
-          {
-            "id": "c",
-            "letter": "C",
-            "text": "Um firewall é capaz de detectar e bloquear todos os tipos de malware."
-          },
-          {
-            "id": "d",
-            "letter": "D",
-            "text": "A autenticação de dois fatores (2FA) aumenta significativamente a segurança do sistema."
-          },
-          {
-            "id": "e",
-            "letter": "E",
-            "text": "Backup incremental copia todos os arquivos do sistema a cada execução."
-          }
-        ],
-        "correctAnswer": "d",
-        "explanation": "A alternativa D está correta. A autenticação de dois fatores (2FA) adiciona uma camada extra de segurança ao processo de autenticação.",
-        "difficulty": "RECRUTA",
-        "year": 2023,
-        "institution": "CESPE"
-      }
-    ],
-    "answers": {},
-    "flaggedQuestions": [],
-    "startedAt": "2025-08-12T20:59:56.674Z",
-    "duration": 240,
-    "timeSpent": 0,
-    "totalQuestions": 3,
-    "status": "active"
-  },
-  {
-    "id": "session_me1_2_1755067861221",
-    "examId": "me1",
+    "id": "session_me11_2_1755227811566",
+    "examId": "me11",
     "examType": "mock",
     "userId": 2,
-    "title": "Simulado Polícia Federal - Agente 2024",
+    "title": "Operação Tática - Direito Penal Especial",
     "questions": [
       {
-        "id": "q1",
+        "id": "q_sample_10",
         "number": 1,
         "subject": "Direito Constitucional",
-        "statement": "Segundo a Constituição Federal de 1988, no que se refere aos direitos e garantias fundamentais, é correto afirmar que:",
+        "statement": "Questão de exemplo 10 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
         "alternatives": [
           {
             "id": "a",
             "letter": "A",
-            "text": "Os direitos fundamentais têm aplicação imediata, independentemente de regulamentação infraconstitucional."
+            "text": "Alternativa A para questão 10"
           },
           {
             "id": "b",
             "letter": "B",
-            "text": "A casa é asilo inviolável do indivíduo, não podendo ninguém nela penetrar sem consentimento do morador, salvo em caso de flagrante delito ou desastre."
+            "text": "Alternativa B para questão 10"
           },
           {
             "id": "c",
             "letter": "C",
-            "text": "É livre a manifestação do pensamento, sendo vedado o anonimato em qualquer circunstância."
+            "text": "Alternativa C para questão 10"
           },
           {
             "id": "d",
             "letter": "D",
-            "text": "Todos são iguais perante a lei, sem distinção de qualquer natureza, garantindo-se aos brasileiros e aos estrangeiros residentes no País a inviolabilidade do direito à vida, à liberdade, à igualdade, à segurança e à propriedade."
-          },
-          {
-            "id": "e",
-            "letter": "E",
-            "text": "A liberdade de consciência e de crença é inviolável, mas o exercício dos cultos religiosos depende de autorização do Poder Público."
+            "text": "Alternativa D para questão 10"
           }
         ],
-        "correctAnswer": "d",
-        "explanation": "A alternativa D está correta pois reproduz fielmente o caput do artigo 5º da Constituição Federal.",
-        "difficulty": "CABO",
-        "year": 2023,
-        "institution": "CESPE"
-      },
-      {
-        "id": "q2",
-        "number": 2,
-        "subject": "Direito Penal",
-        "statement": "João, funcionário público, solicitou e recebeu vantagem indevida de R$ 5.000,00 para acelerar um processo administrativo. Com base no Código Penal, analise as afirmativas:",
-        "alternatives": [
-          {
-            "id": "a",
-            "letter": "A",
-            "text": "João praticou crime de corrupção passiva, com pena de reclusão de 2 a 12 anos e multa."
-          },
-          {
-            "id": "b",
-            "letter": "B",
-            "text": "O crime consumou-se no momento em que João solicitou a vantagem, independentemente do recebimento."
-          },
-          {
-            "id": "c",
-            "letter": "C",
-            "text": "Configura-se concussão, pois houve exigência de vantagem indevida."
-          },
-          {
-            "id": "d",
-            "letter": "D",
-            "text": "Não há crime, pois o valor é inferior ao limite estabelecido pela jurisprudência."
-          },
-          {
-            "id": "e",
-            "letter": "E",
-            "text": "João deve responder por prevaricação, pois retardou ato de ofício."
-          }
-        ],
-        "correctAnswer": "a",
-        "explanation": "A resposta correta é A. Trata-se de corrupção passiva, prevista no art. 317 do CP, pois o funcionário solicitou e recebeu vantagem indevida.",
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 10. Resposta correta baseada nos conceitos de Direito Constitucional.",
         "difficulty": "SARGENTO",
-        "year": 2022,
+        "year": 2024,
         "institution": "CESPE"
       },
       {
-        "id": "q3",
-        "number": 3,
-        "subject": "Informática",
-        "statement": "Em relação aos conceitos de segurança da informação, é correto afirmar que:",
+        "id": "q_sample_71",
+        "number": 2,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 71 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
         "alternatives": [
           {
             "id": "a",
             "letter": "A",
-            "text": "A criptografia simétrica utiliza chaves diferentes para cifrar e decifrar os dados."
+            "text": "Alternativa A para questão 71"
           },
           {
             "id": "b",
             "letter": "B",
-            "text": "O protocolo HTTPS garante apenas a integridade dos dados transmitidos."
+            "text": "Alternativa B para questão 71"
           },
           {
             "id": "c",
             "letter": "C",
-            "text": "Um firewall é capaz de detectar e bloquear todos os tipos de malware."
+            "text": "Alternativa C para questão 71"
           },
           {
             "id": "d",
             "letter": "D",
-            "text": "A autenticação de dois fatores (2FA) aumenta significativamente a segurança do sistema."
-          },
-          {
-            "id": "e",
-            "letter": "E",
-            "text": "Backup incremental copia todos os arquivos do sistema a cada execução."
+            "text": "Alternativa D para questão 71"
           }
         ],
         "correctAnswer": "d",
-        "explanation": "A alternativa D está correta. A autenticação de dois fatores (2FA) adiciona uma camada extra de segurança ao processo de autenticação.",
-        "difficulty": "RECRUTA",
-        "year": 2023,
+        "explanation": "Esta é a explicação da questão 71. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_74",
+        "number": 3,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 74 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 74"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 74"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 74"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 74"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 74. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_19",
+        "number": 4,
+        "subject": "Direito Administrativo",
+        "statement": "Questão de exemplo 19 sobre Direito Administrativo. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 19"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 19"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 19"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 19"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 19. Resposta correta baseada nos conceitos de Direito Administrativo.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
         "institution": "CESPE"
       }
     ],
     "answers": {},
     "flaggedQuestions": [],
-    "startedAt": "2025-08-13T06:51:01.221Z",
-    "duration": 240,
+    "startedAt": "2025-08-15T03:16:51.566Z",
+    "duration": 120,
     "timeSpent": 0,
-    "totalQuestions": 3,
+    "totalQuestions": 4,
     "status": "active"
   }
 ]

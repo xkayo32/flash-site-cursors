@@ -66,6 +66,10 @@ export default function ExamTakingPage() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showWarningDialog, setShowWarningDialog] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [showReviewMode, setShowReviewMode] = useState(false);
+  const [questionTimes, setQuestionTimes] = useState<Record<string, number>>({});
+  const [currentQuestionStartTime, setCurrentQuestionStartTime] = useState<number>(Date.now());
 
   // Initialize exam session
   useEffect(() => {
@@ -206,6 +210,24 @@ export default function ExamTakingPage() {
     return () => clearInterval(timer);
   }, [examSession.isPaused, examSession.timeRemaining, handleSubmitExam]);
 
+  // Track time spent on each question
+  useEffect(() => {
+    if (!examSession) return;
+    
+    // Save time for previous question when changing
+    const previousQuestionId = examSession.questions[currentQuestionIndex - 1]?.id;
+    if (previousQuestionId && currentQuestionStartTime) {
+      const timeSpent = Math.floor((Date.now() - currentQuestionStartTime) / 1000);
+      setQuestionTimes(prev => ({
+        ...prev,
+        [previousQuestionId]: (prev[previousQuestionId] || 0) + timeSpent
+      }));
+    }
+    
+    // Reset timer for current question
+    setCurrentQuestionStartTime(Date.now());
+  }, [currentQuestionIndex, examSession]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -222,12 +244,18 @@ export default function ExamTakingPage() {
       } else if (e.ctrlKey && e.key === 'f') {
         e.preventDefault();
         handleToggleFlag();
+      } else if (e.ctrlKey && e.key === 'c') {
+        e.preventDefault();
+        setShowCalculator(!showCalculator);
+      } else if (e.ctrlKey && e.key === 'r') {
+        e.preventDefault();
+        setShowReviewMode(!showReviewMode);
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentQuestionIndex, totalQuestions, currentQuestion]);
+  }, [currentQuestionIndex, totalQuestions, currentQuestion, showCalculator, showReviewMode]);
 
   // Fullscreen handling
   useEffect(() => {
@@ -415,6 +443,34 @@ export default function ExamTakingPage() {
               >
                 {examSession.isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
                 {examSession.isPaused ? 'RETOMAR' : 'PAUSAR'}
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowReviewMode(!showReviewMode)}
+                className={cn(
+                  "gap-1 font-police-body uppercase tracking-wider hover:text-accent-500",
+                  showReviewMode && "text-accent-500 bg-accent-500/10"
+                )}
+                title="Ctrl+R"
+              >
+                {showReviewMode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                REVISÃO
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCalculator(!showCalculator)}
+                className={cn(
+                  "gap-1 font-police-body uppercase tracking-wider hover:text-accent-500",
+                  showCalculator && "text-accent-500 bg-accent-500/10"
+                )}
+                title="Ctrl+C"
+              >
+                📱
+                CALC
               </Button>
 
               <Button
@@ -788,6 +844,189 @@ export default function ExamTakingPage() {
                 </div>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Calculadora */}
+      <AnimatePresence>
+        {showCalculator && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed top-20 right-4 z-50"
+          >
+            <Card className="w-64 bg-white dark:bg-gray-900 border-2 border-accent-500/50 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-police-title text-sm uppercase tracking-wider">CALCULADORA TÁTICA</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowCalculator(false)}
+                    className="h-6 w-6 p-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    readOnly
+                    className="w-full p-2 text-right bg-gray-100 dark:bg-gray-800 rounded border font-mono text-lg"
+                    id="calc-display"
+                    defaultValue="0"
+                  />
+                  
+                  <div className="grid grid-cols-4 gap-1">
+                    {['C', '±', '%', '÷',
+                      '7', '8', '9', '×',
+                      '4', '5', '6', '-',
+                      '1', '2', '3', '+',
+                      '0', '.', '='].map((btn, i) => (
+                      <Button
+                        key={i}
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          "h-10 font-mono",
+                          btn === '0' && "col-span-2",
+                          ['÷', '×', '-', '+', '='].includes(btn) && "bg-accent-500 text-black hover:bg-accent-600"
+                        )}
+                        onClick={() => {
+                          const display = document.getElementById('calc-display') as HTMLInputElement;
+                          if (btn === 'C') {
+                            display.value = '0';
+                          } else if (btn === '=') {
+                            try {
+                              const result = eval(display.value.replace('×', '*').replace('÷', '/'));
+                              display.value = result.toString();
+                            } catch {
+                              display.value = 'Erro';
+                            }
+                          } else {
+                            if (display.value === '0' && !['+', '-', '×', '÷', '.'].includes(btn)) {
+                              display.value = btn;
+                            } else {
+                              display.value += btn;
+                            }
+                          }
+                        }}
+                      >
+                        {btn}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modo Revisão - Painel de Respostas */}
+      <AnimatePresence>
+        {showReviewMode && (
+          <motion.div
+            initial={{ opacity: 0, x: -300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -300 }}
+            className="fixed left-4 top-20 bottom-4 w-80 z-40"
+          >
+            <Card className="h-full bg-white dark:bg-gray-900 border-2 border-accent-500/50 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
+              
+              <CardContent className="p-4 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-police-title text-sm uppercase tracking-wider">REVISÃO TÁTICA</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowReviewMode(false)}
+                    className="h-6 w-6 p-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {/* Estatísticas Rápidas */}
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
+                    <div className="text-lg font-bold text-green-600 font-police-numbers">
+                      {Object.keys(examSession.answers).length}
+                    </div>
+                    <div className="text-xs text-green-600 font-police-body">RESPONDIDAS</div>
+                  </div>
+                  <div className="text-center p-2 bg-red-50 dark:bg-red-900/20 rounded">
+                    <div className="text-lg font-bold text-red-600 font-police-numbers">
+                      {examSession.flaggedQuestions.size}
+                    </div>
+                    <div className="text-xs text-red-600 font-police-body">MARCADAS</div>
+                  </div>
+                  <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                    <div className="text-lg font-bold text-gray-600 font-police-numbers">
+                      {examSession.questions.length - Object.keys(examSession.answers).length}
+                    </div>
+                    <div className="text-xs text-gray-600 font-police-body">PENDENTES</div>
+                  </div>
+                </div>
+
+                {/* Lista de Questões com Tempos */}
+                <div className="flex-1 overflow-y-auto">
+                  <h4 className="text-xs font-police-subtitle uppercase tracking-wider mb-2 text-gray-600 dark:text-gray-400">
+                    TEMPOS POR QUESTÃO
+                  </h4>
+                  <div className="space-y-1">
+                    {examSession.questions.map((question, index) => {
+                      const time = questionTimes[question.id] || 0;
+                      const isAnswered = examSession.answers[question.id];
+                      const isFlagged = examSession.flaggedQuestions.has(question.id);
+                      const isCurrent = index === currentQuestionIndex;
+                      
+                      return (
+                        <div
+                          key={question.id}
+                          className={cn(
+                            "flex items-center justify-between p-2 rounded cursor-pointer transition-colors",
+                            isCurrent && "bg-accent-500/20 border border-accent-500",
+                            !isCurrent && "hover:bg-gray-100 dark:hover:bg-gray-800"
+                          )}
+                          onClick={() => setCurrentQuestionIndex(index)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-police-numbers">
+                              {question.number}
+                            </span>
+                            <div className="flex gap-1">
+                              {isAnswered && <div className="w-2 h-2 bg-green-500 rounded-full" />}
+                              {isFlagged && <div className="w-2 h-2 bg-red-500 rounded-full" />}
+                            </div>
+                          </div>
+                          <div className="text-xs font-police-numbers text-gray-600 dark:text-gray-400">
+                            {Math.floor(time / 60)}:{(time % 60).toString().padStart(2, '0')}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Dicas de Atalhos */}
+                <div className="mt-4 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs">
+                  <div className="font-police-subtitle uppercase tracking-wider mb-1">ATALHOS:</div>
+                  <div className="space-y-1 text-gray-600 dark:text-gray-400 font-police-body">
+                    <div>Alt+1-5: Marcar alternativa</div>
+                    <div>Ctrl+F: Marcar questão</div>
+                    <div>Ctrl+C: Calculadora</div>
+                    <div>Ctrl+R: Modo revisão</div>
+                    <div>← →: Navegar questões</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
       </AnimatePresence>

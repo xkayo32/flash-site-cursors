@@ -6,7 +6,7 @@
     "type": "AUTOMATIC",
     "difficulty": "SARGENTO",
     "duration": 240,
-    "total_questions": 3,
+    "total_questions": 5,
     "filters": {
       "subjects": [
         "Direito Constitucional",
@@ -14,156 +14,57 @@
         "Direito Penal"
       ],
       "exam_boards": [
-        "CESPE"
+        "CESPE",
+        "FCC"
       ],
       "years": [
         2023,
         2024
-      ]
+      ],
+      "difficulty": ["medium", "hard"]
     },
     "passing_score": 60,
     "max_attempts": 3,
     "available_from": "2024-01-01T00:00:00Z",
-    "available_until": "2024-12-31T23:59:59Z",
+    "available_until": "2025-12-31T23:59:59Z",
     "status": "published",
     "created_by": "1",
     "created_at": "2024-01-15T00:00:00Z",
-    "updated_at": "2024-01-15T00:00:00Z",
+    "updated_at": "2025-08-15T00:00:00Z",
     "total_attempts": 1250,
     "completed_attempts": 1180,
     "average_score": 58.5,
-    "pass_rate": 42.3,
-    "questions": [
-      {
-        "id": "q1",
-        "number": 1,
-        "subject": "Direito Constitucional",
-        "statement": "Segundo a Constituição Federal de 1988, no que se refere aos direitos e garantias fundamentais, é correto afirmar que:",
-        "alternatives": [
-          {
-            "id": "a",
-            "letter": "A",
-            "text": "Os direitos fundamentais têm aplicação imediata, independentemente de regulamentação infraconstitucional."
-          },
-          {
-            "id": "b",
-            "letter": "B",
-            "text": "A casa é asilo inviolável do indivíduo, não podendo ninguém nela penetrar sem consentimento do morador, salvo em caso de flagrante delito ou desastre."
-          },
-          {
-            "id": "c",
-            "letter": "C",
-            "text": "É livre a manifestação do pensamento, sendo vedado o anonimato em qualquer circunstância."
-          },
-          {
-            "id": "d",
-            "letter": "D",
-            "text": "Todos são iguais perante a lei, sem distinção de qualquer natureza, garantindo-se aos brasileiros e aos estrangeiros residentes no País a inviolabilidade do direito à vida, à liberdade, à igualdade, à segurança e à propriedade."
-          },
-          {
-            "id": "e",
-            "letter": "E",
-            "text": "A liberdade de consciência e de crença é inviolável, mas o exercício dos cultos religiosos depende de autorização do Poder Público."
-          }
-        ],
-        "correctAnswer": "d",
-        "explanation": "A alternativa D está correta pois reproduz fielmente o caput do artigo 5º da Constituição Federal.",
-        "difficulty": "CABO",
-        "year": 2023,
-        "institution": "CESPE"
-      },
-      {
-        "id": "q2",
-        "number": 2,
-        "subject": "Direito Penal",
-        "statement": "João, funcionário público, solicitou e recebeu vantagem indevida de R$ 5.000,00 para acelerar um processo administrativo. Com base no Código Penal, analise as afirmativas:",
-        "alternatives": [
-          {
-            "id": "a",
-            "letter": "A",
-            "text": "João praticou crime de corrupção passiva, com pena de reclusão de 2 a 12 anos e multa."
-          },
-          {
-            "id": "b",
-            "letter": "B",
-            "text": "O crime consumou-se no momento em que João solicitou a vantagem, independentemente do recebimento."
-          },
-          {
-            "id": "c",
-            "letter": "C",
-            "text": "Configura-se concussão, pois houve exigência de vantagem indevida."
-          },
-          {
-            "id": "d",
-            "letter": "D",
-            "text": "Não há crime, pois o valor é inferior ao limite estabelecido pela jurisprudência."
-          },
-          {
-            "id": "e",
-            "letter": "E",
-            "text": "João deve responder por prevaricação, pois retardou ato de ofício."
-          }
-        ],
-        "correctAnswer": "a",
-        "explanation": "A resposta correta é A. Trata-se de corrupção passiva, prevista no art. 317 do CP, pois o funcionário solicitou e recebeu vantagem indevida.",
-        "difficulty": "SARGENTO",
-        "year": 2022,
-        "institution": "CESPE"
-      },
-      {
-        "id": "q3",
-        "number": 3,
-        "subject": "Informática",
-        "statement": "Em relação aos conceitos de segurança da informação, é correto afirmar que:",
-        "alternatives": [
-          {
-            "id": "a",
-            "letter": "A",
-            "text": "A criptografia simétrica utiliza chaves diferentes para cifrar e decifrar os dados."
-          },
-          {
-            "id": "b",
-            "letter": "B",
-            "text": "O protocolo HTTPS garante apenas a integridade dos dados transmitidos."
-          },
-          {
-            "id": "c",
-            "letter": "C",
-            "text": "Um firewall é capaz de detectar e bloquear todos os tipos de malware."
-          },
-          {
-            "id": "d",
-            "letter": "D",
-            "text": "A autenticação de dois fatores (2FA) aumenta significativamente a segurança do sistema."
-          },
-          {
-            "id": "e",
-            "letter": "E",
-            "text": "Backup incremental copia todos os arquivos do sistema a cada execução."
-          }
-        ],
-        "correctAnswer": "d",
-        "explanation": "A alternativa D está correta. A autenticação de dois fatores (2FA) adiciona uma camada extra de segurança ao processo de autenticação.",
-        "difficulty": "RECRUTA",
-        "year": 2023,
-        "institution": "CESPE"
-      }
-    ]
+    "pass_rate": 42.3
   },
   {
     "id": "me2",
     "title": "Simulado PRF - Policial Rodoviário 2024",
     "description": "Preparatório completo para concurso da Polícia Rodoviária Federal com questões atualizadas e foco nas disciplinas mais cobradas.",
-    "type": "RANDOM",
+    "type": "AUTOMATIC",
     "difficulty": "MIXED",
     "duration": 180,
-    "total_questions": 80,
+    "total_questions": 4,
+    "filters": {
+      "subjects": [
+        "Direito Constitucional",
+        "Direito Administrativo"
+      ],
+      "exam_boards": [
+        "CESPE",
+        "VUNESP"
+      ],
+      "years": [
+        2023,
+        2024
+      ],
+      "difficulty": ["easy", "medium", "hard"]
+    },
     "passing_score": 50,
     "max_attempts": 5,
     "status": "published",
     "created_by": "1",
     "created_at": "2024-02-01T00:00:00Z",
-    "updated_at": "2024-02-01T00:00:00Z",
+    "updated_at": "2025-08-15T00:00:00Z",
     "total_attempts": 981,
     "completed_attempts": 923,
     "average_score": 52.3,
@@ -173,26 +74,34 @@
     "id": "me3",
     "title": "Simulado Direito Constitucional - Básico",
     "description": "Simulado focado em princípios fundamentais da Constituição Federal, ideal para iniciantes na área jurídica.",
-    "type": "MANUAL",
+    "type": "AUTOMATIC",
     "difficulty": "RECRUTA",
     "duration": 90,
-    "total_questions": 30,
-    "questions": [
-      "q1",
-      "q2",
-      "q3",
-      "q4"
-    ],
+    "total_questions": 3,
+    "filters": {
+      "subjects": [
+        "Direito Constitucional"
+      ],
+      "exam_boards": [
+        "CESPE",
+        "FCC"
+      ],
+      "years": [
+        2023,
+        2024
+      ],
+      "difficulty": ["easy"]
+    },
     "passing_score": 70,
     "max_attempts": 10,
     "status": "published",
     "created_by": "1",
     "created_at": "2024-02-15T00:00:00Z",
-    "updated_at": "2025-08-14T23:20:51.084Z",
+    "updated_at": "2025-08-15T00:00:00Z",
     "total_attempts": 650,
     "completed_attempts": 613,
-    "average_score": 50,
-    "pass_rate": 0
+    "average_score": 68.2,
+    "pass_rate": 74.5
   },
   {
     "id": "me4",
@@ -201,27 +110,28 @@
     "type": "AUTOMATIC",
     "difficulty": "CABO",
     "duration": 180,
-    "total_questions": 100,
+    "total_questions": 4,
     "filters": {
       "subjects": [
         "Direito Constitucional",
-        "Direito Administrativo",
-        "Direito Penal"
+        "Direito Administrativo"
       ],
       "exam_boards": [
-        "VUNESP"
+        "VUNESP",
+        "FGV"
       ],
       "years": [
         2023,
         2024
-      ]
+      ],
+      "difficulty": ["medium", "hard"]
     },
     "passing_score": 50,
     "max_attempts": 3,
     "status": "published",
     "created_by": "1",
     "created_at": "2024-01-05T00:00:00Z",
-    "updated_at": "2024-01-05T00:00:00Z",
+    "updated_at": "2025-08-15T00:00:00Z",
     "total_attempts": 650,
     "completed_attempts": 598,
     "average_score": 61.2,
@@ -231,16 +141,31 @@
     "id": "me5",
     "title": "Simulado Polícia Militar - Soldado",
     "description": "Preparatório para concurso de Soldado da Polícia Militar com questões de conhecimentos gerais e específicos.",
-    "type": "RANDOM",
+    "type": "AUTOMATIC",
     "difficulty": "RECRUTA",
     "duration": 120,
-    "total_questions": 60,
+    "total_questions": 4,
+    "filters": {
+      "subjects": [
+        "Direito Constitucional",
+        "Direito Administrativo"
+      ],
+      "exam_boards": [
+        "VUNESP",
+        "FGV"
+      ],
+      "years": [
+        2023,
+        2024
+      ],
+      "difficulty": ["easy", "medium"]
+    },
     "passing_score": 60,
     "max_attempts": 5,
     "status": "published",
     "created_by": "1",
     "created_at": "2024-03-01T00:00:00Z",
-    "updated_at": "2024-03-01T00:00:00Z",
+    "updated_at": "2025-08-15T00:00:00Z",
     "total_attempts": 430,
     "completed_attempts": 405,
     "average_score": 65.7,
@@ -250,23 +175,34 @@
     "id": "me6",
     "title": "Simulado Direito Administrativo Avançado",
     "description": "Simulado avançado focado em Direito Administrativo para concursos de nível superior.",
-    "type": "MANUAL",
+    "type": "AUTOMATIC",
     "difficulty": "SARGENTO",
     "duration": 150,
-    "total_questions": 50,
-    "questions": [
-      "q5"
-    ],
+    "total_questions": 3,
+    "filters": {
+      "subjects": [
+        "Direito Administrativo"
+      ],
+      "exam_boards": [
+        "CESPE",
+        "FGV"
+      ],
+      "years": [
+        2023,
+        2024
+      ],
+      "difficulty": ["hard"]
+    },
     "passing_score": 70,
     "max_attempts": 3,
     "status": "published",
     "created_by": "1",
     "created_at": "2024-03-10T00:00:00Z",
-    "updated_at": "2024-03-10T00:00:00Z",
+    "updated_at": "2025-08-15T00:00:00Z",
     "total_attempts": 280,
     "completed_attempts": 245,
-    "average_score": 59.8,
-    "pass_rate": 38.2
+    "average_score": 71.8,
+    "pass_rate": 78.2
   },
   {
     "id": "me7",
@@ -275,7 +211,7 @@
     "type": "AUTOMATIC",
     "difficulty": "CABO",
     "duration": 210,
-    "total_questions": 90,
+    "total_questions": 5,
     "filters": {
       "subjects": [
         "Direito Constitucional",
@@ -288,14 +224,15 @@
       "years": [
         2023,
         2024
-      ]
+      ],
+      "difficulty": ["medium"]
     },
     "passing_score": 55,
     "max_attempts": 4,
     "status": "published",
     "created_by": "1",
     "created_at": "2024-03-20T00:00:00Z",
-    "updated_at": "2024-03-20T00:00:00Z",
+    "updated_at": "2025-08-15T00:00:00Z",
     "total_attempts": 520,
     "completed_attempts": 478,
     "average_score": 62.3,
@@ -305,16 +242,31 @@
     "id": "me8",
     "title": "Simulado Básico - Iniciantes",
     "description": "Simulado introdutório para quem está começando a estudar para concursos públicos.",
-    "type": "RANDOM",
+    "type": "AUTOMATIC",
     "difficulty": "MIXED",
     "duration": 60,
-    "total_questions": 20,
+    "total_questions": 3,
+    "filters": {
+      "subjects": [
+        "Direito Constitucional"
+      ],
+      "exam_boards": [
+        "CESPE",
+        "FCC",
+        "VUNESP"
+      ],
+      "years": [
+        2023,
+        2024
+      ],
+      "difficulty": ["easy"]
+    },
     "passing_score": 50,
     "max_attempts": 10,
     "status": "published",
     "created_by": "1",
     "created_at": "2024-04-01T00:00:00Z",
-    "updated_at": "2024-04-01T00:00:00Z",
+    "updated_at": "2025-08-15T00:00:00Z",
     "total_attempts": 890,
     "completed_attempts": 856,
     "average_score": 74.5,
@@ -376,19 +328,161 @@
     "id": "test1",
     "title": "Teste Simples - 5 Questões",
     "description": "Teste básico com apenas 5 questões para verificar funcionalidade.",
-    "type": "RANDOM",
+    "type": "AUTOMATIC",
     "difficulty": "MIXED",
     "duration": 30,
-    "total_questions": 5,
+    "total_questions": 3,
+    "filters": {
+      "subjects": [
+        "Direito Constitucional"
+      ],
+      "difficulty": ["easy", "medium"]
+    },
     "passing_score": 60,
     "max_attempts": 10,
     "status": "published",
     "created_by": "1",
     "created_at": "2025-08-14T00:00:00Z",
-    "updated_at": "2025-08-14T17:19:51.229Z",
+    "updated_at": "2025-08-15T00:00:00Z",
     "total_attempts": 1,
     "completed_attempts": 1,
-    "average_score": 60,
+    "average_score": 67,
     "pass_rate": 100
+  },
+  {
+    "id": "me11",
+    "title": "Operação Tática - Direito Penal Especial",
+    "description": "Missão especializada focada em crimes contra a Administração Pública e Lei de Drogas. Ideal para agentes de segurança.",
+    "type": "AUTOMATIC",
+    "difficulty": "SARGENTO",
+    "duration": 120,
+    "total_questions": 4,
+    "filters": {
+      "subjects": [
+        "Direito Constitucional",
+        "Direito Administrativo"
+      ],
+      "exam_boards": [
+        "CESPE",
+        "FGV"
+      ],
+      "years": [
+        2023,
+        2024
+      ],
+      "difficulty": ["hard"]
+    },
+    "passing_score": 70,
+    "max_attempts": 2,
+    "status": "published",
+    "created_by": "1",
+    "created_at": "2025-08-15T00:00:00Z",
+    "updated_at": "2025-08-15T00:00:00Z",
+    "total_attempts": 0,
+    "completed_attempts": 0,
+    "average_score": 0,
+    "pass_rate": 0
+  },
+  {
+    "id": "me12",
+    "title": "Arsenal de Conhecimento - Questões Mistas",
+    "description": "Batalha intelectual com questões de todas as dificuldades. Teste sua resistência tática em diversos temas jurídicos.",
+    "type": "AUTOMATIC",
+    "difficulty": "MIXED",
+    "duration": 90,
+    "total_questions": 5,
+    "filters": {
+      "subjects": [
+        "Direito Constitucional",
+        "Direito Administrativo"
+      ],
+      "exam_boards": [
+        "CESPE",
+        "FCC",
+        "VUNESP",
+        "FGV"
+      ],
+      "years": [
+        2023,
+        2024
+      ],
+      "difficulty": ["easy", "medium", "hard"]
+    },
+    "passing_score": 60,
+    "max_attempts": 5,
+    "status": "published",
+    "created_by": "1",
+    "created_at": "2025-08-15T00:00:00Z",
+    "updated_at": "2025-08-15T00:00:00Z",
+    "total_attempts": 0,
+    "completed_attempts": 0,
+    "average_score": 0,
+    "pass_rate": 0
+  },
+  {
+    "id": "me13",
+    "title": "Treinamento Recruta - Fundamentos",
+    "description": "Operação de formação básica para novos operadores. Foco em conceitos fundamentais e princípios essenciais.",
+    "type": "AUTOMATIC",
+    "difficulty": "RECRUTA",
+    "duration": 45,
+    "total_questions": 3,
+    "filters": {
+      "subjects": [
+        "Direito Constitucional"
+      ],
+      "exam_boards": [
+        "CESPE",
+        "FCC"
+      ],
+      "years": [
+        2023,
+        2024
+      ],
+      "difficulty": ["easy"]
+    },
+    "passing_score": 70,
+    "max_attempts": 10,
+    "status": "published",
+    "created_by": "1",
+    "created_at": "2025-08-15T00:00:00Z",
+    "updated_at": "2025-08-15T00:00:00Z",
+    "total_attempts": 0,
+    "completed_attempts": 0,
+    "average_score": 0,
+    "pass_rate": 0
+  },
+  {
+    "id": "me14",
+    "title": "Missão Elite - Direito Constitucional Avançado",
+    "description": "Operação de alta complexidade reservada para operadores experientes. Questões de nível superior com análise aprofundada.",
+    "type": "AUTOMATIC",
+    "difficulty": "SARGENTO",
+    "duration": 150,
+    "total_questions": 4,
+    "filters": {
+      "subjects": [
+        "Direito Constitucional"
+      ],
+      "exam_boards": [
+        "CESPE",
+        "FGV"
+      ],
+      "years": [
+        2023,
+        2024
+      ],
+      "difficulty": ["hard"]
+    },
+    "passing_score": 75,
+    "max_attempts": 2,
+    "status": "published",
+    "created_by": "1",
+    "created_at": "2025-08-15T00:00:00Z",
+    "updated_at": "2025-08-15T00:00:00Z",
+    "total_attempts": 0,
+    "completed_attempts": 0,
+    "average_score": 0,
+    "pass_rate": 0
   }
 ]

@@ -2,6 +2,7 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { Question as QuestionType } from './questions.routes';
 
 const router = express.Router();
 
@@ -111,6 +112,154 @@ const loadExamData = (examId: string, examType: 'mock' | 'previous'): any => {
   }
 };
 
+const loadQuestions = (): QuestionType[] => {
+  try {
+    const questionsPath = path.join(__dirname, '../../data/questions.json');
+    if (fs.existsSync(questionsPath)) {
+      const data = fs.readFileSync(questionsPath, 'utf8');
+      return JSON.parse(data);
+    }
+    return [];
+  } catch (error) {
+    console.error('Error loading questions:', error);
+    return [];
+  }
+};
+
+const generateExamQuestions = (examData: any): Question[] => {
+  const allQuestions = loadQuestions();
+  
+  // Se o exame tem questões hardcoded, use elas (backward compatibility)
+  if (examData.questions && Array.isArray(examData.questions) && examData.questions.length > 0) {
+    // Se tem questões completas (objetos), use elas
+    if (typeof examData.questions[0] === 'object' && examData.questions[0].statement) {
+      return examData.questions.map((q: any, index: number) => ({
+        id: q.id,
+        number: index + 1,
+        subject: q.subject,
+        statement: q.statement,
+        alternatives: q.alternatives,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        difficulty: mapDifficultyToExam(q.difficulty),
+        year: q.year,
+        institution: q.institution
+      }));
+    }
+    // Se tem apenas IDs, busque as questões correspondentes
+    else if (typeof examData.questions[0] === 'string') {
+      const examQuestions = examData.questions
+        .map((qId: string) => allQuestions.find(q => q.id === qId))
+        .filter(Boolean)
+        .map((q: QuestionType, index: number) => convertQuestionToExamFormat(q, index + 1));
+      
+      return examQuestions.slice(0, examData.total_questions);
+    }
+  }
+  
+  // Gerar questões dinamicamente usando filtros
+  if (examData.type === 'AUTOMATIC' && examData.filters) {
+    let filteredQuestions = allQuestions.filter(q => {
+      // Filtrar por status (apenas published)
+      if (q.status !== 'published') return false;
+      
+      // Filtrar por matéria
+      if (examData.filters.subjects && examData.filters.subjects.length > 0) {
+        if (!examData.filters.subjects.includes(q.subject)) return false;
+      }
+      
+      // Filtrar por banca
+      if (examData.filters.exam_boards && examData.filters.exam_boards.length > 0) {
+        if (!q.exam_board || !examData.filters.exam_boards.includes(q.exam_board)) return false;
+      }
+      
+      // Filtrar por ano
+      if (examData.filters.years && examData.filters.years.length > 0) {
+        if (!q.exam_year || !examData.filters.years.includes(parseInt(q.exam_year))) return false;
+      }
+      
+      // Filtrar por dificuldade
+      if (examData.filters.difficulty && examData.filters.difficulty.length > 0) {
+        if (!examData.filters.difficulty.includes(q.difficulty)) return false;
+      }
+      
+      return true;
+    });
+    
+    // Embaralhar questões
+    filteredQuestions = shuffleArray(filteredQuestions);
+    
+    // Selecionar o número de questões solicitado
+    const selectedQuestions = filteredQuestions.slice(0, examData.total_questions);
+    
+    // Converter para formato do exame
+    return selectedQuestions.map((q, index) => convertQuestionToExamFormat(q, index + 1));
+  }
+  
+  // Fallback: retornar questões aleatórias se não houver filtros
+  const randomQuestions = shuffleArray(allQuestions.filter(q => q.status === 'published'))
+    .slice(0, examData.total_questions || 5);
+  
+  return randomQuestions.map((q, index) => convertQuestionToExamFormat(q, index + 1));
+};
+
+const convertQuestionToExamFormat = (q: QuestionType, number: number): Question => {
+  const alternatives: Alternative[] = [];
+  
+  if (q.type === 'multiple_choice' && q.options) {
+    const letters = ['A', 'B', 'C', 'D', 'E'];
+    alternatives.push(...q.options.map((option, index) => ({
+      id: letters[index].toLowerCase(),
+      letter: letters[index],
+      text: option
+    })));
+  } else if (q.type === 'true_false') {
+    alternatives.push(
+      { id: 'a', letter: 'A', text: 'Verdadeiro' },
+      { id: 'b', letter: 'B', text: 'Falso' }
+    );
+  }
+  
+  let correctAnswer = 'a';
+  if (q.type === 'multiple_choice' && q.correct_answer !== undefined) {
+    const letters = ['a', 'b', 'c', 'd', 'e'];
+    correctAnswer = letters[q.correct_answer] || 'a';
+  } else if (q.type === 'true_false') {
+    correctAnswer = q.correct_boolean ? 'a' : 'b';
+  }
+  
+  return {
+    id: q.id,
+    number,
+    subject: q.subject,
+    statement: q.title,
+    alternatives,
+    correctAnswer,
+    explanation: q.explanation || 'Explicação não disponível.',
+    difficulty: mapDifficultyToExam(q.difficulty),
+    year: q.exam_year ? parseInt(q.exam_year) : undefined,
+    institution: q.exam_board
+  };
+};
+
+const mapDifficultyToExam = (difficulty: string): 'RECRUTA' | 'CABO' | 'SARGENTO' => {
+  switch (difficulty) {
+    case 'easy': return 'RECRUTA';
+    case 'medium': return 'CABO';
+    case 'hard': return 'SARGENTO';
+    default: return 'CABO';
+  }
+};
+
+const shuffleArray = <T>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 const calculateResults = (session: ExamSession): ExamResults => {
   const { questions, answers } = session;
   let correctAnswers = 0;
@@ -207,6 +356,9 @@ router.post('/:examType/:examId/sessions', authMiddleware, async (req, res) => {
       return res.status(201).json(existingSession);
     }
 
+    // Generate questions for the exam
+    const examQuestions = generateExamQuestions(examData);
+    
     // Create new session
     const sessionId = `session_${examId}_${userId}_${Date.now()}`;
     const newSession: ExamSession = {
@@ -215,13 +367,13 @@ router.post('/:examType/:examId/sessions', authMiddleware, async (req, res) => {
       examType: examType as 'mock' | 'previous',
       userId,
       title: examData.title,
-      questions: examData.questions || [],
+      questions: examQuestions,
       answers: {},
       flaggedQuestions: [],
       startedAt: new Date().toISOString(),
       duration: examData.duration || 180, // Default 3 hours
       timeSpent: 0,
-      totalQuestions: (examData.questions || []).length,
+      totalQuestions: examQuestions.length,
       status: 'active'
     };
 
