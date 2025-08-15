@@ -95,6 +95,7 @@ export default function SummariesPage() {
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
+  const [showComments, setShowComments] = useState(true);
 
   // Carregamento inicial dos resumos
   useEffect(() => {
@@ -441,13 +442,42 @@ export default function SummariesPage() {
             <MessageCircle className="w-6 h-6 text-accent-500" />
             DISCUSSÃO TÁTICA ({comments.length})
           </h3>
-          <Badge className="bg-accent-500/20 text-accent-600 border-accent-500/50 font-police-body">
-            ÁREA DE INTERCÂMBIO
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge className="bg-accent-500/20 text-accent-600 border-accent-500/50 font-police-body">
+              ÁREA DE INTERCÂMBIO
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowComments(!showComments)}
+              className="font-police-body uppercase tracking-wider border-accent-500/30 text-accent-600 hover:bg-accent-500/10"
+            >
+              {showComments ? (
+                <>
+                  <EyeOff className="w-4 h-4 mr-2" />
+                  OCULTAR
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4 mr-2" />
+                  MOSTRAR
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       
-      <CardContent className="p-6">
+      <AnimatePresence>
+        {showComments && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <CardContent className="p-6">
         {/* Formulário para novo comentário */}
         <div className="mb-6">
           <div className="flex gap-3">
@@ -497,7 +527,10 @@ export default function SummariesPage() {
             </div>
           )}
         </div>
-      </CardContent>
+            </CardContent>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Card>
   );
 
@@ -646,7 +679,7 @@ export default function SummariesPage() {
 
   // Componente de leitura
   const ReadingView = ({ summary }: { summary: Summary }) => (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto pb-24">
       {/* Header do resumo */}
       <Card className="mb-6">
         <CardContent className="p-6">
@@ -848,25 +881,28 @@ export default function SummariesPage() {
       <CommentsSection />
 
       {/* Barra de progresso fixa */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg p-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
-              PROGRESSO: <span className="font-medium text-gray-900 dark:text-white font-police-numbers">65%</span>
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg p-4 z-50">
+        <div className="max-w-4xl mx-auto">
+          {/* Layout responsivo */}
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                PROGRESSO: <span className="font-medium text-gray-900 dark:text-white font-police-numbers">65%</span>
+              </div>
+              <div className="w-32 lg:w-48 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="bg-accent-500 h-full rounded-full" style={{ width: '65%' }} />
+              </div>
             </div>
-            <div className="w-48 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="bg-accent-500 h-full rounded-full" style={{ width: '65%' }} />
+            
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button variant="outline" size="sm" className="font-police-body uppercase text-xs lg:text-sm">
+                MARCAR CONCLUÍDO
+              </Button>
+              <Button size="sm" className="gap-2 font-police-body uppercase bg-accent-500 hover:bg-accent-600 text-black dark:text-black text-xs lg:text-sm">
+                PRÓXIMA SEÇÃO
+                <ChevronRight className="w-4 h-4" />
+              </Button>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="font-police-body uppercase">
-              MARCAR CONCLUÍDO
-            </Button>
-            <Button size="sm" className="gap-2 font-police-body uppercase bg-accent-500 hover:bg-accent-600 text-black dark:text-black">
-              PRÓXIMA SEÇÃO
-              <ChevronRight className="w-4 h-4" />
-            </Button>
           </div>
         </div>
       </div>
