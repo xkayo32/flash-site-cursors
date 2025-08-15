@@ -616,10 +616,10 @@ export default function PreviousExamsMilitary() {
               {/* Header Tático */}
               <div className="bg-gradient-to-r from-gray-900 via-[#14242f] to-gray-900 text-white p-6 rounded-t-lg relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 via-accent-400 to-accent-500" />
-                <div className="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-accent-500/20" />
-                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-accent-500/20" />
+                <div className="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-accent-500/20 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-accent-500/20 pointer-events-none" />
                 
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between relative z-10">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <Target className="w-6 h-6 text-accent-500" />
@@ -632,14 +632,19 @@ export default function PreviousExamsMilitary() {
                     </p>
                   </div>
                   
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowDetailsModal(false)}
-                    className="text-white hover:text-red-400 hover:bg-red-500/10"
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Fechando modal...');
+                      setShowDetailsModal(false);
+                    }}
+                    className="text-white hover:text-red-400 hover:bg-red-500/10 p-2 rounded-lg transition-colors z-20 relative shrink-0"
+                    title="Fechar modal"
+                    type="button"
                   >
                     <X className="w-5 h-5" />
-                  </Button>
+                  </button>
                 </div>
               </div>
 
