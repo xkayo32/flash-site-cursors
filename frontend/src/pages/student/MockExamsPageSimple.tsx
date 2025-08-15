@@ -47,6 +47,7 @@ export default function MockExamsPageSimple() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showStatsModal, setShowStatsModal] = useState(false);
 
   // Load mock exams from API
   useEffect(() => {
@@ -613,15 +614,7 @@ export default function MockExamsPageSimple() {
               <Button 
                 variant="outline" 
                 size="lg"
-                onClick={() => {
-                  const totalTime = mockExams.reduce((acc, exam) => acc + exam.timeLimitMinutes, 0);
-                  const totalQuestions = mockExams.reduce((acc, exam) => acc + exam.totalQuestions, 0);
-                  const avgDifficulty = mockExams.length > 0 
-                    ? Math.round((mockExams.filter(e => e.difficulty === 'SARGENTO').length / mockExams.length) * 100)
-                    : 0;
-                  
-                  alert(`🎯 RELATÓRIO DE OPERAÇÕES\n\n⚡ ${mockExams.filter(e => e.isActive).length} operações ativas\n🎯 ${totalQuestions} alvos totais disponíveis\n⏱️ ${totalTime} minutos de combate total\n🔥 ${avgDifficulty}% operações de alta dificuldade`);
-                }}
+                onClick={() => setShowStatsModal(true)}
                 className="border-accent-500/50 hover:border-accent-500 text-white hover:bg-accent-500/10 font-police-body font-semibold uppercase tracking-wider transition-all duration-300 min-w-[220px]"
               >
                 <TrendingUp className="w-5 h-5 mr-2" />
@@ -676,6 +669,121 @@ export default function MockExamsPageSimple() {
               LIMPAR FILTROS
             </Button>
           </Card>
+        </motion.div>
+      )}
+
+      {/* Modal de Estatísticas */}
+      {showStatsModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowStatsModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-gradient-to-br from-gray-900 via-[#14242f] to-gray-900 rounded-xl shadow-2xl max-w-2xl w-full p-8 border-2 border-accent-500/50 relative overflow-hidden"
+          >
+            {/* Tactical stripe */}
+            <div className="absolute top-0 right-0 w-2 h-full bg-accent-500" />
+            
+            <div className="text-center mb-6">
+              <div className="flex items-center justify-center mb-4">
+                <Crosshair className="w-12 h-12 text-accent-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-white font-police-title uppercase tracking-ultra-wide mb-2">
+                RELATÓRIO DE OPERAÇÕES TÁTICAS
+              </h3>
+              <div className="w-24 h-1 bg-accent-500 mx-auto" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="w-5 h-5 text-green-500" />
+                  <span className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider">Operações Ativas</span>
+                </div>
+                <p className="text-2xl font-bold text-green-500 font-police-numbers">
+                  {mockExams.filter(e => e.isActive).length}
+                </p>
+              </div>
+
+              <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-5 h-5 text-blue-500" />
+                  <span className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider">Alvos Totais</span>
+                </div>
+                <p className="text-2xl font-bold text-blue-500 font-police-numbers">
+                  {mockExams.reduce((acc, exam) => acc + exam.totalQuestions, 0)}
+                </p>
+              </div>
+
+              <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <Timer className="w-5 h-5 text-amber-500" />
+                  <span className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider">Tempo Total</span>
+                </div>
+                <p className="text-2xl font-bold text-amber-500 font-police-numbers">
+                  {Math.floor(mockExams.reduce((acc, exam) => acc + exam.timeLimitMinutes, 0) / 60)}h
+                  {mockExams.reduce((acc, exam) => acc + exam.timeLimitMinutes, 0) % 60}m
+                </p>
+              </div>
+
+              <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2 mb-2">
+                  <Activity className="w-5 h-5 text-red-500" />
+                  <span className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider">Alta Dificuldade</span>
+                </div>
+                <p className="text-2xl font-bold text-red-500 font-police-numbers">
+                  {mockExams.length > 0 
+                    ? Math.round((mockExams.filter(e => e.difficulty === 'SARGENTO').length / mockExams.length) * 100)
+                    : 0}%
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 mb-6">
+              <h4 className="text-sm text-gray-400 font-police-subtitle uppercase tracking-wider mb-3">
+                DISTRIBUIÇÃO POR COMANDO
+              </h4>
+              <div className="space-y-2">
+                {(() => {
+                  const commands = [...new Set(mockExams.map(e => e.organization))];
+                  return commands.map(cmd => {
+                    const count = mockExams.filter(e => e.organization === cmd).length;
+                    const percentage = mockExams.length > 0 ? Math.round((count / mockExams.length) * 100) : 0;
+                    return (
+                      <div key={cmd} className="flex items-center justify-between">
+                        <span className="text-sm text-gray-300 font-police-body">{cmd}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-32 bg-gray-700 rounded-full h-2">
+                            <div 
+                              className="bg-accent-500 h-full rounded-full"
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                          <span className="text-sm text-accent-500 font-police-numbers w-12 text-right">
+                            {count}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <Button
+                onClick={() => setShowStatsModal(false)}
+                className="bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider px-8"
+              >
+                FECHAR RELATÓRIO
+              </Button>
+            </div>
+          </motion.div>
         </motion.div>
       )}
     </div>

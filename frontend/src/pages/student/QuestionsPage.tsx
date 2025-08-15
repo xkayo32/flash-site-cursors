@@ -111,7 +111,7 @@ export default function QuestionsPage() {
         offset: 0
       };
       
-      const response = await questionService.list(filters);
+      const response = await questionService.getQuestions(filters);
       
       const localQuestions: LocalQuestion[] = response.questions.map(q => ({
         ...q,
