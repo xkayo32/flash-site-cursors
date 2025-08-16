@@ -38,7 +38,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
-import { legislationService, type LegislationDocument, type LegislationType, type LegislationStatus } from '@/services/legislationService';
+import legislationService, { type LegislationDocument, type LegislationType, type LegislationStatus } from '@/services/legislationService';
 import { categoryService, type Category } from '@/services/categoryService';
 
 const types = ['Todos', 'constitution', 'law', 'decree', 'ordinance', 'normative', 'resolution'];
