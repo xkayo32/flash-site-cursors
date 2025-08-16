@@ -643,5 +643,83 @@
       "modules": 0,
       "lessons": 0
     }
+  },
+  {
+    "id": "b68b0d01-3cef-41b0-9d2e-5974a33f9824",
+    "title": "Operação Tática 8 - BOMBEIROS",
+    "description": "Treinamento especializado em operações de BOMBEIROS nível advanced",
+    "category": "BOMBEIROS",
+    "thumbnail": null,
+    "price": 900,
+    "instructor": {
+      "id": "a99fcd91-c7cf-403a-8be3-ea9fe54821d9",
+      "name": "Instrutor Tático 8",
+      "rank": "",
+      "avatar": null
+    },
+    "difficulty_level": "advanced",
+    "duration_hours": 60,
+    "duration_months": 3,
+    "status": "draft",
+    "visibility": "private",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio",
+      "Aptidão física",
+      "Idade mínima 18 anos"
+    ],
+    "objectives": [
+      "Dominar procedimentos",
+      "Liderança tática",
+      "Gestão de crises"
+    ],
+    "tags": [],
+    "created_at": "2025-08-16T23:28:09.781Z",
+    "updated_at": "2025-08-16T23:28:09.781Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "823761ae-44ae-4368-abb1-739b18319de3",
+    "title": "Operação Tática 13 - BOMBEIROS",
+    "description": "Treinamento especializado em operações de BOMBEIROS nível intermediate",
+    "category": "BOMBEIROS",
+    "thumbnail": null,
+    "price": 1150,
+    "instructor": {
+      "id": "ad31f1c6-0a5c-43d0-938e-bdf1feeb5403",
+      "name": "Instrutor Tático 13",
+      "rank": "",
+      "avatar": null
+    },
+    "difficulty_level": "intermediate",
+    "duration_hours": 85,
+    "duration_months": 2,
+    "status": "draft",
+    "visibility": "private",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio",
+      "Aptidão física",
+      "Idade mínima 18 anos"
+    ],
+    "objectives": [
+      "Dominar procedimentos",
+      "Liderança tática",
+      "Gestão de crises"
+    ],
+    "tags": [],
+    "created_at": "2025-08-16T23:28:09.917Z",
+    "updated_at": "2025-08-16T23:28:09.917Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
   }
 ]
