@@ -529,6 +529,10 @@ Padronização de todos os status cards das páginas do aluno com StatCard compo
 - ✅ **Layout Resumo Interativo**: Barra de progresso não sobrepõe mais o conteúdo
 - ✅ **Comentários Collapsible**: Botão ocultar/mostrar com animação suave
 - ✅ **Responsividade**: Barra de progresso adaptada para telas menores
+- ✅ **Funcionalidade "PRÓXIMA SEÇÃO"**: Navegação automática com scroll suave
+- ✅ **Funcionalidade "MARCAR CONCLUÍDO"**: Estados visuais e feedback completo
+- ✅ **Progresso Dinâmico**: Calculado baseado nas seções expandidas
+- ✅ **Visual Feedback**: Toast notifications e mudança de cores
 
 ### **2025-08-05**: Logo do Sistema Integrada aos Flashcards + Documentação Completa
 Integração da logo oficial do sistema nos flashcards de estudo e criação de documentação completa das páginas:
