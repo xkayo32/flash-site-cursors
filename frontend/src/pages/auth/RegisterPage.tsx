@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/store/authStore';
 import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import toast from 'react-hot-toast';
-import { API_ENDPOINTS } from '@/config/api';
+import { authService } from '@/services/authService';
 import '../../styles/police-fonts.css';
 
 const fadeInUp = {
@@ -94,27 +94,18 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const params = new URLSearchParams();
-      params.append('name', formData.name);
-      params.append('email', formData.email);
-      params.append('phone', formData.phone);
-      params.append('password', formData.password);
-
-      const response = await fetch(API_ENDPOINTS.auth.register, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params.toString(),
+      const response = await authService.register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: 'student'
       });
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.success) {
         toast.success('Conta criada com sucesso! Faça login para continuar.');
         navigate('/login');
       } else {
-        toast.error(data.message || 'Erro ao criar conta');
+        toast.error(response.message || 'Erro ao criar conta');
       }
     } catch (error) {
       console.error('Register error:', error);

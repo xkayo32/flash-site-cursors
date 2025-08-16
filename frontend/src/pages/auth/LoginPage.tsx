@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/store/authStore';
 import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import { useToast, ToastContainer } from '@/components/ui/Toast';
-import { API_ENDPOINTS } from '@/config/api';
+import { authService } from '@/services/authService';
 import { useTheme } from '@/contexts/ThemeContext';
 import '../../styles/police-fonts.css';
 
@@ -71,40 +71,32 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(API_ENDPOINTS.auth.login, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+      const response = await authService.login({
+        email: formData.email,
+        password: formData.password,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.success && response.data) {
         setAuth(
           {
-            id: data.user.id,
-            name: data.user.name,
-            email: data.user.email,
-            role: data.user.role,
-            avatar: data.user.avatar || `https://ui-avatars.com/api/?name=${data.user.name}&background=14242f&color=fff`,
-            subscription: data.user.subscription || {
+            id: response.data.user.id,
+            name: response.data.user.name,
+            email: response.data.user.email,
+            role: response.data.user.role,
+            avatar: response.data.user.avatar || `https://ui-avatars.com/api/?name=${response.data.user.name}&background=14242f&color=fff`,
+            subscription: {
               plan: 'Basic',
               expiresAt: null,
               status: 'active'
             }
           },
-          data.token
+          response.data.token
         );
 
         success('Login realizado com sucesso!', 'Redirecionando...');
         
         setTimeout(() => {
-          if (data.user.role === 'admin') {
+          if (response.data.user.role === 'admin') {
             navigate('/admin/dashboard');
           } else {
             navigate('/dashboard');
@@ -112,9 +104,9 @@ export default function LoginPage() {
         }, 1000);
       } else {
         if (process.env.NODE_ENV === 'development') {
-          console.error('Login failed:', data);
+          console.error('Login failed:', response);
         }
-        error('Login falhou', data.message || 'Email ou senha inválidos');
+        error('Login falhou', response.message || 'Email ou senha inválidos');
       }
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {

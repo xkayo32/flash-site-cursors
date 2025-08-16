@@ -1,4 +1,4 @@
-import api from '@/config/api';
+import api from '@/services/api';
 
 export interface LoginCredentials {
   email: string;
@@ -51,6 +51,19 @@ class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
       const response = await api.post(`${this.baseUrl}/login`, credentials);
+      
+      // Se a API já retorna success diretamente, usa essa estrutura
+      if (response.data.success) {
+        return {
+          success: true,
+          data: {
+            token: response.data.token,
+            user: response.data.user
+          }
+        };
+      }
+      
+      // Fallback para estrutura anterior
       return {
         success: true,
         data: response.data
@@ -69,6 +82,20 @@ class AuthService {
   async register(data: RegisterData): Promise<AuthResponse> {
     try {
       const response = await api.post(`${this.baseUrl}/register`, data);
+      
+      // Se a API já retorna success diretamente, usa essa estrutura
+      if (response.data.success) {
+        return {
+          success: true,
+          data: response.data.token ? {
+            token: response.data.token,
+            user: response.data.user
+          } : undefined,
+          message: response.data.message
+        };
+      }
+      
+      // Fallback para estrutura anterior
       return {
         success: true,
         data: response.data
