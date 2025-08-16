@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
-import { examService, type ExamSession, type Question } from '@/services/examService';
+import { examSessionService, type ExamSession, type CreateSessionData, type SubmitAnswerData, type ExamQuestion } from '@/services/examSessionService';
 import toast from 'react-hot-toast';
 
 export default function ExamTakingPageNew() {
@@ -31,6 +31,7 @@ export default function ExamTakingPageNew() {
   
   // State hooks - all defined before any conditional returns
   const [session, setSession] = useState<ExamSession | null>(null);
+  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -38,7 +39,8 @@ export default function ExamTakingPageNew() {
   const [isPaused, setIsPaused] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
-  const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [flaggedQuestions, setFlaggedQuestions] = useState<Set<string>>(new Set());
 
   // Load or create session
   const loadSession = useCallback(async () => {
@@ -59,27 +61,42 @@ export default function ExamTakingPageNew() {
       
       if (stateSessionId) {
         // Load existing session
-        examSession = await examService.getExamSession(stateSessionId);
+        const sessionResponse = await examSessionService.getSession(stateSessionId);
+        if (!sessionResponse.success || !sessionResponse.data) {
+          throw new Error(sessionResponse.message || 'Sessão não encontrada');
+        }
+        examSession = sessionResponse.data;
       } else {
-        // Try to resume or start new session
-        examSession = await examService.resumeOrStartSession(
-          examId, 
-          examType as 'mock' | 'previous'
-        );
+        // Create new session
+        const createData: CreateSessionData = {
+          examId,
+          examType: examType as 'mock' | 'previous' | 'practice',
+          title: `Exame ${examType} - ${examId}`,
+          totalQuestions: 50 // Default, will be updated when questions are loaded
+        };
+        
+        const createResponse = await examSessionService.createSession(createData);
+        if (!createResponse.success || !createResponse.data) {
+          throw new Error(createResponse.message || 'Erro ao criar sessão');
+        }
+        examSession = createResponse.data;
       }
       
       setSession(examSession);
       
-      // Calculate remaining time
+      // Load questions
+      const questionsResponse = await examSessionService.getExamQuestions(examSession.id);
+      if (questionsResponse.success && questionsResponse.data) {
+        setQuestions(questionsResponse.data);
+      }
+      
+      // Calculate remaining time (assuming 2 hours default if not specified)
       const startTime = new Date(examSession.startedAt).getTime();
       const now = new Date().getTime();
       const elapsedSeconds = Math.floor((now - startTime) / 1000);
-      const totalSeconds = examSession.duration * 60;
+      const totalSeconds = 120 * 60; // 2 hours default
       const remaining = Math.max(0, totalSeconds - elapsedSeconds);
       setTimeRemaining(remaining);
-      
-      // Start time tracking
-      examService.startTimeTracking(examSession.id);
       
       toast.success('OPERAÇÃO TÁTICA INICIADA!', {
         style: {
@@ -103,61 +120,50 @@ export default function ExamTakingPageNew() {
     }
   }, [examId, examType, location.state]);
 
-  // Save answer with debouncing
-  const saveAnswer = useCallback(async (questionId: string, alternativeId: string) => {
+  // Save answer
+  const saveAnswer = useCallback(async (questionId: string, selectedOption: any) => {
     if (!session) return;
     
     // Update local state immediately for better UX
-    const updatedSession = {
-      ...session,
-      answers: {
-        ...session.answers,
-        [questionId]: alternativeId
-      }
-    };
-    setSession(updatedSession);
+    setAnswers(prev => ({ ...prev, [questionId]: selectedOption }));
     
-    // Clear existing timeout
-    if (autoSaveTimeout) {
-      clearTimeout(autoSaveTimeout);
+    // Save to backend
+    try {
+      const answerData: SubmitAnswerData = {
+        questionId,
+        selectedOption,
+        timeSpent: 30 // Default time spent per question
+      };
+      
+      await examSessionService.submitAnswer(session.id, answerData);
+      console.log('Resposta salva automaticamente');
+    } catch (error) {
+      console.error('Erro ao salvar resposta:', error);
+      // Don't show error to user for auto-save failures
     }
-    
-    // Set new timeout for auto-save
-    const timeout = setTimeout(async () => {
-      try {
-        await examService.saveAnswer(session.id, questionId, alternativeId);
-        console.log('Resposta salva automaticamente');
-      } catch (error) {
-        console.error('Erro ao salvar resposta:', error);
-        // Don't show error to user for auto-save failures
-      }
-    }, 1000); // Save after 1 second of inactivity
-    
-    setAutoSaveTimeout(timeout);
-  }, [session, autoSaveTimeout]);
+  }, [session]);
 
   // Toggle flag
   const toggleFlag = useCallback(async (questionId: string) => {
     if (!session) return;
     
-    const isFlagged = session.flaggedQuestions.includes(questionId);
+    const isFlagged = flaggedQuestions.has(questionId);
     
     // Update local state
-    const updatedSession = {
-      ...session,
-      flaggedQuestions: isFlagged
-        ? session.flaggedQuestions.filter(id => id !== questionId)
-        : [...session.flaggedQuestions, questionId]
-    };
-    setSession(updatedSession);
+    setFlaggedQuestions(prev => {
+      const newSet = new Set(prev);
+      if (isFlagged) {
+        newSet.delete(questionId);
+      } else {
+        newSet.add(questionId);
+      }
+      return newSet;
+    });
     
-    // Save to backend
-    try {
-      await examService.toggleFlag(session.id, questionId, !isFlagged);
-    } catch (error) {
-      console.error('Erro ao marcar questão:', error);
-    }
-  }, [session]);
+    // Note: examSessionService doesn't have flag functionality yet
+    // This would need to be added to the service if required
+    console.log(`Question ${questionId} ${isFlagged ? 'unflagged' : 'flagged'}`);
+  }, [session, flaggedQuestions]);
 
   // Submit exam
   const handleSubmitExam = useCallback(async (autoSubmit = false) => {
@@ -166,25 +172,22 @@ export default function ExamTakingPageNew() {
     try {
       setSubmitting(true);
       
-      const now = new Date().getTime();
-      const startTime = new Date(session.startedAt).getTime();
-      const timeSpent = Math.floor((now - startTime) / 1000);
+      const result = await examSessionService.finishExam(session.id);
       
-      const result = await examService.submitExam(session.id, timeSpent);
-      
-      // Stop time tracking
-      examService.stopTimeTracking();
-      
-      // Navigate to results
-      navigate(`/simulations/${examId}/results/${result.sessionId}`);
-      
-      toast.success('OPERAÇÃO CONCLUÍDA!', {
-        style: {
-          background: '#14242f',
-          color: '#facc15',
-          border: '2px solid #facc15'
-        }
-      });
+      if (result.success && result.data) {
+        // Navigate to results
+        navigate(`/exam-results/${session.id}`);
+        
+        toast.success('OPERAÇÃO CONCLUÍDA!', {
+          style: {
+            background: '#14242f',
+            color: '#facc15',
+            border: '2px solid #facc15'
+          }
+        });
+      } else {
+        throw new Error(result.message || 'Erro ao finalizar exame');
+      }
     } catch (err: any) {
       console.error('Erro ao submeter exame:', err);
       setError(err.message || 'Erro ao submeter exame. Tente novamente.');
@@ -199,19 +202,11 @@ export default function ExamTakingPageNew() {
       setSubmitting(false);
       setShowConfirmSubmit(false);
     }
-  }, [session, submitting, examId, navigate]);
+  }, [session, submitting, navigate]);
 
   // Load session on mount
   useEffect(() => {
     loadSession();
-    
-    // Cleanup on unmount
-    return () => {
-      examService.stopTimeTracking();
-      if (autoSaveTimeout) {
-        clearTimeout(autoSaveTimeout);
-      }
-    };
   }, [loadSession]);
 
   // Timer effect
@@ -231,26 +226,7 @@ export default function ExamTakingPageNew() {
     }
   }, [loading, session, timeRemaining, isPaused, handleSubmitExam]);
 
-  // Update time spent periodically
-  useEffect(() => {
-    if (!session) return;
-    
-    const interval = setInterval(async () => {
-      if (!isPaused) {
-        const now = new Date().getTime();
-        const startTime = new Date(session.startedAt).getTime();
-        const timeSpent = Math.floor((now - startTime) / 1000);
-        
-        try {
-          await examService.updateTimeSpent(session.id, timeSpent);
-        } catch (error) {
-          console.error('Erro ao atualizar tempo:', error);
-        }
-      }
-    }, 30000); // Update every 30 seconds
-    
-    return () => clearInterval(interval);
-  }, [session, isPaused]);
+  // Update time spent periodically - removed as examSessionService handles this differently
 
   // Helper functions
   const formatTime = (seconds: number): string => {
@@ -265,7 +241,7 @@ export default function ExamTakingPageNew() {
   };
 
   const getTimeColor = () => {
-    const totalTime = session ? session.duration * 60 : 3600;
+    const totalTime = 120 * 60; // 2 hours default
     const percentage = (timeRemaining / totalTime) * 100;
     
     if (percentage > 50) return 'text-green-600';
@@ -273,9 +249,9 @@ export default function ExamTakingPageNew() {
     return 'text-red-600';
   };
 
-  const renderQuestion = (question: Question, index: number) => {
-    const userAnswer = session?.answers[question.id];
-    const isFlagged = session?.flaggedQuestions.includes(question.id) || false;
+  const renderQuestion = (question: ExamQuestion, index: number) => {
+    const userAnswer = answers[question.id];
+    const isFlagged = flaggedQuestions.has(question.id) || false;
     
     return (
       <div key={question.id} className="space-y-6">
@@ -287,21 +263,21 @@ export default function ExamTakingPageNew() {
                 QUESTÃO {index + 1}/{session?.totalQuestions || 0}
               </Badge>
               <Badge variant="outline" className="font-police-body text-xs">
-                {question.subject}
+                {question.category || 'Geral'}
               </Badge>
               <Badge 
                 variant="outline" 
                 className={`font-police-body text-xs ${
-                  question.difficulty === 'RECRUTA' ? 'text-green-600 border-green-600' :
-                  question.difficulty === 'CABO' ? 'text-amber-600 border-amber-600' :
+                  question.difficulty === 'easy' ? 'text-green-600 border-green-600' :
+                  question.difficulty === 'medium' ? 'text-amber-600 border-amber-600' :
                   'text-red-600 border-red-600'
                 }`}
               >
-                {question.difficulty}
+                {question.difficulty === 'easy' ? 'RECRUTA' : question.difficulty === 'medium' ? 'CABO' : 'SARGENTO'}
               </Badge>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 leading-relaxed">
-              {question.statement}
+              {question.question}
             </h3>
           </div>
           
@@ -317,36 +293,85 @@ export default function ExamTakingPageNew() {
 
         {/* Answer Options */}
         <div className="space-y-3">
-          {question.alternatives.map((alternative) => (
-            <motion.div
-              key={alternative.id}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              onClick={() => saveAnswer(question.id, alternative.id)}
-              className={cn(
-                "p-4 border-2 rounded-lg cursor-pointer transition-all duration-200",
-                userAnswer === alternative.id
-                  ? "border-accent-500 bg-accent-50 dark:bg-accent-900/20"
-                  : "border-gray-200 dark:border-gray-700 hover:border-accent-300 dark:hover:border-accent-700"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <div className={cn(
-                  "w-5 h-5 rounded-full border-2 flex items-center justify-center",
-                  userAnswer === alternative.id
-                    ? "border-accent-500 bg-accent-500"
-                    : "border-gray-300 dark:border-gray-600"
-                )}>
-                  {userAnswer === alternative.id && (
-                    <CheckCircle className="w-3 h-3 text-white" />
-                  )}
+          {question.type === 'multiple_choice' && question.options ? (
+            question.options.map((option, optionIndex) => (
+              <motion.div
+                key={optionIndex}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => saveAnswer(question.id, optionIndex)}
+                className={cn(
+                  "p-4 border-2 rounded-lg cursor-pointer transition-all duration-200",
+                  userAnswer === optionIndex
+                    ? "border-accent-500 bg-accent-50 dark:bg-accent-900/20"
+                    : "border-gray-200 dark:border-gray-700 hover:border-accent-300 dark:hover:border-accent-700"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-5 h-5 rounded-full border-2 flex items-center justify-center",
+                    userAnswer === optionIndex
+                      ? "border-accent-500 bg-accent-500"
+                      : "border-gray-300 dark:border-gray-600"
+                  )}>
+                    {userAnswer === optionIndex && (
+                      <CheckCircle className="w-3 h-3 text-white" />
+                    )}
+                  </div>
+                  <span className="font-medium text-gray-700 dark:text-gray-200 leading-relaxed">
+                    {String.fromCharCode(65 + optionIndex)}) {option}
+                  </span>
                 </div>
-                <span className="font-medium text-gray-700 dark:text-gray-200 leading-relaxed">
-                  {alternative.letter}) {alternative.text}
-                </span>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          ) : question.type === 'true_false' ? (
+            <div className="space-y-3">
+              {[
+                { value: true, label: 'VERDADEIRO' },
+                { value: false, label: 'FALSO' }
+              ].map((option) => (
+                <motion.div
+                  key={option.label}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => saveAnswer(question.id, option.value)}
+                  className={cn(
+                    "p-4 border-2 rounded-lg cursor-pointer transition-all duration-200",
+                    userAnswer === option.value
+                      ? "border-accent-500 bg-accent-50 dark:bg-accent-900/20"
+                      : "border-gray-200 dark:border-gray-700 hover:border-accent-300 dark:hover:border-accent-700"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-5 h-5 rounded-full border-2 flex items-center justify-center",
+                      userAnswer === option.value
+                        ? "border-accent-500 bg-accent-500"
+                        : "border-gray-300 dark:border-gray-600"
+                    )}>
+                      {userAnswer === option.value && (
+                        <CheckCircle className="w-3 h-3 text-white" />
+                      )}
+                    </div>
+                    <span className="font-medium text-gray-700 dark:text-gray-200 font-police-body uppercase tracking-wider">
+                      {option.label}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            // Text input for essay questions
+            <div>
+              <textarea
+                value={userAnswer || ''}
+                onChange={(e) => saveAnswer(question.id, e.target.value)}
+                placeholder="Digite sua resposta..."
+                className="w-full p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg resize-none focus:border-accent-500 focus:outline-none dark:bg-gray-800 dark:text-white"
+                rows={4}
+              />
+            </div>
+          )}
         </div>
       </div>
     );
@@ -380,12 +405,12 @@ export default function ExamTakingPageNew() {
               {error || 'Operação não encontrada'}
             </p>
             <Button
-              onClick={() => navigate('/previous-exams')}
+              onClick={() => navigate('/simulations')}
               variant="outline"
               className="font-police-body uppercase tracking-wider hover:border-accent-500 hover:text-accent-500"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              VOLTAR ÀS OPERAÇÕES
+              VOLTAR ÀS SIMULAÇÕES
             </Button>
           </div>
         </Card>
@@ -393,16 +418,16 @@ export default function ExamTakingPageNew() {
     );
   }
 
-  const currentQuestion = session.questions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === session.questions.length - 1;
-  const answeredCount = Object.keys(session.answers).length;
-  const progress = (answeredCount / session.totalQuestions) * 100;
+  const currentQuestion = questions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
+  const answeredCount = Object.keys(answers).length;
+  const progress = (answeredCount / questions.length) * 100;
   
   // Check if current question is answered
   const isCurrentQuestionAnswered = currentQuestion ? (
-    session.answers[currentQuestion.id] !== undefined && 
-    session.answers[currentQuestion.id] !== null && 
-    session.answers[currentQuestion.id] !== ''
+    answers[currentQuestion.id] !== undefined && 
+    answers[currentQuestion.id] !== null && 
+    answers[currentQuestion.id] !== ''
   ) : false;
 
   return (
@@ -417,7 +442,7 @@ export default function ExamTakingPageNew() {
               size="sm"
               onClick={() => {
                 if (confirm('Tem certeza que deseja sair? Seu progresso será salvo.')) {
-                  navigate('/previous-exams');
+                  navigate('/simulations');
                 }
               }}
               className="text-white hover:text-accent-500 hover:bg-white/10"
@@ -429,7 +454,7 @@ export default function ExamTakingPageNew() {
             <div className="flex items-center gap-2">
               <Target className="w-6 h-6 text-accent-500" />
               <h1 className="text-lg font-bold font-police-title uppercase tracking-wider">
-                {session.title}
+                {session?.title || 'Operação Tática'}
               </h1>
             </div>
           </div>
@@ -447,7 +472,7 @@ export default function ExamTakingPageNew() {
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-accent-500" />
               <span className="font-police-numbers font-bold text-accent-500">
-                {answeredCount}/{session.totalQuestions}
+                {answeredCount}/{questions.length}
               </span>
             </div>
             
@@ -547,7 +572,7 @@ export default function ExamTakingPageNew() {
                     <Button
                       onClick={() => {
                         if (isCurrentQuestionAnswered) {
-                          setCurrentQuestionIndex(Math.min(session.questions.length - 1, currentQuestionIndex + 1));
+                          setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1));
                         }
                       }}
                       disabled={!isCurrentQuestionAnswered}
@@ -590,7 +615,7 @@ export default function ExamTakingPageNew() {
                     CONFIRMAR FINALIZAÇÃO
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400 mb-2">
-                    Você respondeu {answeredCount} de {session.totalQuestions} questões.
+                    Você respondeu {answeredCount} de {questions.length} questões.
                   </p>
                   <p className="text-gray-600 dark:text-gray-400 mb-6">
                     Tem certeza que deseja finalizar a operação?

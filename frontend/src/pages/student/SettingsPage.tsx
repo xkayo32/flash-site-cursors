@@ -56,6 +56,7 @@ import {
   PrivacySettings, 
   ChangePasswordData
 } from '@/services/settingsService';
+import { profileService, UserProfile, UpdateProfileData } from '@/services/profileService';
 
 // Tipos locais para UI
 interface UINotificationSetting {
@@ -135,11 +136,14 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [notifications, setNotifications] = useState<UINotificationSetting[]>([]);
   const [privacy, setPrivacy] = useState<UIPrivacySetting[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [passwordData, setPasswordData] = useState<ChangePasswordData>({
     currentPassword: '',
     newPassword: '',
@@ -149,43 +153,68 @@ export default function SettingsPage() {
     name: '',
     email: '',
     phone: '',
+    cpf: '',
     dailyTimeGoal: 120,
     dailyCardsGoal: 50
   });
   const user = useAuthStore((state) => state.user);
 
-  // Carregar configurações do usuário
-  const loadUserSettings = useCallback(async () => {
+  // Carregar dados do usuário
+  const loadUserData = useCallback(async () => {
     try {
       setIsLoadingData(true);
-      const response = await settingsService.getUserSettings();
       
-      if (response.success && response.data) {
-        setUserSettings(response.data);
-        setNotifications(getNotificationUISettings(response.data.notifications));
-        setPrivacy(getPrivacyUISettings(response.data.privacy));
-        setFormData({
-          name: response.data.profile.name,
-          email: response.data.profile.email,
-          phone: response.data.profile.phone,
-          dailyTimeGoal: response.data.study.dailyTimeGoal,
-          dailyCardsGoal: response.data.study.dailyCardsGoal
-        });
+      // Carregar perfil e configurações em paralelo
+      const [profileResponse, settingsResponse] = await Promise.all([
+        profileService.getProfile(),
+        settingsService.getUserSettings()
+      ]);
+      
+      if (profileResponse.success && profileResponse.data) {
+        setUserProfile(profileResponse.data);
+        setFormData(prev => ({
+          ...prev,
+          name: profileResponse.data?.name || '',
+          email: profileResponse.data?.email || '',
+          phone: profileResponse.data?.phone || '',
+          cpf: profileResponse.data?.cpf || ''
+        }));
+      }
+      
+      if (settingsResponse.success && settingsResponse.data) {
+        setUserSettings(settingsResponse.data);
+        setNotifications(getNotificationUISettings(settingsResponse.data.notifications));
+        setPrivacy(getPrivacyUISettings(settingsResponse.data.privacy));
+        setFormData(prev => ({
+          ...prev,
+          dailyTimeGoal: settingsResponse.data?.study.dailyTimeGoal || 120,
+          dailyCardsGoal: settingsResponse.data?.study.dailyCardsGoal || 50
+        }));
       } else {
-        toast.error(response.error || 'Erro ao carregar configurações');
+        // Se falhar, usar configurações padrão
+        const defaultSettings = settingsService.getDefaultUserSettings();
+        setUserSettings(defaultSettings);
+        setNotifications(getNotificationUISettings(defaultSettings.notifications));
+        setPrivacy(getPrivacyUISettings(defaultSettings.privacy));
       }
     } catch (error) {
-      console.error('Error loading settings:', error);
-      toast.error('Erro ao carregar configurações');
+      console.error('Error loading user data:', error);
+      toast.error('Erro ao carregar dados do usuário');
+      
+      // Usar configurações padrão em caso de erro
+      const defaultSettings = settingsService.getDefaultUserSettings();
+      setUserSettings(defaultSettings);
+      setNotifications(getNotificationUISettings(defaultSettings.notifications));
+      setPrivacy(getPrivacyUISettings(defaultSettings.privacy));
     } finally {
       setIsLoadingData(false);
     }
   }, []);
 
-  // Carregar configurações na montagem do componente
+  // Carregar dados na montagem do componente
   useEffect(() => {
-    loadUserSettings();
-  }, [loadUserSettings]);
+    loadUserData();
+  }, [loadUserData]);
 
   // Loading state
   if (isLoadingData) {
@@ -254,7 +283,7 @@ export default function SettingsPage() {
     } catch (error) {
       console.error('Error updating notifications:', error);
       // Reverter em caso de erro
-      await loadUserSettings();
+      await loadUserData();
     }
   };
 
@@ -277,7 +306,7 @@ export default function SettingsPage() {
     } catch (error) {
       console.error('Error updating privacy:', error);
       // Reverter em caso de erro
-      await loadUserSettings();
+      await loadUserData();
     }
   };
 
@@ -301,9 +330,10 @@ export default function SettingsPage() {
             return;
           }
           
-          response = await settingsService.updateProfile({
+          response = await profileService.updateProfile({
             name: formData.name,
-            phone: formData.phone
+            phone: formData.phone,
+            cpf: formData.cpf
           });
           break;
           
@@ -357,9 +387,9 @@ export default function SettingsPage() {
       
       if (response?.success) {
         toast.success('CONFIGURAÇÕES ATUALIZADAS!', { icon: '✅' });
-        await loadUserSettings(); // Recarregar para sincronizar
+        await loadUserData(); // Recarregar para sincronizar
       } else {
-        toast.error(response?.error || 'Erro ao salvar configurações');
+        toast.error(response?.error || response?.message || 'Erro ao salvar configurações');
       }
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -381,7 +411,7 @@ export default function SettingsPage() {
         return;
       }
       
-      const response = await settingsService.changePassword(passwordData);
+      const response = await profileService.changePassword(passwordData);
       
       if (response.success) {
         toast.success('SENHA ALTERADA COM SUCESSO!', { icon: '🔒' });
@@ -391,13 +421,99 @@ export default function SettingsPage() {
           confirmPassword: ''
         });
       } else {
-        toast.error(response.error || 'Erro ao alterar senha');
+        toast.error(response.message || 'Erro ao alterar senha');
       }
     } catch (error) {
       console.error('Error changing password:', error);
       toast.error('Erro ao alterar senha');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Upload de avatar
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validações
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Arquivo deve ter no máximo 2MB');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Apenas imagens são permitidas');
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const response = await profileService.uploadAvatar(file);
+      
+      if (response.success) {
+        toast.success('FOTO ATUALIZADA!', { icon: '📸' });
+        await loadUserData(); // Recarregar para mostrar nova foto
+      } else {
+        toast.error(response.message || 'Erro ao fazer upload da foto');
+      }
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Erro ao fazer upload da foto');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  // Deletar conta
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'ENCERRAR') {
+      toast.error('Digite "ENCERRAR" para confirmar');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await profileService.deleteAccount(passwordData.currentPassword);
+      
+      if (response.success) {
+        toast.success('CONTA EXCLUÍDA COM SUCESSO!');
+        // Redirecionar para logout
+        window.location.href = '/login';
+      } else {
+        toast.error(response.message || 'Erro ao excluir conta');
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error('Erro ao excluir conta');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Exportar dados
+  const handleExportData = async () => {
+    try {
+      const response = await profileService.exportProfileData();
+      
+      if (response.success && response.data) {
+        const dataStr = JSON.stringify(response.data, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `dados-operacionais-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        
+        URL.revokeObjectURL(url);
+        toast.success('DADOS EXPORTADOS!', { icon: '📦' });
+      } else {
+        toast.error(response.message || 'Erro ao exportar dados');
+      }
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      toast.error('Erro ao exportar dados');
     }
   };
 
@@ -487,18 +603,51 @@ export default function SettingsPage() {
                         FOTO DE IDENTIFICAÇÃO
                       </label>
                       <div className="flex items-center gap-4">
-                        <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-white text-2xl font-bold font-police-title">
-                          {user?.name.charAt(0).toUpperCase()}
+                        <div className="relative">
+                          {userProfile?.avatar ? (
+                            <img 
+                              src={userProfile.avatar} 
+                              alt="Avatar" 
+                              className="w-20 h-20 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
+                            />
+                          ) : (
+                            <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-white text-2xl font-bold font-police-title">
+                              {userProfile?.name?.charAt(0)?.toUpperCase() || user?.name?.charAt(0)?.toUpperCase() || 'A'}
+                            </div>
+                          )}
+                          {isUploadingAvatar && (
+                            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                            </div>
+                          )}
                         </div>
                         <div>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="gap-2 font-police-body uppercase tracking-wider"
-                          >
-                            <Camera className="w-4 h-4" />
-                            ALTERAR FOTO
-                          </Button>
+                          <input
+                            type="file"
+                            id="avatar-upload"
+                            accept="image/*"
+                            onChange={handleAvatarUpload}
+                            className="hidden"
+                            disabled={isUploadingAvatar}
+                          />
+                          <label htmlFor="avatar-upload">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="gap-2 font-police-body uppercase tracking-wider cursor-pointer"
+                              disabled={isUploadingAvatar}
+                              asChild
+                            >
+                              <span>
+                                {isUploadingAvatar ? (
+                                  <Upload className="w-4 h-4 animate-pulse" />
+                                ) : (
+                                  <Camera className="w-4 h-4" />
+                                )}
+                                {isUploadingAvatar ? 'ENVIANDO...' : 'ALTERAR FOTO'}
+                              </span>
+                            </Button>
+                          </label>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             JPG, PNG ou GIF. Máximo 2MB.
                           </p>
@@ -548,6 +697,8 @@ export default function SettingsPage() {
                         </label>
                         <input
                           type="text"
+                          value={formData.cpf}
+                          onChange={(e) => setFormData(prev => ({ ...prev, cpf: e.target.value }))}
                           placeholder="000.000.000-00"
                           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                         />
@@ -562,22 +713,30 @@ export default function SettingsPage() {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-center">
                           <Flag className="w-8 h-8 mx-auto mb-2 text-accent-500" />
-                          <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">127</p>
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                            {userProfile?.stats?.currentStreak || 0}
+                          </p>
                           <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">DIAS EM CAMPO</p>
                         </div>
                         <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-center">
                           <Target className="w-8 h-8 mx-auto mb-2 text-green-500" />
-                          <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">89%</p>
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                            {userProfile?.stats?.averageScore ? `${Math.round(userProfile.stats.averageScore)}%` : '0%'}
+                          </p>
                           <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">PRECISÃO</p>
                         </div>
                         <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-center">
                           <Swords className="w-8 h-8 mx-auto mb-2 text-blue-500" />
-                          <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">15</p>
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                            {userProfile?.stats?.coursesCompleted || 0}
+                          </p>
                           <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">MEDALHAS</p>
                         </div>
                         <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-center">
                           <ShieldCheck className="w-8 h-8 mx-auto mb-2 text-purple-500" />
-                          <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">ELITE</p>
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                            {userProfile?.role === 'admin' ? 'COMANDO' : userProfile?.role === 'instructor' ? 'INSTRUTOR' : 'OPERADOR'}
+                          </p>
                           <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">PATENTE</p>
                         </div>
                       </div>
@@ -1147,7 +1306,7 @@ export default function SettingsPage() {
                         <Button 
                           variant="outline" 
                           className="gap-2 font-police-body uppercase tracking-wider"
-                          onClick={() => toast.info('PREPARANDO EXPORTAÇÃO...', { icon: '📦' })}
+                          onClick={handleExportData}
                         >
                           <Download className="w-4 h-4" />
                           EXPORTAR
@@ -1296,6 +1455,8 @@ export default function SettingsPage() {
                 </label>
                 <input
                   type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
                   placeholder="ENCERRAR"
                   className="w-full px-4 py-2 border border-red-300 dark:border-red-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
@@ -1312,7 +1473,8 @@ export default function SettingsPage() {
                 </Button>
                 <Button
                   className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 font-police-body uppercase tracking-wider"
-                  disabled
+                  disabled={deleteConfirmText !== 'ENCERRAR' || isLoading}
+                  onClick={handleDeleteAccount}
                 >
                   <AlertTriangle className="w-4 h-4 mr-2" />
                   ENCERRAR MISSÃO

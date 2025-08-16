@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -6,12 +6,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Flag,
-  BookOpen,
   AlertTriangle,
   CheckCircle,
-  Circle,
   Send,
-  X,
   Target,
   Shield,
   Loader2,
@@ -24,50 +21,16 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
-import { mockExamService } from '@/services/mockExamService';
+import { examSessionService, type ExamSession, type SubmitAnswerData, type ExamQuestion } from '@/services/examSessionService';
 
-interface Question {
-  id: string;
-  title: string;
-  type: string;
-  subject: string;
-  topic?: string;
-  difficulty: string;
-  options?: string[];
-  correct_answer?: number;
-  correct_boolean?: boolean;
-  expected_answer?: string;
-  explanation?: string;
-}
-
-interface ExamAttempt {
-  id: string;
-  exam_id: string;
-  user_id: string;
-  questions: string[];
-  answers: Record<string, any>;
-  started_at: string;
-  time_spent: number;
-  status: 'in_progress' | 'completed' | 'abandoned';
-}
-
-interface ExamData {
-  attempt: ExamAttempt;
-  exam: {
-    id: string;
-    title: string;
-    duration: number;
-    total_questions: number;
-    passing_score: number;
-  };
-  questions: Question[];
-}
+// Using types from examSessionService
 
 export default function ExamAttemptPage() {
   const { attemptId } = useParams<{ attemptId: string }>();
   const navigate = useNavigate();
   
-  const [examData, setExamData] = useState<ExamData | null>(null);
+  const [session, setSession] = useState<ExamSession | null>(null);
+  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -80,13 +43,13 @@ export default function ExamAttemptPage() {
 
   useEffect(() => {
     if (attemptId) {
-      loadExamAttempt();
+      loadExamSession();
     }
   }, [attemptId]);
 
   useEffect(() => {
     // Timer
-    if (!loading && examData && timeRemaining > 0 && !isPaused) {
+    if (!loading && session && timeRemaining > 0 && !isPaused) {
       const timer = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev <= 1) {
@@ -99,30 +62,36 @@ export default function ExamAttemptPage() {
 
       return () => clearInterval(timer);
     }
-  }, [loading, examData, timeRemaining, isPaused]);
+  }, [loading, session, timeRemaining, isPaused]);
 
-  const loadExamAttempt = async () => {
+  const loadExamSession = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await mockExamService.getExamAttempt(attemptId!);
+      const response = await examSessionService.getSession(attemptId!);
       
       if (response.success && response.data) {
-        setExamData(response.data);
-        setAnswers(response.data.attempt.answers || {});
+        setSession(response.data);
+        
+        // Load questions
+        const questionsResponse = await examSessionService.getExamQuestions(response.data.id);
+        if (questionsResponse.success && questionsResponse.data) {
+          setQuestions(questionsResponse.data);
+        }
         
         // Calculate remaining time
-        const startTime = new Date(response.data.attempt.started_at).getTime();
+        const startTime = new Date(response.data.startedAt).getTime();
         const now = new Date().getTime();
-        const elapsedMinutes = Math.floor((now - startTime) / 1000 / 60);
-        const remainingMinutes = Math.max(0, response.data.exam.duration - elapsedMinutes);
-        setTimeRemaining(remainingMinutes * 60);
+        const elapsedSeconds = Math.floor((now - startTime) / 1000);
+        const totalSeconds = 120 * 60; // 2 hours default
+        const remaining = Math.max(0, totalSeconds - elapsedSeconds);
+        setTimeRemaining(remaining);
       } else {
-        throw new Error('Falha ao carregar tentativa de exame');
+        throw new Error(response.message || 'Falha ao carregar sessão de exame');
       }
     } catch (err: any) {
-      console.error('Erro ao carregar tentativa:', err);
+      console.error('Erro ao carregar sessão:', err);
       setError(err.message || 'Erro ao carregar exame. Tente novamente.');
     } finally {
       setLoading(false);
@@ -130,34 +99,37 @@ export default function ExamAttemptPage() {
   };
 
   const saveAnswer = async (questionId: string, answer: any) => {
-    if (!attemptId) return;
+    if (!session) return;
+    
+    // Update local state immediately for better UX
+    setAnswers(prev => ({ ...prev, [questionId]: answer }));
     
     try {
-      await mockExamService.saveAnswer(attemptId, questionId, answer);
-      setAnswers(prev => ({ ...prev, [questionId]: answer }));
+      const answerData: SubmitAnswerData = {
+        questionId,
+        selectedOption: answer,
+        timeSpent: 30 // Default time spent per question
+      };
+      
+      await examSessionService.submitAnswer(session.id, answerData);
     } catch (err: any) {
       console.error('Erro ao salvar resposta:', err);
-      // Still update local state for better UX
-      setAnswers(prev => ({ ...prev, [questionId]: answer }));
+      // Don't show error to user for auto-save failures
     }
   };
 
   const handleSubmitExam = async () => {
-    if (!attemptId || submitting) return;
+    if (!session || submitting) return;
 
     try {
       setSubmitting(true);
       
-      const now = new Date().getTime();
-      const startTime = examData ? new Date(examData.attempt.started_at).getTime() : now;
-      const timeSpent = Math.floor((now - startTime) / 1000);
+      const result = await examSessionService.finishExam(session.id);
       
-      const response = await mockExamService.submitExam(attemptId, timeSpent);
-      
-      if (response.success) {
-        navigate(`/exam-results/${attemptId}`);
+      if (result.success) {
+        navigate(`/exam-results/${session.id}`);
       } else {
-        setError('Erro ao submeter exame. Tente novamente.');
+        setError(result.message || 'Erro ao submeter exame. Tente novamente.');
       }
     } catch (err: any) {
       console.error('Erro ao submeter exame:', err);
@@ -180,7 +152,7 @@ export default function ExamAttemptPage() {
   };
 
   const getTimeColor = () => {
-    const totalTime = examData ? examData.exam.duration * 60 : 3600;
+    const totalTime = 120 * 60; // 2 hours default
     const percentage = (timeRemaining / totalTime) * 100;
     
     if (percentage > 50) return 'text-green-600';
@@ -200,7 +172,7 @@ export default function ExamAttemptPage() {
     });
   };
 
-  const renderQuestion = (question: Question, index: number) => {
+  const renderQuestion = (question: ExamQuestion, index: number) => {
     const questionId = question.id;
     const userAnswer = answers[questionId];
     
@@ -211,24 +183,24 @@ export default function ExamAttemptPage() {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-3">
               <Badge variant="secondary" className="font-police-numbers">
-                QUESTÃO {index + 1}/{examData?.questions.length || 0}
+                QUESTÃO {index + 1}/{questions.length || 0}
               </Badge>
               <Badge variant="outline" className="font-police-body text-xs">
-                {question.subject}
+                {question.category || 'Geral'}
               </Badge>
               <Badge 
                 variant="outline" 
                 className={`font-police-body text-xs ${
-                  question.difficulty === 'RECRUTA' ? 'text-green-600 border-green-600' :
-                  question.difficulty === 'CABO' ? 'text-amber-600 border-amber-600' :
+                  question.difficulty === 'easy' ? 'text-green-600 border-green-600' :
+                  question.difficulty === 'medium' ? 'text-amber-600 border-amber-600' :
                   'text-red-600 border-red-600'
                 }`}
               >
-                {question.difficulty}
+                {question.difficulty === 'easy' ? 'RECRUTA' : question.difficulty === 'medium' ? 'CABO' : 'SARGENTO'}
               </Badge>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 leading-relaxed">
-              {question.title}
+              {question.question}
             </h3>
           </div>
           
@@ -344,7 +316,7 @@ export default function ExamAttemptPage() {
     );
   }
 
-  if (error || !examData) {
+  if (error || !session) {
     return (
       <div className="p-6 min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
         <Card className="bg-white/90 dark:bg-gray-900/90 border-2 border-red-200 dark:border-red-800 p-8 relative overflow-hidden backdrop-blur-sm">
@@ -368,10 +340,10 @@ export default function ExamAttemptPage() {
     );
   }
 
-  const currentQuestion = examData.questions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === examData.questions.length - 1;
+  const currentQuestion = questions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
   const answeredCount = Object.keys(answers).length;
-  const progress = (answeredCount / examData.questions.length) * 100;
+  const progress = (answeredCount / questions.length) * 100;
   
   // Check if current question is answered
   const currentQuestionId = currentQuestion?.id;
@@ -390,7 +362,7 @@ export default function ExamAttemptPage() {
             <div className="flex items-center gap-2">
               <Target className="w-6 h-6 text-accent-500" />
               <h1 className="text-lg font-bold font-police-title uppercase tracking-wider">
-                {examData.exam.title}
+                {session?.title || 'Operação Tática'}
               </h1>
             </div>
           </div>
@@ -408,7 +380,7 @@ export default function ExamAttemptPage() {
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-accent-500" />
               <span className="font-police-numbers font-bold text-accent-500">
-                {answeredCount}/{examData.questions.length}
+                {answeredCount}/{questions.length}
               </span>
             </div>
             
@@ -510,7 +482,7 @@ export default function ExamAttemptPage() {
                     <Button
                       onClick={() => {
                         if (isCurrentQuestionAnswered) {
-                          setCurrentQuestionIndex(Math.min(examData.questions.length - 1, currentQuestionIndex + 1));
+                          setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1));
                         }
                       }}
                       disabled={!isCurrentQuestionAnswered}
@@ -553,7 +525,7 @@ export default function ExamAttemptPage() {
                     CONFIRMAR FINALIZAÇÃO
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400 mb-2">
-                    Você respondeu {answeredCount} de {examData.questions.length} questões.
+                    Você respondeu {answeredCount} de {questions.length} questões.
                   </p>
                   <p className="text-gray-600 dark:text-gray-400 mb-6">
                     Tem certeza que deseja finalizar a operação?
