@@ -297,7 +297,7 @@ router.get('/performance', authMiddleware, (req: AuthRequest, res: Response): vo
     }, 0);
 
     const correctAnswers = examAttempts.reduce((total: number, attempt: any) => {
-      if (!attempt.answers) return total;
+      if (!attempt.answers || !Array.isArray(attempt.answers)) return total;
       return total + attempt.answers.filter((answer: any) => answer.isCorrect).length;
     }, 0);
 

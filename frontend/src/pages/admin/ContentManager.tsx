@@ -134,7 +134,7 @@ export default function ContentManager() {
       
       // Carregar diferentes tipos de conteúdo das APIs
       const [coursesRes, summariesRes, flashcardsRes] = await Promise.allSettled([
-        courseService.getCourses(),
+        courseService.listCourses({ limit: 50 }),
         summaryService.getAll({ limit: 50 }),
         flashcardService.getFlashcards({ limit: 50 })
       ]);
