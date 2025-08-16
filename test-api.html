@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste API - Planos de Assinatura</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .plan { border: 1px solid #ccc; margin: 10px; padding: 15px; border-radius: 8px; }
+        .error { color: red; }
+        .loading { color: blue; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Teste da API - Planos de Assinatura</h1>
+    <div id="status" class="loading">Carregando planos...</div>
+    <div id="plans"></div>
+
+    <script>
+        async function testAPI() {
+            const statusDiv = document.getElementById('status');
+            const plansDiv = document.getElementById('plans');
+
+            try {
+                statusDiv.textContent = 'Fazendo requisição para API...';
+                
+                const response = await fetch('http://localhost:8181/api/v1/payment/plans');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                statusDiv.textContent = 'Planos carregados com sucesso!';
+                statusDiv.className = 'success';
+
+                if (data.success && data.data) {
+                    data.data.forEach(plan => {
+                        const planDiv = document.createElement('div');
+                        planDiv.className = 'plan';
+                        planDiv.innerHTML = `
+                            <h3>${plan.name}</h3>
+                            <p><strong>Descrição:</strong> ${plan.description}</p>
+                            <p><strong>Preço Mensal:</strong> ${plan.currency} ${plan.price}</p>
+                            <p><strong>Preço Anual:</strong> ${plan.currency} ${plan.priceYearly}</p>
+                            <p><strong>Recomendado:</strong> ${plan.recommended ? 'Sim' : 'Não'}</p>
+                            ${plan.badge ? `<p><strong>Badge:</strong> ${plan.badge}</p>` : ''}
+                            <p><strong>Recursos:</strong></p>
+                            <ul>${plan.features.map(f => `<li>${f}</li>`).join('')}</ul>
+                            ${plan.limitations.length > 0 ? `
+                                <p><strong>Limitações:</strong></p>
+                                <ul>${plan.limitations.map(l => `<li>${l}</li>`).join('')}</ul>
+                            ` : ''}
+                        `;
+                        plansDiv.appendChild(planDiv);
+                    });
+                } else {
+                    throw new Error('Formato de resposta inválido');
+                }
+
+            } catch (error) {
+                statusDiv.textContent = `Erro: ${error.message}`;
+                statusDiv.className = 'error';
+                console.error('Erro ao carregar planos:', error);
+            }
+        }
+
+        // Executar teste quando a página carregar
+        testAPI();
+    </script>
+</body>
+</html>

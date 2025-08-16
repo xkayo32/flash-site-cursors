@@ -78,6 +78,29 @@ export interface NotificationSettings {
   updated_at?: string;
 }
 
+export interface Plan {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  priceYearly: number;
+  currency: string;
+  interval: 'monthly' | 'yearly';
+  features: string[];
+  limitations: string[];
+  recommended?: boolean;
+  badge?: string;
+  color: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface SubscribeRequest {
+  plan_id: string;
+  payment_method_id: string;
+  interval: 'monthly' | 'yearly';
+}
+
 export interface CreatePaymentMethodData {
   type?: string;
   brand: string;
@@ -411,6 +434,46 @@ class PaymentService {
     }
     
     return 'unknown';
+  }
+
+  /**
+   * Get available subscription plans
+   */
+  async getPlans(): Promise<Plan[]> {
+    try {
+      const response = await api.get('/payment/plans');
+      return response.data.data || [];
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+      throw new Error('Erro ao carregar planos operacionais');
+    }
+  }
+
+  /**
+   * Subscribe to a plan
+   */
+  async subscribe(data: SubscribeRequest): Promise<Subscription> {
+    try {
+      const response = await api.post('/payment/subscribe', data);
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Error subscribing to plan:', error);
+      const message = error.response?.data?.message || 'Erro ao ativar plano operacional';
+      throw new Error(message);
+    }
+  }
+
+  /**
+   * Cancel subscription
+   */
+  async cancelSubscription(): Promise<void> {
+    try {
+      await this.updateSubscription({ auto_renewal: false });
+    } catch (error: any) {
+      console.error('Error cancelling subscription:', error);
+      const message = error.response?.data?.message || 'Erro ao cancelar operação';
+      throw new Error(message);
+    }
   }
 }
 

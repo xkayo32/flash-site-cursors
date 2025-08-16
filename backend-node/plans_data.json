@@ -1,0 +1,84 @@
+{
+  "plans": [
+    {
+      "id": "basic",
+      "name": "OPERADOR BÁSICO",
+      "description": "TREINAMENTO INICIAL PARA NOVOS RECRUTAS",
+      "price": 29.90,
+      "priceYearly": 299.00,
+      "currency": "R$",
+      "interval": "monthly",
+      "color": "gray",
+      "recommended": false,
+      "badge": "",
+      "features": [
+        "ACESSO A ARSENAL BÁSICO DE QUESTÕES",
+        "100 FLASHCARDS TÁTICOS/MÊS",
+        "3 SIMULAÇÕES/MÊS",
+        "RELATÓRIOS BÁSICOS DE DESEMPENHO",
+        "SUPORTE POR COMUNICAÇÃO DIGITAL"
+      ],
+      "limitations": [
+        "SEM VIDEOAULAS TÁTICAS",
+        "SEM RESUMOS INTERATIVOS",
+        "SEM CRONOGRAMA PERSONALIZADO DE MISSÃO"
+      ],
+      "created_at": "2024-01-01T10:00:00.000Z",
+      "updated_at": "2024-01-01T10:00:00.000Z"
+    },
+    {
+      "id": "pro",
+      "name": "OPERADOR ELITE",
+      "description": "PARA AGENTES ESPECIALIZADOS EM MISSÕES CRÍTICAS",
+      "price": 59.90,
+      "priceYearly": 599.00,
+      "currency": "R$",
+      "interval": "monthly",
+      "color": "blue",
+      "recommended": true,
+      "badge": "MAIS REQUISITADO",
+      "features": [
+        "ACESSO TOTAL AO ARSENAL DE QUESTÕES",
+        "FLASHCARDS TÁTICOS ILIMITADOS",
+        "SIMULAÇÕES DE OPERAÇÃO ILIMITADAS",
+        "VIDEOAULAS TÁTICAS EM HD",
+        "RESUMOS INTERATIVOS DE INTELIGÊNCIA",
+        "CRONOGRAMA COM IA MILITAR",
+        "RELATÓRIOS AVANÇADOS DE DESEMPENHO",
+        "SUPORTE PRIORITÁRIO DE COMANDO"
+      ],
+      "limitations": [
+        "SEM MENTORIA INDIVIDUAL DE COMANDANTE",
+        "SEM CORREÇÃO DE REDAÇÃO TÁTICA"
+      ],
+      "created_at": "2024-01-01T10:00:00.000Z",
+      "updated_at": "2024-01-01T10:00:00.000Z"
+    },
+    {
+      "id": "premium",
+      "name": "COMANDANTE VIP",
+      "description": "OPERAÇÃO COMPLETA COM MENTORIA DE COMANDANTE",
+      "price": 99.90,
+      "priceYearly": 999.00,
+      "currency": "R$",
+      "interval": "monthly",
+      "color": "purple",
+      "recommended": false,
+      "badge": "COMANDO VIP",
+      "features": [
+        "TODOS OS RECURSOS DO OPERADOR ELITE",
+        "MENTORIA INDIVIDUAL MENSAL COM COMANDANTE",
+        "5 CORREÇÕES DE REDAÇÃO TÁTICA/MÊS",
+        "ACESSO ANTECIPADO A NOVOS ARMAMENTOS",
+        "GRUPO VIP DE COMANDO NO WHATSAPP",
+        "BRIEFINGS EXCLUSIVOS AO VIVO",
+        "MATERIAL TÁTICO EM PDF",
+        "CERTIFICADO DE CONCLUSÃO DE MISSÃO",
+        "SUPORTE VIP DE COMANDO 24/7"
+      ],
+      "limitations": [],
+      "created_at": "2024-01-01T10:00:00.000Z",
+      "updated_at": "2024-01-01T10:00:00.000Z"
+    }
+  ]
+}

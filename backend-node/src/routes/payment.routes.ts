@@ -7,6 +7,7 @@ const router = Router();
 
 // Path to payment data file
 const PAYMENT_DATA_PATH = path.join(__dirname, '../../payment_data.json');
+const PLANS_DATA_PATH = path.join(__dirname, '../../plans_data.json');
 
 // Helper function to read payment data
 const readPaymentData = () => {
@@ -50,10 +51,159 @@ const writePaymentData = (data: any) => {
   }
 };
 
+// Helper function to read plans data
+const readPlansData = () => {
+  try {
+    if (!fs.existsSync(PLANS_DATA_PATH)) {
+      console.error('Plans data file not found:', PLANS_DATA_PATH);
+      return { plans: [] };
+    }
+    const data = fs.readFileSync(PLANS_DATA_PATH, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading plans data:', error);
+    return { plans: [] };
+  }
+};
+
 // Helper function to generate ID
 const generateId = (prefix: string) => {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
+
+// GET /api/v1/payment/plans - List available subscription plans
+router.get('/plans', (req: Request, res: Response) => {
+  try {
+    const plansData = readPlansData();
+    
+    res.json({
+      success: true,
+      data: plansData.plans
+    });
+  } catch (error) {
+    console.error('Error fetching subscription plans:', error);
+    res.status(500).json({
+      success: false,
+      message: 'ERRO NO SISTEMA DE PLANOS OPERACIONAIS'
+    });
+  }
+});
+
+// POST /api/v1/payment/subscribe - Subscribe to a plan
+router.post('/subscribe', authMiddleware, (req: Request, res: Response) => {
+  try {
+    const data = readPaymentData();
+    const plansData = readPlansData();
+    const userId = req.user?.id;
+    const { plan_id, payment_method_id, interval = 'monthly' } = req.body;
+
+    // Validate plan exists
+    const plan = plansData.plans.find((p: any) => p.id === plan_id);
+    if (!plan) {
+      return res.status(404).json({
+        success: false,
+        message: 'PLANO OPERACIONAL NÃO ENCONTRADO'
+      });
+    }
+
+    // Validate payment method belongs to user
+    const paymentMethod = data.payment_methods.find(
+      (method: any) => method.id === payment_method_id && method.user_id == userId
+    );
+    
+    if (!paymentMethod) {
+      return res.status(400).json({
+        success: false,
+        message: 'ARMAMENTO INVÁLIDO PARA OPERAÇÃO'
+      });
+    }
+
+    // Check if user already has an active subscription
+    const existingSubscription = data.subscriptions.find(
+      (sub: any) => sub.user_id == userId && sub.status === 'active'
+    );
+
+    if (existingSubscription) {
+      // Cancel existing subscription
+      existingSubscription.status = 'cancelled';
+      existingSubscription.auto_renewal = false;
+      existingSubscription.updated_at = new Date().toISOString();
+    }
+
+    // Create new subscription
+    const price = interval === 'yearly' ? plan.priceYearly : plan.price;
+    const currentDate = new Date();
+    const endDate = new Date(currentDate);
+    
+    if (interval === 'yearly') {
+      endDate.setFullYear(endDate.getFullYear() + 1);
+    } else {
+      endDate.setMonth(endDate.getMonth() + 1);
+    }
+
+    const newSubscription = {
+      id: generateId('sub'),
+      user_id: userId,
+      plan_id: `${plan_id}_${interval}`,
+      plan_name: `${plan.name} ${interval === 'yearly' ? 'ANUAL' : 'MENSAL'}`,
+      status: 'active',
+      amount: price,
+      currency: 'BRL',
+      interval: interval === 'yearly' ? 'year' : 'month',
+      current_period_start: currentDate.toISOString(),
+      current_period_end: endDate.toISOString(),
+      auto_renewal: true,
+      payment_method_id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    data.subscriptions.push(newSubscription);
+
+    // Create payment record
+    const newPayment = {
+      id: generateId('pay'),
+      user_id: userId,
+      amount: price,
+      currency: 'BRL',
+      status: 'succeeded',
+      payment_method_id,
+      description: `OPERAÇÃO ${interval === 'yearly' ? 'ANUAL' : 'MENSAL'} - ${plan.name}`,
+      invoice_id: generateId('inv'),
+      failure_reason: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    data.payment_history.push(newPayment);
+
+    if (writePaymentData(data)) {
+      res.status(201).json({
+        success: true,
+        message: 'PLANO OPERACIONAL ATIVADO COM SUCESSO!',
+        data: {
+          ...newSubscription,
+          payment_method: {
+            brand: paymentMethod.brand,
+            last4: paymentMethod.last4,
+            nickname: paymentMethod.nickname
+          }
+        }
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: 'FALHA NA ATIVAÇÃO DO PLANO'
+      });
+    }
+  } catch (error) {
+    console.error('Error subscribing to plan:', error);
+    res.status(500).json({
+      success: false,
+      message: 'ERRO CRÍTICO NO SISTEMA DE ASSINATURAS'
+    });
+  }
+});
 
 // GET /api/v1/payment/methods - List payment methods
 router.get('/methods', authMiddleware, (req: Request, res: Response) => {

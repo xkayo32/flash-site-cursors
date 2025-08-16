@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CreditCard,
@@ -38,39 +38,9 @@ import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 import { PageHeader } from '@/components/student';
 import toast from 'react-hot-toast';
+import paymentService, { Plan, Subscription, PaymentHistory, PaymentMethod } from '@/services/paymentService';
 
-// Tipos
-interface Plan {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  priceYearly: number;
-  currency: string;
-  interval: 'monthly' | 'yearly';
-  features: string[];
-  limitations: string[];
-  recommended?: boolean;
-  badge?: string;
-  color: string;
-}
-
-interface Subscription {
-  id: string;
-  planId: string;
-  planName: string;
-  status: 'active' | 'cancelled' | 'expired' | 'trial';
-  currentPeriodStart: string;
-  currentPeriodEnd: string;
-  cancelAtPeriodEnd: boolean;
-  trialEndsAt?: string;
-  paymentMethod?: {
-    type: 'card' | 'pix' | 'boleto';
-    last4?: string;
-    brand?: string;
-  };
-}
-
+// Tipos locais adicionais
 interface Invoice {
   id: string;
   date: string;
@@ -80,127 +50,128 @@ interface Invoice {
   downloadUrl?: string;
 }
 
-// Dados mockados
-const plans: Plan[] = [
-  {
-    id: 'basic',
-    name: 'OPERADOR BÁSICO',
-    description: 'TREINAMENTO INICIAL PARA NOVOS RECRUTAS',
-    price: 29.90,
-    priceYearly: 299.00,
-    currency: 'R$',
-    interval: 'monthly',
-    color: 'gray',
-    features: [
-      'ACESSO A ARSENAL BÁSICO DE QUESTÕES',
-      '100 FLASHCARDS TÁTICOS/MÊS',
-      '3 SIMULAÇÕES/MÊS',
-      'RELATÓRIOS BÁSICOS DE DESEMPENHO',
-      'SUPORTE POR COMUNICAÇÃO DIGITAL'
-    ],
-    limitations: [
-      'SEM VIDEOAULAS TÁTICAS',
-      'SEM RESUMOS INTERATIVOS',
-      'SEM CRONOGRAMA PERSONALIZADO DE MISSÃO'
-    ]
-  },
-  {
-    id: 'pro',
-    name: 'OPERADOR ELITE',
-    description: 'PARA AGENTES ESPECIALIZADOS EM MISSÕES CRÍTICAS',
-    price: 59.90,
-    priceYearly: 599.00,
-    currency: 'R$',
-    interval: 'monthly',
-    color: 'blue',
-    recommended: true,
-    badge: 'MAIS REQUISITADO',
-    features: [
-      'ACESSO TOTAL AO ARSENAL DE QUESTÕES',
-      'FLASHCARDS TÁTICOS ILIMITADOS',
-      'SIMULAÇÕES DE OPERAÇÃO ILIMITADAS',
-      'VIDEOAULAS TÁTICAS EM HD',
-      'RESUMOS INTERATIVOS DE INTELIGÊNCIA',
-      'CRONOGRAMA COM IA MILITAR',
-      'RELATÓRIOS AVANÇADOS DE DESEMPENHO',
-      'SUPORTE PRIORITÁRIO DE COMANDO'
-    ],
-    limitations: [
-      'SEM MENTORIA INDIVIDUAL DE COMANDANTE',
-      'SEM CORREÇÃO DE REDAÇÃO TÁTICA'
-    ]
-  },
-  {
-    id: 'premium',
-    name: 'COMANDANTE VIP',
-    description: 'OPERAÇÃO COMPLETA COM MENTORIA DE COMANDANTE',
-    price: 99.90,
-    priceYearly: 999.00,
-    currency: 'R$',
-    interval: 'monthly',
-    color: 'purple',
-    badge: 'COMANDO VIP',
-    features: [
-      'TODOS OS RECURSOS DO OPERADOR ELITE',
-      'MENTORIA INDIVIDUAL MENSAL COM COMANDANTE',
-      '5 CORREÇÕES DE REDAÇÃO TÁTICA/MÊS',
-      'ACESSO ANTECIPADO A NOVOS ARMAMENTOS',
-      'GRUPO VIP DE COMANDO NO WHATSAPP',
-      'BRIEFINGS EXCLUSIVOS AO VIVO',
-      'MATERIAL TÁTICO EM PDF',
-      'CERTIFICADO DE CONCLUSÃO DE MISSÃO',
-      'SUPORTE VIP DE COMANDO 24/7'
-    ],
-    limitations: []
-  }
-];
-
-const currentSubscription: Subscription = {
-  id: '1',
-  planId: 'pro',
-  planName: 'OPERADOR ELITE',
-  status: 'active',
-  currentPeriodStart: '2024-01-01',
-  currentPeriodEnd: '2024-02-01',
-  cancelAtPeriodEnd: false,
-  paymentMethod: {
-    type: 'card',
-    last4: '4242',
-    brand: 'Visa'
-  }
-};
-
-const invoices: Invoice[] = [
-  {
-    id: '1',
-    date: '2024-01-01',
-    amount: 59.90,
-    status: 'paid',
-    description: 'OPERADOR ELITE - Janeiro 2024',
-    downloadUrl: '#'
-  },
-  {
-    id: '2',
-    date: '2023-12-01',
-    amount: 59.90,
-    status: 'paid',
-    description: 'OPERADOR ELITE - Dezembro 2023',
-    downloadUrl: '#'
-  },
-  {
-    id: '3',
-    date: '2023-11-01',
-    amount: 59.90,
-    status: 'paid',
-    description: 'OPERADOR ELITE - Novembro 2023',
-    downloadUrl: '#'
-  }
-];
 
 export default function SubscriptionPage() {
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  
+  // Estados para dados da API
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [currentSubscription, setCurrentSubscription] = useState<Subscription | null>(null);
+  const [invoices, setInvoices] = useState<PaymentHistory[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Carregar dados da API
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const [plansData, subscriptionData, historyData, methodsData] = await Promise.allSettled([
+          paymentService.getPlans(),
+          paymentService.getSubscription(),
+          paymentService.getPaymentHistory(1, 10),
+          paymentService.getPaymentMethods()
+        ]);
+
+        if (plansData.status === 'fulfilled') {
+          setPlans(plansData.value);
+        } else {
+          console.error('Erro ao carregar planos:', plansData.reason);
+        }
+
+        if (subscriptionData.status === 'fulfilled') {
+          setCurrentSubscription(subscriptionData.value);
+        } else {
+          console.error('Erro ao carregar assinatura:', subscriptionData.reason);
+        }
+
+        if (historyData.status === 'fulfilled') {
+          setInvoices(historyData.value.data || []);
+        } else {
+          console.error('Erro ao carregar histórico:', historyData.reason);
+        }
+
+        if (methodsData.status === 'fulfilled') {
+          setPaymentMethods(methodsData.value);
+        } else {
+          console.error('Erro ao carregar métodos de pagamento:', methodsData.reason);
+        }
+
+      } catch (err) {
+        console.error('Erro geral ao carregar dados:', err);
+        setError('Erro ao carregar dados operacionais');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Função para assinar um plano
+  const handleSubscribeToPlan = async (planId: string) => {
+    try {
+      if (paymentMethods.length === 0) {
+        toast.error('ADICIONE UM MÉTODO DE PAGAMENTO PRIMEIRO!', { icon: '💳' });
+        return;
+      }
+
+      const defaultPaymentMethod = paymentMethods.find(pm => pm.is_default) || paymentMethods[0];
+      
+      setLoading(true);
+      await paymentService.subscribe({
+        plan_id: planId,
+        payment_method_id: defaultPaymentMethod.id,
+        interval: billingInterval
+      });
+
+      toast.success('PLANO OPERACIONAL ATIVADO!', { icon: '🎯' });
+      
+      // Recarregar dados
+      const [newSubscription, newHistory] = await Promise.all([
+        paymentService.getSubscription(),
+        paymentService.getPaymentHistory(1, 10)
+      ]);
+      
+      setCurrentSubscription(newSubscription);
+      setInvoices(newHistory.data || []);
+      
+    } catch (error: any) {
+      console.error('Erro ao assinar plano:', error);
+      toast.error(error.message || 'FALHA NA ATIVAÇÃO DO PLANO', { icon: '❌' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para cancelar assinatura
+  const handleCancelSubscription = async () => {
+    try {
+      setLoading(true);
+      await paymentService.cancelSubscription();
+      
+      toast.error('PLANO OPERACIONAL CANCELADO!', {
+        description: 'Acesso será encerrado ao final do período',
+        icon: '🚫'
+      });
+      
+      // Recarregar assinatura
+      const updatedSubscription = await paymentService.getSubscription();
+      setCurrentSubscription(updatedSubscription);
+      
+    } catch (error: any) {
+      console.error('Erro ao cancelar assinatura:', error);
+      toast.error(error.message || 'FALHA NO CANCELAMENTO', { icon: '❌' });
+    } finally {
+      setLoading(false);
+      setShowCancelModal(false);
+    }
+  };
 
   // Calcular economia anual
   const calculateYearlySavings = (plan: Plan) => {
@@ -232,7 +203,7 @@ export default function SubscriptionPage() {
 
   // Card de plano
   const PlanCard = ({ plan }: { plan: Plan }) => {
-    const isCurrentPlan = currentSubscription.planId === plan.id;
+    const isCurrentPlan = currentSubscription?.plan_id?.includes(plan.id) || false;
     const price = billingInterval === 'yearly' ? plan.priceYearly : plan.price;
     const savings = billingInterval === 'yearly' ? calculateYearlySavings(plan) : 0;
 
@@ -336,13 +307,11 @@ export default function SubscriptionPage() {
                     ? "bg-accent-500 hover:bg-accent-600 dark:bg-gray-100 dark:hover:bg-accent-650 text-black dark:text-black dark:hover:text-white"
                     : "bg-gray-900 hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600"
                 )}
-                onClick={() => {
-                  toast.success('INICIANDO PROTOCOLO DE UPGRADE!', { icon: '🎯' });
-                  setSelectedPlan(plan.id);
-                }}
+                onClick={() => handleSubscribeToPlan(plan.id)}
+                disabled={loading}
               >
-                {currentSubscription.planId && 
-                 plans.findIndex(p => p.id === plan.id) > plans.findIndex(p => p.id === currentSubscription.planId) ? (
+                {currentSubscription?.plan_id && 
+                 plans.findIndex(p => p.id === plan.id) > plans.findIndex(p => p.id === currentSubscription.plan_id.split('_')[0]) ? (
                   <>
                     <ArrowRight className="w-4 h-4 mr-2" />
                     AVANÇAR NÍVEL
@@ -360,6 +329,63 @@ export default function SubscriptionPage() {
       </motion.div>
     );
   };
+
+  // Loading state
+  if (loading && plans.length === 0) {
+    return (
+      <div className="p-6">
+        <PageHeader
+          title="PLANO OPERACIONAL"
+          subtitle="CARREGANDO ARSENAIS TÁTICOS..."
+          icon={ShieldCheck}
+          breadcrumbs={[
+            { label: 'PAINEL DE COMANDO', href: '/student/dashboard' },
+            { label: 'PLANO OPERACIONAL' }
+          ]}
+        />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-accent-500/30 border-t-accent-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+              CARREGANDO DADOS OPERACIONAIS...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="p-6">
+        <PageHeader
+          title="PLANO OPERACIONAL"
+          subtitle="ERRO NO SISTEMA DE ARSENAIS TÁTICOS"
+          icon={ShieldCheck}
+          breadcrumbs={[
+            { label: 'PAINEL DE COMANDO', href: '/student/dashboard' },
+            { label: 'PLANO OPERACIONAL' }
+          ]}
+        />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <p className="text-red-600 dark:text-red-400 font-police-body uppercase tracking-wider mb-4">
+              {error}
+            </p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="bg-accent-500 hover:bg-accent-600 text-black font-police-body uppercase"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              TENTAR NOVAMENTE
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -386,7 +412,7 @@ export default function SubscriptionPage() {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-xl font-bold text-white font-police-title uppercase tracking-wider">
-                      {currentSubscription.planName}
+                      {currentSubscription.plan_name}
                     </h3>
                     <Badge className={cn(
                       currentSubscription.status === 'active' && "bg-green-500/20 text-green-400 border-green-500/50",
@@ -402,12 +428,12 @@ export default function SubscriptionPage() {
                   <div className="flex items-center gap-6 text-sm text-gray-400">
                     <span className="flex items-center gap-2 font-police-body uppercase tracking-wider">
                       <Clock className="w-4 h-4 text-accent-500" />
-                      RENOVAÇÃO: {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString('pt-BR')}
+                      RENOVAÇÃO: {new Date(currentSubscription.current_period_end).toLocaleDateString('pt-BR')}
                     </span>
-                    {currentSubscription.paymentMethod && (
+                    {currentSubscription.payment_method && (
                       <span className="flex items-center gap-2">
                         <CreditCard className="w-4 h-4 text-gray-500" />
-                        {currentSubscription.paymentMethod.brand} ****{currentSubscription.paymentMethod.last4}
+                        {currentSubscription.payment_method.brand} ****{currentSubscription.payment_method.last4}
                       </span>
                     )}
                   </div>
@@ -428,6 +454,7 @@ export default function SubscriptionPage() {
                     size="sm"
                     className="text-red-400 border-red-500/50 hover:bg-red-500/10 font-police-body uppercase tracking-wider"
                     onClick={() => setShowCancelModal(true)}
+                    disabled={loading}
                   >
                     <AlertTriangle className="w-4 h-4 mr-2" />
                     CANCELAR PLANO
@@ -607,7 +634,7 @@ export default function SubscriptionPage() {
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white font-police-body">{invoice.description}</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {new Date(invoice.date).toLocaleDateString('pt-BR')}
+                      {new Date(invoice.created_at).toLocaleDateString('pt-BR')}
                     </p>
                   </div>
                 </div>
@@ -617,17 +644,17 @@ export default function SubscriptionPage() {
                     <p className="font-bold text-gray-900 dark:text-white font-police-numbers">R$ {invoice.amount.toFixed(2)}</p>
                     <Badge className={cn(
                       "text-xs font-police-body",
-                      invoice.status === 'paid' && "bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/50",
+                      invoice.status === 'succeeded' && "bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/50",
                       invoice.status === 'pending' && "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/50",
                       invoice.status === 'failed' && "bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/50"
                     )}>
-                      {invoice.status === 'paid' && '● QUITADO'}
+                      {invoice.status === 'succeeded' && '● QUITADO'}
                       {invoice.status === 'pending' && '● PROCESSANDO'}
                       {invoice.status === 'failed' && '● FALHA'}
                     </Badge>
                   </div>
                   
-                  {invoice.downloadUrl && (
+                  {invoice.invoice_id && (
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -692,7 +719,7 @@ export default function SubscriptionPage() {
 
       {/* Modal de cancelamento */}
       <AnimatePresence>
-        {showCancelModal && (
+        {showCancelModal && currentSubscription && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -725,7 +752,7 @@ export default function SubscriptionPage() {
                   ACESSO GARANTIDO ATÉ:
                 </p>
                 <p className="font-bold text-gray-900 dark:text-white font-police-numbers text-lg">
-                  {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString('pt-BR')}
+                  {new Date(currentSubscription.current_period_end).toLocaleDateString('pt-BR')}
                 </p>
               </div>
               
@@ -740,13 +767,8 @@ export default function SubscriptionPage() {
                 </Button>
                 <Button
                   className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 font-police-body uppercase tracking-wider"
-                  onClick={() => {
-                    toast.error('PLANO OPERACIONAL CANCELADO!', {
-                      description: 'Acesso será encerrado ao final do período',
-                      icon: '🚫'
-                    });
-                    setShowCancelModal(false);
-                  }}
+                  onClick={handleCancelSubscription}
+                  disabled={loading}
                 >
                   <X className="w-4 h-4 mr-2" />
                   CONFIRMAR CANCELAMENTO
