@@ -96,11 +96,21 @@ export default function SummariesPage() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [showComments, setShowComments] = useState(true);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [readingProgress, setReadingProgress] = useState(0);
 
   // Carregamento inicial dos resumos
   useEffect(() => {
     loadSummaries();
   }, [searchTerm, selectedSubject, selectedDifficulty]);
+
+  // Atualizar progresso quando seções expandidas mudarem
+  useEffect(() => {
+    if (selectedSummary) {
+      const progress = calculateProgress(selectedSummary);
+      setReadingProgress(progress);
+    }
+  }, [expandedSections, selectedSummary]);
 
   const loadSummaries = async () => {
     try {
@@ -289,6 +299,55 @@ export default function SummariesPage() {
     if (hours > 0) return `${hours}h atrás`;
     if (minutes > 0) return `${minutes}min atrás`;
     return 'Agora';
+  };
+
+  // Calcular progresso baseado nas seções expandidas
+  const calculateProgress = (summary: LocalSummary) => {
+    if (!summary.sections || summary.sections.length === 0) return 0;
+    const expandedCount = expandedSections.length;
+    const totalSections = summary.sections.length;
+    return Math.round((expandedCount / totalSections) * 100);
+  };
+
+  // Navegação para próxima seção
+  const goToNextSection = (summary: LocalSummary) => {
+    if (!summary.sections || summary.sections.length === 0) return;
+    
+    // Encontrar primeira seção não expandida
+    const nextSection = summary.sections.find(section => !expandedSections.includes(section.id));
+    
+    if (nextSection) {
+      // Expandir a próxima seção
+      setExpandedSections(prev => [...prev, nextSection.id]);
+      
+      // Scroll suave até a seção
+      setTimeout(() => {
+        const element = document.querySelector(`[data-section-id="${nextSection.id}"]`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      
+      toast.success(`Seção "${nextSection.title}" aberta!`);
+    } else {
+      // Todas as seções já foram expandidas
+      toast.success('Todas as seções foram lidas!');
+      setIsCompleted(true);
+    }
+  };
+
+  // Marcar como concluído
+  const markAsCompleted = (summary: LocalSummary) => {
+    setIsCompleted(true);
+    
+    // Expandir todas as seções se ainda não estiverem
+    if (summary.sections) {
+      const allSectionIds = summary.sections.map(section => section.id);
+      setExpandedSections(allSectionIds);
+    }
+    
+    toast.success('🎯 MISSÃO CONCLUÍDA! Briefing tático finalizado com sucesso.');
+    
+    // Opcional: Salvar progresso na API
+    // summaryService.markAsCompleted(summary.id);
   };
 
   // Componente de comentário
@@ -748,7 +807,7 @@ export default function SummariesPage() {
       {/* Conteúdo do resumo */}
       <div className="space-y-6">
         {(summary.sections || []).map((section) => (
-          <Card key={section.id}>
+          <Card key={section.id} data-section-id={section.id}>
             <CardHeader 
               className="cursor-pointer"
               onClick={() => toggleSection(section.id)}
@@ -887,19 +946,46 @@ export default function SummariesPage() {
           <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
-                PROGRESSO: <span className="font-medium text-gray-900 dark:text-white font-police-numbers">65%</span>
+                PROGRESSO: <span className="font-medium text-gray-900 dark:text-white font-police-numbers">{readingProgress}%</span>
               </div>
               <div className="w-32 lg:w-48 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="bg-accent-500 h-full rounded-full" style={{ width: '65%' }} />
+                <div 
+                  className={cn(
+                    "h-full rounded-full transition-all duration-500",
+                    isCompleted ? "bg-green-500" : "bg-accent-500"
+                  )} 
+                  style={{ width: `${readingProgress}%` }} 
+                />
               </div>
             </div>
             
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant="outline" size="sm" className="font-police-body uppercase text-xs lg:text-sm">
-                MARCAR CONCLUÍDO
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => markAsCompleted(summary)}
+                disabled={isCompleted}
+                className={cn(
+                  "font-police-body uppercase text-xs lg:text-sm",
+                  isCompleted ? "bg-green-100 text-green-700 border-green-300" : ""
+                )}
+              >
+                {isCompleted ? (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    CONCLUÍDO
+                  </>
+                ) : (
+                  'MARCAR CONCLUÍDO'
+                )}
               </Button>
-              <Button size="sm" className="gap-2 font-police-body uppercase bg-accent-500 hover:bg-accent-600 text-black dark:text-black text-xs lg:text-sm">
-                PRÓXIMA SEÇÃO
+              <Button 
+                size="sm" 
+                onClick={() => goToNextSection(summary)}
+                disabled={readingProgress === 100}
+                className="gap-2 font-police-body uppercase bg-accent-500 hover:bg-accent-600 text-black dark:text-black text-xs lg:text-sm disabled:opacity-50"
+              >
+                {readingProgress === 100 ? 'MISSÃO COMPLETA' : 'PRÓXIMA SEÇÃO'}
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
