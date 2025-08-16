@@ -32,7 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { CourseImage } from '@/components/CourseImage';
-import { mockCourses, courseCategories, type MockCourse } from '@/data/mockCourses';
+import { courseService, type Course } from '@/services/courseService';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 
@@ -85,7 +85,7 @@ export default function CourseForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form state
-  const [formData, setFormData] = useState<Partial<MockCourse>>({
+  const [formData, setFormData] = useState<Partial<Course>>({
     title: '',
     category: '',
     description: '',
@@ -117,59 +117,62 @@ export default function CourseForm() {
   const [newObjective, setNewObjective] = useState('');
   const [newTag, setNewTag] = useState('');
 
+  // Course categories
+  const courseCategories = [
+    'POLÍCIA FEDERAL',
+    'POLÍCIA CIVIL', 
+    'POLÍCIA MILITAR',
+    'BOMBEIROS',
+    'GUARDA MUNICIPAL',
+    'LEGISLAÇÃO',
+    'INFORMÁTICA',
+    'PORTUGUÊS',
+    'MATEMÁTICA',
+    'DIREITO'
+  ];
+
   // Load course data if editing
   useEffect(() => {
     if (isEditing && id) {
-      const courseId = parseInt(id);
-      const existingCourse = mockCourses.find(c => c.id === courseId);
-      if (existingCourse) {
-        setFormData(existingCourse);
-        setImagePreview(existingCourse.thumbnail);
-        // Mock modules data
-        setModules([
-          {
-            id: '1',
-            title: 'Introdução ao Curso',
-            description: 'Apresentação e objetivos do curso',
-            isPublished: true,
-            order: 1,
-            lessons: [
-              {
-                id: '1-1',
-                title: 'Boas-vindas',
-                description: 'Vídeo de apresentação',
-                type: 'video',
-                duration: 5,
-                videoUrl: 'https://example.com/video1',
-                isPublished: true,
-                isFree: true,
-                order: 1
-              },
-              {
-                id: '1-2',
-                title: 'Material de Apoio',
-                description: 'Documentos e referências',
-                type: 'text',
-                duration: 10,
-                content: 'Conteúdo do material...',
-                isPublished: true,
-                isFree: false,
-                order: 2
-              }
-            ]
-          },
-          {
-            id: '2',
-            title: 'Fundamentos',
-            description: 'Base teórica necessária',
-            isPublished: false,
-            order: 2,
-            lessons: []
+      const loadCourse = async () => {
+        try {
+          setIsLoading(true);
+          const result = await courseService.getCourse(id);
+          
+          if (result.success && result.data) {
+            setFormData(result.data);
+            setImagePreview(result.data.thumbnail);
+            
+            // Load modules for this course
+            const modulesResult = await courseService.listModules(id);
+            if (modulesResult.success && modulesResult.data) {
+              const moduleData = modulesResult.data.map(module => ({
+                id: module.id,
+                title: module.title,
+                description: module.description || '',
+                isPublished: module.isPublished,
+                order: module.orderIndex,
+                lessons: []
+              }));
+              setModules(moduleData);
+            }
+          } else {
+            toast.error('Erro ao carregar curso: ' + (result.message || 'Curso não encontrado'));
+            navigate('/admin/courses');
           }
-        ]);
-      }
+        } catch (error) {
+          toast.error('Erro ao conectar com a API');
+          navigate('/admin/courses');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      loadCourse();
+    } else {
+      setIsLoading(false);
     }
-  }, [isEditing, id]);
+  }, [isEditing, id, navigate]);
 
   // Image handling
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -216,7 +219,7 @@ export default function CourseForm() {
       setFormData(prev => ({
         ...prev,
         [parent]: {
-          ...(prev[parent as keyof MockCourse] as any),
+          ...(prev[parent as keyof Course] as any),
           [child]: value
         }
       }));
@@ -336,38 +339,52 @@ export default function CourseForm() {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
       const courseData = {
-        ...formData,
-        id: isEditing ? parseInt(id!) : Date.now(),
-        stats: isEditing ? formData.stats : {
-          enrollments: 0,
-          modules: modules.length,
-          lessons: modules.reduce((total, module) => total + module.lessons.length, 0),
-          rating: 0,
-          completion: 0,
-          views: 0
-        },
-        resources: isEditing ? formData.resources : {
-          videos: modules.reduce((total, module) => total + module.lessons.filter(l => l.type === 'video').length, 0),
-          questions: 0,
-          flashcards: 0,
-          summaries: 0,
-          laws: 0,
-          documents: 0
-        },
-        createdAt: isEditing ? formData.createdAt : new Date().toISOString().split('T')[0],
-        updatedAt: new Date().toISOString().split('T')[0],
-        thumbnail: imagePreview || formData.thumbnail
+        title: formData.title,
+        description: formData.description || '',
+        category: formData.category,
+        price: formData.price || 0,
+        difficulty_level: formData.difficulty || 'beginner',
+        duration_hours: formData.duration?.hours || 0,
+        duration_months: formData.duration?.months || 0,
+        requirements: formData.requirements || [],
+        objectives: formData.objectives || [],
+        target_audience: formData.targetAudience || '',
+        certification_available: formData.certification || false,
+        instructor_name: formData.instructor?.name || '',
+        status: formData.status === 'PUBLICADO' ? 'published' : formData.status === 'ARQUIVADO' ? 'archived' : 'draft'
       };
-      
-      toast.success(isEditing ? 'OPERAÇÃO CONCLUÍDA: Treinamento atualizado com sucesso!' : 'OPERAÇÃO CONCLUÍDA: Treinamento criado com sucesso!', { icon: '✅' });
-      navigate('/admin/courses');
+
+      let result;
+      if (isEditing && id) {
+        result = await courseService.updateCourse(id, courseData);
+      } else {
+        result = await courseService.createCourse(courseData);
+      }
+
+      if (result.success) {
+        // If there's an image to upload
+        if (imageFile && result.data?.id) {
+          const uploadResult = await courseService.uploadImage(result.data.id, imageFile);
+          if (!uploadResult.success) {
+            toast.error('Curso salvo, mas erro ao enviar imagem: ' + uploadResult.message);
+          }
+        }
+
+        toast.success(
+          isEditing 
+            ? 'OPERAÇÃO CONCLUÍDA: Treinamento atualizado com sucesso!' 
+            : 'OPERAÇÃO CONCLUÍDA: Treinamento criado com sucesso!', 
+          { icon: '✅' }
+        );
+        navigate('/admin/courses');
+      } else {
+        toast.error('OPERAÇÃO FALHADA: ' + (result.message || 'Erro ao processar treinamento'), { icon: '🚨' });
+      }
       
     } catch (error) {
-      toast.error('OPERAÇÃO FALHADA: Erro ao processar treinamento', { icon: '🚨' });
+      console.error('Error saving course:', error);
+      toast.error('OPERAÇÃO FALHADA: Erro ao conectar com a API', { icon: '🚨' });
     } finally {
       setIsLoading(false);
     }

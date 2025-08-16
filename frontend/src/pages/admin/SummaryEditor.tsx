@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -39,68 +39,17 @@ import {
   Redo,
   Shield,
   Target,
-  Award
+  Award,
+  Tag
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { summaryService, type Summary } from '@/services/summaryService';
+import { categoryService, type Category } from '@/services/categoryService';
+import toast from 'react-hot-toast';
 
-// Mock data for summaries
-const summaries = [
-  {
-    id: 1,
-    title: 'Direito Constitucional - Princípios Fundamentais',
-    course: 'Polícia Federal - Agente',
-    category: 'Direito',
-    author: 'Prof. Dr. Carlos Lima',
-    status: 'published',
-    createdAt: '2024-01-15',
-    updatedAt: '2024-01-15',
-    views: 1234,
-    embeds: {
-      questions: 15,
-      flashcards: 23
-    },
-    wordCount: 3500,
-    readingTime: '15 min'
-  },
-  {
-    id: 2,
-    title: 'Matemática Financeira - Juros Compostos',
-    course: 'Receita Federal - Auditor',
-    category: 'Matemática',
-    author: 'Prof. Ana Santos',
-    status: 'draft',
-    createdAt: '2024-01-14',
-    updatedAt: '2024-01-14',
-    views: 0,
-    embeds: {
-      questions: 8,
-      flashcards: 12
-    },
-    wordCount: 2100,
-    readingTime: '9 min'
-  },
-  {
-    id: 3,
-    title: 'Português - Concordância Verbal e Nominal',
-    course: 'TRT/TRF - Analista',
-    category: 'Português',
-    author: 'Prof. Maria Oliveira',
-    status: 'published',
-    createdAt: '2024-01-13',
-    updatedAt: '2024-01-13',
-    views: 856,
-    embeds: {
-      questions: 20,
-      flashcards: 30
-    },
-    wordCount: 4200,
-    readingTime: '18 min'
-  }
-];
-
-// Mock data for available questions and flashcards
+// Mock data for available questions and flashcards (mantido para funcionalidades do editor)
 const availableQuestions = [
   { id: 1, title: 'O que são os princípios fundamentais?', category: 'Direito Constitucional' },
   { id: 2, title: 'Quais são os objetivos da República?', category: 'Direito Constitucional' },
@@ -114,7 +63,6 @@ const availableFlashcards = [
   { id: 3, front: 'Sujeito Composto', back: 'Quando há mais de um núcleo...', category: 'Português' }
 ];
 
-const categories = ['Todos', 'Direito', 'Matemática', 'Português', 'História', 'Geografia'];
 const statuses = ['Todos', 'published', 'draft', 'review'];
 
 // Editor toolbar configuration
@@ -200,11 +148,63 @@ export default function SummaryEditor() {
   const [filterMateria, setFilterMateria] = useState('TODOS');
   const [filterSubmateria, setFilterSubmateria] = useState('TODOS');
   const [filterTopico, setFilterTopico] = useState('TODOS');
+  
+  // State para dados da API
+  const [summaries, setSummaries] = useState<Summary[]>([]);
+  const [categories, setCategories] = useState<string[]>(['Todos']);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Carregar dados da API
+  useEffect(() => {
+    loadSummaries();
+    loadCategories();
+  }, [selectedCategory, selectedStatus, searchTerm]);
+  
+  const loadSummaries = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const filters = {
+        q: searchTerm || undefined,
+        status: selectedStatus !== 'Todos' ? selectedStatus as any : undefined,
+        subject: selectedCategory !== 'Todos' ? selectedCategory : undefined,
+        page: 1,
+        limit: 50
+      };
+      
+      const response = await summaryService.getAll(filters);
+      setSummaries(response.summaries || []);
+      
+    } catch (err) {
+      console.error('Error loading summaries:', err);
+      setError('Erro ao carregar resumos. Tente novamente.');
+      toast.error('Erro ao carregar resumos');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const loadCategories = async () => {
+    try {
+      const response = await categoryService.listCategories();
+      if (response.success && response.data) {
+        const categoryNames = response.data
+          .filter(cat => cat.type === 'subject')
+          .map(cat => cat.name);
+        setCategories(['Todos', ...categoryNames]);
+      }
+    } catch (err) {
+      console.error('Error loading categories:', err);
+      // Manter as categorias padrão em caso de erro
+    }
+  };
 
   const filteredSummaries = summaries.filter(summary => {
     const matchesSearch = summary.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         summary.author.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'Todos' || summary.category === selectedCategory;
+                         (summary.created_by && summary.created_by.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCategory = selectedCategory === 'Todos' || summary.subject === selectedCategory;
     const matchesStatus = selectedStatus === 'Todos' || summary.status === selectedStatus;
     
     return matchesSearch && matchesCategory && matchesStatus;
@@ -227,17 +227,29 @@ export default function SummaryEditor() {
 
   const handleCreateSummary = () => {
     navigate('/admin/summaries/new');
+    toast.success('Redirecionando para criação de novo briefing', {
+      duration: 2000,
+      icon: '📋'
+    });
   };
 
-  const handleEditSummary = (summary: any) => {
+  const handleEditSummary = (summary: Summary) => {
     navigate(`/admin/summaries/edit/${summary.id}`);
+    toast.success(`Editando: ${summary.title}`, {
+      duration: 2000,
+      icon: '✏️'
+    });
   };
 
-  const handleViewSummary = (summary: any) => {
+  const handleViewSummary = (summary: Summary) => {
     setSelectedSummary(summary);
     setIsEditing(false);
     setShowSummaryModal(true);
     setActiveTab('preview');
+    toast.success(`Visualizando: ${summary.title}`, {
+      duration: 2000,
+      icon: '👁️'
+    });
   };
 
   const handleToolbarAction = (action: string) => {
@@ -301,7 +313,7 @@ export default function SummaryEditor() {
                   TOTAL DE BRIEFINGS
                 </p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                  {summaries.length}
+                  {isLoading ? '...' : summaries.length}
                 </p>
               </div>
               <Shield className="w-6 h-6 text-accent-500" />
@@ -317,7 +329,7 @@ export default function SummaryEditor() {
                   OPERACIONAIS
                 </p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                  {summaries.filter(s => s.status === 'published').length}
+                  {isLoading ? '...' : summaries.filter(s => s.status === 'published').length}
                 </p>
               </div>
               <Target className="w-6 h-6 text-gray-500" />
@@ -330,13 +342,13 @@ export default function SummaryEditor() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
-                  QUESTÕES TÁTICAS
+                  SEÇÕES TÁTICAS
                 </p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                  {summaries.reduce((acc, s) => acc + s.embeds.questions, 0)}
+                  {isLoading ? '...' : summaries.reduce((acc, s) => acc + (s.sections?.length || 0), 0)}
                 </p>
               </div>
-              <Brain className="w-6 h-6 text-purple-500" />
+              <FileText className="w-6 h-6 text-purple-500" />
             </div>
           </CardContent>
         </Card>
@@ -346,13 +358,13 @@ export default function SummaryEditor() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
-                  FLASHCARDS OPERACIONAIS
+                  VISUALIZAÇÕES
                 </p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
-                  {summaries.reduce((acc, s) => acc + s.embeds.flashcards, 0)}
+                  {isLoading ? '...' : summaries.reduce((acc, s) => acc + (s.statistics?.views || 0), 0)}
                 </p>
               </div>
-              <Star className="w-6 h-6 text-yellow-500" />
+              <Eye className="w-6 h-6 text-yellow-500" />
             </div>
           </CardContent>
         </Card>
@@ -486,115 +498,152 @@ export default function SummaryEditor() {
         <Card>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-100 dark:bg-gray-800">
-                  <tr>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
-                      BRIEFING
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
-                      CURSO
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
-                      INSTRUTOR
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
-                      STATUS
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
-                      ELEMENTOS
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
-                      MÉTRICAS
-                    </th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
-                      AÇÕES
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredSummaries.map((summary) => (
-                    <tr
-                      key={summary.id}
-                      className="border-b border-primary-100 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-gray-800"
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 border-2 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="font-police-body font-medium uppercase tracking-wider text-gray-900 dark:text-white">
+                      CARREGANDO BRIEFINGS...
+                    </span>
+                  </div>
+                </div>
+              ) : error ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+                    <p className="font-police-body font-medium uppercase tracking-wider text-red-600 dark:text-red-400">
+                      {error}
+                    </p>
+                    <Button 
+                      onClick={loadSummaries}
+                      variant="outline"
+                      className="mt-3 font-police-body uppercase tracking-wider"
                     >
-                      <td className="py-4 px-6">
-                        <div>
-                          <p className="font-medium text-primary-900 dark:text-white">
-                            {summary.title}
-                          </p>
-                          <p className="text-sm text-primary-600 dark:text-gray-400">
-                            {summary.category}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="text-primary-600 dark:text-gray-400">
-                          {summary.course}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="text-primary-600 dark:text-gray-400">
-                          {summary.author}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6">
-                        {getStatusBadge(summary.status)}
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-1">
-                            <Brain className="w-4 h-4 text-purple-600" />
-                            <span className="text-sm text-primary-900 dark:text-white">
-                              {summary.embeds.questions}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 text-yellow-600" />
-                            <span className="text-sm text-primary-900 dark:text-white">
-                              {summary.embeds.flashcards}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="space-y-1 text-sm">
-                          <div className="flex items-center gap-2 text-primary-600 dark:text-gray-400">
-                            <Eye className="w-3 h-3" />
-                            {summary.views} views
-                          </div>
-                          <div className="text-primary-600 dark:text-gray-400">
-                            {summary.readingTime} • {summary.wordCount} palavras
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            title="Visualizar"
-                            onClick={() => handleViewSummary(summary)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            title="Editar"
-                            onClick={() => handleEditSummary(summary)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" title="Mais opções">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
+                      TENTAR NOVAMENTE
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead className="bg-gray-100 dark:bg-gray-800">
+                    <tr>
+                      <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                        BRIEFING
+                      </th>
+                      <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                        MATÉRIA
+                      </th>
+                      <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                        CRIADO POR
+                      </th>
+                      <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                        STATUS
+                      </th>
+                      <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                        ELEMENTOS
+                      </th>
+                      <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                        MÉTRICAS
+                      </th>
+                      <th className="text-left py-4 px-6 font-semibold text-gray-900 dark:text-white font-police-subtitle uppercase tracking-wider">
+                        AÇÕES
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredSummaries.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-8 px-6 text-center">
+                          <p className="font-police-body font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                            NENHUM BRIEFING ENCONTRADO
+                          </p>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredSummaries.map((summary) => (
+                        <tr
+                          key={summary.id}
+                          className="border-b border-primary-100 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-gray-800"
+                        >
+                          <td className="py-4 px-6">
+                            <div>
+                              <p className="font-medium text-primary-900 dark:text-white">
+                                {summary.title}
+                              </p>
+                              <p className="text-sm text-primary-600 dark:text-gray-400">
+                                {summary.topic || summary.subject}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-primary-600 dark:text-gray-400">
+                              {summary.subject}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-primary-600 dark:text-gray-400">
+                              {summary.created_by || 'Sistema'}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            {getStatusBadge(summary.status)}
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-1">
+                                <FileText className="w-4 h-4 text-purple-600" />
+                                <span className="text-sm text-primary-900 dark:text-white">
+                                  {summary.sections?.length || 0}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Tag className="w-4 h-4 text-yellow-600" />
+                                <span className="text-sm text-primary-900 dark:text-white">
+                                  {summary.tags?.length || 0}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="space-y-1 text-sm">
+                              <div className="flex items-center gap-2 text-primary-600 dark:text-gray-400">
+                                <Eye className="w-3 h-3" />
+                                {summary.statistics?.views || 0} views
+                              </div>
+                              <div className="text-primary-600 dark:text-gray-400">
+                                {summary.estimated_reading_time || 0} min • {summary.difficulty}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-2">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                title="Visualizar"
+                                onClick={() => handleViewSummary(summary)}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                title="Editar"
+                                onClick={() => handleEditSummary(summary)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" title="Mais opções">
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
           </CardContent>
         </Card>

@@ -113,7 +113,7 @@ class PaymentService {
    */
   async getPaymentMethods(): Promise<PaymentMethod[]> {
     try {
-      const response = await api.get('/api/v1/payment/methods');
+      const response = await api.get('/payment/methods');
       return response.data.data || [];
     } catch (error) {
       console.error('Error fetching payment methods:', error);
@@ -126,7 +126,7 @@ class PaymentService {
    */
   async addPaymentMethod(data: CreatePaymentMethodData): Promise<PaymentMethod> {
     try {
-      const response = await api.post('/api/v1/payment/methods', data);
+      const response = await api.post('/payment/methods', data);
       return response.data.data;
     } catch (error: any) {
       console.error('Error adding payment method:', error);
@@ -140,7 +140,7 @@ class PaymentService {
    */
   async updatePaymentMethod(id: string, data: UpdatePaymentMethodData): Promise<PaymentMethod> {
     try {
-      const response = await api.put(`/api/v1/payment/methods/${id}`, data);
+      const response = await api.put(`/payment/methods/${id}`, data);
       return response.data.data;
     } catch (error: any) {
       console.error('Error updating payment method:', error);
@@ -154,7 +154,7 @@ class PaymentService {
    */
   async removePaymentMethod(id: string): Promise<void> {
     try {
-      await api.delete(`/api/v1/payment/methods/${id}`);
+      await api.delete(`/payment/methods/${id}`);
     } catch (error: any) {
       console.error('Error removing payment method:', error);
       const message = error.response?.data?.message || 'Erro ao remover armamento';
@@ -176,7 +176,7 @@ class PaymentService {
         params.status = status;
       }
 
-      const response = await api.get('/api/v1/payment/history', { params });
+      const response = await api.get('/payment/history', { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching payment history:', error);
@@ -189,7 +189,7 @@ class PaymentService {
    */
   async getBillingAddress(): Promise<BillingAddress | null> {
     try {
-      const response = await api.get('/api/v1/payment/billing');
+      const response = await api.get('/payment/billing');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching billing address:', error);
@@ -202,7 +202,7 @@ class PaymentService {
    */
   async updateBillingAddress(data: BillingAddress): Promise<BillingAddress> {
     try {
-      const response = await api.put('/api/v1/payment/billing', data);
+      const response = await api.put('/payment/billing', data);
       return response.data.data;
     } catch (error: any) {
       console.error('Error updating billing address:', error);
@@ -216,7 +216,7 @@ class PaymentService {
    */
   async downloadInvoice(invoiceId: string): Promise<{ download_url: string; invoice: any }> {
     try {
-      const response = await api.get(`/api/v1/payment/invoices/${invoiceId}/download`);
+      const response = await api.get(`/payment/invoices/${invoiceId}/download`);
       return response.data.data;
     } catch (error: any) {
       console.error('Error downloading invoice:', error);
@@ -230,7 +230,7 @@ class PaymentService {
    */
   async getSubscription(): Promise<Subscription | null> {
     try {
-      const response = await api.get('/api/v1/payment/subscription/manage');
+      const response = await api.get('/payment/subscription/manage');
       return response.data.data;
     } catch (error: any) {
       console.error('Error fetching subscription:', error);
@@ -249,7 +249,7 @@ class PaymentService {
     payment_method_id?: string;
   }): Promise<Subscription> {
     try {
-      const response = await api.put('/api/v1/payment/subscription/manage', data);
+      const response = await api.put('/payment/subscription/manage', data);
       return response.data.data;
     } catch (error: any) {
       console.error('Error updating subscription:', error);
@@ -263,7 +263,7 @@ class PaymentService {
    */
   async getNotificationSettings(): Promise<NotificationSettings> {
     try {
-      const response = await api.get('/api/v1/payment/notifications');
+      const response = await api.get('/payment/notifications');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching notification settings:', error);
@@ -281,7 +281,7 @@ class PaymentService {
    */
   async updateNotificationSettings(data: NotificationSettings): Promise<NotificationSettings> {
     try {
-      const response = await api.put('/api/v1/payment/notifications', data);
+      const response = await api.put('/payment/notifications', data);
       return response.data.data;
     } catch (error: any) {
       console.error('Error updating notification settings:', error);

@@ -33,16 +33,15 @@ import toast from 'react-hot-toast';
 import FlashcardPreviewModal from '@/components/FlashcardPreviewModal';
 import FlashcardStudyModal from '@/components/FlashcardStudyModal';
 import { flashcardService, type Flashcard, type FlashcardStats } from '@/services/flashcardService';
+import { categoryService, type Category } from '@/services/categoryService';
 
 
-// Categorias e filtros
+// Constantes para filtros
 const materias: { [key: string]: string[] } = {
   'DIREITO': ['Todas', 'Constitucional', 'Administrativo', 'Penal', 'Processual Penal', 'Processual Civil'],
   'SEGURANÇA PÚBLICA': ['Todas', 'Operações Táticas', 'Procedimentos', 'Hierarquia', 'Legislação Policial'],
   'CONHECIMENTOS GERAIS': ['Todas', 'História', 'Geografia', 'Atualidades', 'Informática']
 };
-
-const categories = ['Todos', ...Object.keys(materias)];
 const difficulties = ['Todos', 'easy', 'medium', 'hard'];
 const statuses = ['Todos', 'active', 'pending', 'archived'];
 const cardTypes = ['Todos', 'basic', 'basic_reversed', 'multiple_choice', 'true_false', 'cloze', 'type_answer', 'image_occlusion'];
@@ -67,12 +66,31 @@ export default function IndividualFlashcards() {
   const [stats, setStats] = useState<FlashcardStats | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [categories, setCategories] = useState<string[]>(['Todos']);
+  const [error, setError] = useState<string | null>(null);
 
   // Load flashcards from API
   useEffect(() => {
     loadFlashcards();
     loadStats();
+    loadCategories();
   }, [currentPage, selectedCategory, selectedSubcategory, selectedDifficulty, selectedStatus, selectedType, searchTerm]);
+  
+  const loadCategories = async () => {
+    try {
+      const response = await categoryService.listCategories();
+      if (response.success && response.data) {
+        const categoryNames = response.data
+          .filter(cat => cat.type === 'subject')
+          .map(cat => cat.name);
+        setCategories(['Todos', ...categoryNames]);
+      }
+    } catch (err) {
+      console.error('Error loading categories:', err);
+      // Manter as categorias padrão em caso de erro
+      setCategories(['Todos', 'DIREITO', 'SEGURANÇA PÚBLICA', 'CONHECIMENTOS GERAIS']);
+    }
+  };
 
   const loadFlashcards = async () => {
     try {
@@ -93,6 +111,7 @@ export default function IndividualFlashcards() {
       setTotalPages(response.pagination.pages);
     } catch (error) {
       console.error('Error loading flashcards:', error);
+      setError('Erro ao carregar flashcards. Tente novamente.');
       toast.error('Erro ao carregar flashcards');
     } finally {
       setIsLoading(false);

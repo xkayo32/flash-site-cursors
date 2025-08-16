@@ -61,7 +61,7 @@ export interface ChangePasswordData {
 
 // Settings Service
 class SettingsService {
-  private readonly baseUrl = '/api/v1/settings';
+  private readonly baseUrl = '/settings';
 
   // Get system settings
   async getSystemSettings() {

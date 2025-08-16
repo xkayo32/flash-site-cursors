@@ -458,5 +458,190 @@
       "modules": 0,
       "lessons": 0
     }
+  },
+  {
+    "id": "babca4f0-8aa2-4e6f-9ec0-1ad8af06b670",
+    "title": "Curso Tático 1 - Operações Especiais",
+    "description": "Treinamento avançado em operações táticas nível 1",
+    "category": "POLÍCIA FEDERAL",
+    "thumbnail": null,
+    "price": 1100,
+    "instructor": {
+      "id": "f975ef90-0930-4736-b5d6-865195be08c0",
+      "name": "Comandante Silva",
+      "rank": "",
+      "avatar": null
+    },
+    "difficulty_level": "intermediate",
+    "duration_hours": 50,
+    "duration_months": 1,
+    "status": "draft",
+    "visibility": "private",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Aptidão física"
+    ],
+    "objectives": [
+      "Dominar técnicas táticas",
+      "Liderança operacional"
+    ],
+    "tags": [],
+    "created_at": "2025-08-16T21:37:29.973Z",
+    "updated_at": "2025-08-16T21:37:29.973Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "3b448fd6-fb70-4907-8ed7-71e80ec9c20f",
+    "title": "Curso Tático 2 - Operações Especiais",
+    "description": "Treinamento avançado em operações táticas nível 2",
+    "category": "POLÍCIA FEDERAL",
+    "thumbnail": null,
+    "price": 1200,
+    "instructor": {
+      "id": "51aa7e2e-b446-4cc2-8df5-1a4932f7ccba",
+      "name": "Comandante Silva",
+      "rank": "",
+      "avatar": null
+    },
+    "difficulty_level": "intermediate",
+    "duration_hours": 60,
+    "duration_months": 2,
+    "status": "draft",
+    "visibility": "private",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Aptidão física"
+    ],
+    "objectives": [
+      "Dominar técnicas táticas",
+      "Liderança operacional"
+    ],
+    "tags": [],
+    "created_at": "2025-08-16T21:37:30.004Z",
+    "updated_at": "2025-08-16T21:37:30.004Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "f3da55c4-5981-4156-9414-c256053bef42",
+    "title": "Curso Tático 3 - Operações Especiais",
+    "description": "Treinamento avançado em operações táticas nível 3",
+    "category": "POLÍCIA FEDERAL",
+    "thumbnail": null,
+    "price": 1300,
+    "instructor": {
+      "id": "2a72770d-6db3-4af4-9418-00ec1ef28f5b",
+      "name": "Comandante Silva",
+      "rank": "",
+      "avatar": null
+    },
+    "difficulty_level": "intermediate",
+    "duration_hours": 70,
+    "duration_months": 3,
+    "status": "draft",
+    "visibility": "private",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Aptidão física"
+    ],
+    "objectives": [
+      "Dominar técnicas táticas",
+      "Liderança operacional"
+    ],
+    "tags": [],
+    "created_at": "2025-08-16T21:37:30.037Z",
+    "updated_at": "2025-08-16T21:37:30.037Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "4f7caf1a-12b7-4e21-8ba7-b29b04a143d4",
+    "title": "Curso Tático 4 - Operações Especiais",
+    "description": "Treinamento avançado em operações táticas nível 4",
+    "category": "POLÍCIA FEDERAL",
+    "thumbnail": null,
+    "price": 1400,
+    "instructor": {
+      "id": "23f36b39-75e7-45ce-8a86-60ecb219b24e",
+      "name": "Comandante Silva",
+      "rank": "",
+      "avatar": null
+    },
+    "difficulty_level": "intermediate",
+    "duration_hours": 80,
+    "duration_months": 4,
+    "status": "draft",
+    "visibility": "private",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Aptidão física"
+    ],
+    "objectives": [
+      "Dominar técnicas táticas",
+      "Liderança operacional"
+    ],
+    "tags": [],
+    "created_at": "2025-08-16T21:37:30.069Z",
+    "updated_at": "2025-08-16T21:37:30.069Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
+  },
+  {
+    "id": "5532d6dc-2c6d-435b-b0a7-74e140cd2848",
+    "title": "Curso Tático 5 - Operações Especiais",
+    "description": "Treinamento avançado em operações táticas nível 5",
+    "category": "POLÍCIA FEDERAL",
+    "thumbnail": null,
+    "price": 1500,
+    "instructor": {
+      "id": "29ac23b1-77b7-4294-8410-f8e80cac023e",
+      "name": "Comandante Silva",
+      "rank": "",
+      "avatar": null
+    },
+    "difficulty_level": "intermediate",
+    "duration_hours": 90,
+    "duration_months": 5,
+    "status": "draft",
+    "visibility": "private",
+    "certification_available": true,
+    "requirements": [
+      "Ensino médio completo",
+      "Aptidão física"
+    ],
+    "objectives": [
+      "Dominar técnicas táticas",
+      "Liderança operacional"
+    ],
+    "tags": [],
+    "created_at": "2025-08-16T21:37:30.105Z",
+    "updated_at": "2025-08-16T21:37:30.105Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
   }
 ]

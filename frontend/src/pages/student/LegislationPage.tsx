@@ -191,8 +191,8 @@ export default function LegislationPage() {
         legislationService.getSubjects()
       ]);
       
-      const typeNames = ['Todos', ...typesData.map(t => legislationService.getTypeDisplayName(t.type))];
-      const subjectNames = ['Todos', ...subjectsData.map(s => s.subject)];
+      const typeNames = ['Todos', ...Array.from(new Set(typesData.map(t => legislationService.getTypeDisplayName(t.type))))];
+      const subjectNames = ['Todos', ...Array.from(new Set(subjectsData.map(s => s.subject)))];
       
       setTypes(typeNames);
       setCategories(subjectNames);
@@ -937,8 +937,8 @@ export default function LegislationPage() {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="px-4 py-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                  {categories.map((cat, index) => (
+                    <option key={`cat-${index}-${cat}`} value={cat}>{cat}</option>
                   ))}
                 </select>
                 
@@ -947,8 +947,8 @@ export default function LegislationPage() {
                   onChange={(e) => setSelectedType(e.target.value)}
                   className="px-4 py-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  {types.map(type => (
-                    <option key={type} value={type}>{type}</option>
+                  {types.map((type, index) => (
+                    <option key={`type-${index}-${type}`} value={type}>{type}</option>
                   ))}
                 </select>
                 
@@ -957,8 +957,8 @@ export default function LegislationPage() {
                   onChange={(e) => setSelectedStatus(e.target.value)}
                   className="px-4 py-3 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  {statuses.map(status => (
-                    <option key={status} value={status}>{status}</option>
+                  {statuses.map((status, index) => (
+                    <option key={`status-${index}-${status}`} value={status}>{status}</option>
                   ))}
                 </select>
               </div>

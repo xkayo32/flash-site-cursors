@@ -128,7 +128,7 @@ export interface LegislationStatisticsOverview {
 
 // API Service Class
 class LegislationService {
-  private baseUrl = '/api/v1/legislation';
+  private baseUrl = '/legislation';
 
   // CRUD Operations
   async getAll(params?: {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -27,7 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { CourseImage } from '@/components/CourseImage';
-import { mockCourses, courseCategories, courseStatuses, filterCourses, type MockCourse } from '@/data/mockCourses';
+import { courseService, type Course } from '@/services/courseService';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 
@@ -37,32 +37,92 @@ export default function CourseEditor() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('TODOS');
   const [selectedStatus, setSelectedStatus] = useState('TODOS');
-  const [courses, setCourses] = useState<MockCourse[]>(mockCourses);
-  const [isLoading, setIsLoading] = useState(false);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Filter courses function
+  const filterCourses = (courses: Course[], search: string, category: string, status: string) => {
+    return courses.filter(course => {
+      const matchesSearch = !search || course.title.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = category === 'TODOS' || course.category === category;
+      const matchesStatus = status === 'TODOS' || 
+        (status === 'PUBLICADO' && course.status === 'published') ||
+        (status === 'RASCUNHO' && course.status === 'draft') ||
+        (status === 'ARQUIVADO' && course.status === 'archived');
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
+  };
 
   const filteredCourses = filterCourses(courses, searchTerm, selectedCategory, selectedStatus);
 
+  // Course categories and statuses
+  const courseCategories = [
+    'TODOS',
+    'POLÍCIA FEDERAL',
+    'POLÍCIA CIVIL',
+    'POLÍCIA MILITAR',
+    'BOMBEIROS',
+    'GUARDA MUNICIPAL',
+    'LEGISLAÇÃO',
+    'INFORMÁTICA',
+    'PORTUGUÊS',
+    'MATEMÁTICA',
+    'DIREITO'
+  ];
+
+  const courseStatuses = [
+    'TODOS',
+    'PUBLICADO',
+    'RASCUNHO',
+    'ARQUIVADO'
+  ];
+
+  // Load courses from API
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const result = await courseService.listCourses({ limit: 1000 });
+        
+        if (result.success && result.data) {
+          setCourses(result.data);
+        } else {
+          setError(result.message || 'Erro ao carregar cursos');
+        }
+      } catch (err) {
+        setError('Erro ao conectar com a API');
+        console.error('Error loading courses:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCourses();
+  }, []);
+
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      'PUBLICADO': { 
+      'published': { 
         label: 'PUBLICADO', 
         color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600',
         icon: CheckCircle
       },
-      'RASCUNHO': { 
+      'draft': { 
         label: 'RASCUNHO', 
         color: 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-2 border-dashed border-gray-400 dark:border-gray-700',
         icon: Edit
       },
-      'ARQUIVADO': { 
+      'archived': { 
         label: 'ARQUIVADO', 
         color: 'bg-gray-200 dark:bg-gray-900 text-gray-500 dark:text-gray-500 border-2 border-gray-400 dark:border-gray-700 opacity-75',
         icon: Lock
       }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['RASCUNHO'];
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['draft'];
     const Icon = config.icon;
     
     return (
@@ -76,26 +136,26 @@ export default function CourseEditor() {
     );
   };
   
-  const getLevelBadge = (level: string) => {
+  const getLevelBadge = (difficulty: string) => {
     const levelConfig = {
-      'OPERACIONAL': { 
+      'beginner': { 
         label: 'OPERACIONAL', 
         color: 'bg-accent-500/20 text-accent-500 dark:text-accent-400 border-2 border-accent-500/50',
         icon: Shield
       },
-      'TÁTICO': { 
+      'intermediate': { 
         label: 'TÁTICO', 
         color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-400',
         icon: Target
       },
-      'COMANDO': { 
+      'advanced': { 
         label: 'COMANDO', 
         color: 'bg-gray-900 dark:bg-accent-500/20 text-white dark:text-accent-400 border-2 border-gray-700 dark:border-accent-500/50',
         icon: Award
       }
     };
     
-    const config = levelConfig[level as keyof typeof levelConfig] || levelConfig['OPERACIONAL'];
+    const config = levelConfig[difficulty as keyof typeof levelConfig] || levelConfig['beginner'];
     const Icon = config.icon;
     
     return (
@@ -113,41 +173,57 @@ export default function CourseEditor() {
     navigate('/admin/courses/new');
   };
 
-  const handleEditCourse = (courseId: number) => {
+  const handleEditCourse = (courseId: string) => {
     navigate(`/admin/courses/edit/${courseId}`);
   };
 
-  const handleViewCourse = (courseId: number) => {
+  const handleViewCourse = (courseId: string) => {
     navigate(`/admin/courses/${courseId}`);
   };
   
-  const handleDeleteCourse = (course: MockCourse) => {
+  const handleDeleteCourse = async (course: Course) => {
     if (confirm(`Tem certeza que deseja excluir o curso "${course.title}"?`)) {
-      // Simulação de exclusão
-      setCourses(prevCourses => prevCourses.filter(c => c.id !== course.id));
-      toast.success(`Curso "${course.title}" excluído com sucesso!`);
+      try {
+        const result = await courseService.deleteCourse(course.id);
+        if (result.success) {
+          setCourses(prevCourses => prevCourses.filter(c => c.id !== course.id));
+          toast.success(`Curso "${course.title}" excluído com sucesso!`);
+        } else {
+          toast.error(result.message || 'Erro ao excluir curso');
+        }
+      } catch (error) {
+        toast.error('Erro ao excluir curso');
+      }
     }
   };
 
-  const handleDuplicateCourse = (course: MockCourse) => {
-    const newCourse: MockCourse = {
-      ...course,
-      id: Math.max(...courses.map(c => c.id)) + 1,
-      title: `${course.title} (CÓPIA)`,
-      status: 'RASCUNHO',
-      stats: {
-        ...course.stats,
-        enrollments: 0,
-        rating: 0,
-        completion: 0,
-        views: 0
-      },
-      createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0]
-    };
-    
-    setCourses(prevCourses => [newCourse, ...prevCourses]);
-    toast.success(`Curso duplicado como "${newCourse.title}"!`);
+  const handleDuplicateCourse = async (course: Course) => {
+    try {
+      const duplicateData = {
+        title: `${course.title} (CÓPIA)`,
+        description: course.description,
+        category: course.category,
+        price: course.price,
+        difficulty_level: course.difficulty,
+        duration_hours: course.duration.hours,
+        duration_months: course.duration.months,
+        requirements: course.requirements,
+        objectives: course.objectives,
+        target_audience: course.targetAudience,
+        certification_available: course.certificationAvailable,
+        instructor_name: course.instructor.name
+      };
+      
+      const result = await courseService.createCourse(duplicateData);
+      if (result.success && result.data) {
+        setCourses(prevCourses => [result.data!, ...prevCourses]);
+        toast.success(`Curso duplicado como "${duplicateData.title}"!`);
+      } else {
+        toast.error(result.message || 'Erro ao duplicar curso');
+      }
+    } catch (error) {
+      toast.error('Erro ao duplicar curso');
+    }
   };
 
   const renderListView = () => (
@@ -172,13 +248,13 @@ export default function CourseEditor() {
                       {course.title}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <img
-                        src={course.instructor.avatar}
-                        alt={course.instructor.name}
-                        className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600"
-                      />
+                      <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                        <span className="text-xs font-bold text-gray-600 dark:text-gray-300">
+                          {course.instructor.name?.charAt(0) || 'I'}
+                        </span>
+                      </div>
                       <span className="text-sm text-gray-600 dark:text-gray-400 font-police-body truncate">
-                        {course.instructor.name}
+                        {course.instructor.name || 'Instrutor'}
                       </span>
                     </div>
                   </div>
@@ -445,6 +521,24 @@ export default function CourseEditor() {
               <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
                 CARREGANDO MISSÕES...
               </p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-center">
+              <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 font-police-title uppercase tracking-ultra-wide">
+                ERRO DE COMUNICAÇÃO
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 font-police-body mb-4">
+                {error}
+              </p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="gap-2 font-police-body font-semibold bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black"
+              >
+                TENTAR NOVAMENTE
+              </Button>
             </div>
           </div>
         ) : filteredCourses.length === 0 ? (

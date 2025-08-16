@@ -594,7 +594,7 @@ export default function SummariesPage() {
   );
 
   // Card de resumo
-  const SummaryCard = ({ summary }: { summary: Summary }) => (
+  const SummaryCard = ({ summary }: { summary: LocalSummary }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -659,11 +659,11 @@ export default function SummariesPage() {
             </span>
             <span className="flex items-center gap-1 font-police-body uppercase tracking-wider">
               <Eye className="w-4 h-4" />
-              <span className="font-police-numbers">{summary.stats.views.toLocaleString()}</span>
+              <span className="font-police-numbers">{summary.stats?.views?.toLocaleString() || '0'}</span>
             </span>
             <span className="flex items-center gap-1">
               <Star className="w-4 h-4 fill-current text-accent-500" />
-              <span className="font-police-numbers">{summary.stats.rating}</span>
+              <span className="font-police-numbers">{summary.stats?.rating || '0'}</span>
             </span>
           </div>
 
@@ -672,14 +672,14 @@ export default function SummariesPage() {
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center border border-blue-200 dark:border-blue-800">
               <div className="flex items-center justify-center gap-1 text-blue-700 dark:text-blue-400">
                 <Brain className="w-4 h-4" />
-                <span className="font-police-numbers font-semibold">{summary.stats.flashcards}</span>
+                <span className="font-police-numbers font-semibold">{summary.stats?.flashcards || 0}</span>
               </div>
               <p className="text-xs text-blue-600 dark:text-blue-500 font-police-body uppercase tracking-wider">INTEL CARDS</p>
             </div>
             <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 text-center border border-purple-200 dark:border-purple-800">
               <div className="flex items-center justify-center gap-1 text-purple-700 dark:text-purple-400">
                 <FileText className="w-4 h-4" />
-                <span className="font-police-numbers font-semibold">{summary.stats.questions}</span>
+                <span className="font-police-numbers font-semibold">{summary.stats?.questions || 0}</span>
               </div>
               <p className="text-xs text-purple-600 dark:text-purple-500 font-police-body uppercase tracking-wider">QUESTÕES</p>
             </div>
@@ -776,7 +776,7 @@ export default function SummariesPage() {
               </h1>
               
               <p className="text-primary-600 mb-4">
-                {summary.description}
+                {summary.content.substring(0, 200)}...
               </p>
               
               <div className="flex items-center gap-6 text-sm text-primary-600">
@@ -839,94 +839,99 @@ export default function SummariesPage() {
                       </p>
                       
                       {/* Items embutidos */}
-                      {(section as any).embeddedItems?.map((item: any, index: number) => (
-                        <div key={item.id || `item-${index}`} className="my-4">
-                          {item.type === 'flashcard' ? (
-                            <Card className="bg-blue-50 border-blue-200">
-                              <CardContent className="p-4">
-                                <div className="flex items-start gap-3">
-                                  <Brain className="w-5 h-5 text-blue-600 mt-1" />
-                                  <div className="flex-1">
-                                    <p className="font-medium text-blue-900 mb-2">
-                                      Flashcard
-                                    </p>
-                                    <div className="space-y-3">
-                                      <div>
-                                        <p className="text-sm font-medium text-blue-700 mb-1">Pergunta:</p>
-                                        <p className="text-blue-800">
-                                          {item.data.front}
-                                        </p>
-                                      </div>
-                                      
-                                      <AnimatePresence>
-                                        {showFlashcardAnswers[item.id || `item-${index}`] && (
-                                          <motion.div
-                                            initial={{ opacity: 0, height: 0 }}
-                                            animate={{ opacity: 1, height: 'auto' }}
-                                            exit={{ opacity: 0, height: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                            className="border-t border-blue-200 pt-3"
-                                          >
-                                            <p className="text-sm font-medium text-blue-700 mb-1">Resposta:</p>
-                                            <p className="text-blue-800 bg-white/50 p-3 rounded">
-                                              {item.data.back}
-                                            </p>
-                                          </motion.div>
-                                        )}
-                                      </AnimatePresence>
-                                      
-                                      <Button 
-                                        size="sm" 
-                                        variant="outline" 
-                                        className="w-full"
-                                        onClick={() => toggleFlashcardAnswer(item.id || `item-${index}`)}
-                                      >
-                                        {showFlashcardAnswers[item.id || `item-${index}`] ? (
-                                          <>
-                                            <EyeOff className="w-4 h-4 mr-1" />
-                                            Ocultar resposta
-                                          </>
-                                        ) : (
-                                          <>
-                                            <Eye className="w-4 h-4 mr-1" />
-                                            Ver resposta
-                                          </>
-                                        )}
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ) : (
-                            <Card className="bg-purple-50 border-purple-200">
-                              <CardContent className="p-4">
-                                <div className="flex items-start gap-3">
-                                  <FileText className="w-5 h-5 text-purple-600 mt-1" />
-                                  <div className="flex-1">
-                                    <p className="font-medium text-purple-900 mb-2">
-                                      Questão
-                                    </p>
-                                    <p className="text-purple-800 mb-3">
-                                      {item.data.question}
-                                    </p>
-                                    <div className="space-y-2">
-                                      {item.data.options.map((option: string, idx: number) => (
-                                        <button
-                                          key={idx}
-                                          className="w-full text-left p-2 rounded bg-white hover:bg-purple-100 transition-colors text-sm"
+                      {(section as any).embeddedItems?.map((item: any, index: number) => {
+                        // Verificar se item e item.data existem
+                        if (!item || !item.data) return null;
+                        
+                        return (
+                          <div key={item.id || `item-${index}`} className="my-4">
+                            {item.type === 'flashcard' ? (
+                              <Card className="bg-blue-50 border-blue-200">
+                                <CardContent className="p-4">
+                                  <div className="flex items-start gap-3">
+                                    <Brain className="w-5 h-5 text-blue-600 mt-1" />
+                                    <div className="flex-1">
+                                      <p className="font-medium text-blue-900 mb-2">
+                                        Flashcard
+                                      </p>
+                                      <div className="space-y-3">
+                                        <div>
+                                          <p className="text-sm font-medium text-blue-700 mb-1">Pergunta:</p>
+                                          <p className="text-blue-800">
+                                            {item.data?.front || 'Pergunta não disponível'}
+                                          </p>
+                                        </div>
+                                        
+                                        <AnimatePresence>
+                                          {showFlashcardAnswers[item.id || `item-${index}`] && (
+                                            <motion.div
+                                              initial={{ opacity: 0, height: 0 }}
+                                              animate={{ opacity: 1, height: 'auto' }}
+                                              exit={{ opacity: 0, height: 0 }}
+                                              transition={{ duration: 0.3 }}
+                                              className="border-t border-blue-200 pt-3"
+                                            >
+                                              <p className="text-sm font-medium text-blue-700 mb-1">Resposta:</p>
+                                              <p className="text-blue-800 bg-white/50 p-3 rounded">
+                                                {item.data?.back || 'Resposta não disponível'}
+                                              </p>
+                                            </motion.div>
+                                          )}
+                                        </AnimatePresence>
+                                        
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline" 
+                                          className="w-full"
+                                          onClick={() => toggleFlashcardAnswer(item.id || `item-${index}`)}
                                         >
-                                          {String.fromCharCode(65 + idx)}) {option}
-                                        </button>
-                                      ))}
+                                          {showFlashcardAnswers[item.id || `item-${index}`] ? (
+                                            <>
+                                              <EyeOff className="w-4 h-4 mr-1" />
+                                              Ocultar resposta
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Eye className="w-4 h-4 mr-1" />
+                                              Ver resposta
+                                            </>
+                                          )}
+                                        </Button>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          )}
-                        </div>
-                      ))}
+                                </CardContent>
+                              </Card>
+                            ) : (
+                              <Card className="bg-purple-50 border-purple-200">
+                                <CardContent className="p-4">
+                                  <div className="flex items-start gap-3">
+                                    <FileText className="w-5 h-5 text-purple-600 mt-1" />
+                                    <div className="flex-1">
+                                      <p className="font-medium text-purple-900 mb-2">
+                                        Questão
+                                      </p>
+                                      <p className="text-purple-800 mb-3">
+                                        {item.data?.question || 'Questão não disponível'}
+                                      </p>
+                                      <div className="space-y-2">
+                                        {(item.data?.options || []).map((option: string, idx: number) => (
+                                          <button
+                                            key={idx}
+                                            className="w-full text-left p-2 rounded bg-white hover:bg-purple-100 transition-colors text-sm"
+                                          >
+                                            {String.fromCharCode(65 + idx)}) {option}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </motion.div>

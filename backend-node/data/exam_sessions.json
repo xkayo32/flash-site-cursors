@@ -4041,5 +4041,186 @@
     "timeSpent": 0,
     "totalQuestions": 3,
     "status": "active"
+  },
+  {
+    "id": "session_me1_2_1755298896031",
+    "examId": "me1",
+    "examType": "mock",
+    "userId": 2,
+    "title": "Simulado Polícia Federal - Agente 2024",
+    "questions": [
+      {
+        "id": "q_sample_21",
+        "number": 1,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 21 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 21"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 21"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 21"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 21"
+          }
+        ],
+        "correctAnswer": "b",
+        "explanation": "Esta é a explicação da questão 21. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_26",
+        "number": 2,
+        "subject": "Direito Penal",
+        "statement": "Questão de exemplo 26 sobre Direito Penal. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 26"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 26"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 26"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 26"
+          }
+        ],
+        "correctAnswer": "a",
+        "explanation": "Esta é a explicação da questão 26. Resposta correta baseada nos conceitos de Direito Penal.",
+        "difficulty": "CABO",
+        "year": 2024,
+        "institution": "FCC"
+      },
+      {
+        "id": "q_sample_71",
+        "number": 3,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 71 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 71"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 71"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 71"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 71"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 71. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_10",
+        "number": 4,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 10 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 10"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 10"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 10"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 10"
+          }
+        ],
+        "correctAnswer": "c",
+        "explanation": "Esta é a explicação da questão 10. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "CESPE"
+      },
+      {
+        "id": "q_sample_13",
+        "number": 5,
+        "subject": "Direito Constitucional",
+        "statement": "Questão de exemplo 13 sobre Direito Constitucional. Esta é uma questão gerada automaticamente para teste do sistema.",
+        "alternatives": [
+          {
+            "id": "a",
+            "letter": "A",
+            "text": "Alternativa A para questão 13"
+          },
+          {
+            "id": "b",
+            "letter": "B",
+            "text": "Alternativa B para questão 13"
+          },
+          {
+            "id": "c",
+            "letter": "C",
+            "text": "Alternativa C para questão 13"
+          },
+          {
+            "id": "d",
+            "letter": "D",
+            "text": "Alternativa D para questão 13"
+          }
+        ],
+        "correctAnswer": "d",
+        "explanation": "Esta é a explicação da questão 13. Resposta correta baseada nos conceitos de Direito Constitucional.",
+        "difficulty": "SARGENTO",
+        "year": 2024,
+        "institution": "FCC"
+      }
+    ],
+    "answers": {},
+    "flaggedQuestions": [],
+    "startedAt": "2025-08-15T23:01:36.031Z",
+    "duration": 240,
+    "timeSpent": 0,
+    "totalQuestions": 5,
+    "status": "active"
   }
 ]

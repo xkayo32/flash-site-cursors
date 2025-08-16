@@ -159,7 +159,16 @@ export default function TacticalPanelPage() {
   // Export data
   const handleExport = async () => {
     try {
-      await analyticsService.exportData('pdf');
+      const blob = await analyticsService.exportData('pdf');
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `relatorio-tatico-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
       toast.success('RELATÓRIO TÁTICO EXPORTADO!', { 
         icon: '📥',
         style: {
@@ -198,32 +207,28 @@ export default function TacticalPanelPage() {
   const studyPatterns = analyticsData?.studyPatterns || [];
   const stats = analyticsData?.stats;
 
-// Dados para radar chart
-const radarData = [
-  { subject: 'Constitucional', A: 87.5, fullMark: 100 },
-  { subject: 'Administrativo', A: 82.1, fullMark: 100 },
-  { subject: 'Penal', A: 79.3, fullMark: 100 },
-  { subject: 'Português', A: 91.2, fullMark: 100 },
-  { subject: 'Informática', A: 76.8, fullMark: 100 },
-  { subject: 'Raciocínio', A: 85.4, fullMark: 100 }
+// Dados para radar chart baseados em performance real
+const radarData = subjectPerformance.length > 0 ? subjectPerformance.map(s => ({
+  subject: s.subject.length > 12 ? s.subject.substring(0, 12) + '...' : s.subject,
+  A: s.accuracy || 0,
+  fullMark: 100
+})) : [
+  { subject: 'Sem dados', A: 0, fullMark: 100 }
 ];
 
-// Dados para treemap
+// Dados para treemap baseados em performance real
 const treemapData = [
   {
-    name: 'Questões por Disciplina',
-    children: [
-      { name: 'Constitucional', size: 234, fill: '#3B82F6' },
-      { name: 'Administrativo', size: 189, fill: '#10B981' },
-      { name: 'Penal', size: 156, fill: '#F59E0B' },
-      { name: 'Português', size: 178, fill: '#8B5CF6' },
-      { name: 'Informática', size: 142, fill: '#EF4444' },
-      { name: 'Raciocínio', size: 98, fill: '#6B7280' }
-    ]
+    name: 'Alvos por Área Operacional',
+    children: subjectPerformance.length > 0 ? subjectPerformance.map((s, idx) => ({
+      name: s.subject,
+      size: s.totalQuestions || 1,
+      fill: COLORS[idx % COLORS.length]
+    })) : [{ name: 'Sem dados', size: 1, fill: '#6B7280' }]
   }
 ];
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
+const COLORS = ['#facc15', '#22c55e', '#ef4444', '#3b82f6', '#8b5cf6', '#f59e0b', '#06b6d4'];
 
   // Toggle seção expandida
   const toggleSection = (section: string) => {
@@ -289,12 +294,17 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
     icon: any; 
     color: string; 
   }) => (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className={cn("p-3 rounded-lg", color)}>
-            <Icon className="w-6 h-6 text-white" />
-          </div>
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-accent-500/10 to-transparent rounded-bl-full" />
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className={cn("p-3 rounded-lg shadow-lg", color)}>
+              <Icon className="w-6 h-6 text-white" />
+            </div>
           {change !== undefined && (
             <div className={cn(
               "flex items-center gap-1 text-sm font-medium",
@@ -307,21 +317,22 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
             </div>
           )}
         </div>
-        <h3 className="text-2xl font-bold text-primary-900 font-police-numbers">{value}</h3>
-        <p className="text-sm text-primary-600 mt-1 font-police-body uppercase tracking-wider">{title}</p>
-      </CardContent>
-    </Card>
+          <h3 className="text-2xl font-bold text-primary-900 dark:text-white font-police-numbers">{value}</h3>
+          <p className="text-sm text-primary-600 dark:text-gray-400 mt-1 font-police-body uppercase tracking-wider">{title}</p>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-black dark:via-gray-900 dark:to-black min-h-screen">
       <PageHeader
-        title="COMANDO TÁTICO DE INTELIGÊNCIA"
-        subtitle="ANÁLISE AVANÇADA DE DESEMPENHO E INSIGHTS ESTRATÉGICOS"
+        title="CENTRAL DE INTELIGÊNCIA OPERACIONAL"
+        subtitle="ANÁLISE TÁTICA AVANÇADA E MONITORAMENTO DE PERFORMANCE"
         icon={Target}
         breadcrumbs={[
-          { label: 'DASHBOARD', href: '/student/dashboard' },
-          { label: 'PAINEL TÁTICO' }
+          { label: 'COMANDO', href: '/student/dashboard' },
+          { label: 'INTELIGÊNCIA TÁTICA' }
         ]}
         actions={
           <div className="flex items-center gap-3">
@@ -330,10 +341,10 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
               onChange={(e) => handlePeriodChange(e.target.value)}
               className="px-4 py-2 border border-primary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-police-body"
             >
-              <option value="7days">ÚLTIMOS 7 DIAS</option>
-              <option value="30days">ÚLTIMOS 30 DIAS</option>
-              <option value="90days">ÚLTIMOS 90 DIAS</option>
-              <option value="all">TODO PERÍODO</option>
+              <option value="7days">🎯 7 DIAS</option>
+              <option value="30days">🚀 30 DIAS</option>
+              <option value="90days">⚔️ 90 DIAS</option>
+              <option value="all">🏆 COMPLETO</option>
             </select>
             <Button 
               variant="outline" 
@@ -361,41 +372,45 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
+        className="relative"
       >
+        {/* Tactical stripes decoration */}
+        <div className="absolute -top-2 left-0 w-32 h-1 bg-gradient-to-r from-accent-500 to-transparent" />
+        <div className="absolute -top-2 right-0 w-32 h-1 bg-gradient-to-l from-accent-500 to-transparent" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <MetricCard
             title="PRECISÃO TÁTICA"
             value={`${stats?.averageScore || 0}%`}
             change={stats?.improvement || 0}
             icon={Target}
-            color="bg-blue-500"
+            color="bg-gradient-to-br from-accent-500 to-accent-600"
           />
           <MetricCard
             title="ALVOS ABATIDOS"
-            value={totalQuestions.toString()}
+            value={stats?.questionsAnswered?.toLocaleString() || '0'}
             change={12.3}
             icon={FileText}
-            color="bg-green-500"
+            color="bg-gradient-to-br from-green-500 to-green-600"
           />
           <MetricCard
             title="TEMPO DE OPERAÇÃO"
-            value={`${totalStudyTime.toFixed(1)}h`}
+            value={`${stats?.totalStudyTime || 0}h`}
             change={-3.1}
             icon={Clock}
-            color="bg-purple-500"
+            color="bg-gradient-to-br from-purple-500 to-purple-600"
           />
           <MetricCard
             title="RANKING OPERACIONAL"
-            value="#4"
+            value={`#${stats?.rank || 0}`}
             change={0}
             icon={Trophy}
-            color="bg-yellow-500"
+            color="bg-gradient-to-br from-orange-500 to-orange-600"
           />
         </div>
       </motion.div>
 
       {/* Seção: Evolução de Performance */}
-      <Card className="mb-6">
+      <Card className="mb-6 border-l-4 border-l-accent-500 shadow-xl hover:shadow-2xl transition-all duration-300">
         <CardHeader
           className="cursor-pointer"
           onClick={() => toggleSection('performance')}
@@ -442,8 +457,26 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
                     <YAxis yAxisId="left" />
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip />
-                    <Line yAxisId="left" type="monotone" dataKey="accuracy" stroke="#3B82F6" strokeWidth={2} name="PRECISÃO TÁTICA (%)" />
-                    <Line yAxisId="right" type="monotone" dataKey="questions" stroke="#10B981" strokeWidth={2} name="ALVOS" />
+                    <Line 
+                      yAxisId="left" 
+                      type="monotone" 
+                      dataKey="accuracy" 
+                      stroke="#facc15" 
+                      strokeWidth={3} 
+                      name="PRECISÃO TÁTICA (%)" 
+                      dot={{ fill: '#facc15', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                    <Line 
+                      yAxisId="right" 
+                      type="monotone" 
+                      dataKey="totalQuestions" 
+                      stroke="#22c55e" 
+                      strokeWidth={2} 
+                      name="ALVOS ABATIDOS" 
+                      dot={{ fill: '#22c55e', strokeWidth: 1, r: 3 }}
+                      activeDot={{ r: 5 }}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -453,7 +486,7 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
       </Card>
 
       {/* Seção: Desempenho por Disciplina */}
-      <Card className="mb-6">
+      <Card className="mb-6 border-l-4 border-l-green-500 shadow-xl hover:shadow-2xl transition-all duration-300">
         <CardHeader
           className="cursor-pointer"
           onClick={() => toggleSection('subjects')}
@@ -585,7 +618,7 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
       {/* Grid de análises */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Pontos Fracos */}
-        <Card>
+        <Card className="border-t-4 border-t-red-500 shadow-xl hover:shadow-2xl transition-all duration-300">
           <CardHeader>
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-600" />
@@ -595,48 +628,55 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
           <CardContent>
             <div className="space-y-3">
               {weakPoints.map((point) => (
-                <div key={point.id} className="p-4 border border-primary-200 rounded-lg">
+                <motion.div 
+                  key={point.id} 
+                  className="p-4 border-2 border-red-500/30 rounded-lg bg-gradient-to-br from-red-500/5 to-transparent hover:border-red-500/50 transition-all duration-300"
+                  whileHover={{ scale: 1.02 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 * weakPoints.indexOf(point) }}
+                >
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <h4 className="font-medium text-primary-900">{point.topic}</h4>
-                      <p className="text-sm text-primary-600">{point.subject}</p>
+                      <h4 className="font-medium text-primary-900 dark:text-white">{point.topic}</h4>
+                      <p className="text-sm text-primary-600 dark:text-gray-400">{point.subject}</p>
                     </div>
                     <Badge
                       className={cn(
-                        point.priority === 'high' && "bg-red-100 text-red-700",
-                        point.priority === 'medium' && "bg-yellow-100 text-yellow-700",
-                        point.priority === 'low' && "bg-green-100 text-green-700"
+                        point.priority === 'high' && "bg-red-500 text-white border-0",
+                        point.priority === 'medium' && "bg-yellow-500 text-black border-0",
+                        point.priority === 'low' && "bg-green-500 text-white border-0"
                       )}
                     >
-                      {point.priority === 'high' ? 'CRÍTICA' : point.priority === 'medium' ? 'MÉDIA' : 'BAIXA'}
+                      {point.priority === 'high' ? '🔴 CRÍTICA' : point.priority === 'medium' ? '🟡 MÉDIA' : '🟢 BAIXA'}
                     </Badge>
                   </div>
                   
                   <div className="flex items-center gap-4 mb-3">
                     <div className="text-sm">
-                      <span className="text-primary-600 font-police-body">PRECISÃO: </span>
-                      <span className="font-medium text-red-600 font-police-numbers">{point.accuracy}%</span>
+                      <span className="text-primary-600 dark:text-gray-400 font-police-body">PRECISÃO: </span>
+                      <span className="font-medium text-red-500 font-police-numbers">{point.accuracy}%</span>
                     </div>
                     <div className="text-sm">
-                      <span className="text-primary-600 font-police-body">ALVOS: </span>
-                      <span className="font-medium font-police-numbers">{point.totalQuestions}</span>
+                      <span className="text-primary-600 dark:text-gray-400 font-police-body">ALVOS: </span>
+                      <span className="font-medium font-police-numbers text-primary-900 dark:text-white">{point.totalQuestions}</span>
                     </div>
                   </div>
                   
-                  <div className="bg-blue-50 rounded p-3">
+                  <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/30 rounded p-3">
                     <div className="flex items-start gap-2">
-                      <Info className="w-4 h-4 text-blue-600 mt-0.5" />
-                      <p className="text-sm text-blue-800">{point.recommendation}</p>
+                      <Info className="w-4 h-4 text-blue-500 mt-0.5" />
+                      <p className="text-sm text-blue-700 dark:text-blue-400">{point.recommendation}</p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </CardContent>
         </Card>
 
         {/* Padrões de Estudo */}
-        <Card>
+        <Card className="border-t-4 border-t-purple-500 shadow-xl hover:shadow-2xl transition-all duration-300">
           <CardHeader>
             <div className="flex items-center gap-3">
               <Brain className="w-5 h-5 text-purple-600" />
@@ -648,25 +688,39 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
               <h3 className="text-sm font-medium text-primary-700 mb-3 font-police-body uppercase tracking-wider">HORAS DE TREINAMENTO POR DIA</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={studyPatterns}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="dayOfWeek" />
-                  <YAxis />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="avgHours" stroke="#8B5CF6" fill="#8B5CF6" fillOpacity={0.6} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="period" stroke="#9CA3AF" style={{ fontFamily: 'Exo 2', fontSize: 11 }} />
+                  <YAxis stroke="#9CA3AF" style={{ fontFamily: 'Exo 2', fontSize: 12 }} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#14242f', 
+                      border: '1px solid #facc15',
+                      borderRadius: '8px'
+                    }}
+                    labelStyle={{ color: '#facc15' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="averageTime" 
+                    stroke="#facc15" 
+                    fill="#facc15" 
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <Zap className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-primary-900 font-police-numbers">{avgStudyTime}h</p>
-                <p className="text-sm text-primary-600 font-police-body uppercase tracking-wider">MÉDIA DIÁRIA</p>
+              <div className="text-center p-4 bg-gradient-to-br from-accent-500/10 to-accent-500/5 border border-accent-500/30 rounded-lg">
+                <Zap className="w-8 h-8 text-accent-500 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-primary-900 dark:text-white font-police-numbers">{avgStudyTime}h</p>
+                <p className="text-sm text-primary-600 dark:text-gray-400 font-police-body uppercase tracking-wider">TEMPO MÉDIO</p>
               </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <Trophy className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-primary-900 font-police-title">QUINTA</p>
-                <p className="text-sm text-primary-600 font-police-body uppercase tracking-wider">DIA MAIS EFICIENTE</p>
+              <div className="text-center p-4 bg-gradient-to-br from-green-500/10 to-green-500/5 border border-green-500/30 rounded-lg">
+                <Trophy className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-primary-900 dark:text-white font-police-title">NOITE</p>
+                <p className="text-sm text-primary-600 dark:text-gray-400 font-police-body uppercase tracking-wider">PERÍODO MAIS EFICIENTE</p>
               </div>
             </div>
           </CardContent>
@@ -674,14 +728,14 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
       </div>
 
       {/* Ranking Comparativo */}
-      <Card className="mb-6">
+      <Card className="mb-6 border-l-4 border-l-orange-500 shadow-xl hover:shadow-2xl transition-all duration-300">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Users className="w-5 h-5 text-primary-600" />
               <h2 className="text-xl font-bold text-primary-900 font-police-title uppercase tracking-wider">RANKING OPERACIONAL</h2>
             </div>
-            <Badge variant="secondary" className="font-police-body">TOP 10% ELITE</Badge>
+            <Badge className="font-police-body bg-gradient-to-r from-accent-500 to-accent-600 text-black border-0">TOP 10% ELITE OPERACIONAL</Badge>
           </div>
         </CardHeader>
         <CardContent>
@@ -721,12 +775,12 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
                     <td className="py-3 font-medium">
                       {competitor.user}
                       {competitor.isCurrentUser && (
-                        <Badge className="ml-2 font-police-body" variant="secondary">VOCÊ</Badge>
+                        <Badge className="ml-2 font-police-body bg-accent-500 text-black border-0">VOCÊ</Badge>
                       )}
                     </td>
-                    <td className="py-3">{competitor.score.toLocaleString()}</td>
-                    <td className="py-3">{competitor.accuracy}%</td>
-                    <td className="py-3">{competitor.questionsAnswered.toLocaleString()}</td>
+                    <td className="py-3">{(competitor.score || 0).toLocaleString()}</td>
+                    <td className="py-3">{competitor.accuracy || 0}%</td>
+                    <td className="py-3">{(competitor.questionsAnswered || 0).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -736,7 +790,7 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
       </Card>
 
       {/* Distribuição de Questões */}
-      <Card>
+      <Card className="border-t-4 border-t-blue-500 shadow-xl hover:shadow-2xl transition-all duration-300">
         <CardHeader>
           <div className="flex items-center gap-3">
             <PieChart className="w-5 h-5 text-primary-600" />

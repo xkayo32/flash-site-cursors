@@ -795,7 +795,7 @@ class CourseService {
       }
       
       // Fallback to dashboard endpoint
-      response = await fetch('/api/v1/dashboard/student', {
+      response = await fetch(API_ENDPOINTS.dashboard.student, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
@@ -858,7 +858,7 @@ class CourseService {
 
   async getLearningStats(): Promise<{ success: boolean; data?: any; message?: string }> {
     try {
-      const response = await fetch('/api/v1/dashboard/student', {
+      const response = await fetch(API_ENDPOINTS.dashboard.student, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });

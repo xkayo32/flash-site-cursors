@@ -14,7 +14,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://173.208.151.106:8182
+      - VITE_API_URL=http://173.208.151.106:8180
     networks:
       - estudos-network
 
@@ -25,7 +25,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: estudos-backend-node
     ports:
-      - "8182:8182"
+      - "8180:8180"
     volumes:
       - ./backend-node:/app
       - /app/node_modules
@@ -33,7 +33,7 @@ services:
       - NODE_ENV=development
       - JWT_SECRET=your-jwt-secret-change-in-production
       - JWT_EXPIRES_IN=24h
-      - PORT=8182
+      - PORT=8180
       - HOST=0.0.0.0
     depends_on:
       - postgres

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -50,168 +50,18 @@ const materias = {
   }
 };
 
-// Mock data - será atualizado em tempo real
-const initialContentItems: ContentItem[] = [
-  {
-    id: 1,
-    title: 'PROTOCOLO CONSTITUCIONAL - OPERAÇÕES FUNDAMENTAIS',
-    type: 'course',
-    category: 'OPERAÇÕES TÁTICAS',
-    materia: 'OPERAÇÕES TÁTICAS',
-    submateria: 'Direito Constitucional',
-    topico: 'Princípios Fundamentais',
-    author: 'Prof. Dr. Carlos Lima',
-    status: 'published',
-    visibility: 'public',
-    createdAt: '2024-01-15',
-    updatedAt: '2024-01-15',
-    views: 1234,
-    enrollments: 89,
-    rating: 4.8,
-    lessons: 24,
-    duration: '12h 30m'
-  },
-  {
-    id: 2,
-    title: 'ARSENAL MATEMÁTICO - OPERAÇÕES ALGÉBRICAS',
-    type: 'course',
-    category: 'ARSENAL INTEL',
-    materia: 'ARSENAL INTEL',
-    submateria: 'Matemática',
-    topico: 'Matemática Básica',
-    author: 'Prof. Ana Santos',
-    status: 'draft',
-    visibility: 'private',
-    createdAt: '2024-01-14',
-    updatedAt: '2024-01-14',
-    views: 0,
-    enrollments: 0,
-    rating: 0,
-    lessons: 18,
-    duration: '8h 45m'
-  },
-  {
-    id: 3,
-    title: 'Português - Gramática Avançada',
-    type: 'course',
-    category: 'Português',
-    materia: 'CONHECIMENTOS GERAIS',
-    submateria: 'Português',
-    topico: 'Gramática',
-    author: 'Prof. Maria Oliveira',
-    status: 'published',
-    visibility: 'public',
-    createdAt: '2024-01-13',
-    updatedAt: '2024-01-13',
-    views: 856,
-    enrollments: 67,
-    rating: 4.6,
-    lessons: 32,
-    duration: '15h 20m'
-  },
-  {
-    id: 4,
-    title: 'Flashcards - Vocabulário Jurídico',
-    type: 'flashcards',
-    category: 'Direito',
-    materia: 'DIREITO',
-    submateria: 'Direito Penal',
-    topico: 'Teoria do Crime',
-    author: 'Sistema',
-    status: 'published',
-    visibility: 'public',
-    createdAt: '2024-01-12',
-    updatedAt: '2024-01-12',
-    views: 543,
-    enrollments: 145,
-    rating: 4.9,
-    cards: 250,
-    decks: 5
-  },
-  {
-    id: 5,
-    title: 'Questões ENEM 2023 - Matemática',
-    type: 'questions',
-    category: 'Matemática',
-    materia: 'CONHECIMENTOS GERAIS',
-    submateria: 'Matemática',
-    topico: 'Raciocínio Lógico',
-    author: 'Prof. João Costa',
-    status: 'published',
-    visibility: 'public',
-    createdAt: '2024-01-11',
-    updatedAt: '2024-01-11',
-    views: 923,
-    enrollments: 78,
-    rating: 4.7,
-    questions: 180,
-    difficulty: 'medium'
-  },
-  {
-    id: 6,
-    title: 'Resumo Interativo - História do Brasil',
-    type: 'summary',
-    category: 'História',
-    materia: 'CONHECIMENTOS GERAIS',
-    submateria: 'História',
-    topico: 'História do Brasil',
-    author: 'Prof. Patricia Lima',
-    status: 'review',
-    visibility: 'private',
-    createdAt: '2024-01-10',
-    updatedAt: '2024-01-10',
-    views: 234,
-    enrollments: 23,
-    rating: 4.5,
-    pages: 45,
-    interactions: 78
-  },
-  {
-    id: 7,
-    title: 'Técnicas de Abordagem - Táticas Operacionais',
-    type: 'course',
-    category: 'Segurança',
-    materia: 'SEGURANÇA PÚBLICA',
-    submateria: 'Táticas Operacionais',
-    topico: 'Abordagem',
-    author: 'Instrutor Silva',
-    status: 'published',
-    visibility: 'public',
-    createdAt: '2024-01-09',
-    updatedAt: '2024-01-09',
-    views: 1567,
-    enrollments: 234,
-    rating: 4.9,
-    lessons: 18,
-    duration: '10h 15m'
-  },
-  {
-    id: 8,
-    title: 'Direito Administrativo - Licitações e Contratos',
-    type: 'course',
-    category: 'Direito',
-    materia: 'DIREITO',
-    submateria: 'Direito Administrativo',
-    topico: 'Licitações',
-    author: 'Prof. Dr. Carlos Lima',
-    status: 'published',
-    visibility: 'public',
-    createdAt: '2024-01-08',
-    updatedAt: '2024-01-08',
-    views: 892,
-    enrollments: 156,
-    rating: 4.7,
-    lessons: 28,
-    duration: '14h 45m'
-  }
-];
-
-const categories = ['TODOS', 'OPERAÇÕES TÁTICAS', 'ARSENAL OPERACIONAL', 'ARSENAL INTEL', 'COMANDO ESPECIAL', 'BRIEFINGS INTEL'];
+// Categories will be loaded from API
 const types = ['Todos', 'course', 'flashcards', 'questions', 'summary'];
 const statuses = ['Todos', 'published', 'draft', 'review', 'archived'];
 
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/utils/cn';
+import { summaryService } from '@/services/summaryService';
+import { courseService } from '@/services/courseService';
+import { flashcardService } from '@/services/flashcardService';
+import { questionService } from '@/services/questionService';
+import { categoryService } from '@/services/categoryService';
+import toast from 'react-hot-toast';
 
 // TypeScript interfaces
 interface ContentItem {
@@ -245,9 +95,10 @@ export default function ContentManager() {
   const navigate = useNavigate();
   const importInputRef = useRef<HTMLInputElement>(null);
   
-  // Estado dos dados - simulando base de dados
-  const [contentItems, setContentItems] = useState<ContentItem[]>(initialContentItems);
-  const [isLoading, setIsLoading] = useState(false);
+  // Estado dos dados da API
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  const [categories, setCategories] = useState<string[]>(['TODOS']);
+  const [isLoading, setIsLoading] = useState(true);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error' | 'info'} | null>(null);
   const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
   const [viewingItem, setViewingItem] = useState<ContentItem | null>(null);
@@ -268,6 +119,144 @@ export default function ContentManager() {
   const [filterMateria, setFilterMateria] = useState('TODOS');
   const [filterSubmateria, setFilterSubmateria] = useState('TODOS');
   const [filterTopico, setFilterTopico] = useState('TODOS');
+  const [error, setError] = useState<string | null>(null);
+  
+  // Carregar dados da API
+  useEffect(() => {
+    loadContentItems();
+    loadCategories();
+  }, [selectedCategory, selectedType, selectedStatus, searchTerm, filterMateria]);
+  
+  const loadContentItems = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Carregar diferentes tipos de conteúdo das APIs
+      const [coursesRes, summariesRes, flashcardsRes] = await Promise.allSettled([
+        courseService.getCourses(),
+        summaryService.getAll({ limit: 50 }),
+        flashcardService.getFlashcards({ limit: 50 })
+      ]);
+      
+      const allItems: ContentItem[] = [];
+      
+      // Processar cursos
+      if (coursesRes.status === 'fulfilled' && coursesRes.value.success) {
+        const courses = coursesRes.value.courses || [];
+        courses.forEach(course => {
+          allItems.push({
+            id: parseInt(course.id),
+            title: course.title,
+            type: 'course',
+            category: course.category || 'Geral',
+            materia: course.category || 'CONHECIMENTOS GERAIS',
+            submateria: course.subject || 'Geral',
+            topico: course.description || '',
+            author: course.instructor || 'Sistema',
+            status: course.status === 'published' ? 'published' : 'draft',
+            visibility: 'public',
+            createdAt: course.created_at || new Date().toISOString().split('T')[0],
+            updatedAt: course.updated_at || new Date().toISOString().split('T')[0],
+            views: 0,
+            enrollments: 0,
+            rating: 0,
+            lessons: course.lessons?.length || 0,
+            duration: '0h 0m'
+          });
+        });
+      }
+      
+      // Processar resumos
+      if (summariesRes.status === 'fulfilled') {
+        const summaries = summariesRes.value.summaries || [];
+        summaries.forEach(summary => {
+          allItems.push({
+            id: parseInt(summary.id),
+            title: summary.title,
+            type: 'summary',
+            category: summary.subject,
+            materia: summary.subject,
+            submateria: summary.topic || summary.subject,
+            topico: summary.subtopic || '',
+            author: summary.created_by || 'Sistema',
+            status: summary.status,
+            visibility: summary.visibility === 'public' ? 'public' : 'private',
+            createdAt: summary.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+            updatedAt: summary.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+            views: summary.statistics?.views || 0,
+            enrollments: summary.statistics?.study_sessions || 0,
+            rating: summary.statistics?.average_rating || 0,
+            pages: summary.sections?.length || 0,
+            interactions: summary.statistics?.likes || 0
+          });
+        });
+      }
+      
+      // Processar flashcards
+      if (flashcardsRes.status === 'fulfilled') {
+        const flashcardsData = flashcardsRes.value;
+        if (flashcardsData.data) {
+          // Agrupar flashcards por categoria para simular "decks"
+          const flashcardsByCategory = flashcardsData.data.reduce((acc: any, flashcard: any) => {
+            const category = flashcard.category || 'Geral';
+            if (!acc[category]) {
+              acc[category] = [];
+            }
+            acc[category].push(flashcard);
+            return acc;
+          }, {});
+          
+          Object.entries(flashcardsByCategory).forEach(([category, cards]: [string, any]) => {
+            allItems.push({
+              id: Math.random() * 10000,
+              title: `Flashcards - ${category}`,
+              type: 'flashcards',
+              category,
+              materia: category,
+              submateria: category,
+              topico: 'Flashcards',
+              author: 'Sistema',
+              status: 'published',
+              visibility: 'public',
+              createdAt: new Date().toISOString().split('T')[0],
+              updatedAt: new Date().toISOString().split('T')[0],
+              views: 0,
+              enrollments: 0,
+              rating: 0,
+              cards: (cards as any[]).length,
+              decks: 1
+            });
+          });
+        }
+      }
+      
+      setContentItems(allItems);
+      
+    } catch (err) {
+      console.error('Error loading content items:', err);
+      setError('Erro ao carregar conteúdo. Tente novamente.');
+      showNotification('Erro ao carregar conteúdo', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const loadCategories = async () => {
+    try {
+      const response = await categoryService.listCategories();
+      if (response.success && response.data) {
+        const categoryNames = response.data
+          .filter(cat => cat.type === 'subject')
+          .map(cat => cat.name);
+        setCategories(['TODOS', ...categoryNames]);
+      }
+    } catch (err) {
+      console.error('Error loading categories:', err);
+      // Manter as categorias padrão em caso de erro
+      setCategories(['TODOS', 'OPERAÇÕES TÁTICAS', 'ARSENAL OPERACIONAL', 'ARSENAL INTEL', 'COMANDO ESPECIAL', 'BRIEFINGS INTEL']);
+    }
+  };
   
   // Import/Export functionality
   const handleImport = () => {
@@ -719,8 +708,8 @@ export default function ContentManager() {
                 className="px-3 py-2 text-sm border rounded-lg transition-all duration-300 font-police-body font-medium uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
               >
                 <option value="TODOS">TODAS AS MATÉRIAS</option>
-                {Object.keys(materias).map(materia => (
-                  <option key={materia} value={materia}>{materia}</option>
+                {categories.filter(c => c !== 'TODOS').map(category => (
+                  <option key={category} value={category}>{category}</option>
                 ))}
               </select>
 
@@ -819,9 +808,7 @@ export default function ContentManager() {
                           className="w-full px-4 py-2 border-2 rounded-lg transition-all duration-300 font-police-body font-medium uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
                         >
                           <option value="TODOS">TODAS AS SUBMATÉRIAS</option>
-                          {Object.keys(materias[filterMateria as keyof typeof materias] || {}).map(submateria => (
-                            <option key={submateria} value={submateria}>{submateria}</option>
-                          ))}
+                          <option value="Geral">GERAL</option>
                         </select>
                       </div>
                       
@@ -841,9 +828,7 @@ export default function ContentManager() {
                             className="w-full px-4 py-2 border-2 rounded-lg transition-all duration-300 font-police-body font-medium uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
                           >
                             <option value="TODOS">TODOS OS TÓPICOS</option>
-                            {(materias[filterMateria as keyof typeof materias]?.[filterSubmateria as keyof typeof materias[keyof typeof materias]] || []).map((topico: string) => (
-                              <option key={topico} value={topico}>{topico}</option>
-                            ))}
+                              <option value="Tópico Geral">TÓPICO GERAL</option>
                           </select>
                         </motion.div>
                       )}
@@ -1233,8 +1218,8 @@ export default function ContentManager() {
                     className="w-full px-4 py-2 border-2 rounded-lg font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
                   >
                     <option value="">SELECIONE A MATÉRIA</option>
-                    {Object.keys(materias).map(materia => (
-                      <option key={materia} value={materia}>{materia}</option>
+                    {categories.filter(c => c !== 'TODOS').map(category => (
+                      <option key={category} value={category}>{category}</option>
                     ))}
                   </select>
                 </div>
@@ -1253,9 +1238,7 @@ export default function ContentManager() {
                       className="w-full px-4 py-2 border-2 rounded-lg font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
                     >
                       <option value="">SELECIONE A SUBMATÉRIA</option>
-                      {Object.keys(materias[selectedMateria as keyof typeof materias]).map(submateria => (
-                        <option key={submateria} value={submateria}>{submateria}</option>
-                      ))}
+                      <option value="Geral">GERAL</option>
                     </select>
                   </div>
                 )}
@@ -1271,9 +1254,7 @@ export default function ContentManager() {
                       className="w-full px-4 py-2 border-2 rounded-lg font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
                     >
                       <option value="">SELECIONE O TÓPICO</option>
-                      {materias[selectedMateria as keyof typeof materias][selectedSubmateria as keyof typeof materias[keyof typeof materias]].map((topico: string) => (
-                        <option key={topico} value={topico}>{topico}</option>
-                      ))}
+                      <option value="Tópico Geral">TÓPICO GERAL</option>
                     </select>
                   </div>
                 )}

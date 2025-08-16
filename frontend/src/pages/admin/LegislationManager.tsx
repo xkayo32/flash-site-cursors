@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -38,99 +38,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
+import { legislationService, type LegislationDocument, type LegislationType, type LegislationStatus } from '@/services/legislationService';
+import { categoryService, type Category } from '@/services/categoryService';
 
-// Mock data for legislation
-const legislations = [
-  {
-    id: 1,
-    title: 'Constituição Federal de 1988',
-    type: 'constituicao',
-    number: 'CF/1988',
-    category: 'Constitucional',
-    subMateria: 'Direitos Fundamentais',
-    status: 'vigente',
-    publishDate: '1988-10-05',
-    lastUpdate: '2024-01-15',
-    articles: 250,
-    views: 15678,
-    linkedCourses: ['Polícia Federal', 'Receita Federal', 'TRT/TRF'],
-    tags: ['constituição', 'direitos fundamentais', 'organização do estado'],
-    description: 'A Constituição da República Federativa do Brasil de 1988',
-    url: 'http://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm'
-  },
-  {
-    id: 2,
-    title: 'Código Penal',
-    type: 'lei',
-    number: 'Decreto-Lei nº 2.848/1940',
-    category: 'Penal',
-    subMateria: 'Crimes Contra a Pessoa',
-    status: 'vigente',
-    publishDate: '1940-12-07',
-    lastUpdate: '2023-12-20',
-    articles: 361,
-    views: 8923,
-    linkedCourses: ['Polícia Federal', 'Polícia Civil'],
-    tags: ['código penal', 'crimes', 'penas'],
-    description: 'Código Penal Brasileiro',
-    url: 'http://www.planalto.gov.br/ccivil_03/decreto-lei/del2848compilado.htm'
-  },
-  {
-    id: 3,
-    title: 'Lei de Licitações e Contratos',
-    type: 'lei',
-    number: 'Lei nº 14.133/2021',
-    category: 'Administrativo',
-    subMateria: 'Licitações e Contratos',
-    status: 'vigente',
-    publishDate: '2021-04-01',
-    lastUpdate: '2023-11-10',
-    articles: 194,
-    views: 6754,
-    linkedCourses: ['TCU', 'CGU', 'Tribunais'],
-    tags: ['licitações', 'contratos', 'administração pública'],
-    description: 'Nova Lei de Licitações e Contratos Administrativos',
-    url: 'http://www.planalto.gov.br/ccivil_03/_ato2019-2022/2021/lei/L14133.htm'
-  },
-  {
-    id: 4,
-    title: 'Código Tributário Nacional',
-    type: 'lei',
-    number: 'Lei nº 5.172/1966',
-    category: 'Tributário',
-    subMateria: 'Impostos Federais',
-    status: 'vigente',
-    publishDate: '1966-10-25',
-    lastUpdate: '2023-09-15',
-    articles: 218,
-    views: 4532,
-    linkedCourses: ['Receita Federal', 'SEFAZ'],
-    tags: ['tributos', 'impostos', 'obrigação tributária'],
-    description: 'Dispõe sobre o Sistema Tributário Nacional',
-    url: 'http://www.planalto.gov.br/ccivil_03/leis/l5172compilado.htm'
-  },
-  {
-    id: 5,
-    title: 'Lei Maria da Penha',
-    type: 'lei',
-    number: 'Lei nº 11.340/2006',
-    category: 'Penal',
-    subMateria: 'Violência Doméstica',
-    status: 'vigente',
-    publishDate: '2006-08-07',
-    lastUpdate: '2023-06-22',
-    articles: 46,
-    views: 3421,
-    linkedCourses: ['Polícia Civil', 'Defensoria Pública'],
-    tags: ['violência doméstica', 'mulher', 'proteção'],
-    description: 'Lei de combate à violência doméstica e familiar contra a mulher',
-    url: 'http://www.planalto.gov.br/ccivil_03/_ato2004-2006/2006/lei/l11340.htm'
-  }
-];
-
-const categories = ['Todos', 'Constitucional', 'Administrativo', 'Penal', 'Tributário', 'Civil', 'Trabalhista'];
-const types = ['Todos', 'constituicao', 'lei', 'decreto', 'medida_provisoria', 'sumula'];
-const statuses = ['Todos', 'vigente', 'revogada', 'alterada'];
+const types = ['Todos', 'constitution', 'law', 'decree', 'ordinance', 'normative', 'resolution'];
+const statuses = ['Todos', 'active', 'revoked', 'superseded'];
 
 // Submatérias por categoria
 const subMaterias: { [key: string]: string[] } = {
@@ -166,76 +78,110 @@ export default function LegislationManager() {
   const [sortBy, setSortBy] = useState('title');
   const [sortOrder, setSortOrder] = useState('asc');
   const [showLegislationModal, setShowLegislationModal] = useState(false);
-  const [selectedLegislation, setSelectedLegislation] = useState<any>(null);
+  const [selectedLegislation, setSelectedLegislation] = useState<LegislationDocument | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const [selectedLinkedCourses, setSelectedLinkedCourses] = useState<string[]>([]);
-
-  const filteredLegislations = legislations
-    .filter(legislation => {
-      const matchesSearch = legislation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           legislation.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           legislation.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesCategory = selectedCategory === 'Todos' || legislation.category === selectedCategory;
-      const matchesSubMateria = selectedSubMateria === 'Todas' || 
-                               (legislation.subMateria && legislation.subMateria === selectedSubMateria);
-      const matchesType = selectedType === 'Todos' || legislation.type === selectedType;
-      const matchesStatus = selectedStatus === 'Todos' || legislation.status === selectedStatus;
+  
+  // State para dados da API
+  const [legislations, setLegislations] = useState<LegislationDocument[]>([]);
+  const [categories, setCategories] = useState<string[]>(['Todos']);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  
+  // Carregar dados da API
+  useEffect(() => {
+    loadLegislations();
+    loadCategories();
+  }, [selectedCategory, selectedType, selectedStatus, searchTerm, currentPage, sortBy, sortOrder]);
+  
+  const loadLegislations = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
       
-      let matchesDate = true;
-      if (dateFilter) {
-        const legislationYear = new Date(legislation.publishDate).getFullYear();
-        const currentYear = new Date().getFullYear();
-        
-        switch (dateFilter) {
-          case 'thisYear':
-            matchesDate = legislationYear === currentYear;
-            break;
-          case 'lastYear':
-            matchesDate = legislationYear === currentYear - 1;
-            break;
-          case 'last5Years':
-            matchesDate = legislationYear >= currentYear - 5;
-            break;
-          case 'older':
-            matchesDate = legislationYear < currentYear - 5;
-            break;
-        }
+      const params = {
+        subject_area: selectedCategory !== 'Todos' ? selectedCategory : undefined,
+        type: selectedType !== 'Todos' ? selectedType as LegislationType : undefined,
+        status: selectedStatus !== 'Todos' ? selectedStatus as LegislationStatus : undefined,
+        keyword: searchTerm || undefined,
+        limit: 20,
+        offset: (currentPage - 1) * 20,
+        sort: sortBy,
+        order: sortOrder as 'asc' | 'desc'
+      };
+      
+      const response = await legislationService.getAll(params);
+      setLegislations(response.legislation || []);
+      setTotalPages(Math.ceil((response.pagination?.total || 0) / 20));
+      
+    } catch (err) {
+      console.error('Error loading legislations:', err);
+      setError('Erro ao carregar legislações. Tente novamente.');
+      toast.error('Erro ao carregar legislações');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const loadCategories = async () => {
+    try {
+      const response = await categoryService.listCategories();
+      if (response.success && response.data) {
+        const categoryNames = response.data
+          .filter(cat => cat.type === 'subject')
+          .map(cat => cat.name);
+        setCategories(['Todos', ...categoryNames]);
       }
-      
-      return matchesSearch && matchesCategory && matchesSubMateria && matchesType && matchesStatus && matchesDate;
-    })
-    .sort((a, b) => {
-      let comparison = 0;
-      
-      switch (sortBy) {
-        case 'title':
-          comparison = a.title.localeCompare(b.title);
-          break;
-        case 'date':
-          comparison = new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime();
-          break;
-        case 'views':
-          comparison = a.views - b.views;
-          break;
-        case 'articles':
-          comparison = a.articles - b.articles;
-          break;
-        default:
-          comparison = 0;
-      }
-      
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
+    } catch (err) {
+      console.error('Error loading categories:', err);
+      // Manter as categorias padrão em caso de erro
+      setCategories(['Todos', 'Constitucional', 'Administrativo', 'Penal', 'Tributário', 'Civil', 'Trabalhista']);
+    }
+  };
 
-  const getStatusBadge = (status: string) => {
+  const filteredLegislations = legislations.filter(legislation => {
+    const matchesSearch = legislation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (legislation.number && legislation.number.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         legislation.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCategory = selectedCategory === 'Todos' || legislation.subject_area === selectedCategory;
+    const matchesType = selectedType === 'Todos' || legislation.type === selectedType;
+    const matchesStatus = selectedStatus === 'Todos' || legislation.status === selectedStatus;
+    
+    let matchesDate = true;
+    if (dateFilter) {
+      const legislationYear = new Date(legislation.publication_date).getFullYear();
+      const currentYear = new Date().getFullYear();
+      
+      switch (dateFilter) {
+        case 'thisYear':
+          matchesDate = legislationYear === currentYear;
+          break;
+        case 'lastYear':
+          matchesDate = legislationYear === currentYear - 1;
+          break;
+        case 'last5Years':
+          matchesDate = legislationYear >= currentYear - 5;
+          break;
+        case 'older':
+          matchesDate = legislationYear < currentYear - 5;
+          break;
+      }
+    }
+    
+    return matchesSearch && matchesCategory && matchesType && matchesStatus && matchesDate;
+  });
+
+  const getStatusBadge = (status: LegislationStatus) => {
     const statusConfig = {
-      vigente: { label: 'VIGENTE', color: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
-      revogada: { label: 'REVOGADA', color: 'bg-gray-400 text-white dark:bg-gray-600 dark:text-gray-200' },
-      alterada: { label: 'ALTERADA', color: 'bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300' }
+      active: { label: 'VIGENTE', color: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
+      revoked: { label: 'REVOGADA', color: 'bg-gray-400 text-white dark:bg-gray-600 dark:text-gray-200' },
+      superseded: { label: 'SUPERADA', color: 'bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300' }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig];
+    const config = statusConfig[status];
     return (
       <Badge className={`${config.color} font-police-body font-semibold uppercase tracking-wider`}>
         {config.label}
@@ -243,26 +189,20 @@ export default function LegislationManager() {
     );
   };
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: LegislationType) => {
     const icons = {
-      constituicao: Scale,
-      lei: Gavel,
-      decreto: FileCheck,
-      medida_provisoria: FileText,
-      sumula: Book
+      constitution: Scale,
+      law: Gavel,
+      decree: FileCheck,
+      ordinance: FileText,
+      normative: FileText,
+      resolution: Book
     };
-    return icons[type as keyof typeof icons] || FileText;
+    return icons[type] || FileText;
   };
 
-  const getTypeLabel = (type: string) => {
-    const labels = {
-      constituicao: 'Constituição',
-      lei: 'Lei',
-      decreto: 'Decreto',
-      medida_provisoria: 'Medida Provisória',
-      sumula: 'Súmula'
-    };
-    return labels[type as keyof typeof labels] || type;
+  const getTypeLabel = (type: LegislationType) => {
+    return legislationService.getTypeDisplayName(type);
   };
 
   const handleCreateLegislation = () => {
@@ -273,24 +213,24 @@ export default function LegislationManager() {
     });
   };
 
-  const handleEditLegislation = (legislation: any) => {
+  const handleEditLegislation = (legislation: LegislationDocument) => {
     setSelectedLegislation(legislation);
     setIsEditing(true);
     setShowLegislationModal(true);
     setActiveTab('details');
-    setSelectedLinkedCourses(legislation.linkedCourses || []);
+    setSelectedLinkedCourses([]);
     toast.success(`Editando: ${legislation.title}`, {
       duration: 2000,
       icon: '✏️'
     });
   };
 
-  const handleViewLegislation = (legislation: any) => {
+  const handleViewLegislation = (legislation: LegislationDocument) => {
     setSelectedLegislation(legislation);
     setIsEditing(false);
     setShowLegislationModal(true);
     setActiveTab('details');
-    setSelectedLinkedCourses(legislation.linkedCourses || []);
+    setSelectedLinkedCourses([]);
     toast.success(`Visualizando: ${legislation.title}`, {
       duration: 2000,
       icon: '👁️'
@@ -383,7 +323,7 @@ export default function LegislationManager() {
                   TOTAL DE CÓDIGOS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {legislations.length}
+                  {isLoading ? '...' : legislations.length}
                 </p>
               </div>
               <div className="w-14 h-14 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg flex items-center justify-center shadow-lg">
@@ -402,7 +342,7 @@ export default function LegislationManager() {
                   OPERACIONAIS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {legislations.filter(l => l.status === 'vigente').length}
+                  {isLoading ? '...' : legislations.filter(l => l.status === 'active').length}
                 </p>
               </div>
               <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg">
@@ -421,7 +361,7 @@ export default function LegislationManager() {
                   ARTIGOS TÁTICOS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {legislations.reduce((acc, l) => acc + l.articles, 0)}
+                  {isLoading ? '...' : legislations.reduce((acc, l) => acc + l.articles.length, 0)}
                 </p>
               </div>
               <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
@@ -439,7 +379,7 @@ export default function LegislationManager() {
                   VISUALIZAÇÕES
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {legislations.reduce((acc, l) => acc + l.views, 0).toLocaleString()}
+                  {isLoading ? '...' : legislations.reduce((acc, l) => acc + (l.statistics?.views || 0), 0).toLocaleString()}
                 </p>
               </div>
               <div className="w-12 h-12 bg-gray-600 rounded-lg flex items-center justify-center">
@@ -476,7 +416,8 @@ export default function LegislationManager() {
                 value={selectedCategory}
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
-                  setSelectedSubMateria('Todas'); // Reset submatéria when category changes
+                  setSelectedSubMateria('Todas');
+                  setCurrentPage(1);
                 }}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
               >
@@ -487,13 +428,14 @@ export default function LegislationManager() {
 
               <select
                 value={selectedSubMateria}
-                onChange={(e) => setSelectedSubMateria(e.target.value)}
+                onChange={(e) => {
+                  setSelectedSubMateria(e.target.value);
+                  setCurrentPage(1);
+                }}
                 disabled={selectedCategory === 'Todos'}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {(selectedCategory !== 'Todos' ? subMaterias[selectedCategory] || ['Todas'] : ['Todas']).map(subMateria => (
-                  <option key={subMateria} value={subMateria}>{subMateria.toUpperCase()}</option>
-                ))}
+                <option value="Todas">TODAS AS SUBMATÉRIAS</option>
               </select>
 
               <select
@@ -664,110 +606,155 @@ export default function LegislationManager() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredLegislations.map((legislation) => {
-                    const TypeIcon = getTypeIcon(legislation.type);
-                    return (
-                      <tr
-                        key={legislation.id}
-                        className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                      >
-                        <td className="py-4 px-6">
-                          <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-gray-300 dark:border-gray-700">
-                              <TypeIcon className="w-5 h-5 text-gray-700 dark:text-accent-500" />
-                            </div>
-                            <div>
-                              <p className="font-police-subtitle font-medium text-gray-900 dark:text-white">
-                                {legislation.title}
-                              </p>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 font-police-body">
-                                {legislation.description}
-                              </p>
-                              <div className="flex items-center gap-2 mt-2">
-                                {legislation.tags.slice(0, 3).map((tag, index) => (
-                                  <Badge key={index} variant="secondary" className="text-xs font-police-body uppercase tracking-wider">
-                                    {tag.toUpperCase()}
-                                  </Badge>
-                                ))}
-                                {legislation.tags.length > 3 && (
-                                  <span className="text-xs text-gray-500 dark:text-gray-500 font-police-numbers">
-                                    +{legislation.tags.length - 3} MAIS
-                                  </span>
-                                )}
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="py-12 px-6">
+                        <div className="flex items-center justify-center">
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 border-2 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+                            <span className="font-police-body font-medium uppercase tracking-wider text-gray-900 dark:text-white">
+                              CARREGANDO LEGISLAÇÕES...
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : error ? (
+                    <tr>
+                      <td colSpan={6} className="py-12 px-6">
+                        <div className="flex items-center justify-center">
+                          <div className="text-center">
+                            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+                            <p className="font-police-body font-medium uppercase tracking-wider text-red-600 dark:text-red-400">
+                              {error}
+                            </p>
+                            <Button 
+                              onClick={loadLegislations}
+                              variant="outline"
+                              className="mt-3 font-police-body uppercase tracking-wider"
+                            >
+                              TENTAR NOVAMENTE
+                            </Button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredLegislations.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 px-6 text-center">
+                        <p className="font-police-body font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                          NENHUMA LEGISLAÇÃO ENCONTRADA
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredLegislations.map((legislation) => {
+                      const TypeIcon = getTypeIcon(legislation.type);
+                      return (
+                        <tr
+                          key={legislation.id}
+                          className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                        >
+                          <td className="py-4 px-6">
+                            <div className="flex items-start gap-3">
+                              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-gray-300 dark:border-gray-700">
+                                <TypeIcon className="w-5 h-5 text-gray-700 dark:text-accent-500" />
+                              </div>
+                              <div>
+                                <p className="font-police-subtitle font-medium text-gray-900 dark:text-white">
+                                  {legislation.title}
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 font-police-body">
+                                  {legislation.description}
+                                </p>
+                                <div className="flex items-center gap-2 mt-2">
+                                  {legislation.keywords.slice(0, 3).map((keyword, index) => (
+                                    <Badge key={index} variant="secondary" className="text-xs font-police-body uppercase tracking-wider">
+                                      {keyword.toUpperCase()}
+                                    </Badge>
+                                  ))}
+                                  {legislation.keywords.length > 3 && (
+                                    <span className="text-xs text-gray-500 dark:text-gray-500 font-police-numbers">
+                                      +{legislation.keywords.length - 3} MAIS
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <div>
-                            <p className="text-sm font-police-body font-medium text-gray-900 dark:text-white uppercase tracking-wider">
-                              {getTypeLabel(legislation.type)}
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 font-police-numbers">
-                              {legislation.number}
-                            </p>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <Badge variant="outline" className="border-gray-300 dark:border-gray-600 font-police-body font-semibold uppercase tracking-wider">
-                            {legislation.category.toUpperCase()}
-                          </Badge>
-                        </td>
-                        <td className="py-4 px-6">
-                          {getStatusBadge(legislation.status)}
-                        </td>
-                        <td className="py-4 px-6">
-                          <div className="space-y-1 text-sm">
-                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                              <Eye className="w-3 h-3" />
-                              <span className="font-police-numbers">{legislation.views.toLocaleString()}</span>
-                              <span className="font-police-body uppercase tracking-wider">VIEWS</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div>
+                              <p className="text-sm font-police-body font-medium text-gray-900 dark:text-white uppercase tracking-wider">
+                                {getTypeLabel(legislation.type)}
+                              </p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 font-police-numbers">
+                                {legislation.number || `${legislation.year}`}
+                              </p>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                              <FileText className="w-3 h-3" />
-                              <span className="font-police-numbers">{legislation.articles}</span>
-                              <span className="font-police-body uppercase tracking-wider">ARTIGOS</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <Badge variant="outline" className="border-gray-300 dark:border-gray-600 font-police-body font-semibold uppercase tracking-wider">
+                              {legislation.subject_area.toUpperCase()}
+                            </Badge>
+                          </td>
+                          <td className="py-4 px-6">
+                            {getStatusBadge(legislation.status)}
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="space-y-1 text-sm">
+                              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                <Eye className="w-3 h-3" />
+                                <span className="font-police-numbers">{(legislation.statistics?.views || 0).toLocaleString()}</span>
+                                <span className="font-police-body uppercase tracking-wider">VIEWS</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                <FileText className="w-3 h-3" />
+                                <span className="font-police-numbers">{legislation.articles.length}</span>
+                                <span className="font-police-body uppercase tracking-wider">ARTIGOS</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                <Calendar className="w-3 h-3" />
+                                <span className="font-police-numbers">{legislation.year}</span>
+                                <span className="font-police-body uppercase tracking-wider">ANO</span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                              <Building className="w-3 h-3" />
-                              <span className="font-police-numbers">{legislation.linkedCourses.length}</span>
-                              <span className="font-police-body uppercase tracking-wider">CURSOS</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <div className="flex items-center gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              title="Visualizar"
-                              onClick={() => handleViewLegislation(legislation)}
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              title="Editar"
-                              onClick={() => handleEditLegislation(legislation)}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <a
-                              href={legislation.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex"
-                            >
-                              <Button variant="ghost" size="sm" title="Abrir no Planalto">
-                                <ExternalLink className="w-4 h-4" />
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-2">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                title="Visualizar"
+                                onClick={() => handleViewLegislation(legislation)}
+                              >
+                                <Eye className="w-4 h-4" />
                               </Button>
-                            </a>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                title="Editar"
+                                onClick={() => handleEditLegislation(legislation)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              {legislation.source_url && (
+                                <a
+                                  href={legislation.source_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex"
+                                >
+                                  <Button variant="ghost" size="sm" title="Abrir link oficial">
+                                    <ExternalLink className="w-4 h-4" />
+                                  </Button>
+                                </a>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
