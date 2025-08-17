@@ -777,25 +777,55 @@ export default function QuestionEditor() {
                     <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
                       MATÉRIA
                     </label>
-                    <div className="p-2 bg-gray-50 dark:bg-gray-900 rounded">
-                      <span className="font-police-body text-gray-900 dark:text-white">{selectedQuestion.subject}</span>
-                    </div>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={selectedQuestion.subject}
+                        onChange={(e) => setSelectedQuestion({...selectedQuestion, subject: e.target.value})}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                      />
+                    ) : (
+                      <div className="p-2 bg-gray-50 dark:bg-gray-900 rounded">
+                        <span className="font-police-body text-gray-900 dark:text-white">{selectedQuestion.subject}</span>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
                       TÓPICO
                     </label>
-                    <div className="p-2 bg-gray-50 dark:bg-gray-900 rounded">
-                      <span className="font-police-body text-gray-900 dark:text-white">{selectedQuestion.topic}</span>
-                    </div>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={selectedQuestion.topic}
+                        onChange={(e) => setSelectedQuestion({...selectedQuestion, topic: e.target.value})}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                      />
+                    ) : (
+                      <div className="p-2 bg-gray-50 dark:bg-gray-900 rounded">
+                        <span className="font-police-body text-gray-900 dark:text-white">{selectedQuestion.topic}</span>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
                       DIFICULDADE
                     </label>
-                    <div className="p-2">
-                      {getDifficultyBadge(selectedQuestion.difficulty)}
-                    </div>
+                    {isEditing ? (
+                      <select
+                        value={selectedQuestion.difficulty}
+                        onChange={(e) => setSelectedQuestion({...selectedQuestion, difficulty: e.target.value as any})}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                      >
+                        <option value="easy">FÁCIL</option>
+                        <option value="medium">MÉDIO</option>
+                        <option value="hard">DIFÍCIL</option>
+                      </select>
+                    ) : (
+                      <div className="p-2">
+                        {getDifficultyBadge(selectedQuestion.difficulty)}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -819,10 +849,35 @@ export default function QuestionEditor() {
                             <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-police-numbers font-bold">
                               {String.fromCharCode(65 + index)}
                             </span>
-                            <span className="font-police-body text-gray-900 dark:text-white">
-                              {option}
-                            </span>
-                            {index === selectedQuestion.correct_answer && (
+                            {isEditing ? (
+                              <div className="flex-1 flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={option}
+                                  onChange={(e) => {
+                                    const newOptions = [...selectedQuestion.options!];
+                                    newOptions[index] = e.target.value;
+                                    setSelectedQuestion({...selectedQuestion, options: newOptions});
+                                  }}
+                                  className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                                />
+                                <button
+                                  onClick={() => setSelectedQuestion({...selectedQuestion, correct_answer: index})}
+                                  className={`px-3 py-1 text-xs rounded font-police-body uppercase tracking-wider ${
+                                    index === selectedQuestion.correct_answer
+                                      ? 'bg-green-500 text-white'
+                                      : 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-green-400'
+                                  }`}
+                                >
+                                  {index === selectedQuestion.correct_answer ? 'CORRETA' : 'MARCAR'}
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="font-police-body text-gray-900 dark:text-white">
+                                {option}
+                              </span>
+                            )}
+                            {!isEditing && index === selectedQuestion.correct_answer && (
                               <CheckCircle className="w-5 h-5 text-green-500 ml-auto" />
                             )}
                           </div>
@@ -833,18 +888,26 @@ export default function QuestionEditor() {
                 )}
 
                 {/* Explanation */}
-                {selectedQuestion.explanation && (
-                  <div>
-                    <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
-                      EXPLICAÇÃO
-                    </label>
+                <div>
+                  <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                    EXPLICAÇÃO
+                  </label>
+                  {isEditing ? (
+                    <textarea
+                      value={selectedQuestion.explanation || ''}
+                      onChange={(e) => setSelectedQuestion({...selectedQuestion, explanation: e.target.value})}
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                      rows={4}
+                      placeholder="Adicione uma explicação para a resposta..."
+                    />
+                  ) : (
                     <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                       <p className="text-gray-900 dark:text-white font-police-body whitespace-pre-wrap">
-                        {selectedQuestion.explanation}
+                        {selectedQuestion.explanation || 'Nenhuma explicação disponível'}
                       </p>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Action Buttons */}
                 <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -852,10 +915,40 @@ export default function QuestionEditor() {
                     {isEditing ? (
                       <>
                         <Button
-                          onClick={() => {
-                            // Save changes logic would go here
-                            toast.info('Funcionalidade de edição completa em desenvolvimento');
-                            setShowQuestionModal(false);
+                          onClick={async () => {
+                            if (!selectedQuestion) return;
+                            
+                            try {
+                              const response = await questionService.updateQuestion(selectedQuestion.id, {
+                                title: selectedQuestion.title,
+                                type: selectedQuestion.type,
+                                subject: selectedQuestion.subject,
+                                topic: selectedQuestion.topic,
+                                difficulty: selectedQuestion.difficulty,
+                                explanation: selectedQuestion.explanation,
+                                options: selectedQuestion.options,
+                                correct_answer: selectedQuestion.correct_answer,
+                                correct_boolean: selectedQuestion.correct_boolean,
+                                expected_answer: selectedQuestion.expected_answer,
+                                exam_board: selectedQuestion.exam_board,
+                                exam_year: selectedQuestion.exam_year,
+                                reference: selectedQuestion.reference,
+                                tags: selectedQuestion.tags
+                              });
+                              
+                              if (response.success) {
+                                toast.success('OPERAÇÃO CONCLUÍDA: Questão atualizada com sucesso!');
+                                setShowQuestionModal(false);
+                                setIsEditing(false);
+                                // Reload questions to show updated data
+                                loadQuestions(currentPage);
+                              } else {
+                                throw new Error(response.message || 'Erro ao atualizar questão');
+                              }
+                            } catch (error: any) {
+                              console.error('Error updating question:', error);
+                              toast.error(`OPERAÇÃO FALHADA: ${error.message || 'Erro ao atualizar questão'}`);
+                            }
                           }}
                           className="gap-2 bg-accent-500 hover:bg-accent-600 text-black font-police-body uppercase tracking-wider"
                         >
