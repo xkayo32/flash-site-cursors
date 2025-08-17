@@ -291,12 +291,12 @@ export default function QuestionEditor() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       {/* Header Militar/Tático */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-gray-800 via-[#14242f] to-gray-900 dark:from-gray-900 dark:via-[#14242f] dark:to-black p-8 rounded-lg relative overflow-hidden"
+        className="bg-gradient-to-r from-gray-800 via-[#14242f] to-gray-900 dark:from-gray-900 dark:via-[#14242f] dark:to-black p-6 rounded-lg relative overflow-hidden"
         style={{
           backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,204,21,0.3) 1px, transparent 0)',
           backgroundSize: '20px 20px'
@@ -359,7 +359,7 @@ export default function QuestionEditor() {
             FILTROS TÁTICOS
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="p-4 space-y-3">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
@@ -373,7 +373,7 @@ export default function QuestionEditor() {
           </div>
 
           {/* Filter Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <select
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
@@ -551,7 +551,7 @@ export default function QuestionEditor() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="p-6 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
                     <div className="flex items-start gap-4">
                       <input
@@ -561,15 +561,15 @@ export default function QuestionEditor() {
                         className="mt-2 rounded border-gray-300 text-accent-500 focus:ring-accent-500"
                       />
                       
-                      <div className="flex-1 space-y-3">
+                      <div className="flex-1 space-y-2">
                         <div className="flex items-start justify-between gap-4">
-                          <h3 className="text-lg font-police-subtitle font-semibold text-gray-900 dark:text-white line-clamp-2">
+                          <h3 className="text-base font-police-subtitle font-semibold text-gray-900 dark:text-white line-clamp-2">
                             {question.title}
                           </h3>
                           
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <Button
-                              size="sm"
+                              size="xs"
                               variant="ghost"
                               onClick={() => handleViewQuestion(question)}
                               className="gap-1 font-police-body uppercase tracking-wider hover:bg-accent-500/10 hover:text-accent-500"

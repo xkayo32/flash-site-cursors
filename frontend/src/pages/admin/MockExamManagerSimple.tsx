@@ -61,59 +61,63 @@ export default function MockExamManagerSimple() {
   );
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+    <div className="p-3 md:p-4 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Gerenciar Simulados
+      <div className="mb-4">
+        <h1 className="text-xl md:text-2xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white mb-2">
+          COMANDO DE SIMULADOS
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Crie e gerencie simulados para preparação dos alunos
+        <p className="text-gray-600 dark:text-gray-400 font-police-subtitle uppercase tracking-wider">
+          CENTRO TÁTICO - SIMULAÇÕES OPERACIONAIS
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Simulados</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{exams.length}</p>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-4 rounded-lg">
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-accent-500/20" />
+          <h3 className="text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">TOTAL DE SIMULADOS</h3>
+          <p className="text-xl font-police-numbers font-bold text-gray-900 dark:text-white mt-1">{exams.length}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Simulados Ativos</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-4 rounded-lg">
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-accent-500/20" />
+          <h3 className="text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">OPERAÇÕES ATIVAS</h3>
+          <p className="text-xl font-police-numbers font-bold text-gray-900 dark:text-white mt-1">
             {exams.filter(e => e.status === 'published').length}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Tentativas</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-4 rounded-lg">
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-accent-500/20" />
+          <h3 className="text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ENGAJAMENTOS</h3>
+          <p className="text-xl font-police-numbers font-bold text-gray-900 dark:text-white mt-1">
             {exams.reduce((sum, exam) => sum + exam.total_attempts, 0).toLocaleString()}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Média Geral</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-4 rounded-lg">
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-accent-500/20" />
+          <h3 className="text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">EFICIÊNCIA MÉDIA</h3>
+          <p className="text-xl font-police-numbers font-bold text-gray-900 dark:text-white mt-1">
             {exams.length > 0 ? (exams.reduce((sum, exam) => sum + exam.average_score, 0) / exams.length).toFixed(1) : '0.0'}%
           </p>
         </div>
       </div>
 
       {/* Actions Bar */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="flex flex-col md:flex-row gap-3 mb-4">
         <div className="flex-1">
           <input
             type="text"
-            placeholder="Buscar simulados..."
+            placeholder="BUSCAR OPERAÇÕES TÁTICAS..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="w-full h-9 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
           />
         </div>
         <button
           onClick={() => navigate('/admin/mock-exams/new')}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+          className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider py-2 px-4 rounded-md transition-colors"
         >
-          Novo Simulado
+          NOVA OPERAÇÃO
         </button>
       </div>
 

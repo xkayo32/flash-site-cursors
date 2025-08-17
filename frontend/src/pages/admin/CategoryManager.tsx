@@ -365,7 +365,7 @@ export default function CategoryManager() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -396,21 +396,21 @@ export default function CategoryManager() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-4 gap-6"
+        className="grid grid-cols-1 md:grid-cols-4 gap-4"
       >
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
           <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                <p className="text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                   ÁREAS DE ATUAÇÃO
                 </p>
-                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
+                <p className="text-xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {stats.subjects}
                 </p>
               </div>
-              <BookOpen className="w-8 h-8 text-blue-600" />
+              <BookOpen className="w-6 h-6 text-blue-600" />
             </div>
           </CardContent>
         </Card>

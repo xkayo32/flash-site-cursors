@@ -60,41 +60,41 @@ export default function PreviousExamsManagerSimple() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-6 rounded-lg">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-4 rounded-lg">
           {/* Corner accents */}
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
-          <h3 className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ARQUIVO TOTAL</h3>
-          <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white mt-1">{exams.length}</p>
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-accent-500/20" />
+          <h3 className="text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ARQUIVO TOTAL</h3>
+          <p className="text-xl font-police-numbers font-bold text-gray-900 dark:text-white mt-1">{exams.length}</p>
         </div>
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-6 rounded-lg">
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-4 rounded-lg">
           {/* Corner accents */}
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
-          <h3 className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ALVOS CATALOGADOS</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-accent-500/20" />
+          <h3 className="text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ALVOS CATALOGADOS</h3>
+          <p className="text-xl font-police-numbers font-bold text-gray-900 dark:text-white mt-1">
             {exams.reduce((sum, exam) => sum + exam.total_questions, 0).toLocaleString()}
           </p>
         </div>
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-6 rounded-lg">
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-4 rounded-lg">
           {/* Corner accents */}
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
-          <h3 className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ACESSOS TÁTICOS</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-accent-500/20" />
+          <h3 className="text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ACESSOS TÁTICOS</h3>
+          <p className="text-xl font-police-numbers font-bold text-gray-900 dark:text-white mt-1">
             {exams.reduce((sum, exam) => sum + (exam.statistics?.total_attempts || 0), 0).toLocaleString()}
           </p>
         </div>
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-6 rounded-lg">
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative p-4 rounded-lg">
           {/* Corner accents */}
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
-          <h3 className="text-sm font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ENGAJAMENTOS</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-accent-500/20" />
+          <h3 className="text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">ENGAJAMENTOS</h3>
+          <p className="text-xl font-police-numbers font-bold text-gray-900 dark:text-white mt-1">
             {exams.reduce((sum, exam) => sum + (exam.statistics?.total_attempts || 0), 0).toLocaleString()}
           </p>
         </div>
       </div>
 
       {/* Actions Bar */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="flex flex-col md:flex-row gap-3 mb-4">
         <div className="flex-1">
           <input
             type="text"
@@ -104,16 +104,16 @@ export default function PreviousExamsManagerSimple() {
             className="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <button
             onClick={() => navigate('/admin/previous-exams/import')}
-            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black font-police-body font-semibold uppercase tracking-wider py-2 px-4 rounded-md transition-colors"
+            className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black dark:text-black font-police-body font-semibold uppercase tracking-wider py-2 px-3 rounded-md transition-colors text-sm"
           >
             IMPORTAR ARQUIVO
           </button>
           <button
             onClick={() => navigate('/admin/previous-exams/new')}
-            className="bg-gray-800 hover:bg-gray-700 text-white font-police-body font-semibold uppercase tracking-wider py-2 px-4 rounded-md transition-colors"
+            className="bg-gray-800 hover:bg-gray-700 text-white font-police-body font-semibold uppercase tracking-wider py-2 px-3 rounded-md transition-colors text-sm"
           >
             NOVA OPERAÇÃO
           </button>
@@ -176,26 +176,26 @@ export default function PreviousExamsManagerSimple() {
               ) : (
                 filteredExams.map((exam) => (
                   <tr key={exam.id} className="hover:bg-accent-500/10 dark:hover:bg-gray-700/50 transition-colors">
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <div>
                         <div className="text-sm font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider">
                           {exam.title}
                         </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                        <div className="text-xs text-gray-600 dark:text-gray-400 font-police-body">
                           {exam.organization}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-police-body font-semibold text-gray-900 dark:text-white uppercase tracking-wider">{exam.exam_board}</span>
+                    <td className="px-4 py-3">
+                      <span className="text-xs font-police-body font-semibold text-gray-900 dark:text-white uppercase tracking-wider">{exam.exam_board}</span>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-3 text-center">
                       <span className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">{exam.year}</span>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-3 text-center">
                       <span className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">{exam.total_questions}</span>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-2 text-xs">
                         <span className={exam.metadata?.pdf_url ? 'text-green-600' : 'text-gray-400'}>
                           PDF: {exam.metadata?.pdf_url ? '✓' : '✗'}
@@ -205,17 +205,17 @@ export default function PreviousExamsManagerSimple() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="text-xs font-police-body font-medium">
+                    <td className="px-4 py-3 text-center">
+                      <div className="text-[10px] font-police-body font-medium">
                         <div className="text-gray-600 dark:text-gray-400 uppercase tracking-wider">Tentativas: <span className="font-police-numbers font-bold text-gray-900 dark:text-white">{(exam.statistics?.total_attempts || 0).toLocaleString()}</span></div>
                         <div className="text-gray-600 dark:text-gray-400 uppercase tracking-wider">Aprovação: <span className="font-police-numbers font-bold text-gray-900 dark:text-white">{(exam.statistics?.approval_rate || 0).toFixed(1)}%</span></div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => navigate(`/admin/previous-exams/${exam.id}/edit`)}
-                          className="bg-accent-500 hover:bg-accent-600 text-black dark:text-black text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-2 rounded transition-colors"
+                          className="bg-accent-500 hover:bg-accent-600 text-black dark:text-black text-xs font-police-body font-semibold uppercase tracking-wider py-1 px-1.5 rounded transition-colors"
                         >
                           CONFIGURAR
                         </button>
@@ -230,7 +230,7 @@ export default function PreviousExamsManagerSimple() {
                               });
                             }
                           }}
-                          className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-police-body font-semibold uppercase tracking-wider py-1 px-2 rounded transition-colors"
+                          className="bg-gray-600 hover:bg-gray-700 text-white text-xs font-police-body font-semibold uppercase tracking-wider py-1 px-1.5 rounded transition-colors"
                         >
                           {exam.status === 'published' ? 'ARQUIVAR' : 'ARQUIVADO'}
                         </button>

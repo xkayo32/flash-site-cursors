@@ -257,12 +257,12 @@ export default function LegislationManager() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       {/* Header Militar/Tático */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-gray-800 via-[#14242f] to-gray-900 dark:from-gray-900 dark:via-[#14242f] dark:to-black p-8 rounded-lg relative overflow-hidden mb-6"
+        className="bg-gradient-to-r from-gray-800 via-[#14242f] to-gray-900 dark:from-gray-900 dark:via-[#14242f] dark:to-black p-6 rounded-lg relative overflow-hidden mb-4"
         style={{
           backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,204,21,0.3) 1px, transparent 0)',
           backgroundSize: '20px 20px'
@@ -312,22 +312,22 @@ export default function LegislationManager() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-4 gap-6"
+        className="grid grid-cols-1 md:grid-cols-4 gap-4"
       >
         <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-accent-500" />
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-police-subtitle font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                <p className="text-xs font-police-subtitle font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                   TOTAL DE CÓDIGOS
                 </p>
-                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
+                <p className="text-xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {isLoading ? '...' : legislations.length}
                 </p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg flex items-center justify-center shadow-lg">
-                <Shield className="w-7 h-7 text-accent-500" />
+              <div className="w-10 h-10 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg flex items-center justify-center shadow-lg">
+                <Shield className="w-5 h-5 text-accent-500" />
               </div>
             </div>
           </CardContent>
@@ -335,18 +335,18 @@ export default function LegislationManager() {
 
         <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-green-500" />
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-police-subtitle font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                <p className="text-xs font-police-subtitle font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                   OPERACIONAIS
                 </p>
-                <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
+                <p className="text-xl font-police-numbers font-bold text-gray-900 dark:text-white">
                   {isLoading ? '...' : legislations.filter(l => l.status === 'active').length}
                 </p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg">
-                <Target className="w-7 h-7 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg">
+                <Target className="w-5 h-5 text-white" />
               </div>
             </div>
           </CardContent>
@@ -397,10 +397,10 @@ export default function LegislationManager() {
         transition={{ delay: 0.2 }}
       >
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
-          <CardContent className="p-4">
-            <div className="space-y-4">
+          <CardContent className="p-3">
+            <div className="space-y-3">
               {/* Filtros Principais */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
               <div className="relative lg:col-span-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -492,9 +492,9 @@ export default function LegislationManager() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg"
+                  className="p-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
                         FILTRO POR DATA
@@ -655,16 +655,16 @@ export default function LegislationManager() {
                           key={legislation.id}
                           className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                         >
-                          <td className="py-4 px-6">
-                            <div className="flex items-start gap-3">
-                              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-gray-300 dark:border-gray-700">
-                                <TypeIcon className="w-5 h-5 text-gray-700 dark:text-accent-500" />
+                          <td className="py-3 px-4">
+                            <div className="flex items-start gap-2">
+                              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-300 dark:border-gray-700">
+                                <TypeIcon className="w-4 h-4 text-gray-700 dark:text-accent-500" />
                               </div>
                               <div>
-                                <p className="font-police-subtitle font-medium text-gray-900 dark:text-white">
+                                <p className="font-police-subtitle font-medium text-gray-900 dark:text-white text-sm">
                                   {legislation.title}
                                 </p>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 font-police-body">
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-police-body">
                                   {legislation.description}
                                 </p>
                                 <div className="flex items-center gap-2 mt-2">
