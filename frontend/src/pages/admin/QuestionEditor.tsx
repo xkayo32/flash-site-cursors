@@ -211,18 +211,37 @@ export default function QuestionEditor() {
   };
 
   const handleViewQuestion = (question: Question) => {
-    setSelectedQuestion(question);
-    setIsEditing(false);
-    setShowQuestionModal(true);
+    // Show question details in an alert for now
+    const details = `
+QUESTÃO: ${question.title}
+
+MATÉRIA: ${question.subject}
+TÓPICO: ${question.topic}
+DIFICULDADE: ${question.difficulty}
+TIPO: ${question.type}
+
+${question.type === 'multiple_choice' ? `OPÇÕES:
+${question.options?.map((opt, i) => `${i + 1}. ${opt}`).join('\n')}
+
+RESPOSTA CORRETA: Opção ${(question.correct_answer || 0) + 1}` : ''}
+
+EXPLICAÇÃO: ${question.explanation || 'Não disponível'}
+    `;
+    alert(details);
   };
 
   const handleEditQuestion = (question: Question) => {
-    setSelectedQuestion(question);
-    setIsEditing(true);
-    setShowQuestionModal(true);
+    // For now, just navigate to new question page
+    toast.info('Funcionalidade de edição em desenvolvimento. Use duplicar e edite a cópia.');
+    // Navigate to new question page
+    navigate('/admin/questions/new');
   };
 
   const handleDeleteQuestion = async (id: string) => {
+    if (!confirm('CONFIRMAR EXCLUSÃO: Tem certeza que deseja excluir esta questão?')) {
+      return;
+    }
+    
     try {
       const response = await questionService.deleteQuestion(id);
       if (response.success) {
