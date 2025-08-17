@@ -145,7 +145,7 @@ export default function LegislationManager() {
   const filteredLegislations = legislations.filter(legislation => {
     const matchesSearch = legislation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (legislation.number && legislation.number.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                         legislation.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm.toLowerCase()));
+                         (legislation.keywords || []).some(keyword => keyword.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = selectedCategory === 'Todos' || legislation.subject_area === selectedCategory;
     const matchesType = selectedType === 'Todos' || legislation.type === selectedType;
     const matchesStatus = selectedStatus === 'Todos' || legislation.status === selectedStatus;
@@ -361,7 +361,7 @@ export default function LegislationManager() {
                   ARTIGOS TÁTICOS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {isLoading ? '...' : legislations.reduce((acc, l) => acc + l.articles.length, 0)}
+                  {isLoading ? '...' : legislations.reduce((acc, l) => acc + (l.articles?.length || 0), 0)}
                 </p>
               </div>
               <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
@@ -668,14 +668,14 @@ export default function LegislationManager() {
                                   {legislation.description}
                                 </p>
                                 <div className="flex items-center gap-2 mt-2">
-                                  {legislation.keywords.slice(0, 3).map((keyword, index) => (
+                                  {(legislation.keywords || []).slice(0, 3).map((keyword, index) => (
                                     <Badge key={index} variant="secondary" className="text-xs font-police-body uppercase tracking-wider">
                                       {keyword.toUpperCase()}
                                     </Badge>
                                   ))}
-                                  {legislation.keywords.length > 3 && (
+                                  {(legislation.keywords || []).length > 3 && (
                                     <span className="text-xs text-gray-500 dark:text-gray-500 font-police-numbers">
-                                      +{legislation.keywords.length - 3} MAIS
+                                      +{(legislation.keywords || []).length - 3} MAIS
                                     </span>
                                   )}
                                 </div>
@@ -709,7 +709,7 @@ export default function LegislationManager() {
                               </div>
                               <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                                 <FileText className="w-3 h-3" />
-                                <span className="font-police-numbers">{legislation.articles.length}</span>
+                                <span className="font-police-numbers">{legislation.articles?.length || 0}</span>
                                 <span className="font-police-body uppercase tracking-wider">ARTIGOS</span>
                               </div>
                               <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
