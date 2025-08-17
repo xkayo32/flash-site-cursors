@@ -181,7 +181,7 @@ export default function LegislationManager() {
       superseded: { label: 'SUPERADA', color: 'bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300' }
     };
     
-    const config = statusConfig[status];
+    const config = statusConfig[status] || statusConfig.active; // Default to 'active' if status is undefined
     return (
       <Badge className={`${config.color} font-police-body font-semibold uppercase tracking-wider`}>
         {config.label}
