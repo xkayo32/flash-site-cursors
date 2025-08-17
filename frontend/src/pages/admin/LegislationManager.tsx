@@ -670,7 +670,7 @@ export default function LegislationManager() {
                                 <div className="flex items-center gap-2 mt-2">
                                   {(legislation.keywords || []).slice(0, 3).map((keyword, index) => (
                                     <Badge key={index} variant="secondary" className="text-xs font-police-body uppercase tracking-wider">
-                                      {keyword.toUpperCase()}
+                                      {keyword?.toUpperCase() || ''}
                                     </Badge>
                                   ))}
                                   {(legislation.keywords || []).length > 3 && (
@@ -694,7 +694,7 @@ export default function LegislationManager() {
                           </td>
                           <td className="py-4 px-6">
                             <Badge variant="outline" className="border-gray-300 dark:border-gray-600 font-police-body font-semibold uppercase tracking-wider">
-                              {legislation.subject_area.toUpperCase()}
+                              {legislation.subject_area?.toUpperCase() || 'N/A'}
                             </Badge>
                           </td>
                           <td className="py-4 px-6">
@@ -1040,7 +1040,7 @@ export default function LegislationManager() {
                             className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                           />
                           <span className="text-sm font-police-body font-medium text-gray-900 dark:text-white uppercase tracking-wider">
-                            {course.toUpperCase()}
+                            {course?.toUpperCase() || ''}
                           </span>
                         </label>
                       ))}
@@ -1069,7 +1069,7 @@ export default function LegislationManager() {
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
                               <p className="font-police-subtitle font-medium text-gray-900 dark:text-white uppercase tracking-wider">
-                                {item.action.toUpperCase()}
+                                {item.action?.toUpperCase() || ''}
                               </p>
                               <span className="text-sm text-gray-600 dark:text-gray-400 font-police-numbers">
                                 {item.date}
@@ -1079,7 +1079,7 @@ export default function LegislationManager() {
                               {item.description}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 font-police-body uppercase tracking-wider">
-                              POR: {item.user.toUpperCase()}
+                              POR: {item.user?.toUpperCase() || 'DESCONHECIDO'}
                             </p>
                           </div>
                         </div>
