@@ -608,19 +608,19 @@ export default function CourseEditor() {
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600 dark:text-gray-400 font-police-body">DURAÇÃO</span>
                     <span className="font-bold text-gray-900 dark:text-white font-police-numbers">
-                      {course.duration.hours}h
+                      {course.duration?.hours || 0}h
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600 dark:text-gray-400 font-police-body">MÓDULOS</span>
                     <span className="font-bold text-gray-900 dark:text-white font-police-numbers">
-                      {course.stats.modules}
+                      {course.stats?.modules || 0}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600 dark:text-gray-400 font-police-body">RECRUTAS</span>
                     <span className="font-bold text-gray-900 dark:text-white font-police-numbers">
-                      {course.stats.enrollments.toLocaleString('pt-BR')}
+                      {course.stats?.enrollments?.toLocaleString('pt-BR') || '0'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -628,7 +628,7 @@ export default function CourseEditor() {
                     <div className="flex items-center gap-1">
                       <Star className="w-3 h-3 text-accent-500 fill-current" />
                       <span className="font-bold text-gray-900 dark:text-white font-police-numbers">
-                        {course.stats.rating > 0 ? course.stats.rating : '--'}
+                        {course.stats?.rating && course.stats.rating > 0 ? course.stats.rating : '--'}
                       </span>
                     </div>
                   </div>
