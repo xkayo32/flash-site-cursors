@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   ArrowLeft,
   Save,
@@ -36,6 +36,7 @@ interface SubjectTopics {
 
 export default function NewQuestion() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
@@ -113,6 +114,53 @@ export default function NewQuestion() {
     
     loadData();
   }, []);
+
+  // Load duplicate data if provided
+  useEffect(() => {
+    const duplicateData = location.state?.duplicateFrom;
+    if (duplicateData && !loadingData) {
+      setFormData(prev => ({
+        ...prev,
+        title: duplicateData.title || '',
+        subject: duplicateData.subject || prev.subject,
+        topic: duplicateData.topic || prev.topic,
+        difficulty: duplicateData.difficulty || prev.difficulty,
+        type: duplicateData.type || prev.type,
+        explanation: duplicateData.explanation || '',
+        exam_board: duplicateData.exam_board || '',
+        exam_year: duplicateData.exam_year || new Date().getFullYear(),
+        reference: duplicateData.reference || '',
+        tags: duplicateData.tags || []
+      }));
+
+      // Set options if it's multiple choice
+      if (duplicateData.type === 'multiple_choice' && duplicateData.options) {
+        setFormData(prev => ({
+          ...prev,
+          options: duplicateData.options,
+          correctAnswer: duplicateData.correct_answer || 0
+        }));
+      }
+
+      // Set boolean answer if it's true/false
+      if (duplicateData.type === 'true_false' && duplicateData.correct_boolean !== undefined) {
+        setFormData(prev => ({
+          ...prev,
+          correctBoolean: duplicateData.correct_boolean
+        }));
+      }
+
+      // Set expected answer for essay/fill_blank
+      if (duplicateData.expected_answer) {
+        setFormData(prev => ({
+          ...prev,
+          expectedAnswer: duplicateData.expected_answer
+        }));
+      }
+
+      toast.success('Dados da questão carregados para duplicação!');
+    }
+  }, [location.state, loadingData]);
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
