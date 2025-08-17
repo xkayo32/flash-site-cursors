@@ -211,30 +211,15 @@ export default function QuestionEditor() {
   };
 
   const handleViewQuestion = (question: Question) => {
-    // Show question details in an alert for now
-    const details = `
-QUESTÃO: ${question.title}
-
-MATÉRIA: ${question.subject}
-TÓPICO: ${question.topic}
-DIFICULDADE: ${question.difficulty}
-TIPO: ${question.type}
-
-${question.type === 'multiple_choice' ? `OPÇÕES:
-${question.options?.map((opt, i) => `${i + 1}. ${opt}`).join('\n')}
-
-RESPOSTA CORRETA: Opção ${(question.correct_answer || 0) + 1}` : ''}
-
-EXPLICAÇÃO: ${question.explanation || 'Não disponível'}
-    `;
-    alert(details);
+    setSelectedQuestion(question);
+    setIsEditing(false);
+    setShowQuestionModal(true);
   };
 
   const handleEditQuestion = (question: Question) => {
-    // For now, just navigate to new question page
-    toast.info('Funcionalidade de edição em desenvolvimento. Use duplicar e edite a cópia.');
-    // Navigate to new question page
-    navigate('/admin/questions/new');
+    setSelectedQuestion(question);
+    setIsEditing(true);
+    setShowQuestionModal(true);
   };
 
   const handleDeleteQuestion = async (id: string) => {
@@ -728,7 +713,186 @@ EXPLICAÇÃO: ${question.explanation || 'Não disponível'}
         </div>
       )}
 
-      {/* Question Modal would go here - implement if needed */}
+      {/* Question Modal */}
+      <AnimatePresence>
+        {showQuestionModal && selectedQuestion && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowQuestionModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-police-title font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                    {isEditing ? 'EDITAR QUESTÃO' : 'DETALHES DA QUESTÃO'}
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400 font-police-body">
+                    ID: {selectedQuestion.id}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowQuestionModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Question Title */}
+                <div>
+                  <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                    ENUNCIADO DA QUESTÃO
+                  </label>
+                  {isEditing ? (
+                    <textarea
+                      value={selectedQuestion.title}
+                      onChange={(e) => setSelectedQuestion({...selectedQuestion, title: e.target.value})}
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                      rows={4}
+                    />
+                  ) : (
+                    <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                      <p className="text-gray-900 dark:text-white font-police-body whitespace-pre-wrap">
+                        {selectedQuestion.title}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Question Metadata */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                      MATÉRIA
+                    </label>
+                    <div className="p-2 bg-gray-50 dark:bg-gray-900 rounded">
+                      <span className="font-police-body text-gray-900 dark:text-white">{selectedQuestion.subject}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                      TÓPICO
+                    </label>
+                    <div className="p-2 bg-gray-50 dark:bg-gray-900 rounded">
+                      <span className="font-police-body text-gray-900 dark:text-white">{selectedQuestion.topic}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                      DIFICULDADE
+                    </label>
+                    <div className="p-2">
+                      {getDifficultyBadge(selectedQuestion.difficulty)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Question Options (if multiple choice) */}
+                {selectedQuestion.type === 'multiple_choice' && selectedQuestion.options && (
+                  <div>
+                    <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                      OPÇÕES DE RESPOSTA
+                    </label>
+                    <div className="space-y-2">
+                      {selectedQuestion.options.map((option, index) => (
+                        <div
+                          key={index}
+                          className={`p-3 rounded-lg border-2 ${
+                            index === selectedQuestion.correct_answer
+                              ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                              : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-police-numbers font-bold">
+                              {String.fromCharCode(65 + index)}
+                            </span>
+                            <span className="font-police-body text-gray-900 dark:text-white">
+                              {option}
+                            </span>
+                            {index === selectedQuestion.correct_answer && (
+                              <CheckCircle className="w-5 h-5 text-green-500 ml-auto" />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Explanation */}
+                {selectedQuestion.explanation && (
+                  <div>
+                    <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                      EXPLICAÇÃO
+                    </label>
+                    <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                      <p className="text-gray-900 dark:text-white font-police-body whitespace-pre-wrap">
+                        {selectedQuestion.explanation}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex gap-2">
+                    {isEditing ? (
+                      <>
+                        <Button
+                          onClick={() => {
+                            // Save changes logic would go here
+                            toast.info('Funcionalidade de edição completa em desenvolvimento');
+                            setShowQuestionModal(false);
+                          }}
+                          className="gap-2 bg-accent-500 hover:bg-accent-600 text-black font-police-body uppercase tracking-wider"
+                        >
+                          <Save className="w-4 h-4" />
+                          SALVAR ALTERAÇÕES
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsEditing(false)}
+                          className="font-police-body uppercase tracking-wider"
+                        >
+                          CANCELAR EDIÇÃO
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        onClick={() => setIsEditing(true)}
+                        className="gap-2 bg-blue-600 hover:bg-blue-700 text-white font-police-body uppercase tracking-wider"
+                      >
+                        <Edit className="w-4 h-4" />
+                        EDITAR QUESTÃO
+                      </Button>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowQuestionModal(false)}
+                    className="font-police-body uppercase tracking-wider"
+                  >
+                    FECHAR
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
