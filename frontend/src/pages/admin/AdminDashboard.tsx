@@ -243,7 +243,6 @@ export default function AdminDashboard() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      >
         {dashboardStats.map((stat, index) => (
           <Card key={index} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
             {/* Corner accents */}
