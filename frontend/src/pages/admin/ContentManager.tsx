@@ -588,7 +588,7 @@ export default function ContentManager() {
   };
 
   return (
-    <div className="p-6 space-y-6 bg-gradient-to-br from-gray-100 via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800 min-h-full relative">
+    <div className="p-4 space-y-4 bg-gradient-to-br from-gray-100 via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800 min-h-full relative">
       {/* Tactical Background Pattern */}
       <div 
         className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] pointer-events-none"
@@ -681,10 +681,10 @@ export default function ContentManager() {
             ? 'bg-gray-800 border-gray-700 shadow-gray-900/50' 
             : 'bg-white border-military-base/20 shadow-military-base/10'
         )}>
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="space-y-4">
               {/* Primeira linha de filtros */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -793,7 +793,7 @@ export default function ContentManager() {
                       <div className="h-0.5 bg-gradient-to-r from-transparent via-accent-500 to-transparent flex-1" />
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {/* Submateria Filter */}
                       <div>
                         <label className="block text-xs font-police-subtitle uppercase tracking-wider mb-1 text-gray-600 dark:text-gray-400">
@@ -947,7 +947,7 @@ export default function ContentManager() {
                 <thead className="border-b-2 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700">
                   <tr>
                     {showBulkActions && (
-                      <th className="text-left py-4 px-6">
+                      <th className="text-left py-3 px-4">
                         <input
                           type="checkbox"
                           checked={selectedItems.length === filteredContent.length}
@@ -956,22 +956,22 @@ export default function ContentManager() {
                         />
                       </th>
                     )}
-                    <th className="text-left py-4 px-6 font-police-subtitle font-bold uppercase tracking-wider text-gray-700 dark:text-accent-500">
+                    <th className="text-left py-3 px-4 font-police-subtitle font-bold uppercase tracking-wider text-gray-700 dark:text-accent-500">
                       CONTEÚDO
                     </th>
-                    <th className="text-left py-4 px-6 font-police-subtitle font-bold uppercase tracking-wider text-gray-700 dark:text-accent-500">
+                    <th className="text-left py-3 px-4 font-police-subtitle font-bold uppercase tracking-wider text-gray-700 dark:text-accent-500">
                       TIPO
                     </th>
-                    <th className="text-left py-4 px-6 font-police-subtitle font-bold uppercase tracking-wider text-gray-700 dark:text-accent-500">
+                    <th className="text-left py-3 px-4 font-police-subtitle font-bold uppercase tracking-wider text-gray-700 dark:text-accent-500">
                       AUTOR
                     </th>
-                    <th className="text-left py-4 px-6 font-police-subtitle font-bold uppercase tracking-wider text-gray-700 dark:text-accent-500">
+                    <th className="text-left py-3 px-4 font-police-subtitle font-bold uppercase tracking-wider text-gray-700 dark:text-accent-500">
                       STATUS
                     </th>
-                    <th className="text-left py-4 px-6 font-police-subtitle font-bold uppercase tracking-wider text-gray-700 dark:text-accent-500">
+                    <th className="text-left py-3 px-4 font-police-subtitle font-bold uppercase tracking-wider text-gray-700 dark:text-accent-500">
                       MÉTRICAS
                     </th>
-                    <th className="text-left py-4 px-6 font-police-subtitle font-bold uppercase tracking-wider text-gray-700 dark:text-accent-500">
+                    <th className="text-left py-3 px-4 font-police-subtitle font-bold uppercase tracking-wider text-gray-700 dark:text-accent-500">
                       AÇÕES
                     </th>
                   </tr>
@@ -990,7 +990,7 @@ export default function ContentManager() {
                         )}
                       >
                         {showBulkActions && (
-                          <td className="py-4 px-6">
+                          <td className="py-3 px-4">
                             <input
                               type="checkbox"
                               checked={selectedItems.includes(item.id)}
@@ -999,16 +999,16 @@ export default function ContentManager() {
                             />
                           </td>
                         )}
-                        <td className="py-4 px-6">
+                        <td className="py-3 px-4">
                           <div className="flex items-start gap-3">
                             <div className={cn(
-                              "w-10 h-10 rounded-lg flex items-center justify-center border-2 transition-all duration-300",
+                              "w-8 h-8 rounded-lg flex items-center justify-center border-2 transition-all duration-300",
                               resolvedTheme === 'dark' 
                                 ? 'bg-gray-700 border-gray-600' 
                                 : 'bg-military-base/10 border-military-base/30'
                             )}>
                               <TypeIcon className={cn(
-                                "w-5 h-5",
+                                "w-4 h-4",
                                 resolvedTheme === 'dark' ? 'text-yellow-400' : 'text-military-base'
                               )} />
                             </div>
@@ -1043,7 +1043,7 @@ export default function ContentManager() {
                             </div>
                           </div>
                         </td>
-                        <td className="py-4 px-6">
+                        <td className="py-3 px-4">
                           <span className={cn(
                             "font-police-body font-medium uppercase tracking-wide",
                             resolvedTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
@@ -1051,7 +1051,7 @@ export default function ContentManager() {
                             {item.type}
                           </span>
                         </td>
-                        <td className="py-4 px-6">
+                        <td className="py-3 px-4">
                           <span className={cn(
                             "font-police-body",
                             resolvedTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
@@ -1059,10 +1059,10 @@ export default function ContentManager() {
                             {item.author}
                           </span>
                         </td>
-                        <td className="py-4 px-6">
+                        <td className="py-3 px-4">
                           {getStatusBadge(item.status)}
                         </td>
-                        <td className="py-4 px-6">
+                        <td className="py-3 px-4">
                           <div className="space-y-1">
                             <div className="flex items-center gap-4 text-sm">
                               <span className={cn(
@@ -1088,12 +1088,12 @@ export default function ContentManager() {
                             </div>
                           </div>
                         </td>
-                        <td className="py-4 px-6">
+                        <td className="py-3 px-4">
                           <div className="flex items-center gap-2">
                             <Button 
                               onClick={() => handleViewItem(item)}
                               variant="ghost" 
-                              size="sm" 
+                              size="xs" 
                               title="Visualizar"
                               className="hover:bg-accent-500/20 hover:text-accent-500 transition-colors"
                             >
@@ -1102,7 +1102,7 @@ export default function ContentManager() {
                             <Button 
                               onClick={() => handleEditItem(item)}
                               variant="ghost" 
-                              size="sm" 
+                              size="xs" 
                               title="Editar"
                               className="hover:bg-accent-500/20 hover:text-accent-500 transition-colors"
                             >
@@ -1111,7 +1111,7 @@ export default function ContentManager() {
                             <Button 
                               onClick={() => handleItemOptions(item)}
                               variant="ghost" 
-                              size="sm" 
+                              size="xs" 
                               title="Mais opções"
                               className="hover:bg-accent-500/20 hover:text-accent-500 transition-colors"
                             >

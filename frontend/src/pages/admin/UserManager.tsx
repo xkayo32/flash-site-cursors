@@ -279,7 +279,7 @@ export default function UserManager() {
   };
 
   return (
-    <div className="p-6 space-y-6 bg-gradient-to-br from-gray-100 via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800 min-h-full relative">
+    <div className="p-4 space-y-4 bg-gradient-to-br from-gray-100 via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800 min-h-full relative">
       {/* Tactical Background Pattern */}
       <div 
         className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] pointer-events-none"
@@ -348,10 +348,10 @@ export default function UserManager() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-4 gap-6"
+        className="grid grid-cols-1 md:grid-cols-4 gap-4"
       >
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500/50 transition-all duration-300 shadow-lg hover:shadow-xl group relative overflow-hidden">
-          <CardContent className="p-4 relative z-10">
+          <CardContent className="p-3 relative z-10">
             {/* Tactical Elements */}
             <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-accent-500/60 to-accent-500/30" />
             <div className="absolute top-0 left-0 w-8 h-1 bg-accent-500/50 group-hover:bg-accent-500 transition-all duration-300" />
@@ -374,7 +374,7 @@ export default function UserManager() {
         </Card>
 
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500/50 transition-all duration-300 shadow-lg hover:shadow-xl group relative overflow-hidden">
-          <CardContent className="p-4 relative z-10">
+          <CardContent className="p-3 relative z-10">
             {/* Tactical Elements */}
             <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-green-500/60 to-green-500/30" />
             <div className="absolute top-0 left-0 w-8 h-1 bg-green-500/50 group-hover:bg-green-500 transition-all duration-300" />
@@ -397,7 +397,7 @@ export default function UserManager() {
         </Card>
 
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500/50 transition-all duration-300 shadow-lg hover:shadow-xl group relative overflow-hidden">
-          <CardContent className="p-4 relative z-10">
+          <CardContent className="p-3 relative z-10">
             {/* Tactical Elements */}
             <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-blue-500/60 to-blue-500/30" />
             <div className="absolute top-0 left-0 w-8 h-1 bg-blue-500/50 group-hover:bg-blue-500 transition-all duration-300" />
@@ -420,7 +420,7 @@ export default function UserManager() {
         </Card>
 
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500/50 transition-all duration-300 shadow-lg hover:shadow-xl group relative overflow-hidden">
-          <CardContent className="p-4 relative z-10">
+          <CardContent className="p-3 relative z-10">
             {/* Tactical Elements */}
             <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-red-500/60 to-red-500/30" />
             <div className="absolute top-0 left-0 w-8 h-1 bg-red-500/50 group-hover:bg-red-500 transition-all duration-300" />
@@ -448,7 +448,7 @@ export default function UserManager() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-lg relative overflow-hidden"
+        className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-lg relative overflow-hidden"
       >
         {/* Tactical Filter Elements */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500/30 via-accent-500/60 to-accent-500/30" />
@@ -511,19 +511,19 @@ export default function UserManager() {
           <table className="w-full">
             <thead className="bg-gray-100 dark:bg-gray-800/80">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
                   USUÁRIO
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
                   FUNÇÃO
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
                   STATUS
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
                   ASSINATURA
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
                   ÚLTIMO ACESSO
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
@@ -534,28 +534,28 @@ export default function UserManager() {
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
+                  <td colSpan={6} className="px-4 py-8 text-center">
                     <Loader className="w-8 h-8 animate-spin mx-auto text-primary-600" />
                     <p className="mt-2 text-gray-500">Carregando usuários...</p>
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                     Nenhum usuário encontrado
                   </td>
                 </tr>
               ) : (
                 users.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-b border-gray-200 dark:border-gray-700">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center">
                         <img
-                          className="h-10 w-10 rounded-full"
+                          className="h-8 w-8 rounded-full"
                           src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=14242f&color=fff`}
                           alt={user.name}
                         />
-                        <div className="ml-4">
+                        <div className="ml-3">
                           <div className="text-sm font-police-subtitle font-medium text-gray-900 dark:text-white">
                             {user.name}
                           </div>
@@ -565,13 +565,13 @@ export default function UserManager() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       {getRoleBadge(user.role)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       {getStatusBadge(user.status)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <div>
                         <p className="text-sm font-police-body font-medium text-gray-900 dark:text-white uppercase tracking-wider">
                           {user.subscription?.plan || 'SEM PLANO'}

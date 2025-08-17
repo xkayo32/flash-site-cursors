@@ -316,7 +316,7 @@ export default function CourseEditor() {
   );
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-full relative">
+    <div className="p-4 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-full relative">
       {/* Background Pattern */}
       <div 
         className="absolute inset-0 opacity-5 dark:opacity-10 pointer-events-none"
@@ -380,7 +380,7 @@ export default function CourseEditor() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+        className="grid grid-cols-1 md:grid-cols-3 gap-3"
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -388,20 +388,20 @@ export default function CourseEditor() {
           transition={{ delay: 0.1 }}
         >
           <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl">
-            <CardContent className="p-4 relative overflow-hidden">
+            <CardContent className="p-3 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-accent-500">
                     TOTAL DE CURSOS
                   </p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                  <p className="text-lg font-bold text-gray-900 dark:text-white font-police-numbers">
                     {courses.length}
                   </p>
                 </div>
                 <div className="relative">
-                  <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
-                    <BookOpen className="w-5 h-5 text-gray-700 dark:text-accent-500" />
+                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
+                    <BookOpen className="w-4 h-4 text-gray-700 dark:text-accent-500" />
                   </div>
                 </div>
               </div>
@@ -415,20 +415,20 @@ export default function CourseEditor() {
           transition={{ delay: 0.2 }}
         >
           <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl">
-            <CardContent className="p-4 relative overflow-hidden">
+            <CardContent className="p-3 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-1 h-full bg-gray-600" />
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
                     PUBLICADOS
                   </p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                  <p className="text-lg font-bold text-gray-900 dark:text-white font-police-numbers">
                     {courses.filter(c => c.status === 'PUBLICADO').length}
                   </p>
                 </div>
                 <div className="relative">
-                  <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
-                    <Shield className="w-5 h-5 text-gray-700 dark:text-gray-400" />
+                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
+                    <Shield className="w-4 h-4 text-gray-700 dark:text-gray-400" />
                   </div>
                 </div>
               </div>
@@ -442,20 +442,20 @@ export default function CourseEditor() {
           transition={{ delay: 0.3 }}
         >
           <Card className="border-2 border-transparent hover:border-accent-500/50 transition-all duration-300 bg-white dark:bg-gray-900 shadow-lg hover:shadow-xl">
-            <CardContent className="p-4 relative overflow-hidden">
+            <CardContent className="p-3 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-1 h-full bg-gray-700" />
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-xs font-police-subtitle uppercase tracking-ultra-wide text-gray-600 dark:text-gray-400">
                     RASCUNHOS
                   </p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white font-police-numbers">
+                  <p className="text-lg font-bold text-gray-900 dark:text-white font-police-numbers">
                     {courses.filter(c => c.status === 'RASCUNHO').length}
                   </p>
                 </div>
                 <div className="relative">
-                  <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
-                    <Edit className="w-5 h-5 text-gray-700 dark:text-gray-400" />
+                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-300 dark:border-gray-700">
+                    <Edit className="w-4 h-4 text-gray-700 dark:text-gray-400" />
                   </div>
                 </div>
               </div>
@@ -471,8 +471,8 @@ export default function CourseEditor() {
         transition={{ delay: 0.2 }}
       >
         <Card>
-          <CardContent className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <CardContent className="p-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
               <div className="relative lg:col-span-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -556,7 +556,7 @@ export default function CourseEditor() {
         ) : viewMode === 'list' ? (
           renderListView()
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {filteredCourses.map((course) => (
             <Card key={course.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-accent-500/30 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
               <div className="relative h-40 bg-gray-200 dark:bg-gray-700">

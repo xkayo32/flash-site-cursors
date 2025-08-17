@@ -199,7 +199,7 @@ export default function AdminDashboard() {
   const dashboardStats = getDashboardStats();
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -242,15 +242,15 @@ export default function AdminDashboard() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       >
         {dashboardStats.map((stat, index) => (
           <Card key={index} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
             {/* Corner accents */}
             <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <TacticalIcon name={stat.icon} className="w-10 h-10 text-accent-500" />
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <TacticalIcon name={stat.icon} className="w-8 h-8 text-accent-500" />
                 <div className={`flex items-center gap-1 text-sm font-police-numbers font-bold ${
                   stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
                 }`}>
@@ -258,10 +258,10 @@ export default function AdminDashboard() {
                   {stat.change}
                 </div>
               </div>
-              <h3 className="font-police-subtitle text-sm text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+              <h3 className="font-police-subtitle text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">
                 {stat.title}
               </h3>
-              <p className="text-3xl font-police-numbers font-bold text-gray-900 dark:text-white">
+              <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
                 {stat.value}
               </p>
             </CardContent>
@@ -270,7 +270,7 @@ export default function AdminDashboard() {
       </motion.div>
 
       {/* Charts and Activity Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Activity Chart */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -291,7 +291,7 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               {/* Simple chart representation */}
-              <div className="h-64 flex items-end justify-between gap-2">
+              <div className="h-48 flex items-end justify-between gap-2">
                 {performance?.dailyRegistrations.map((day, index) => (
                   <div key={index} className="flex-1 flex flex-col items-center gap-2">
                     <div className="w-full bg-accent-500/20 dark:bg-accent-500/10 rounded-t relative" 
