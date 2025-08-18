@@ -17,7 +17,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 import questionsRoutes from './routes/questions.routes';
 import flashcardsRoutes from './routes/flashcards.routes';
 import flashcardDecksRoutes from './routes/flashcard-decks.routes';
-import mockexamsRoutes from './routes/mockexams.routes';
+import mockexamsRoutes from './routes/mockexams-postgres.routes';
 import mockexamsStatsRoutes from './routes/mockexams-stats.routes';
 import previousexamsRoutes from './routes/previousexams.routes';
 import previousexamsExtraRoutes from './routes/previousexams-extra.routes';

@@ -268,7 +268,7 @@ export default function MockExamManagerSimple() {
                   ENGAJAMENTOS
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {exams.reduce((sum, exam) => sum + exam.total_attempts, 0).toLocaleString()}
+                  {exams.reduce((sum, exam) => sum + (typeof exam.total_attempts === 'number' ? exam.total_attempts : parseInt(exam.total_attempts) || 0), 0).toLocaleString()}
                 </p>
               </div>
               <Users className="w-8 h-8 text-blue-500" />
@@ -285,7 +285,7 @@ export default function MockExamManagerSimple() {
                   EFICIÊNCIA MÉDIA
                 </p>
                 <p className="text-2xl font-police-numbers font-bold text-gray-900 dark:text-white">
-                  {exams.length > 0 ? (exams.reduce((sum, exam) => sum + exam.average_score, 0) / exams.length).toFixed(1) : '0.0'}%
+                  {exams.length > 0 ? (exams.reduce((sum, exam) => sum + (typeof exam.average_score === 'number' ? exam.average_score : parseFloat(exam.average_score) || 0), 0) / exams.length).toFixed(1) : '0.0'}%
                 </p>
               </div>
               <TrendingUp className="w-8 h-8 text-purple-500" />
@@ -459,10 +459,10 @@ export default function MockExamManagerSimple() {
                       <td className="px-6 py-4 text-center">
                         <div>
                           <p className="text-sm font-police-numbers font-bold text-gray-900 dark:text-white">
-                            {exam.total_attempts.toLocaleString()}
+                            {(typeof exam.total_attempts === 'number' ? exam.total_attempts : parseInt(exam.total_attempts) || 0).toLocaleString()}
                           </p>
                           <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">
-                            MÉDIA: {exam.average_score.toFixed(1)}%
+                            MÉDIA: {(typeof exam.average_score === 'number' ? exam.average_score : parseFloat(exam.average_score) || 0).toFixed(1)}%
                           </p>
                         </div>
                       </td>
