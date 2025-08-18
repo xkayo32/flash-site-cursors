@@ -417,13 +417,9 @@ export default function FlashcardManager() {
                   disabled={selectedCategory === 'Todos'}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {selectedCategory === 'Todos' ? (
-                    <option>SELECIONE CATEGORIA</option>
-                  ) : (
-                    materias[selectedCategory]?.map(subcategory => (
-                      <option key={subcategory} value={subcategory}>{subcategory.toUpperCase()}</option>
-                    ))
-                  )}
+                  {subcategories.map(subcategory => (
+                    <option key={subcategory} value={subcategory}>{subcategory}</option>
+                  ))}
                 </select>
 
                 <select
@@ -431,9 +427,12 @@ export default function FlashcardManager() {
                   onChange={(e) => setSelectedDifficulty(e.target.value)}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                 >
-                  {difficulties.map(difficulty => (
+                  {['Todos', 'easy', 'medium', 'hard'].map(difficulty => (
                     <option key={difficulty} value={difficulty}>
-                      {difficulty === 'Todos' ? 'DIFICULDADE' : difficulty.toUpperCase()}
+                      {difficulty === 'Todos' ? 'DIFICULDADE' : 
+                       difficulty === 'easy' ? 'FÁCIL' :
+                       difficulty === 'medium' ? 'MÉDIO' :
+                       difficulty === 'hard' ? 'DIFÍCIL' : difficulty.toUpperCase()}
                     </option>
                   ))}
                 </select>

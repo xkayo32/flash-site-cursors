@@ -217,9 +217,11 @@ export default function QuestionEditor() {
   };
 
   const handleEditQuestion = (question: Question) => {
-    setSelectedQuestion(question);
-    setIsEditing(true);
-    setShowQuestionModal(true);
+    navigate(`/admin/questions/edit/${question.id}`);
+  };
+
+  const handleViewQuestion = (question: Question) => {
+    navigate(`/admin/questions/view/${question.id}`);
   };
 
   const handleDeleteQuestion = async (id: string) => {
@@ -644,7 +646,7 @@ export default function QuestionEditor() {
                           </div>
                           <div className="flex items-center gap-1">
                             <BarChart3 className="w-4 h-4" />
-                            {question.times_answered} respostas ({question.correct_rate.toFixed(1)}% acerto)
+                            {question.times_answered || 0} respostas ({(question.correct_rate || 0).toFixed(1)}% acerto)
                           </div>
                           {question.tags.length > 0 && (
                             <div className="flex items-center gap-1">

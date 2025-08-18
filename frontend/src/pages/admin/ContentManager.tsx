@@ -16,14 +16,17 @@ import {
   FileText,
   Users,
   Calendar,
-  MoreVertical,
+  Copy,
   X,
   Save,
   AlertCircle,
   CheckCircle,
   Clock,
   Globe,
-  Lock
+  Lock,
+  GraduationCap,
+  Scale,
+  ClipboardList
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -51,7 +54,7 @@ const materias = {
 };
 
 // Categories will be loaded from API
-const types = ['Todos', 'course', 'flashcards', 'questions', 'summary'];
+const types = ['Todos', 'course', 'flashcards', 'questions', 'summary', 'mock_exam', 'previous_exam', 'legislation'];
 const statuses = ['Todos', 'published', 'draft', 'review', 'archived'];
 
 import { useTheme } from '@/contexts/ThemeContext';
@@ -61,13 +64,16 @@ import { courseService } from '@/services/courseService';
 import { flashcardService } from '@/services/flashcardService';
 import { questionService } from '@/services/questionService';
 import { categoryService } from '@/services/categoryService';
+import { mockExamService } from '@/services/mockExamService';
+import previousExamService from '@/services/previousExamService';
+import legislationService from '@/services/legislationService';
 import toast from 'react-hot-toast';
 
 // TypeScript interfaces
 interface ContentItem {
   id: number;
   title: string;
-  type: 'course' | 'flashcards' | 'questions' | 'summary';
+  type: 'course' | 'flashcards' | 'questions' | 'summary' | 'mock_exam' | 'previous_exam' | 'legislation';
   category: string;
   materia: string;
   submateria: string;
@@ -88,12 +94,23 @@ interface ContentItem {
   difficulty?: string;
   pages?: number;
   interactions?: number;
+  // Novos campos para mock_exam e previous_exam
+  total_questions?: number;
+  attempts?: number;
+  pass_rate?: number;
+  exam_board?: string;
+  year?: number;
+  organization?: string;
+  // Novos campos para legislation
+  law_number?: string;
+  law_type?: string;
+  effective_date?: string;
 }
 
 export default function ContentManager() {
   const { resolvedTheme } = useTheme();
   const navigate = useNavigate();
-  const importInputRef = useRef<HTMLInputElement>(null);
+  // Referência para input de import removida - funcionalidade não implementada
   
   // Estado dos dados da API
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
@@ -106,15 +123,13 @@ export default function ContentManager() {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [selectedType, setSelectedType] = useState('Todos');
   const [selectedStatus, setSelectedStatus] = useState('Todos');
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  // Estado do modal de criação removido - não é necessário criar conteúdo nesta página de visão geral
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [selectedMateria, setSelectedMateria] = useState('');
   const [selectedSubmateria, setSelectedSubmateria] = useState('');
   const [selectedTopico, setSelectedTopico] = useState('');
-  const [selectedContentType, setSelectedContentType] = useState('');
-  const [contentTitle, setContentTitle] = useState('');
-  const [contentDescription, setContentDescription] = useState('');
+  // Estados relacionados ao modal de criação removidos
   // Filtros da listagem
   const [filterMateria, setFilterMateria] = useState('TODOS');
   const [filterSubmateria, setFilterSubmateria] = useState('TODOS');
@@ -133,10 +148,14 @@ export default function ContentManager() {
       setError(null);
       
       // Carregar diferentes tipos de conteúdo das APIs
-      const [coursesRes, summariesRes, flashcardsRes] = await Promise.allSettled([
+      const [coursesRes, summariesRes, flashcardsRes, questionsRes, mockExamsRes, previousExamsRes, legislationRes] = await Promise.allSettled([
         courseService.listCourses({ limit: 50 }),
         summaryService.getAll({ limit: 50 }),
-        flashcardService.getFlashcards({ limit: 50 })
+        flashcardService.getFlashcards({ limit: 50 }),
+        questionService.getQuestions({ limit: 50 }),
+        mockExamService.getAllMockExams({ limit: 50 }),
+        previousExamService.getAll({ limit: 50 }),
+        legislationService.getAll({ limit: 50 })
       ]);
       
       const allItems: ContentItem[] = [];
@@ -231,12 +250,146 @@ export default function ContentManager() {
         }
       }
       
+      // Processar questões
+      if (questionsRes.status === 'fulfilled' && questionsRes.value?.success) {
+        const questions = questionsRes.value.data || [];
+        questions.forEach((question, index) => {
+          const questionId = question.id ? parseInt(question.id) : Date.now() + index;
+          if (!isNaN(questionId)) {
+            allItems.push({
+              id: questionId,
+              title: question.title || 'Questão sem título',
+              type: 'questions',
+              category: question.subject || 'Geral',
+              materia: question.subject || 'CONHECIMENTOS GERAIS',
+              submateria: question.topic || question.subject || 'Geral',
+              topico: question.exam_name || '',
+              author: question.author_name || 'Sistema',
+              status: question.status || 'draft',
+              visibility: 'public',
+              createdAt: question.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+              updatedAt: question.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+              views: 0,
+              enrollments: question.times_answered || 0,
+              rating: question.correct_rate || 0,
+              difficulty: question.difficulty || 'medium',
+              exam_board: question.exam_board,
+              year: question.exam_year ? parseInt(question.exam_year) : undefined
+            });
+          }
+        });
+      } else if (questionsRes.status === 'rejected') {
+        console.warn('Erro ao carregar questões:', questionsRes.reason);
+      }
+      
+      // Processar simulados
+      if (mockExamsRes.status === 'fulfilled' && mockExamsRes.value?.success) {
+        const mockExams = mockExamsRes.value.data || [];
+        mockExams.forEach((exam, index) => {
+          const examId = exam.id ? parseInt(exam.id) : Date.now() + index + 1000;
+          if (!isNaN(examId)) {
+            allItems.push({
+              id: examId,
+              title: exam.title || 'Simulado sem título',
+              type: 'mock_exam',
+              category: 'Simulados',
+              materia: 'SIMULADOS',
+              submateria: exam.difficulty || 'MIXED',
+              topico: exam.type || 'AUTOMATIC',
+              author: exam.created_by || 'Sistema',
+              status: exam.status || 'draft',
+              visibility: 'public',
+              createdAt: exam.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+              updatedAt: exam.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+              views: 0,
+              enrollments: exam.total_attempts || 0,
+              rating: exam.average_score || 0,
+              total_questions: exam.total_questions || 0,
+              attempts: exam.completed_attempts || 0,
+              pass_rate: exam.pass_rate || 0,
+              duration: `${exam.duration || 0} min`
+            });
+          }
+        });
+      } else if (mockExamsRes.status === 'rejected') {
+        console.warn('Erro ao carregar simulados:', mockExamsRes.reason);
+      }
+      
+      // Processar provas anteriores
+      if (previousExamsRes.status === 'fulfilled' && previousExamsRes.value?.success) {
+        const previousExams = previousExamsRes.value.data || [];
+        previousExams.forEach((exam, index) => {
+          const examId = exam.id ? parseInt(exam.id) : Date.now() + index + 2000;
+          if (!isNaN(examId)) {
+            allItems.push({
+              id: examId,
+              title: exam.title || 'Prova anterior sem título',
+              type: 'previous_exam',
+              category: exam.organization || 'Órgão não informado',
+              materia: exam.organization || 'ÓRGÃO PÚBLICO',
+              submateria: exam.position || 'Cargo não informado',
+              topico: exam.exam_board || 'Banca não informada',
+              author: exam.created_by || 'Sistema',
+              status: exam.status || 'draft',
+              visibility: 'public',
+              createdAt: exam.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+              updatedAt: exam.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+              views: 0,
+              enrollments: exam.statistics?.total_attempts || 0,
+              rating: exam.statistics?.average_score || 0,
+              total_questions: exam.total_questions || 0,
+              year: exam.year,
+              organization: exam.organization,
+              exam_board: exam.exam_board
+            });
+          }
+        });
+      } else if (previousExamsRes.status === 'rejected') {
+        console.warn('Erro ao carregar provas anteriores:', previousExamsRes.reason);
+      }
+      
+      // Processar legislação
+      if (legislationRes.status === 'fulfilled' && legislationRes.value?.success) {
+        const legislation = legislationRes.value.data || [];
+        legislation.forEach((law, index) => {
+          const lawId = law.id ? parseInt(law.id) : Date.now() + index + 3000;
+          if (!isNaN(lawId)) {
+            allItems.push({
+              id: lawId,
+              title: law.title || 'Lei sem título',
+              type: 'legislation',
+              category: law.subject_area || 'Área jurídica não informada',
+              materia: law.subject_area || 'LEGISLAÇÃO',
+              submateria: law.type || 'Tipo não informado',
+              topico: law.number || '',
+              author: law.created_by || 'Sistema',
+              status: law.status === 'active' ? 'published' : 'archived',
+              visibility: 'public',
+              createdAt: law.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+              updatedAt: law.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+              views: law.statistics?.views || 0,
+              enrollments: law.statistics?.searches || 0,
+              rating: 0,
+              law_number: law.number,
+              law_type: law.type,
+              effective_date: law.effective_date,
+              year: law.year
+            });
+          }
+        });
+      } else if (legislationRes.status === 'rejected') {
+        console.warn('Erro ao carregar legislação:', legislationRes.reason);
+      }
+      
       setContentItems(allItems);
       
     } catch (err) {
       console.error('Error loading content items:', err);
-      setError('Erro ao carregar conteúdo. Tente novamente.');
-      showNotification('Erro ao carregar conteúdo', 'error');
+      setError('Erro ao carregar conteúdo das APIs. Algumas informações podem não estar disponíveis.');
+      showNotification('Algumas APIs estão indisponíveis. Conteúdo parcial carregado.', 'warning');
+      
+      // Ainda assim, mostrar o que conseguimos carregar
+      setContentItems(allItems);
     } finally {
       setIsLoading(false);
     }
@@ -259,67 +412,7 @@ export default function ContentManager() {
   };
   
   // Import/Export functionality
-  const handleImport = () => {
-    importInputRef.current?.click();
-  };
-  
-  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    setIsLoading(true);
-    
-    // Simular processo de import
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Simular adição de novos itens
-    const newItems: ContentItem[] = [
-      {
-        id: Math.max(...contentItems.map(i => i.id)) + 1,
-        title: 'Direito Processual Civil - Importado',
-        type: 'course',
-        category: 'Direito',
-        materia: 'DIREITO',
-        submateria: 'Direito Processual Civil',
-        topico: 'Procedimentos',
-        author: 'Sistema Import',
-        status: 'draft',
-        visibility: 'private',
-        createdAt: new Date().toISOString().split('T')[0],
-        updatedAt: new Date().toISOString().split('T')[0],
-        views: 0,
-        enrollments: 0,
-        rating: 0,
-        lessons: 15,
-        duration: '8h 30m'
-      },
-      {
-        id: Math.max(...contentItems.map(i => i.id)) + 2,
-        title: 'Questões de Matemática - Importadas',
-        type: 'questions',
-        category: 'Matemática',
-        materia: 'CONHECIMENTOS GERAIS',
-        submateria: 'Matemática',
-        topico: 'Estatística',
-        author: 'Sistema Import',
-        status: 'draft',
-        visibility: 'private',
-        createdAt: new Date().toISOString().split('T')[0],
-        updatedAt: new Date().toISOString().split('T')[0],
-        views: 0,
-        enrollments: 0,
-        rating: 0,
-        questions: 250
-      }
-    ];
-    
-    setContentItems(prev => [...newItems, ...prev]);
-    showNotification(`${file.name} importado com sucesso! ${newItems.length} novos itens adicionados.`);
-    setIsLoading(false);
-    
-    // Reset file input
-    event.target.value = '';
-  };
+  // Funções de importação removidas - funcionalidade não implementada
   
   const handleExport = () => {
     // TODO: Implement actual export logic
@@ -340,44 +433,7 @@ export default function ContentManager() {
     linkElement.click();
   };
   
-  const handleCreateContent = () => {
-    if (selectedContentType === 'course') {
-      // Redirecionar para tela de cursos
-      navigate('/admin/courses?create=true');
-      setShowCreateModal(false);
-    } else {
-      // TODO: Implement creation logic for other content types
-      const contentData = {
-        type: selectedContentType,
-        title: contentTitle,
-        description: contentDescription,
-        materia: selectedMateria,
-        submateria: selectedSubmateria,
-        topico: selectedTopico,
-        createdAt: new Date().toISOString()
-      };
-      
-      console.log('Criando conteúdo:', contentData);
-      
-      // Show success message with content type specific text
-      const typeLabels = {
-        flashcards: 'Flashcards Táticos',
-        questions: 'Banco de Questões',
-        summary: 'Resumo Operacional'
-      };
-      
-      alert(`✅ ${typeLabels[selectedContentType as keyof typeof typeLabels]} criado com sucesso!\n\n📝 Título: ${contentTitle}\n📁 Matéria: ${selectedMateria}\n\n🚧 Funcionalidade em desenvolvimento.`);
-      
-      // Reset form
-      setShowCreateModal(false);
-      setSelectedContentType('');
-      setContentTitle('');
-      setContentDescription('');
-      setSelectedMateria('');
-      setSelectedSubmateria('');
-      setSelectedTopico('');
-    }
-  };
+  // Função handleCreateContent removida - criação deve ser feita nas páginas específicas
 
   const filteredContent = contentItems.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -398,7 +454,10 @@ export default function ContentManager() {
       course: BookOpen,
       flashcards: Star,
       questions: Brain,
-      summary: FileText
+      summary: FileText,
+      mock_exam: GraduationCap,
+      previous_exam: ClipboardList,
+      legislation: Scale
     };
     return icons[type as keyof typeof icons] || FileText;
   };
@@ -462,53 +521,29 @@ export default function ContentManager() {
     setTimeout(() => setNotification(null), 4000);
   };
   
-  // Bulk actions - funcionalidades reais
+  // Bulk actions - funcionalidades em desenvolvimento
   const handleBulkPublish = async () => {
     if (selectedItems.length === 0) return;
-    setIsLoading(true);
     
-    // Simular API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setContentItems(prev => prev.map(item => 
-      selectedItems.includes(item.id) 
-        ? { ...item, status: 'published' as const, updatedAt: new Date().toISOString().split('T')[0] }
-        : item
-    ));
-    
-    showNotification(`${selectedItems.length} item(s) publicado(s) com sucesso!`);
+    // TODO: Implementar bulk publish via APIs específicas
+    showNotification('Publicação em lote em desenvolvimento. Use as páginas específicas para gerenciar conteúdo.', 'info');
     setSelectedItems([]);
-    setIsLoading(false);
   };
   
   const handleBulkArchive = async () => {
     if (selectedItems.length === 0) return;
-    setIsLoading(true);
     
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    setContentItems(prev => prev.map(item => 
-      selectedItems.includes(item.id) 
-        ? { ...item, status: 'archived' as const, updatedAt: new Date().toISOString().split('T')[0] }
-        : item
-    ));
-    
-    showNotification(`${selectedItems.length} item(s) arquivado(s) com sucesso!`);
+    // TODO: Implementar bulk archive via APIs específicas
+    showNotification('Arquivamento em lote em desenvolvimento. Use as páginas específicas para gerenciar conteúdo.', 'info');
     setSelectedItems([]);
-    setIsLoading(false);
   };
   
   const handleBulkDelete = async () => {
     if (selectedItems.length === 0) return;
-    setIsLoading(true);
     
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    
-    setContentItems(prev => prev.filter(item => !selectedItems.includes(item.id)));
-    
-    showNotification(`${selectedItems.length} item(s) excluído(s) permanentemente!`, 'info');
+    // TODO: Implementar bulk delete via APIs específicas
+    showNotification('Exclusão em lote em desenvolvimento. Use as páginas específicas para gerenciar conteúdo.', 'info');
     setSelectedItems([]);
-    setIsLoading(false);
   };
   
   // Individual item actions - funcionalidades reais
@@ -521,71 +556,23 @@ export default function ContentManager() {
   };
   
   const handleSaveEdit = async (updatedItem: ContentItem) => {
-    setIsLoading(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 600));
-    
-    setContentItems(prev => prev.map(item => 
-      item.id === updatedItem.id 
-        ? { ...updatedItem, updatedAt: new Date().toISOString().split('T')[0] }
-        : item
-    ));
-    
-    showNotification(`"${updatedItem.title}" atualizado com sucesso!`);
+    // TODO: Implementar edição via APIs específicas baseado no tipo
+    showNotification('Edição em desenvolvimento. Use as páginas específicas para editar conteúdo.', 'info');
     setEditingItem(null);
-    setIsLoading(false);
   };
   
   const handleDuplicateItem = async (item: ContentItem) => {
-    setIsLoading(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const duplicatedItem: ContentItem = {
-      ...item,
-      id: Math.max(...contentItems.map(i => i.id)) + 1,
-      title: `${item.title} (Cópia)`,
-      status: 'draft',
-      createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0],
-      views: 0,
-      enrollments: 0
-    };
-    
-    setContentItems(prev => [duplicatedItem, ...prev]);
-    showNotification(`"${item.title}" duplicado com sucesso!`);
-    setIsLoading(false);
+    // TODO: Implementar duplicação via APIs específicas baseado no tipo
+    showNotification('Duplicação em desenvolvimento. Use as páginas específicas para duplicar conteúdo.', 'info');
   };
   
   const handleToggleStatus = async (item: ContentItem) => {
-    setIsLoading(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const newStatus = item.status === 'published' ? 'draft' : 'published';
-    
-    setContentItems(prev => prev.map(i => 
-      i.id === item.id 
-        ? { ...i, status: newStatus as const, updatedAt: new Date().toISOString().split('T')[0] }
-        : i
-    ));
-    
-    showNotification(`Status alterado para: ${newStatus === 'published' ? 'Publicado' : 'Rascunho'}`);
-    setIsLoading(false);
+    // TODO: Implementar toggle status via APIs específicas baseado no tipo
+    const newStatus = item.status === 'published' ? 'rascunho' : 'publicado';
+    showNotification(`Alteração de status em desenvolvimento. Use as páginas específicas para alterar status.`, 'info');
   };
   
-  const handleItemOptions = (item: ContentItem) => {
-    // Criar um menu dropdown simulado com ações reais
-    const actions = [
-      { label: 'Duplicar conteúdo', action: () => handleDuplicateItem(item) },
-      { label: 'Alterar status', action: () => handleToggleStatus(item) },
-      { label: 'Ver detalhes', action: () => handleViewItem(item) },
-      { label: 'Editar', action: () => handleEditItem(item) }
-    ];
-    
-    // Por enquanto, executar a primeira ação (duplicar)
-    actions[0].action();
-  };
+  // Função handleItemOptions removida - ação de duplicar agora é direta
 
   return (
     <div className="p-4 space-y-4 bg-gradient-to-br from-gray-100 via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800 min-h-full relative">
@@ -617,40 +604,17 @@ export default function ContentManager() {
         className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
       >
         <div className="relative z-10">
-          {/* Command Header with Tactical Elements */}
-          <div className="flex items-center gap-4 mb-2">
-            <div className="w-2 h-2 bg-accent-500 rounded-full animate-pulse" />
-            <div className="w-1 h-8 bg-accent-500/60" />
-            <FileText className="w-8 h-8 text-accent-500" />
-            <div className="w-1 h-8 bg-accent-500/60" />
-            <Brain className="w-6 h-6 text-accent-500" />
-          </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-police-title uppercase tracking-ultra-wide">
-            ARSENAL OPERACIONAL
+            GESTÃO DE CONTEÚDO
           </h1>
           <p className="text-gray-600 dark:text-gray-300 font-police-subtitle mt-2 tracking-wider uppercase">
-            SISTEMA DE GESTÃO DE CONTEÚDO TÁTICO
+            CENTRO DE CONTROLE OPERACIONAL
           </p>
           {/* Tactical underline */}
           <div className="mt-3 w-40 h-1 bg-gradient-to-r from-accent-500 via-accent-600 to-transparent" />
         </div>
         
         <div className="flex items-center gap-3">
-          <input
-            ref={importInputRef}
-            type="file"
-            accept=".json,.csv,.xlsx"
-            onChange={handleFileImport}
-            className="hidden"
-          />
-          <Button 
-            variant="outline" 
-            onClick={handleImport}
-            className="gap-2 font-police-title font-bold uppercase tracking-ultra-wide transition-all duration-300 border-2 border-accent-500/30 hover:border-accent-500 hover:text-accent-500 hover:bg-accent-500/10 shadow-lg hover:shadow-xl"
-          >
-            <Upload className="w-4 h-4" />
-            IMPORTAR
-          </Button>
           <Button 
             variant="outline" 
             onClick={handleExport}
@@ -658,13 +622,6 @@ export default function ContentManager() {
           >
             <Download className="w-4 h-4" />
             EXPORTAR
-          </Button>
-          <Button 
-            onClick={() => setShowCreateModal(true)} 
-            className="gap-2 font-police-title font-bold transition-all duration-300 uppercase tracking-ultra-wide shadow-lg bg-accent-500 hover:bg-accent-600 text-black border-2 border-accent-600 hover:border-accent-700 hover:scale-105 hover:shadow-xl"
-          >
-            <Plus className="w-4 h-4" />
-            Novo Conteúdo
           </Button>
         </div>
       </motion.div>
@@ -981,7 +938,7 @@ export default function ContentManager() {
                     const TypeIcon = getTypeIcon(item.type);
                     return (
                       <tr
-                        key={item.id}
+                        key={`${item.type}-${item.id || Math.random()}`}
                         className={cn(
                           "border-b transition-all duration-300",
                           resolvedTheme === 'dark' 
@@ -1109,13 +1066,13 @@ export default function ContentManager() {
                               <Edit className="w-4 h-4" />
                             </Button>
                             <Button 
-                              onClick={() => handleItemOptions(item)}
+                              onClick={() => handleDuplicateItem(item)}
                               variant="ghost" 
                               size="xs" 
-                              title="Mais opções"
+                              title="Duplicar"
                               className="hover:bg-accent-500/20 hover:text-accent-500 transition-colors"
                             >
-                              <MoreVertical className="w-4 h-4" />
+                              <Copy className="w-4 h-4" />
                             </Button>
                           </div>
                         </td>
@@ -1129,176 +1086,6 @@ export default function ContentManager() {
         </Card>
       </motion.div>
 
-      {/* Create Content Modal */}
-      <AnimatePresence>
-        {showCreateModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-            onClick={() => setShowCreateModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className={cn(
-                "rounded-lg p-6 max-w-md w-full border-2 shadow-2xl",
-                resolvedTheme === 'dark' 
-                  ? 'bg-gray-800 border-gray-700' 
-                  : 'bg-white border-military-base/20'
-              )}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className={cn(
-                  "text-xl font-bold font-police-title uppercase tracking-wider",
-                  resolvedTheme === 'dark' ? 'text-white' : 'text-gray-900'
-                )}>
-                  CRIAR NOVO CONTEÚDO
-                </h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowCreateModal(false)}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium font-police-subtitle uppercase tracking-wide mb-2 text-gray-700 dark:text-gray-300">
-                    TIPO DE CONTEÚDO
-                  </label>
-                  <select 
-                    value={selectedContentType}
-                    onChange={(e) => setSelectedContentType(e.target.value)}
-                    className="w-full px-4 py-2 border-2 rounded-lg font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
-                  >
-                    <option value="">SELECIONE O TIPO</option>
-                    <option value="course">CURSO COMPLETO</option>
-                    <option value="flashcards">FLASHCARDS TÁTICOS</option>
-                    <option value="questions">BANCO DE QUESTÕES</option>
-                    <option value="summary">RESUMO OPERACIONAL</option>
-                  </select>
-                  {selectedContentType === 'course' && (
-                    <p className="text-xs mt-1 text-accent-500 font-police-body">
-                      📍 SERÁ REDIRECIONADO PARA TELA DE CURSOS
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium font-police-subtitle uppercase tracking-wide mb-2 text-gray-700 dark:text-gray-300">
-                    TÍTULO
-                  </label>
-                  <input
-                    type="text"
-                    value={contentTitle}
-                    onChange={(e) => setContentTitle(e.target.value)}
-                    placeholder="TÍTULO DO CONTEÚDO..."
-                    className="w-full px-4 py-2 border-2 rounded-lg font-police-body uppercase tracking-wider transition-all duration-300 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium font-police-subtitle uppercase tracking-wide mb-2 text-gray-700 dark:text-gray-300">
-                    MATÉRIA PRINCIPAL
-                  </label>
-                  <select 
-                    value={selectedMateria}
-                    onChange={(e) => {
-                      setSelectedMateria(e.target.value);
-                      setSelectedSubmateria('');
-                      setSelectedTopico('');
-                    }}
-                    className="w-full px-4 py-2 border-2 rounded-lg font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
-                  >
-                    <option value="">SELECIONE A MATÉRIA</option>
-                    {categories.filter(c => c !== 'TODOS').map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {selectedMateria && (
-                  <div>
-                    <label className="block text-sm font-medium font-police-subtitle uppercase tracking-wide mb-2 text-gray-700 dark:text-gray-300">
-                      SUBMATÉRIA
-                    </label>
-                    <select 
-                      value={selectedSubmateria}
-                      onChange={(e) => {
-                        setSelectedSubmateria(e.target.value);
-                        setSelectedTopico('');
-                      }}
-                      className="w-full px-4 py-2 border-2 rounded-lg font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
-                    >
-                      <option value="">SELECIONE A SUBMATÉRIA</option>
-                      <option value="Geral">GERAL</option>
-                    </select>
-                  </div>
-                )}
-
-                {selectedSubmateria && (
-                  <div>
-                    <label className="block text-sm font-medium font-police-subtitle uppercase tracking-wide mb-2 text-gray-700 dark:text-gray-300">
-                      TÓPICO ESPECÍFICO
-                    </label>
-                    <select 
-                      value={selectedTopico}
-                      onChange={(e) => setSelectedTopico(e.target.value)}
-                      className="w-full px-4 py-2 border-2 rounded-lg font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
-                    >
-                      <option value="">SELECIONE O TÓPICO</option>
-                      <option value="Tópico Geral">TÓPICO GERAL</option>
-                    </select>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium font-police-subtitle uppercase tracking-wide mb-2 text-gray-700 dark:text-gray-300">
-                    DESCRIÇÃO TÁTICA
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={contentDescription}
-                    onChange={(e) => setContentDescription(e.target.value)}
-                    placeholder="DESCRIÇÃO OPERACIONAL DO CONTEÚDO..."
-                    className="w-full px-4 py-2 border-2 rounded-lg font-police-body uppercase tracking-wider transition-all duration-300 resize-none border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowCreateModal(false)}
-                  className={cn(
-                    "font-police-body font-medium transition-all duration-300 border-2",
-                    resolvedTheme === 'dark' 
-                      ? 'border-gray-600 hover:border-gray-500 hover:text-gray-300' 
-                      : 'border-military-base/30 hover:border-military-base/50 hover:text-military-base'
-                  )}
-                >
-                  CANCELAR
-                </Button>
-                <Button 
-                  onClick={handleCreateContent}
-                  disabled={!selectedContentType || !contentTitle.trim()}
-                  className="gap-2 font-police-body font-semibold transition-all duration-300 uppercase tracking-wider shadow-lg bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Save className="w-4 h-4" />
-                  {selectedContentType === 'course' ? 'IR PARA CURSOS' : 'CRIAR CONTEÚDO'}
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       
       {/* Notification Toast */}
       <AnimatePresence>

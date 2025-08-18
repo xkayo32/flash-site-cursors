@@ -82,48 +82,6 @@
     }
   },
   {
-    "id": "0b21ce7a-9ff6-4daa-9541-706f804690dc",
-    "title": "RECEITA FEDERAL - Auditor Fiscal",
-    "description": "Curso intensivo para Auditor Fiscal da Receita Federal. Conteúdo direcionado com foco nas disciplinas mais cobradas.",
-    "category": "FISCAL",
-    "thumbnail": null,
-    "price": 597,
-    "instructor": {
-      "id": "3ec74074-11a6-4927-9bb3-396cce6f6cb8",
-      "name": "Comandante Tático",
-      "rank": "Coronel",
-      "avatar": null
-    },
-    "difficulty_level": "advanced",
-    "duration_hours": 150,
-    "duration_months": 3,
-    "status": "published",
-    "visibility": "public",
-    "certification_available": true,
-    "requirements": [
-      "Ensino médio completo",
-      "Dedicação mínima de 2h por dia"
-    ],
-    "objectives": [
-      "Dominar técnicas avançadas",
-      "Preparação completa para concursos",
-      "Aprovação garantida"
-    ],
-    "tags": [
-      "CONCURSO",
-      "TÁTICO",
-      "MILITAR"
-    ],
-    "created_at": "2025-08-14T13:45:12.816Z",
-    "updated_at": "2025-08-14T13:45:49.206Z",
-    "stats": {
-      "enrollments": 0,
-      "rating": 0,
-      "modules": 0,
-      "lessons": 0
-    }
-  },
-  {
     "id": "07db9e3b-acea-4c33-bb6d-ba00e1b83914",
     "title": "TJ/TRF - Analista Judiciário",
     "description": "Preparação focada para tribunais federais e estaduais. Inclui direito processual, constitucional e administrativo.",

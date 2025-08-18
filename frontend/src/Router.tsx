@@ -32,8 +32,10 @@ import ContentManager from './pages/admin/ContentManager';
 import UserManager from './pages/admin/UserManager';
 import NewUser from './pages/admin/NewUser';
 import QuestionEditor from './pages/admin/QuestionEditor';
+import QuestionView from './pages/admin/QuestionView';
 import NewQuestion from './pages/admin/NewQuestion';
 import CourseEditor from './pages/admin/CourseEditor';
+import CourseView from './pages/admin/CourseView';
 import SummaryEditor from './pages/admin/SummaryEditor';
 import LegislationManager from './pages/admin/LegislationManager';
 import NewLegislation from './pages/admin/NewLegislation';
@@ -178,7 +180,7 @@ function Router() {
         <Route path="/admin/courses" element={<CourseEditor />} />
         <Route path="/admin/courses/new" element={<CourseForm />} />
         <Route path="/admin/courses/edit/:id" element={<CourseForm />} />
-        <Route path="/admin/courses/:id" element={<CourseForm />} />
+        <Route path="/admin/courses/view/:id" element={<CourseView />} />
         <Route path="/admin/summaries" element={<SummaryEditor />} />
         <Route path="/admin/summaries/new" element={<SummaryForm />} />
         <Route path="/admin/summaries/edit/:id" element={<SummaryForm />} />
@@ -188,6 +190,8 @@ function Router() {
         <Route path="/admin/users/new" element={<NewUser />} />
         <Route path="/admin/questions" element={<QuestionEditor />} />
         <Route path="/admin/questions/new" element={<NewQuestion />} />
+        <Route path="/admin/questions/view/:id" element={<QuestionView />} />
+        <Route path="/admin/questions/edit/:id" element={<NewQuestion />} />
         <Route path="/admin/flashcards" element={<FlashcardManager />} />
         <Route path="/admin/flashcards/new" element={<NewFlashcardDeck />} />
         <Route path="/admin/flashcards/:deckId/edit" element={<FlashcardEditor />} />

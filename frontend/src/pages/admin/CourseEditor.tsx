@@ -45,7 +45,10 @@ export default function CourseEditor() {
   // Filter courses function
   const filterCourses = (courses: Course[], search: string, category: string, status: string) => {
     return courses.filter(course => {
-      const matchesSearch = !search || course.title.toLowerCase().includes(search.toLowerCase());
+      // Garantir que o curso tem propriedades básicas
+      if (!course || !course.id) return false;
+      
+      const matchesSearch = !search || course.title?.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = category === 'TODOS' || course.category === category;
       const matchesStatus = status === 'TODOS' || 
         (status === 'PUBLICADO' && course.status === 'published') ||
@@ -178,51 +181,91 @@ export default function CourseEditor() {
   };
 
   const handleViewCourse = (courseId: string) => {
-    navigate(`/admin/courses/${courseId}`);
+    navigate(`/admin/courses/view/${courseId}`);
   };
   
   const handleDeleteCourse = async (course: Course) => {
-    if (confirm(`Tem certeza que deseja excluir o curso "${course.title}"?`)) {
+    // Usar toast para confirmação ao invés de alert
+    const confirmDelete = () => {
+      toast.custom((t) => (
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-w-md">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+              <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900 dark:text-white font-police-subtitle uppercase">
+                CONFIRMAR EXCLUSÃO
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                Deseja excluir "{course.title}"?
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 font-police-body"
+            >
+              CANCELAR
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                executeDelete();
+              }}
+              className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 font-police-body"
+            >
+              EXCLUIR
+            </button>
+          </div>
+        </div>
+      ), { duration: Infinity });
+    };
+
+    const executeDelete = async () => {
       try {
         const result = await courseService.deleteCourse(course.id);
         if (result.success) {
           setCourses(prevCourses => prevCourses.filter(c => c.id !== course.id));
-          toast.success(`Curso "${course.title}" excluído com sucesso!`);
+          toast.success(`OPERAÇÃO "${course.title}" ELIMINADA COM SUCESSO!`);
         } else {
-          toast.error(result.message || 'Erro ao excluir curso');
+          toast.error(result.message || 'ERRO AO ELIMINAR OPERAÇÃO');
         }
       } catch (error) {
-        toast.error('Erro ao excluir curso');
+        toast.error('ERRO AO ELIMINAR OPERAÇÃO');
       }
-    }
+    };
+
+    confirmDelete();
   };
 
   const handleDuplicateCourse = async (course: Course) => {
     try {
       const duplicateData = {
-        title: `${course.title} (CÓPIA)`,
+        title: `${course.title} (CÓPIA TÁTICA)`,
         description: course.description,
         category: course.category,
-        price: course.price,
-        difficulty_level: course.difficulty,
-        duration_hours: course.duration.hours,
-        duration_months: course.duration.months,
-        requirements: course.requirements,
-        objectives: course.objectives,
-        target_audience: course.targetAudience,
-        certification_available: course.certificationAvailable,
+        price: course.price || 0,
+        difficulty_level: course.difficulty || 'beginner',
+        duration_hours: course.duration?.hours || 0,
+        duration_months: course.duration?.months || 0,
+        requirements: course.requirements || [],
+        objectives: course.objectives || [],
+        target_audience: course.targetAudience || '',
+        certification_available: course.certificationAvailable || false,
         instructor_name: course.instructor.name
       };
       
       const result = await courseService.createCourse(duplicateData);
       if (result.success && result.data) {
         setCourses(prevCourses => [result.data!, ...prevCourses]);
-        toast.success(`Curso duplicado como "${duplicateData.title}"!`);
+        toast.success(`OPERAÇÃO DUPLICADA: "${duplicateData.title}"!`);
       } else {
-        toast.error(result.message || 'Erro ao duplicar curso');
+        toast.error(result.message || 'ERRO AO DUPLICAR OPERAÇÃO');
       }
     } catch (error) {
-      toast.error('Erro ao duplicar curso');
+      toast.error('ERRO AO DUPLICAR OPERAÇÃO');
     }
   };
 
@@ -248,35 +291,35 @@ export default function CourseEditor() {
                       {course.title}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-                        <span className="text-xs font-bold text-gray-600 dark:text-gray-300">
-                          {course.instructor.name?.charAt(0) || 'I'}
+                      <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center border border-accent-500/30">
+                        <span className="text-xs font-bold text-gray-700 dark:text-gray-300 font-police-subtitle uppercase">
+                          {course.instructor.name?.split(' ').map(n => n.charAt(0)).slice(0, 2).join('') || 'IN'}
                         </span>
                       </div>
-                      <span className="text-sm text-gray-600 dark:text-gray-400 font-police-body truncate">
-                        {course.instructor.name || 'Instrutor'}
+                      <span className="text-sm text-gray-600 dark:text-gray-400 font-police-body truncate uppercase">
+                        {course.instructor.name || 'INSTRUTOR TÁTICO'}
                       </span>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-2 ml-4">
                     {getStatusBadge(course.status)}
-                    {getLevelBadge(course.level)}
+                    {getLevelBadge(course.difficulty)}
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-6 mt-2 text-xs text-gray-600 dark:text-gray-400">
-                  <span className="font-police-body">{course.duration.hours}h</span>
-                  <span className="font-police-body">{course.stats.modules} módulos</span>
-                  <span className="font-police-body">{course.stats.enrollments.toLocaleString('pt-BR')} recrutas</span>
+                  <span className="font-police-body">{course.duration?.hours || 0}h</span>
+                  <span className="font-police-body">{course.stats?.modules || 0} módulos</span>
+                  <span className="font-police-body">{course.stats?.enrollments?.toLocaleString('pt-BR') || '0'} recrutas</span>
                   <div className="flex items-center gap-1">
                     <Star className="w-3 h-3 text-accent-500 fill-current" />
                     <span className="font-police-numbers">
-                      {course.stats.rating > 0 ? course.stats.rating : '--'}
+                      {course.stats?.rating && course.stats.rating > 0 ? course.stats.rating : '--'}
                     </span>
                   </div>
                   <Badge className="bg-gray-900/80 text-white border-0 font-police-numbers">
-                    R$ {course.price.toLocaleString('pt-BR')}
+                    R$ {course.price?.toLocaleString('pt-BR') || '0'}
                   </Badge>
                 </div>
               </div>
@@ -423,7 +466,7 @@ export default function CourseEditor() {
                     PUBLICADOS
                   </p>
                   <p className="text-lg font-bold text-gray-900 dark:text-white font-police-numbers">
-                    {courses.filter(c => c.status === 'PUBLICADO').length}
+                    {courses.filter(c => c.status === 'published').length}
                   </p>
                 </div>
                 <div className="relative">
@@ -450,7 +493,7 @@ export default function CourseEditor() {
                     RASCUNHOS
                   </p>
                   <p className="text-lg font-bold text-gray-900 dark:text-white font-police-numbers">
-                    {courses.filter(c => c.status === 'RASCUNHO').length}
+                    {courses.filter(c => c.status === 'draft').length}
                   </p>
                 </div>
                 <div className="relative">
@@ -570,11 +613,11 @@ export default function CourseEditor() {
                   {getStatusBadge(course.status)}
                 </div>
                 <div className="absolute top-2 left-2">
-                  {getLevelBadge(course.level)}
+                  {getLevelBadge(course.difficulty)}
                 </div>
                 <div className="absolute bottom-2 left-2">
                   <Badge className="bg-gray-900/80 text-white border-0 font-police-numbers text-xs">
-                    R$ {course.price.toLocaleString('pt-BR')}
+                    R$ {course.price?.toLocaleString('pt-BR') || '0'}
                   </Badge>
                 </div>
               </div>
@@ -585,17 +628,17 @@ export default function CourseEditor() {
                     {course.title}
                   </h3>
                   <div className="flex items-center gap-2 mb-2">
-                    <img
-                      src={course.instructor.avatar}
-                      alt={course.instructor.name}
-                      className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600"
-                    />
+                    <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center border-2 border-accent-500/30">
+                      <span className="text-xs font-bold text-gray-700 dark:text-gray-300 font-police-subtitle uppercase">
+                        {course.instructor.name?.split(' ').map(n => n.charAt(0)).slice(0, 2).join('') || 'IN'}
+                      </span>
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300 font-police-body truncate">
-                        {course.instructor.name}
+                        {course.instructor.name || 'INSTRUTOR'}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 font-police-body truncate">
-                        {course.instructor.rank}
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-police-body truncate uppercase">
+                        {course.instructor.rank || 'COMANDO'}
                       </p>
                     </div>
                   </div>
