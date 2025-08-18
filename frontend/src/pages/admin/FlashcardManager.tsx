@@ -82,13 +82,13 @@ export default function FlashcardManager() {
         ...card,
         title: card.front || card.question || card.text || card.statement || 'Flashcard sem título',
         description: card.back || card.explanation || card.extra || card.hint || 'Sem descrição',
-        completedCards: Math.floor(Math.random() * 10), // Placeholder - substituir com dados reais
-        totalCards: 10, // Placeholder - substituir com dados reais
-        reviews: Math.floor(Math.random() * 50), // Placeholder - substituir com dados reais
-        rating: (Math.random() * 5).toFixed(1), // Placeholder - substituir com dados reais
+        completedCards: card.times_correct || 0,
+        totalCards: card.times_studied || 1,
+        reviews: card.times_studied || 0,
+        rating: card.correct_rate ? (card.correct_rate * 5 / 100).toFixed(1) : 0,
         isPublic: card.status === 'published',
-        author: 'Sistema', // Placeholder - substituir com dados reais
-        lastReview: new Date().toISOString() // Placeholder - substituir com dados reais
+        author: card.author_name || 'Anônimo',
+        lastReview: card.next_review || card.updated_at || card.created_at
       }));
       
       setFlashcards(mappedFlashcards);
