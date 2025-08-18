@@ -211,6 +211,10 @@ export default function QuestionEditor() {
   };
 
   const handleViewQuestion = (question: Question) => {
+    navigate(`/admin/questions/view/${question.id}`);
+  };
+
+  const handleQuickView = (question: Question) => {
     setSelectedQuestion(question);
     setIsEditing(false);
     setShowQuestionModal(true);
@@ -218,10 +222,6 @@ export default function QuestionEditor() {
 
   const handleEditQuestion = (question: Question) => {
     navigate(`/admin/questions/edit/${question.id}`);
-  };
-
-  const handleViewQuestion = (question: Question) => {
-    navigate(`/admin/questions/view/${question.id}`);
   };
 
   const handleDeleteQuestion = async (id: string) => {
