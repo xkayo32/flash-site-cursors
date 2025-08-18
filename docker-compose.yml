@@ -35,6 +35,11 @@ services:
       - JWT_EXPIRES_IN=24h
       - PORT=8180
       - HOST=0.0.0.0
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=estudos_db
+      - DB_USER=estudos_user
+      - DB_PASSWORD=estudos_pass
     depends_on:
       - postgres
     networks:
