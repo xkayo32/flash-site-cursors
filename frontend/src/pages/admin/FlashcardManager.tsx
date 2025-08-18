@@ -284,9 +284,9 @@ export default function FlashcardManager() {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-4"
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
-          {/* Corner accents */}
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+        <Card className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 hover:shadow-xl transition-all duration-300 overflow-hidden">
+          {/* Tactical stripe */}
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent-500" />
           <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div>
@@ -304,9 +304,9 @@ export default function FlashcardManager() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
-          {/* Corner accents */}
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+        <Card className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 hover:shadow-xl transition-all duration-300 overflow-hidden">
+          {/* Tactical stripe */}
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent-500" />
           <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div>
@@ -324,9 +324,9 @@ export default function FlashcardManager() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
-          {/* Corner accents */}
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+        <Card className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 hover:shadow-xl transition-all duration-300 overflow-hidden">
+          {/* Tactical stripe */}
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent-500" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -344,9 +344,9 @@ export default function FlashcardManager() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
-          {/* Corner accents */}
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+        <Card className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 hover:shadow-xl transition-all duration-300 overflow-hidden">
+          {/* Tactical stripe */}
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent-500" />
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -371,9 +371,9 @@ export default function FlashcardManager() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
-          {/* Corner accents */}
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+        <Card className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 hover:shadow-xl transition-all duration-300 overflow-hidden">
+          {/* Tactical stripe */}
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent-500" />
           <CardContent className="p-6">
             <div className="space-y-4">
               {/* First Row */}
@@ -518,43 +518,44 @@ export default function FlashcardManager() {
       >
         {filteredDecks.map((deck) => 
           viewMode === 'grid' ? (
-            <Card key={deck.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
-              {/* Corner accents */}
-              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
-              <CardHeader className="pb-3 bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black rounded-t-lg">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-base font-police-subtitle font-bold text-white uppercase tracking-wider line-clamp-2">
-                    {deck.title}
-                  </h3>
-                  <p className="text-xs text-gray-300 font-police-body mt-1 line-clamp-2">
-                    {deck.description}
-                  </p>
+            <Card key={deck.id} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 hover:shadow-xl transition-all duration-300 overflow-hidden group">
+              {/* Tactical stripe */}
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent-500" />
+              
+              <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 via-white to-gray-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider line-clamp-2 group-hover:text-accent-500 transition-colors">
+                      {deck.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body mt-1 line-clamp-2">
+                      {deck.description}
+                    </p>
+                  </div>
+                  {showBulkActions && (
+                    <input
+                      type="checkbox"
+                      checked={selectedDecks.includes(deck.id)}
+                      onChange={() => handleSelectDeck(deck.id)}
+                      className="ml-4 rounded border-gray-300 text-accent-500 focus:ring-accent-500"
+                    />
+                  )}
                 </div>
-                {showBulkActions && (
-                  <input
-                    type="checkbox"
-                    checked={selectedDecks.includes(deck.id)}
-                    onChange={() => handleSelectDeck(deck.id)}
-                    className="ml-4 rounded border-gray-300 text-accent-500 focus:ring-accent-500"
-                  />
-                )}
-              </div>
 
-              <div className="flex items-center gap-2 mt-3">
-                <Badge variant="secondary" className="font-police-body font-semibold uppercase tracking-wider bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                  {deck.category}
-                </Badge>
-                {deck.subcategory && (
-                  <Badge variant="outline" className="font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600">
-                    {deck.subcategory}
+                <div className="flex items-center gap-2 mt-3">
+                  <Badge className="font-police-body font-semibold uppercase tracking-wider bg-accent-500/10 text-accent-600 dark:text-accent-400 border border-accent-500/30">
+                    {deck.category}
                   </Badge>
-                )}
-                {getDifficultyBadge(deck.difficulty)}
-              </div>
-            </CardHeader>
+                  {deck.subcategory && (
+                    <Badge variant="outline" className="font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600">
+                      {deck.subcategory}
+                    </Badge>
+                  )}
+                  {getDifficultyBadge(deck.difficulty)}
+                </div>
+              </CardHeader>
 
-            <CardContent className="space-y-3 p-3">
+            <CardContent className="space-y-4 p-4">
               {/* Progress */}
               <div>
                 <div className="flex items-center justify-between text-sm mb-2">
@@ -578,7 +579,7 @@ export default function FlashcardManager() {
 
               {/* Stats */}
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                <div className="p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
                   <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     REVISÕES
                   </p>
@@ -586,7 +587,7 @@ export default function FlashcardManager() {
                     {deck.reviews}
                   </p>
                 </div>
-                <div className="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                <div className="p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
                   <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     AVALIAÇÃO
                   </p>
@@ -597,15 +598,15 @@ export default function FlashcardManager() {
                     </span>
                   </div>
                 </div>
-                <div className="p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                <div className="p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
                   <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     STATUS
                   </p>
                   <div className="flex items-center justify-center mt-1">
                     {deck.isPublic ? (
-                      <Globe className="w-4 h-4 text-accent-500" />
+                      <Globe className="w-4 h-4 text-green-500" />
                     ) : (
-                      <Lock className="w-4 h-4 text-gray-500" />
+                      <Lock className="w-4 h-4 text-gray-400" />
                     )}
                   </div>
                 </div>
@@ -622,7 +623,7 @@ export default function FlashcardManager() {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
                 <div className="text-xs text-gray-500 dark:text-gray-400 font-police-body">
                   <p className="uppercase tracking-wider">{deck.author}</p>
                   {deck.lastReview && (
@@ -636,42 +637,42 @@ export default function FlashcardManager() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handlePlayDeck(deck.id)}
-                    className="p-1.5 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
+                    className="p-2 text-gray-600 hover:text-accent-500 hover:bg-accent-500/10 dark:text-gray-400 dark:hover:text-accent-500 rounded-lg transition-all"
                     title="Estudar Deck"
                   >
                     <Play className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handlePreviewDeck(deck.id)}
-                    className="p-1.5 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
+                    className="p-2 text-gray-600 hover:text-accent-500 hover:bg-accent-500/10 dark:text-gray-400 dark:hover:text-accent-500 rounded-lg transition-all"
                     title="Preview do Deck"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleManageCards(deck.id)}
-                    className="p-1.5 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
+                    className="p-2 text-gray-600 hover:text-accent-500 hover:bg-accent-500/10 dark:text-gray-400 dark:hover:text-accent-500 rounded-lg transition-all"
                     title="Gerenciar Cartões"
                   >
                     <BookOpen className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleEditDeck(deck.id)}
-                    className="p-1.5 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
+                    className="p-2 text-gray-600 hover:text-accent-500 hover:bg-accent-500/10 dark:text-gray-400 dark:hover:text-accent-500 rounded-lg transition-all"
                     title="Editar Deck"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDuplicateDeck(deck.id)}
-                    className="p-1.5 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
+                    className="p-2 text-gray-600 hover:text-accent-500 hover:bg-accent-500/10 dark:text-gray-400 dark:hover:text-accent-500 rounded-lg transition-all"
                     title="Duplicar"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDeleteDeck(deck.id)}
-                    className="p-1.5 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                    className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded-lg transition-all"
                     title="Arquivar"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -682,9 +683,9 @@ export default function FlashcardManager() {
           </Card>
           ) : (
             /* List View */
-            <Card key={deck.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
-              {/* Corner accents */}
-              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
+            <Card key={deck.id} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 hover:shadow-xl transition-all duration-300 overflow-hidden group">
+              {/* Tactical stripe */}
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent-500" />
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
