@@ -679,5 +679,36 @@
       "modules": 0,
       "lessons": 0
     }
+  },
+  {
+    "id": "dba18109-d725-42d6-8957-80aa7b89f9af",
+    "title": "PCA 400",
+    "description": "PLANO DE ALIENAÇÃO DE MATERIAL",
+    "category": "DIREITO",
+    "thumbnail": "/uploads/courses/course-1755556909196.png",
+    "price": 120,
+    "instructor": {
+      "id": "484c5540-84df-4551-8fa1-9fd74c6937ec",
+      "name": "LÚCIO",
+      "rank": "",
+      "avatar": null
+    },
+    "difficulty_level": "INTERMEDIÁRIO",
+    "duration_hours": 13,
+    "duration_months": 2,
+    "status": "draft",
+    "visibility": "private",
+    "certification_available": true,
+    "requirements": [],
+    "objectives": [],
+    "tags": [],
+    "created_at": "2025-08-18T22:41:48.933Z",
+    "updated_at": "2025-08-18T22:41:49.932Z",
+    "stats": {
+      "enrollments": 0,
+      "rating": 0,
+      "modules": 0,
+      "lessons": 0
+    }
   }
 ]

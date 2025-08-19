@@ -116,13 +116,13 @@ export default function PreviousExamsMilitary() {
             difficulty,
             hasAnswerSheet: true, // Assume all have answer sheets
             hasPDF: !!exam.metadata?.pdf_url,
-            rating: 4.0 + (Math.random() * 1.0), // Generate mock rating 4.0-5.0
-            views: exam.statistics?.total_attempts ? exam.statistics.total_attempts * 5 : Math.floor(Math.random() * 10000) + 1000,
+            rating: exam.statistics?.average_rating || 4.5,
+            views: exam.statistics?.total_attempts ? exam.statistics.total_attempts * 5 : 0,
             userAttempts: exam.user_stats?.attempts_count || 0,
             bestScore: exam.user_stats?.best_score || null,
             lastAttempt: exam.user_stats?.last_attempt || null,
-            avgScore: exam.statistics?.average_score || Math.floor(Math.random() * 40) + 40,
-            totalAttempts: exam.statistics?.total_attempts || Math.floor(Math.random() * 3000) + 500,
+            avgScore: exam.statistics?.average_score || 0,
+            totalAttempts: exam.statistics?.total_attempts || 0,
             passingScore: 60 // Standard passing score
           };
         });

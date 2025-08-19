@@ -137,13 +137,13 @@ export default function SummariesPage() {
       
       const localSummaries: LocalSummary[] = summariesData.map(s => ({
         ...s,
-        progress: Math.floor(Math.random() * 100), // Progress simulado
-        isFavorite: Math.random() > 0.7, // Favoritos simulados
+        progress: s.statistics?.completion_rate || 0,
+        isFavorite: s.is_favorite || false,
         stats: {
-          views: s.statistics?.views || Math.floor(Math.random() * 5000) + 100,
-          rating: s.statistics?.average_rating || Math.round((Math.random() * 2 + 3) * 10) / 10,
-          flashcards: Math.floor(Math.random() * 30) + 5,
-          questions: Math.floor(Math.random() * 25) + 3
+          views: s.statistics?.views || 0,
+          rating: s.statistics?.average_rating || 0,
+          flashcards: s.flashcard_count || 0,
+          questions: s.question_count || 0
         }
       }));
       

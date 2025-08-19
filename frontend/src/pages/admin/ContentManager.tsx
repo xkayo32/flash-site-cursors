@@ -226,9 +226,9 @@ export default function ContentManager() {
             return acc;
           }, {});
           
-          Object.entries(flashcardsByCategory).forEach(([category, cards]: [string, any]) => {
+          Object.entries(flashcardsByCategory).forEach(([category, cards]: [string, any], index) => {
             allItems.push({
-              id: Math.random() * 10000,
+              id: `flashcard-cat-${index}`,
               title: `Flashcards - ${category}`,
               type: 'flashcards',
               category,
@@ -938,7 +938,7 @@ export default function ContentManager() {
                     const TypeIcon = getTypeIcon(item.type);
                     return (
                       <tr
-                        key={`${item.type}-${item.id || Math.random()}`}
+                        key={`${item.type}-${item.id || `item-${index}`}`}
                         className={cn(
                           "border-b transition-all duration-300",
                           resolvedTheme === 'dark' 
