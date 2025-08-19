@@ -102,12 +102,75 @@ export default function NewFlashcardDeck() {
 
   const handleCategoryToggle = (categoryId: string) => {
     setFormData(prev => {
-      const newSelectedCategories = prev.selectedCategories.includes(categoryId)
-        ? prev.selectedCategories.filter(id => id !== categoryId)
-        : [...prev.selectedCategories, categoryId];
+      const isCurrentlySelected = prev.selectedCategories.includes(categoryId);
+      let newSelectedCategories = [...prev.selectedCategories];
+
+      if (isCurrentlySelected) {
+        // Desmarcando: remover a categoria e todas suas filhas
+        const categoriesToRemove = getAllChildrenIds(categoryId, categories);
+        categoriesToRemove.push(categoryId);
+        newSelectedCategories = newSelectedCategories.filter(id => !categoriesToRemove.includes(id));
+      } else {
+        // Marcando: adicionar a categoria e todos os pais necessários
+        newSelectedCategories.push(categoryId);
+        const parentsToAdd = getAllParentIds(categoryId, categories);
+        parentsToAdd.forEach(parentId => {
+          if (!newSelectedCategories.includes(parentId)) {
+            newSelectedCategories.push(parentId);
+          }
+        });
+      }
       
       return { ...prev, selectedCategories: newSelectedCategories };
     });
+  };
+
+  // Função auxiliar para encontrar todos os IDs dos filhos de uma categoria
+  const getAllChildrenIds = (categoryId: string, categoriesList: Category[]): string[] => {
+    const childrenIds: string[] = [];
+    
+    const findChildren = (cats: Category[]) => {
+      cats.forEach(cat => {
+        if (cat.parent_id === categoryId) {
+          childrenIds.push(cat.id);
+          // Recursivamente encontrar filhos dos filhos
+          findChildren(categoriesList);
+        }
+        if (cat.children) {
+          findChildren(cat.children);
+        }
+      });
+    };
+    
+    findChildren(categoriesList);
+    return childrenIds;
+  };
+
+  // Função auxiliar para encontrar todos os IDs dos pais de uma categoria
+  const getAllParentIds = (categoryId: string, categoriesList: Category[]): string[] => {
+    const parentIds: string[] = [];
+    
+    const findParent = (cats: Category[], targetId: string): Category | null => {
+      for (const cat of cats) {
+        if (cat.id === targetId) {
+          return cat;
+        }
+        if (cat.children) {
+          const found = findParent(cat.children, targetId);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    const category = findParent(categoriesList, categoryId);
+    if (category && category.parent_id) {
+      parentIds.push(category.parent_id);
+      // Recursivamente encontrar pais dos pais
+      parentIds.push(...getAllParentIds(category.parent_id, categoriesList));
+    }
+    
+    return parentIds;
   };
 
   const handleCreateQuickCategory = async () => {
@@ -194,20 +257,23 @@ export default function NewFlashcardDeck() {
   };
 
   const getSelectedCategoryNames = () => {
-    const selected = categories.filter(cat => formData.selectedCategories.includes(cat.id));
     const names: string[] = [];
     
-    selected.forEach(cat => {
-      names.push(cat.name);
-      if (cat.children) {
-        cat.children.forEach(child => {
-          if (formData.selectedCategories.includes(child.id)) {
-            names.push(`${cat.name} > ${child.name}`);
-          }
-        });
-      }
-    });
+    const processCategories = (cats: Category[], parentPath: string = '') => {
+      cats.forEach(cat => {
+        if (formData.selectedCategories.includes(cat.id)) {
+          const fullPath = parentPath ? `${parentPath} > ${cat.name}` : cat.name;
+          names.push(fullPath);
+        }
+        
+        if (cat.children) {
+          const currentPath = parentPath ? `${parentPath} > ${cat.name}` : cat.name;
+          processCategories(cat.children, currentPath);
+        }
+      });
+    };
     
+    processCategories(categories);
     return names;
   };
 
@@ -303,19 +369,34 @@ export default function NewFlashcardDeck() {
   const renderCategoryTree = (category: Category, level: number = 0) => {
     const isSelected = formData.selectedCategories.includes(category.id);
     const hasChildren = category.children && category.children.length > 0;
+    
+    // Verificar se foi selecionado automaticamente (porque um filho foi selecionado)
+    const hasSelectedChildren = hasChildren && category.children?.some(child => 
+      formData.selectedCategories.includes(child.id) ||
+      (child.children && child.children.some(grandChild => formData.selectedCategories.includes(grandChild.id)))
+    );
+    const isAutoSelected = isSelected && hasSelectedChildren;
 
     return (
       <div key={category.id} className={`${level > 0 ? 'ml-6' : ''}`}>
         <div
           className={`
-            flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer
+            flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer relative
             ${isSelected 
-              ? 'bg-accent-500/20 border-accent-500 shadow-sm' 
+              ? isAutoSelected
+                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700 shadow-sm'
+                : 'bg-accent-500/20 border-accent-500 shadow-sm'
               : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-accent-500/50'
             }
           `}
           onClick={() => handleCategoryToggle(category.id)}
         >
+          {isAutoSelected && (
+            <div className="absolute top-1 right-1">
+              <div className="w-2 h-2 bg-blue-500 rounded-full" title="Selecionado automaticamente"></div>
+            </div>
+          )}
+          
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -324,9 +405,9 @@ export default function NewFlashcardDeck() {
               className="text-accent-500 focus:ring-accent-500 rounded"
             />
             {hasChildren ? (
-              <Folder className="w-4 h-4 text-accent-500" />
+              <Folder className={`w-4 h-4 ${isSelected ? 'text-accent-500' : 'text-gray-600 dark:text-gray-400'}`} />
             ) : (
-              <Tag className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <Tag className={`w-4 h-4 ${isSelected ? 'text-accent-500' : 'text-gray-600 dark:text-gray-400'}`} />
             )}
           </div>
           
@@ -338,6 +419,11 @@ export default function NewFlashcardDeck() {
               {level === 0 && (
                 <Badge variant="outline" className="text-xs font-police-body">
                   PRINCIPAL
+                </Badge>
+              )}
+              {isAutoSelected && (
+                <Badge className="text-xs font-police-body bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  AUTO
                 </Badge>
               )}
             </div>
@@ -681,10 +767,21 @@ export default function NewFlashcardDeck() {
                     </div>
                   ) : categories.length > 0 ? (
                     <>
-                      <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                          💡 DICA TÁTICA: Você pode selecionar múltiplas categorias e níveis para este deck. Isso permitirá organizar os flashcards em diferentes áreas de conhecimento.
-                        </p>
+                      <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Target className="w-4 h-4 text-accent-500" />
+                            <p className="text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                              INSTRUÇÕES TÁTICAS
+                            </p>
+                          </div>
+                          <div className="space-y-1 text-xs font-police-body text-gray-600 dark:text-gray-400">
+                            <p>• <strong>Seleção Automática:</strong> Marcar uma subcategoria automaticamente marca a categoria pai</p>
+                            <p>• <strong>Desmarcação Cascata:</strong> Desmarcar categoria pai remove todas as subcategorias</p>
+                            <p>• <strong>Indicador AUTO:</strong> Badge azul mostra categorias selecionadas automaticamente</p>
+                            <p>• <strong>Múltipla Seleção:</strong> Você pode selecionar várias categorias para organizar o deck</p>
+                          </div>
+                        </div>
                       </div>
                       
                       {categories.map(category => renderCategoryTree(category))}
