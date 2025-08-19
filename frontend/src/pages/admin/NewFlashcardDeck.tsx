@@ -111,8 +111,12 @@ export default function NewFlashcardDeck() {
         categoriesToRemove.push(categoryId);
         newSelectedCategories = newSelectedCategories.filter(id => !categoriesToRemove.includes(id));
       } else {
-        // Marcando: adicionar a categoria e todos os pais necessários
-        newSelectedCategories.push(categoryId);
+        // Marcando: primeiro GARANTIR que a categoria clicada está na lista
+        if (!newSelectedCategories.includes(categoryId)) {
+          newSelectedCategories.push(categoryId);
+        }
+        
+        // Depois adicionar todos os pais necessários (sem duplicar)
         const parentsToAdd = getAllParentIds(categoryId, categories);
         parentsToAdd.forEach(parentId => {
           if (!newSelectedCategories.includes(parentId)) {
@@ -155,8 +159,6 @@ export default function NewFlashcardDeck() {
 
   // Função auxiliar para encontrar todos os IDs dos pais de uma categoria
   const getAllParentIds = (categoryId: string, categoriesList: Category[]): string[] => {
-    const parentIds: string[] = [];
-    
     const findCategoryPath = (cats: Category[], targetId: string, path: string[] = []): string[] | null => {
       for (const cat of cats) {
         const currentPath = [...path, cat.id];
