@@ -115,11 +115,87 @@ export default function NewFlashcardDeck() {
     }
   };
 
+  // Função para encontrar todos os pais de uma categoria
+  const findParentChain = (categoryId: string, cats: Category[] = categories): string[] => {
+    const parentChain: string[] = [];
+    
+    const findParent = (cats: Category[], targetId: string): Category | null => {
+      for (const cat of cats) {
+        if (cat.children?.some(child => child.id === targetId)) {
+          return cat;
+        }
+        if (cat.children) {
+          const found = findParent(cat.children, targetId);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    let currentId = categoryId;
+    while (true) {
+      const parent = findParent(cats, currentId);
+      if (!parent) break;
+      parentChain.unshift(parent.id);
+      currentId = parent.id;
+    }
+    
+    return parentChain;
+  };
+
+  // Função para encontrar todos os filhos de uma categoria
+  const findAllChildren = (categoryId: string, cats: Category[] = categories): string[] => {
+    const children: string[] = [];
+    
+    const findCategory = (cats: Category[], targetId: string): Category | null => {
+      for (const cat of cats) {
+        if (cat.id === targetId) return cat;
+        if (cat.children) {
+          const found = findCategory(cat.children, targetId);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    const collectChildren = (cat: Category) => {
+      if (cat.children) {
+        cat.children.forEach(child => {
+          children.push(child.id);
+          collectChildren(child);
+        });
+      }
+    };
+    
+    const category = findCategory(cats, categoryId);
+    if (category) {
+      collectChildren(category);
+    }
+    
+    return children;
+  };
+
   const handleCategoryToggle = (categoryId: string) => {
     setFormData(prev => {
-      const newSelectedCategories = prev.selectedCategories.includes(categoryId)
-        ? prev.selectedCategories.filter(id => id !== categoryId)
-        : [...prev.selectedCategories, categoryId];
+      let newSelectedCategories = [...prev.selectedCategories];
+      
+      if (prev.selectedCategories.includes(categoryId)) {
+        // Desmarcando: remover a categoria e todos os filhos
+        const allChildren = findAllChildren(categoryId);
+        newSelectedCategories = newSelectedCategories.filter(id => 
+          id !== categoryId && !allChildren.includes(id)
+        );
+      } else {
+        // Marcando: adicionar a categoria e todos os pais
+        const parentChain = findParentChain(categoryId);
+        const toAdd = [categoryId, ...parentChain];
+        
+        toAdd.forEach(id => {
+          if (!newSelectedCategories.includes(id)) {
+            newSelectedCategories.push(id);
+          }
+        });
+      }
       
       return { ...prev, selectedCategories: newSelectedCategories };
     });
@@ -220,6 +296,7 @@ export default function NewFlashcardDeck() {
     setSavingCategories(true);
     let successCount = 0;
     let errorCount = 0;
+    const newlyCreatedIds: string[] = [];
 
     try {
       // Função recursiva para salvar
@@ -238,6 +315,7 @@ export default function NewFlashcardDeck() {
           if (response.success && response.data) {
             successCount++;
             const savedId = response.data.id;
+            newlyCreatedIds.push(savedId);
 
             // Salvar filhos recursivamente
             for (const child of category.children) {
@@ -264,6 +342,13 @@ export default function NewFlashcardDeck() {
         toast.success(`✅ ${successCount} categorias salvas com sucesso!`);
         setPendingTree([]);
         await loadCategories();
+        
+        // Auto-selecionar as categorias criadas
+        setFormData(prev => ({
+          ...prev,
+          selectedCategories: [...new Set([...prev.selectedCategories, ...newlyCreatedIds])]
+        }));
+        
         setTimeout(() => setShowQuickCategoryModal(false), 1500);
       }
 
