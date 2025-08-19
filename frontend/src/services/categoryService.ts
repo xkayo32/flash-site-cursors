@@ -7,9 +7,9 @@ export interface Category {
   id: string;
   name: string;
   type: CategoryType;
-  parent?: string;
+  parent_id?: string;
   description?: string;
-  contentCount: {
+  contentCount?: {
     questions: number;
     flashcards: number;
     summaries: number;
@@ -22,6 +22,7 @@ export interface Category {
 
 interface CategoriesResponse {
   success: boolean;
+  categories?: Category[];
   data?: Category[];
   message?: string;
 }

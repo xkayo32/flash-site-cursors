@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -16,19 +16,16 @@ import {
   Globe,
   Lock,
   Plus,
-  X
+  X,
+  Folder,
+  FolderPlus,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { categoryService, Category, CategoryType } from '@/services/categoryService';
 import toast from 'react-hot-toast';
-
-// Categorias e subcategorias
-const materias: { [key: string]: string[] } = {
-  'DIREITO': ['Constitucional', 'Administrativo', 'Penal', 'Penal Militar', 'Civil', 'Processual'],
-  'SEGURANÇA PÚBLICA': ['Operações Táticas', 'Procedimentos', 'Legislação Policial', 'Inteligência', 'Uso da Força'],
-  'CONHECIMENTOS GERAIS': ['História Militar', 'Geografia', 'Atualidades', 'Informática', 'Raciocínio Lógico']
-};
 
 const difficulties = ['easy', 'medium', 'hard'];
 
@@ -36,11 +33,26 @@ export default function NewFlashcardDeck() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Categories state
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [selectedCategoryLevels, setSelectedCategoryLevels] = useState<{[level: string]: string}>({});
+  
+  // Quick category creation modal
+  const [showQuickCategoryModal, setShowQuickCategoryModal] = useState(false);
+  const [quickCategoryData, setQuickCategoryData] = useState({
+    name: '',
+    type: 'subject' as CategoryType,
+    parent: '',
+    description: ''
+  });
+  const [savingQuickCategory, setSavingQuickCategory] = useState(false);
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category: 'DIREITO',
-    subcategory: 'Constitucional',
+    selectedCategories: [] as string[], // Array of selected category IDs
     difficulty: 'medium',
     isPublic: true,
     tags: '',
@@ -55,6 +67,30 @@ export default function NewFlashcardDeck() {
   const [newTag, setNewTag] = useState('');
   const [tagsList, setTagsList] = useState<string[]>([]);
 
+  // Load categories on component mount
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    setLoadingCategories(true);
+    try {
+      const response = await categoryService.listCategories();
+      if (response.success && response.categories) {
+        setCategories(response.categories);
+      } else if (response.categories) {
+        setCategories(response.categories);
+      } else {
+        toast.error('Erro ao carregar categorias');
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      toast.error('Erro ao carregar categorias');
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
   const handleInputChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
@@ -62,10 +98,52 @@ export default function NewFlashcardDeck() {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+  };
 
-    // Reset subcategory when category changes
-    if (field === 'category') {
-      setFormData(prev => ({ ...prev, subcategory: materias[value as string][0] }));
+  const handleCategoryToggle = (categoryId: string) => {
+    setFormData(prev => {
+      const newSelectedCategories = prev.selectedCategories.includes(categoryId)
+        ? prev.selectedCategories.filter(id => id !== categoryId)
+        : [...prev.selectedCategories, categoryId];
+      
+      return { ...prev, selectedCategories: newSelectedCategories };
+    });
+  };
+
+  const handleCreateQuickCategory = async () => {
+    if (!quickCategoryData.name.trim()) {
+      toast.error('Nome da categoria é obrigatório');
+      return;
+    }
+
+    setSavingQuickCategory(true);
+    try {
+      const response = await categoryService.createCategory({
+        name: quickCategoryData.name,
+        type: quickCategoryData.type,
+        parent: quickCategoryData.parent || undefined,
+        description: quickCategoryData.description || undefined
+      });
+
+      if (response.success) {
+        toast.success('Categoria criada com sucesso!');
+        setShowQuickCategoryModal(false);
+        setQuickCategoryData({
+          name: '',
+          type: 'subject',
+          parent: '',
+          description: ''
+        });
+        // Reload categories to include the new one
+        loadCategories();
+      } else {
+        toast.error(response.message || 'Erro ao criar categoria');
+      }
+    } catch (error) {
+      console.error('Error creating quick category:', error);
+      toast.error('Erro ao criar categoria');
+    } finally {
+      setSavingQuickCategory(false);
     }
   };
 
@@ -103,12 +181,34 @@ export default function NewFlashcardDeck() {
       newErrors.objective = 'O objetivo é obrigatório';
     }
 
+    if (formData.selectedCategories.length === 0) {
+      newErrors.selectedCategories = 'Selecione pelo menos uma categoria';
+    }
+
     if (formData.estimatedCards < 10) {
       newErrors.estimatedCards = 'O baralho deve ter pelo menos 10 cartões';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const getSelectedCategoryNames = () => {
+    const selected = categories.filter(cat => formData.selectedCategories.includes(cat.id));
+    const names: string[] = [];
+    
+    selected.forEach(cat => {
+      names.push(cat.name);
+      if (cat.children) {
+        cat.children.forEach(child => {
+          if (formData.selectedCategories.includes(child.id)) {
+            names.push(`${cat.name} > ${child.name}`);
+          }
+        });
+      }
+    });
+    
+    return names;
   };
 
   const handleSave = (isDraft: boolean = false) => {
@@ -199,6 +299,180 @@ export default function NewFlashcardDeck() {
     };
     return labels[method as keyof typeof labels] || method.toUpperCase();
   };
+
+  const renderCategoryTree = (category: Category, level: number = 0) => {
+    const isSelected = formData.selectedCategories.includes(category.id);
+    const hasChildren = category.children && category.children.length > 0;
+
+    return (
+      <div key={category.id} className={`${level > 0 ? 'ml-6' : ''}`}>
+        <div
+          className={`
+            flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer
+            ${isSelected 
+              ? 'bg-accent-500/20 border-accent-500 shadow-sm' 
+              : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-accent-500/50'
+            }
+          `}
+          onClick={() => handleCategoryToggle(category.id)}
+        >
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => handleCategoryToggle(category.id)}
+              className="text-accent-500 focus:ring-accent-500 rounded"
+            />
+            {hasChildren ? (
+              <Folder className="w-4 h-4 text-accent-500" />
+            ) : (
+              <Tag className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            )}
+          </div>
+          
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <span className="font-police-body font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                {category.name}
+              </span>
+              {level === 0 && (
+                <Badge variant="outline" className="text-xs font-police-body">
+                  PRINCIPAL
+                </Badge>
+              )}
+            </div>
+            {category.description && (
+              <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body mt-1">
+                {category.description}
+              </p>
+            )}
+          </div>
+        </div>
+        
+        {hasChildren && (
+          <div className="mt-2 space-y-1">
+            {category.children!.map(child => renderCategoryTree(child, level + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderQuickCategoryModal = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={() => setShowQuickCategoryModal(false)}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-xl font-police-title font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+            NOVA CATEGORIA RÁPIDA
+          </h3>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+              Nome da Categoria *
+            </label>
+            <input
+              type="text"
+              value={quickCategoryData.name}
+              onChange={(e) => setQuickCategoryData({ ...quickCategoryData, name: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body"
+              placeholder="Ex: Direito Constitucional"
+              autoFocus
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+              Tipo
+            </label>
+            <select
+              value={quickCategoryData.type}
+              onChange={(e) => setQuickCategoryData({ ...quickCategoryData, type: e.target.value as CategoryType })}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body"
+            >
+              <option value="subject">Matéria Principal</option>
+              <option value="topic">Assunto/Tópico</option>
+            </select>
+          </div>
+
+          {quickCategoryData.type === 'topic' && (
+            <div>
+              <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                Categoria Pai
+              </label>
+              <select
+                value={quickCategoryData.parent}
+                onChange={(e) => setQuickCategoryData({ ...quickCategoryData, parent: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body"
+              >
+                <option value="">Selecione uma categoria pai</option>
+                {categories
+                  .filter(cat => !cat.parent_id)
+                  .map(cat => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+              Descrição
+            </label>
+            <textarea
+              value={quickCategoryData.description}
+              onChange={(e) => setQuickCategoryData({ ...quickCategoryData, description: e.target.value })}
+              rows={2}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body"
+              placeholder="Descrição opcional..."
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+          <Button
+            variant="outline"
+            onClick={() => setShowQuickCategoryModal(false)}
+            disabled={savingQuickCategory}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleCreateQuickCategory}
+            disabled={savingQuickCategory || !quickCategoryData.name.trim()}
+            className="bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold"
+          >
+            {savingQuickCategory ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Criando...
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4 mr-2" />
+                Criar Categoria
+              </>
+            )}
+          </Button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -374,60 +648,109 @@ export default function NewFlashcardDeck() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
+              {/* Categories Selection */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <label className="flex items-center gap-2 text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     <Shield className="w-4 h-4 text-accent-500" />
-                    ÁREA TÁTICA *
+                    CATEGORIAS TÁTICAS *
                   </label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => handleInputChange('category', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowQuickCategoryModal(true)}
+                    className="gap-2 font-police-body uppercase tracking-wider text-xs border-accent-500/30 hover:border-accent-500 transition-colors"
                   >
-                    {Object.keys(materias).map(categoria => (
-                      <option key={categoria} value={categoria}>
-                        {categoria}
-                      </option>
-                    ))}
-                  </select>
+                    <FolderPlus className="w-3 h-3" />
+                    NOVA CATEGORIA
+                  </Button>
                 </div>
+                
+                <div className={`border-2 rounded-lg p-4 max-h-96 overflow-y-auto space-y-3 ${
+                  errors.selectedCategories 
+                    ? 'border-red-500' 
+                    : 'border-accent-500/30 focus-within:border-accent-500'
+                }`}>
+                  {loadingCategories ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-accent-500" />
+                      <span className="ml-2 font-police-body text-gray-600 dark:text-gray-400">
+                        CARREGANDO CATEGORIAS...
+                      </span>
+                    </div>
+                  ) : categories.length > 0 ? (
+                    <>
+                      <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                          💡 DICA TÁTICA: Você pode selecionar múltiplas categorias e níveis para este deck. Isso permitirá organizar os flashcards em diferentes áreas de conhecimento.
+                        </p>
+                      </div>
+                      
+                      {categories.map(category => renderCategoryTree(category))}
+                      
+                      {formData.selectedCategories.length > 0 && (
+                        <div className="mt-4 p-3 bg-accent-500/10 border border-accent-500/30 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle className="w-4 h-4 text-accent-500" />
+                            <span className="font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-sm">
+                              CATEGORIAS SELECIONADAS ({formData.selectedCategories.length})
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {getSelectedCategoryNames().map((name, index) => (
+                              <Badge key={index} className="bg-accent-500 text-black font-police-body font-semibold text-xs">
+                                {name}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Folder className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                      <p className="font-police-body text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        NENHUMA CATEGORIA ENCONTRADA
+                      </p>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setShowQuickCategoryModal(true)}
+                        className="mt-3 gap-2 bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider"
+                      >
+                        <FolderPlus className="w-4 h-4" />
+                        CRIAR PRIMEIRA CATEGORIA
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                
+                {errors.selectedCategories && (
+                  <p className="mt-1 text-sm text-red-600 font-police-body flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {errors.selectedCategories}
+                  </p>
+                )}
+              </div>
 
-                <div>
-                  <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
-                    <Target className="w-4 h-4 text-accent-500" />
-                    ESPECIALIDADE *
-                  </label>
-                  <select
-                    value={formData.subcategory}
-                    onChange={(e) => handleInputChange('subcategory', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
-                  >
-                    {materias[formData.category].map(subcategoria => (
-                      <option key={subcategoria} value={subcategoria}>
-                        {subcategoria.toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
-                    <Crosshair className="w-4 h-4 text-accent-500" />
-                    NÍVEL DE CLEARANCE *
-                  </label>
-                  <select
-                    value={formData.difficulty}
-                    onChange={(e) => handleInputChange('difficulty', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
-                  >
-                    {difficulties.map(difficulty => (
-                      <option key={difficulty} value={difficulty}>
-                        {getDifficultyLabel(difficulty)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Difficulty Selection */}
+              <div>
+                <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
+                  <Crosshair className="w-4 h-4 text-accent-500" />
+                  NÍVEL DE CLEARANCE *
+                </label>
+                <select
+                  value={formData.difficulty}
+                  onChange={(e) => handleInputChange('difficulty', e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-accent-500/30 focus:border-accent-500 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500/30 transition-all duration-300 hover:border-accent-500/50"
+                >
+                  {difficulties.map(difficulty => (
+                    <option key={difficulty} value={difficulty}>
+                      {getDifficultyLabel(difficulty)}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -665,24 +988,38 @@ export default function NewFlashcardDeck() {
                     <p className="text-sm font-police-body text-gray-600 dark:text-gray-400 mb-4">
                       {formData.description || 'DESCRIÇÃO NÃO INFORMADA'}
                     </p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="space-y-4">
+                      {/* Selected Categories */}
                       <div>
-                        <p className="font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">CATEGORIA</p>
-                        <p className="font-police-body text-gray-900 dark:text-white uppercase">{formData.category}</p>
+                        <p className="font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">CATEGORIAS SELECIONADAS</p>
+                        <div className="flex flex-wrap gap-2">
+                          {getSelectedCategoryNames().length > 0 ? (
+                            getSelectedCategoryNames().map((name, index) => (
+                              <Badge key={index} className="bg-accent-500 text-black font-police-body font-semibold">
+                                {name}
+                              </Badge>
+                            ))
+                          ) : (
+                            <p className="text-sm text-gray-500 dark:text-gray-400 font-police-body">NENHUMA CATEGORIA SELECIONADA</p>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">SUBCATEGORIA</p>
-                        <p className="font-police-body text-gray-900 dark:text-white uppercase">{formData.subcategory}</p>
-                      </div>
-                      <div>
-                        <p className="font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">CARTÕES</p>
-                        <p className="font-police-numbers text-gray-900 dark:text-white">{formData.estimatedCards}</p>
-                      </div>
-                      <div>
-                        <p className="font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">DIFICULDADE</p>
-                        <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 font-police-body font-semibold uppercase tracking-wider">
-                          {getDifficultyLabel(formData.difficulty)}
-                        </Badge>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">CARTÕES</p>
+                          <p className="font-police-numbers text-gray-900 dark:text-white">{formData.estimatedCards}</p>
+                        </div>
+                        <div>
+                          <p className="font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">DIFICULDADE</p>
+                          <Badge className="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 font-police-body font-semibold uppercase tracking-wider">
+                            {getDifficultyLabel(formData.difficulty)}
+                          </Badge>
+                        </div>
+                        <div>
+                          <p className="font-police-body font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">NÍVEIS SELECIONADOS</p>
+                          <p className="font-police-numbers text-gray-900 dark:text-white">{formData.selectedCategories.length}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -787,6 +1124,11 @@ export default function NewFlashcardDeck() {
           </Card>
         )}
       </motion.div>
+
+      {/* Quick Category Modal */}
+      <AnimatePresence>
+        {showQuickCategoryModal && renderQuickCategoryModal()}
+      </AnimatePresence>
     </div>
   );
 }
