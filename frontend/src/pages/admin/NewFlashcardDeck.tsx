@@ -129,20 +129,27 @@ export default function NewFlashcardDeck() {
   const getAllChildrenIds = (categoryId: string, categoriesList: Category[]): string[] => {
     const childrenIds: string[] = [];
     
-    const findChildren = (cats: Category[]) => {
+    const findCategoryAndChildren = (cats: Category[]): void => {
       cats.forEach(cat => {
-        if (cat.parent_id === categoryId) {
-          childrenIds.push(cat.id);
-          // Recursivamente encontrar filhos dos filhos
-          findChildren(categoriesList);
+        if (cat.id === categoryId && cat.children) {
+          // Encontrou a categoria, agora adicionar todos os filhos recursivamente
+          const addAllChildren = (children: Category[]): void => {
+            children.forEach(child => {
+              childrenIds.push(child.id);
+              if (child.children) {
+                addAllChildren(child.children);
+              }
+            });
+          };
+          addAllChildren(cat.children);
         }
         if (cat.children) {
-          findChildren(cat.children);
+          findCategoryAndChildren(cat.children);
         }
       });
     };
     
-    findChildren(categoriesList);
+    findCategoryAndChildren(categoriesList);
     return childrenIds;
   };
 
@@ -150,27 +157,24 @@ export default function NewFlashcardDeck() {
   const getAllParentIds = (categoryId: string, categoriesList: Category[]): string[] => {
     const parentIds: string[] = [];
     
-    const findParent = (cats: Category[], targetId: string): Category | null => {
+    const findCategoryPath = (cats: Category[], targetId: string, path: string[] = []): string[] | null => {
       for (const cat of cats) {
+        const currentPath = [...path, cat.id];
+        
         if (cat.id === targetId) {
-          return cat;
+          return currentPath.slice(0, -1); // Retorna o caminho sem o próprio ID
         }
+        
         if (cat.children) {
-          const found = findParent(cat.children, targetId);
+          const found = findCategoryPath(cat.children, targetId, currentPath);
           if (found) return found;
         }
       }
       return null;
     };
     
-    const category = findParent(categoriesList, categoryId);
-    if (category && category.parent_id) {
-      parentIds.push(category.parent_id);
-      // Recursivamente encontrar pais dos pais
-      parentIds.push(...getAllParentIds(category.parent_id, categoriesList));
-    }
-    
-    return parentIds;
+    const path = findCategoryPath(categoriesList, categoryId);
+    return path || [];
   };
 
   const handleCreateQuickCategory = async () => {
