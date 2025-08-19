@@ -28,6 +28,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { categoryService, Category, CategoryType } from '@/services/categoryService';
+import { flashcardDeckService, CreateDeckData } from '@/services/flashcardDeckService';
 import toast from 'react-hot-toast';
 
 const difficulties = ['easy', 'medium', 'hard'];
@@ -438,7 +439,7 @@ export default function NewFlashcardDeck() {
     return names;
   };
 
-  const handleSave = (isDraft: boolean = false) => {
+  const handleSave = async (isDraft: boolean = false, goToAddCards: boolean = false) => {
     if (!isDraft && !validateForm()) {
       toast.error('OPERAÇÃO FALHADA: Corrija os campos com erro', {
         icon: '🚨'
@@ -447,24 +448,50 @@ export default function NewFlashcardDeck() {
     }
 
     setIsLoading(true);
-    const action = isDraft ? 'salvando rascunho' : 'criando baralho';
+    const action = isDraft ? 'salvando rascunho' : 'criando arsenal';
     toast.loading(`${action.charAt(0).toUpperCase() + action.slice(1)}...`, { id: 'save' });
 
-    // Simular salvamento
-    setTimeout(() => {
-      const finalFormData = {
-        ...formData,
-        tags: tagsList.join(','),
-        status: isDraft ? 'draft' : 'published'
+    try {
+      // Preparar dados para a API
+      const deckData: CreateDeckData = {
+        name: formData.title,
+        description: formData.description,
+        subject: formData.selectedCategories.join(','), // Converter categorias para string
+        is_public: formData.isPublic
       };
+
+      // Chamar API real
+      const response = await flashcardDeckService.createDeck(deckData);
       
-      toast.success(`OPERAÇÃO CONCLUÍDA: Arsenal ${isDraft ? 'salvo como rascunho' : 'criado'} com sucesso!`, { id: 'save' });
+      if (response.success) {
+        const finalFormData = {
+          ...formData,
+          tags: tagsList.join(','),
+          status: isDraft ? 'draft' : 'published'
+        };
+        
+        toast.success(`OPERAÇÃO CONCLUÍDA: Arsenal ${isDraft ? 'salvo como rascunho' : 'criado'} com sucesso!`, { id: 'save' });
+        
+        if (goToAddCards && response.data) {
+          // Ir direto para adicionar flashcards
+          setTimeout(() => {
+            navigate(`/admin/flashcards/decks/${response.data.id}/cards`);
+          }, 1500);
+        } else {
+          // Voltar para lista
+          setTimeout(() => {
+            navigate('/admin/flashcards');
+          }, 1500);
+        }
+      } else {
+        toast.error('OPERAÇÃO FALHADA: Erro ao salvar arsenal', { id: 'save' });
+      }
+    } catch (error) {
+      console.error('Error saving deck:', error);
+      toast.error(`OPERAÇÃO FALHADA: ${error instanceof Error ? error.message : 'Erro desconhecido'}`, { id: 'save' });
+    } finally {
       setIsLoading(false);
-      
-      setTimeout(() => {
-        navigate('/admin/flashcards');
-      }, 1500);
-    }, 2000);
+    }
   };
 
   const handlePreview = () => {
@@ -1525,7 +1552,15 @@ export default function NewFlashcardDeck() {
                     className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors disabled:opacity-50"
                   >
                     <CheckCircle className="w-4 h-4" />
-                    {isLoading ? 'CRIANDO...' : 'CONFIRMAR E CRIAR'}
+                    {isLoading ? 'CRIANDO...' : 'CRIAR ARSENAL'}
+                  </Button>
+                  <Button
+                    onClick={() => handleSave(false, true)}
+                    disabled={isLoading}
+                    className="gap-2 bg-green-600 hover:bg-green-700 text-white font-police-body font-semibold uppercase tracking-wider transition-colors disabled:opacity-50"
+                  >
+                    <Plus className="w-4 h-4" />
+                    {isLoading ? 'CRIANDO...' : 'CRIAR E ADICIONAR CARDS'}
                   </Button>
                 </div>
               </div>
