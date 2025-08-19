@@ -18,8 +18,11 @@ import {
   Plus,
   X,
   Folder,
+  FolderOpen,
   FolderPlus,
-  Loader2
+  Loader2,
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -28,6 +31,16 @@ import { categoryService, Category, CategoryType } from '@/services/categoryServ
 import toast from 'react-hot-toast';
 
 const difficulties = ['easy', 'medium', 'hard'];
+
+// Interface para categorias pendentes (antes de salvar)
+interface PendingCategory {
+  id: string;
+  name: string;
+  description?: string;
+  children: PendingCategory[];
+  isExpanded?: boolean;
+  isEditing?: boolean;
+}
 
 export default function NewFlashcardDeck() {
   const navigate = useNavigate();
@@ -39,15 +52,17 @@ export default function NewFlashcardDeck() {
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [selectedCategoryLevels, setSelectedCategoryLevels] = useState<{[level: string]: string}>({});
   
-  // Quick category creation modal
+  // Quick category creation modal - NOVO SISTEMA
   const [showQuickCategoryModal, setShowQuickCategoryModal] = useState(false);
-  const [quickCategoryData, setQuickCategoryData] = useState({
+  const [pendingTree, setPendingTree] = useState<PendingCategory[]>([]);
+  const [savingCategories, setSavingCategories] = useState(false);
+  
+  // Form for adding new category
+  const [newCategoryForm, setNewCategoryForm] = useState({
     name: '',
-    type: 'subject' as CategoryType,
-    parent: '',
-    description: ''
+    description: '',
+    parentId: null as string | null
   });
-  const [savingQuickCategory, setSavingQuickCategory] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -102,118 +117,176 @@ export default function NewFlashcardDeck() {
 
   const handleCategoryToggle = (categoryId: string) => {
     setFormData(prev => {
-      const isCurrentlySelected = prev.selectedCategories.includes(categoryId);
-      let newSelectedCategories = [...prev.selectedCategories];
-
-      if (isCurrentlySelected) {
-        // Desmarcando: remover a categoria e todas suas filhas
-        const categoriesToRemove = getAllChildrenIds(categoryId, categories);
-        categoriesToRemove.push(categoryId);
-        newSelectedCategories = newSelectedCategories.filter(id => !categoriesToRemove.includes(id));
-      } else {
-        // Marcando: primeiro GARANTIR que a categoria clicada está na lista
-        if (!newSelectedCategories.includes(categoryId)) {
-          newSelectedCategories.push(categoryId);
-        }
-        
-        // Depois adicionar todos os pais necessários (sem duplicar)
-        const parentsToAdd = getAllParentIds(categoryId, categories);
-        parentsToAdd.forEach(parentId => {
-          if (!newSelectedCategories.includes(parentId)) {
-            newSelectedCategories.push(parentId);
-          }
-        });
-      }
+      const newSelectedCategories = prev.selectedCategories.includes(categoryId)
+        ? prev.selectedCategories.filter(id => id !== categoryId)
+        : [...prev.selectedCategories, categoryId];
       
       return { ...prev, selectedCategories: newSelectedCategories };
     });
   };
 
-  // Função auxiliar para encontrar todos os IDs dos filhos de uma categoria
-  const getAllChildrenIds = (categoryId: string, categoriesList: Category[]): string[] => {
-    const childrenIds: string[] = [];
-    
-    const findCategoryAndChildren = (cats: Category[]): void => {
-      cats.forEach(cat => {
-        if (cat.id === categoryId && cat.children) {
-          // Encontrou a categoria, agora adicionar todos os filhos recursivamente
-          const addAllChildren = (children: Category[]): void => {
-            children.forEach(child => {
-              childrenIds.push(child.id);
-              if (child.children) {
-                addAllChildren(child.children);
-              }
-            });
-          };
-          addAllChildren(cat.children);
-        }
-        if (cat.children) {
-          findCategoryAndChildren(cat.children);
-        }
-      });
-    };
-    
-    findCategoryAndChildren(categoriesList);
-    return childrenIds;
-  };
-
-  // Função auxiliar para encontrar todos os IDs dos pais de uma categoria
-  const getAllParentIds = (categoryId: string, categoriesList: Category[]): string[] => {
-    const findCategoryPath = (cats: Category[], targetId: string, path: string[] = []): string[] | null => {
-      for (const cat of cats) {
-        const currentPath = [...path, cat.id];
-        
-        if (cat.id === targetId) {
-          return currentPath.slice(0, -1); // Retorna o caminho sem o próprio ID
-        }
-        
-        if (cat.children) {
-          const found = findCategoryPath(cat.children, targetId, currentPath);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
-    
-    const path = findCategoryPath(categoriesList, categoryId);
-    return path || [];
-  };
-
-  const handleCreateQuickCategory = async () => {
-    if (!quickCategoryData.name.trim()) {
-      toast.error('Nome da categoria é obrigatório');
+  // Adiciona categoria à árvore pendente
+  const handleAddToPendingTree = () => {
+    if (!newCategoryForm.name.trim()) {
+      toast.error('Nome é obrigatório');
       return;
     }
 
-    setSavingQuickCategory(true);
-    try {
-      const response = await categoryService.createCategory({
-        name: quickCategoryData.name,
-        type: quickCategoryData.type,
-        parent: quickCategoryData.parent || undefined,
-        description: quickCategoryData.description || undefined
-      });
+    const newCategory: PendingCategory = {
+      id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: newCategoryForm.name,
+      description: newCategoryForm.description,
+      children: [],
+      isExpanded: true
+    };
 
-      if (response.success) {
-        toast.success('Categoria criada com sucesso!');
-        setShowQuickCategoryModal(false);
-        setQuickCategoryData({
-          name: '',
-          type: 'subject',
-          parent: '',
-          description: ''
+    if (newCategoryForm.parentId) {
+      // Adicionar como subcategoria
+      const addToParent = (items: PendingCategory[]): PendingCategory[] => {
+        return items.map(item => {
+          if (item.id === newCategoryForm.parentId) {
+            return {
+              ...item,
+              children: [...item.children, newCategory],
+              isExpanded: true
+            };
+          }
+          if (item.children.length > 0) {
+            return {
+              ...item,
+              children: addToParent(item.children)
+            };
+          }
+          return item;
         });
-        // Reload categories to include the new one
-        loadCategories();
-      } else {
-        toast.error(response.message || 'Erro ao criar categoria');
+      };
+      setPendingTree(addToParent(pendingTree));
+    } else {
+      // Adicionar como categoria principal
+      setPendingTree([...pendingTree, newCategory]);
+    }
+
+    // Limpar form mas manter parent se estava criando subcategoria
+    setNewCategoryForm({
+      name: '',
+      description: '',
+      parentId: newCategoryForm.parentId
+    });
+
+    toast.success(
+      newCategoryForm.parentId ? 'Subcategoria adicionada!' : 'Categoria adicionada!',
+      { icon: '✅', duration: 1500 }
+    );
+  };
+
+  // Remove categoria da árvore
+  const handleRemoveFromTree = (categoryId: string) => {
+    const removeFromTree = (items: PendingCategory[]): PendingCategory[] => {
+      return items.filter(item => {
+        if (item.id === categoryId) return false;
+        if (item.children.length > 0) {
+          item.children = removeFromTree(item.children);
+        }
+        return true;
+      });
+    };
+    setPendingTree(removeFromTree(pendingTree));
+    toast.success('Categoria removida', { icon: '🗑️', duration: 1500 });
+  };
+
+  // Toggle expand/collapse
+  const handleToggleExpand = (categoryId: string) => {
+    const toggleExpand = (items: PendingCategory[]): PendingCategory[] => {
+      return items.map(item => {
+        if (item.id === categoryId) {
+          return { ...item, isExpanded: !item.isExpanded };
+        }
+        if (item.children.length > 0) {
+          return { ...item, children: toggleExpand(item.children) };
+        }
+        return item;
+      });
+    };
+    setPendingTree(toggleExpand(pendingTree));
+  };
+
+  // Salva toda a árvore no banco
+  const handleSaveAllCategories = async () => {
+    if (pendingTree.length === 0) {
+      toast.error('Nenhuma categoria para salvar');
+      return;
+    }
+
+    setSavingCategories(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      // Função recursiva para salvar
+      const saveCategory = async (
+        category: PendingCategory,
+        parentId?: string
+      ): Promise<string | null> => {
+        try {
+          const response = await categoryService.createCategory({
+            name: category.name,
+            type: parentId ? 'topic' : 'subject',
+            parent: parentId,
+            description: category.description
+          });
+
+          if (response.success && response.data) {
+            successCount++;
+            const savedId = response.data.id;
+
+            // Salvar filhos recursivamente
+            for (const child of category.children) {
+              await saveCategory(child, savedId);
+            }
+
+            return savedId;
+          } else {
+            errorCount++;
+            return null;
+          }
+        } catch (error) {
+          errorCount++;
+          return null;
+        }
+      };
+
+      // Salvar todas as categorias
+      for (const category of pendingTree) {
+        await saveCategory(category);
+      }
+
+      if (successCount > 0) {
+        toast.success(`✅ ${successCount} categorias salvas com sucesso!`);
+        setPendingTree([]);
+        await loadCategories();
+        setTimeout(() => setShowQuickCategoryModal(false), 1500);
+      }
+
+      if (errorCount > 0) {
+        toast.error(`⚠️ ${errorCount} erros ao salvar`);
       }
     } catch (error) {
-      console.error('Error creating quick category:', error);
-      toast.error('Erro ao criar categoria');
+      toast.error('Erro ao salvar categorias');
     } finally {
-      setSavingQuickCategory(false);
+      setSavingCategories(false);
     }
+  };
+
+  // Conta total de categorias na árvore
+  const countCategories = (items: PendingCategory[]): number => {
+    let count = 0;
+    items.forEach(item => {
+      count++;
+      if (item.children.length > 0) {
+        count += countCategories(item.children);
+      }
+    });
+    return count;
   };
 
   const handleAddTag = () => {
@@ -263,23 +336,20 @@ export default function NewFlashcardDeck() {
   };
 
   const getSelectedCategoryNames = () => {
+    const selected = categories.filter(cat => formData.selectedCategories.includes(cat.id));
     const names: string[] = [];
     
-    const processCategories = (cats: Category[], parentPath: string = '') => {
-      cats.forEach(cat => {
-        if (formData.selectedCategories.includes(cat.id)) {
-          const fullPath = parentPath ? `${parentPath} > ${cat.name}` : cat.name;
-          names.push(fullPath);
-        }
-        
-        if (cat.children) {
-          const currentPath = parentPath ? `${parentPath} > ${cat.name}` : cat.name;
-          processCategories(cat.children, currentPath);
-        }
-      });
-    };
+    selected.forEach(cat => {
+      names.push(cat.name);
+      if (cat.children) {
+        cat.children.forEach(child => {
+          if (formData.selectedCategories.includes(child.id)) {
+            names.push(`${cat.name} > ${child.name}`);
+          }
+        });
+      }
+    });
     
-    processCategories(categories);
     return names;
   };
 
@@ -375,34 +445,19 @@ export default function NewFlashcardDeck() {
   const renderCategoryTree = (category: Category, level: number = 0) => {
     const isSelected = formData.selectedCategories.includes(category.id);
     const hasChildren = category.children && category.children.length > 0;
-    
-    // Verificar se foi selecionado automaticamente (porque um filho foi selecionado)
-    const hasSelectedChildren = hasChildren && category.children?.some(child => 
-      formData.selectedCategories.includes(child.id) ||
-      (child.children && child.children.some(grandChild => formData.selectedCategories.includes(grandChild.id)))
-    );
-    const isAutoSelected = isSelected && hasSelectedChildren;
 
     return (
       <div key={category.id} className={`${level > 0 ? 'ml-6' : ''}`}>
         <div
           className={`
-            flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer relative
+            flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer
             ${isSelected 
-              ? isAutoSelected
-                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700 shadow-sm'
-                : 'bg-accent-500/20 border-accent-500 shadow-sm'
+              ? 'bg-accent-500/20 border-accent-500 shadow-sm' 
               : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-accent-500/50'
             }
           `}
           onClick={() => handleCategoryToggle(category.id)}
         >
-          {isAutoSelected && (
-            <div className="absolute top-1 right-1">
-              <div className="w-2 h-2 bg-blue-500 rounded-full" title="Selecionado automaticamente"></div>
-            </div>
-          )}
-          
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -411,9 +466,9 @@ export default function NewFlashcardDeck() {
               className="text-accent-500 focus:ring-accent-500 rounded"
             />
             {hasChildren ? (
-              <Folder className={`w-4 h-4 ${isSelected ? 'text-accent-500' : 'text-gray-600 dark:text-gray-400'}`} />
+              <Folder className="w-4 h-4 text-accent-500" />
             ) : (
-              <Tag className={`w-4 h-4 ${isSelected ? 'text-accent-500' : 'text-gray-600 dark:text-gray-400'}`} />
+              <Tag className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             )}
           </div>
           
@@ -425,11 +480,6 @@ export default function NewFlashcardDeck() {
               {level === 0 && (
                 <Badge variant="outline" className="text-xs font-police-body">
                   PRINCIPAL
-                </Badge>
-              )}
-              {isAutoSelected && (
-                <Badge className="text-xs font-police-body bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                  AUTO
                 </Badge>
               )}
             </div>
@@ -450,117 +500,299 @@ export default function NewFlashcardDeck() {
     );
   };
 
+  // Renderiza a árvore pendente
+  const renderPendingTree = (items: PendingCategory[], level = 0): JSX.Element => {
+    return (
+      <>
+        {items.map(item => (
+          <div key={item.id}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={`
+                group flex items-center gap-2 p-3 rounded-lg border
+                ${level === 0 
+                  ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700' 
+                  : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-600'
+                }
+                hover:border-accent-500/50 transition-all duration-200
+                ${level > 0 ? `ml-${level * 8}` : ''}
+              `}
+              style={{ marginLeft: level * 32 + 'px' }}
+            >
+              {/* Expand/Collapse button */}
+              {item.children.length > 0 && (
+                <button
+                  onClick={() => handleToggleExpand(item.id)}
+                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                >
+                  {item.isExpanded ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
+                </button>
+              )}
+
+              {/* Icon */}
+              <div className="p-2 bg-accent-500/20 rounded-lg">
+                {item.children.length > 0 ? (
+                  <FolderOpen className="w-4 h-4 text-accent-500" />
+                ) : (
+                  <Folder className="w-4 h-4 text-accent-500" />
+                )}
+              </div>
+
+              {/* Name and description */}
+              <div className="flex-1">
+                <div className="font-semibold text-gray-900 dark:text-white">
+                  {item.name}
+                </div>
+                {item.description && (
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    {item.description}
+                  </div>
+                )}
+                {item.children.length > 0 && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    {item.children.length} subcategoria{item.children.length > 1 ? 's' : ''}
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setNewCategoryForm({ ...newCategoryForm, parentId: item.id })}
+                  className="h-8 w-8 p-0"
+                  title="Adicionar subcategoria"
+                >
+                  <FolderPlus className="w-4 h-4 text-green-600" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveFromTree(item.id)}
+                  className="h-8 w-8 p-0"
+                  title="Remover"
+                >
+                  <X className="w-4 h-4 text-red-500" />
+                </Button>
+              </div>
+            </motion.div>
+
+            {/* Render children */}
+            {item.isExpanded && item.children.length > 0 && (
+              <div className="mt-2">
+                {renderPendingTree(item.children, level + 1)}
+              </div>
+            )}
+          </div>
+        ))}
+      </>
+    );
+  };
+
   const renderQuickCategoryModal = () => (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={() => setShowQuickCategoryModal(false)}
     >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md"
-        onClick={(e) => e.stopPropagation()}
+        className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
       >
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-police-title font-bold text-gray-900 dark:text-white uppercase tracking-wider">
-            NOVA CATEGORIA RÁPIDA
-          </h3>
-        </div>
-
-        <div className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-              Nome da Categoria *
-            </label>
-            <input
-              type="text"
-              value={quickCategoryData.name}
-              onChange={(e) => setQuickCategoryData({ ...quickCategoryData, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body"
-              placeholder="Ex: Direito Constitucional"
-              autoFocus
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-              Tipo
-            </label>
-            <select
-              value={quickCategoryData.type}
-              onChange={(e) => setQuickCategoryData({ ...quickCategoryData, type: e.target.value as CategoryType })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body"
-            >
-              <option value="subject">Matéria Principal</option>
-              <option value="topic">Assunto/Tópico</option>
-            </select>
-          </div>
-
-          {quickCategoryData.type === 'topic' && (
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
+          <div className="flex items-center justify-between">
             <div>
-              <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-                Categoria Pai
-              </label>
-              <select
-                value={quickCategoryData.parent}
-                onChange={(e) => setQuickCategoryData({ ...quickCategoryData, parent: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body"
-              >
-                <option value="">Selecione uma categoria pai</option>
-                {categories
-                  .filter(cat => !cat.parent_id)
-                  .map(cat => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-              </select>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                🏗️ Construtor de Categorias Aninhadas
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Crie toda a estrutura de categorias antes de salvar no banco
+              </p>
             </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-police-subtitle font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-              Descrição
-            </label>
-            <textarea
-              value={quickCategoryData.description}
-              onChange={(e) => setQuickCategoryData({ ...quickCategoryData, description: e.target.value })}
-              rows={2}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-police-body"
-              placeholder="Descrição opcional..."
-            />
+            <button
+              onClick={() => {
+                if (pendingTree.length > 0) {
+                  if (confirm('Há categorias não salvas. Deseja realmente fechar?')) {
+                    setShowQuickCategoryModal(false);
+                    setPendingTree([]);
+                  }
+                } else {
+                  setShowQuickCategoryModal(false);
+                }
+              }}
+              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
-          <Button
-            variant="outline"
-            onClick={() => setShowQuickCategoryModal(false)}
-            disabled={savingQuickCategory}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleCreateQuickCategory}
-            disabled={savingQuickCategory || !quickCategoryData.name.trim()}
-            className="bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold"
-          >
-            {savingQuickCategory ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Criando...
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4 mr-2" />
-                Criar Categoria
-              </>
+        {/* Body - Two columns */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left column - Form */}
+          <div className="w-1/3 p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-4">
+              ➕ Adicionar Categoria
+            </h4>
+
+            {newCategoryForm.parentId && (
+              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm">
+                    <span className="text-blue-700 dark:text-blue-300">Criando subcategoria de:</span>
+                    <div className="font-semibold text-blue-900 dark:text-blue-100">
+                      {(() => {
+                        const findName = (items: PendingCategory[], id: string): string => {
+                          for (const item of items) {
+                            if (item.id === id) return item.name;
+                            const found = findName(item.children, id);
+                            if (found) return found;
+                          }
+                          return '';
+                        };
+                        return findName(pendingTree, newCategoryForm.parentId);
+                      })()}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setNewCategoryForm({ ...newCategoryForm, parentId: null })}
+                    className="p-1 hover:bg-blue-100 dark:hover:bg-blue-800 rounded"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             )}
-          </Button>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Nome *
+                </label>
+                <input
+                  type="text"
+                  value={newCategoryForm.name}
+                  onChange={(e) => setNewCategoryForm({ ...newCategoryForm, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  placeholder="Ex: Direito Constitucional"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddToPendingTree()}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Descrição
+                </label>
+                <textarea
+                  value={newCategoryForm.description}
+                  onChange={(e) => setNewCategoryForm({ ...newCategoryForm, description: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  placeholder="Descrição opcional..."
+                />
+              </div>
+
+              <Button
+                onClick={handleAddToPendingTree}
+                disabled={!newCategoryForm.name.trim()}
+                className="w-full bg-accent-500 hover:bg-accent-600 text-black"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {newCategoryForm.parentId ? 'Adicionar Subcategoria' : 'Adicionar Categoria'}
+              </Button>
+
+              {!newCategoryForm.parentId && (
+                <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                  💡 Dica: Use o botão <FolderPlus className="w-3 h-3 inline" /> ao lado de cada categoria para criar subcategorias
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right column - Tree view */}
+          <div className="flex-1 p-6 overflow-y-auto bg-gray-50 dark:bg-gray-900/50">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-semibold text-gray-900 dark:text-white">
+                🌳 Estrutura Pendente ({countCategories(pendingTree)} categorias)
+              </h4>
+              {pendingTree.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (confirm('Limpar toda a estrutura?')) {
+                      setPendingTree([]);
+                      setNewCategoryForm({ name: '', description: '', parentId: null });
+                    }
+                  }}
+                  className="text-red-600 hover:bg-red-50"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Limpar Tudo
+                </Button>
+              )}
+            </div>
+
+            {pendingTree.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <Folder className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <p>Nenhuma categoria adicionada ainda</p>
+                <p className="text-sm mt-2">Comece criando uma categoria principal</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {renderPendingTree(pendingTree)}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              {pendingTree.length > 0 && (
+                <span>
+                  {countCategories(pendingTree)} categoria(s) prontas para salvar
+                </span>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowQuickCategoryModal(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSaveAllCategories}
+                disabled={pendingTree.length === 0 || savingCategories}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {savingCategories ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Salvar Tudo no Banco
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </motion.div>
     </motion.div>
@@ -773,21 +1005,10 @@ export default function NewFlashcardDeck() {
                     </div>
                   ) : categories.length > 0 ? (
                     <>
-                      <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Target className="w-4 h-4 text-accent-500" />
-                            <p className="text-xs font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
-                              INSTRUÇÕES TÁTICAS
-                            </p>
-                          </div>
-                          <div className="space-y-1 text-xs font-police-body text-gray-600 dark:text-gray-400">
-                            <p>• <strong>Seleção Automática:</strong> Marcar uma subcategoria automaticamente marca a categoria pai</p>
-                            <p>• <strong>Desmarcação Cascata:</strong> Desmarcar categoria pai remove todas as subcategorias</p>
-                            <p>• <strong>Indicador AUTO:</strong> Badge azul mostra categorias selecionadas automaticamente</p>
-                            <p>• <strong>Múltipla Seleção:</strong> Você pode selecionar várias categorias para organizar o deck</p>
-                          </div>
-                        </div>
+                      <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                          💡 DICA TÁTICA: Você pode selecionar múltiplas categorias e níveis para este deck. Isso permitirá organizar os flashcards em diferentes áreas de conhecimento.
+                        </p>
                       </div>
                       
                       {categories.map(category => renderCategoryTree(category))}
