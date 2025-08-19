@@ -222,43 +222,37 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     const {
       name,
-      slug,
+      type = 'subject',
+      parent,
       description,
       icon,
-      color,
-      parent_id,
-      order_index = 0,
-      metadata
+      color
     } = req.body;
 
-    const external_id = 'cat_' + Date.now();
+    const category_id = 'cat_' + Date.now();
 
-    // Check if slug already exists
-    const checkQuery = 'SELECT id FROM categories WHERE slug = $1';
-    const checkResult = await pool.query(checkQuery, [slug || name.toLowerCase().replace(/\s+/g, '-')]);
-
-    if (checkResult.rows.length > 0) {
-      return res.status(400).json({ error: 'Slug já existe' });
-    }
+    // Initialize content_count
+    const content_count = {
+      courses: 0,
+      questions: 0,
+      summaries: 0,
+      flashcards: 0
+    };
 
     const insertQuery = `
       INSERT INTO categories (
-        external_id, name, slug, description, icon, color,
-        parent_id, order_index, metadata, is_active
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
+        id, name, type, description, parent_id, content_count
+      ) VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
 
     const values = [
-      external_id,
+      category_id,
       name,
-      slug || name.toLowerCase().replace(/\s+/g, '-'),
+      type,
       description || null,
-      icon || null,
-      color || null,
-      parent_id || null,
-      order_index,
-      metadata ? JSON.stringify(metadata) : null
+      parent || null,
+      JSON.stringify(content_count)
     ];
 
     const result = await pool.query(insertQuery, values);
@@ -266,10 +260,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     res.status(201).json({
       success: true,
       message: 'Categoria criada com sucesso',
-      category: {
-        ...result.rows[0],
-        id: result.rows[0].external_id || result.rows[0].id
-      }
+      data: result.rows[0]
     });
   } catch (error) {
     console.error('Error creating category:', error);
@@ -285,27 +276,41 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     }
 
     const { id } = req.params;
-    const updates = req.body;
-    
-    delete updates.id;
-    delete updates.external_id;
-    delete updates.created_at;
+    const {
+      name,
+      type,
+      parent,
+      description
+    } = req.body;
 
     // Build dynamic update query
     const updateFields = [];
     const values = [];
     let paramCount = 0;
 
-    Object.keys(updates).forEach(key => {
+    if (name !== undefined) {
       paramCount++;
-      updateFields.push(`${key} = $${paramCount}`);
-      
-      if (key === 'metadata') {
-        values.push(JSON.stringify(updates[key]));
-      } else {
-        values.push(updates[key]);
-      }
-    });
+      updateFields.push(`name = $${paramCount}`);
+      values.push(name);
+    }
+
+    if (type !== undefined) {
+      paramCount++;
+      updateFields.push(`type = $${paramCount}`);
+      values.push(type);
+    }
+
+    if (parent !== undefined) {
+      paramCount++;
+      updateFields.push(`parent_id = $${paramCount}`);
+      values.push(parent || null);
+    }
+
+    if (description !== undefined) {
+      paramCount++;
+      updateFields.push(`description = $${paramCount}`);
+      values.push(description || null);
+    }
 
     if (updateFields.length === 0) {
       return res.status(400).json({ error: 'Nenhum campo para atualizar' });
@@ -317,7 +322,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     const query = `
       UPDATE categories
       SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
-      WHERE external_id = $${paramCount} OR id::text = $${paramCount}
+      WHERE id = $${paramCount}
       RETURNING *
     `;
 
@@ -330,10 +335,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     res.json({
       success: true,
       message: 'Categoria atualizada com sucesso',
-      category: {
-        ...result.rows[0],
-        id: result.rows[0].external_id || result.rows[0].id
-      }
+      data: result.rows[0]
     });
   } catch (error) {
     console.error('Error updating category:', error);
@@ -368,12 +370,11 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) =>
       });
     }
 
-    // Soft delete
+    // Hard delete (since we don't have is_active field)
     const query = `
-      UPDATE categories
-      SET is_active = false, updated_at = CURRENT_TIMESTAMP
-      WHERE external_id = $1 OR id::text = $1
-      RETURNING external_id
+      DELETE FROM categories
+      WHERE id = $1
+      RETURNING id
     `;
 
     const result = await pool.query(query, [id]);

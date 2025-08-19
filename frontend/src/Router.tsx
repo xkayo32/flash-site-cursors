@@ -39,7 +39,7 @@ import CourseView from './pages/admin/CourseView';
 import SummaryEditor from './pages/admin/SummaryEditor';
 import LegislationManager from './pages/admin/LegislationManager';
 import NewLegislation from './pages/admin/NewLegislation';
-import CategoryManager from './pages/admin/CategoryManager';
+import CategoryManager from './pages/admin/CategoryManagerImproved';
 import AdminSettings from './pages/admin/AdminSettings';
 import CourseForm from './pages/admin/CourseForm';
 import SummaryForm from './pages/admin/SummaryForm';
