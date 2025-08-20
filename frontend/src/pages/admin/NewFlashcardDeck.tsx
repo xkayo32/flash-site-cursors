@@ -168,33 +168,121 @@ export default function NewFlashcardDeck() {
     }));
   };
 
+  // Função utilitária para processar cloze estilo Anki
+  const processClozeCard = (text: string) => {
+    // Encontrar todas as ocultações {{c1::texto}}, {{c2::texto}}, etc.
+    const clozePattern = /\{\{c(\d+)::([^}]+)\}\}/g;
+    const matches = [];
+    let match;
+    
+    while ((match = clozePattern.exec(text)) !== null) {
+      matches.push({
+        number: parseInt(match[1]),
+        text: match[2],
+        fullMatch: match[0]
+      });
+    }
+    
+    if (matches.length === 0) {
+      return [{ text, clozeNumber: null }];
+    }
+    
+    // Obter números únicos de cloze
+    const uniqueNumbers = [...new Set(matches.map(m => m.number))].sort((a, b) => a - b);
+    
+    // Gerar um card para cada número de cloze
+    return uniqueNumbers.map(number => {
+      let cardText = text;
+      
+      // Para este card, mostrar apenas as ocultações deste número como [...]
+      matches.forEach(match => {
+        if (match.number === number) {
+          cardText = cardText.replace(match.fullMatch, '[...]');
+        } else {
+          // Outras ocultações mostram o texto completo
+          cardText = cardText.replace(match.fullMatch, match.text);
+        }
+      });
+      
+      return {
+        text: cardText,
+        clozeNumber: number,
+        answer: matches.filter(m => m.number === number).map(m => m.text).join(', ')
+      };
+    });
+  };
+
+  // Função para contar quantos cards serão gerados
+  const countClozeCards = (text: string) => {
+    if (!text) return 1;
+    const clozePattern = /\{\{c(\d+)::([^}]+)\}\}/g;
+    const numbers = new Set();
+    let match;
+    
+    while ((match = clozePattern.exec(text)) !== null) {
+      numbers.add(parseInt(match[1]));
+    }
+    
+    return numbers.size > 0 ? numbers.size : 1;
+  };
+
   // Funções para gerenciar flashcards do deck
   const addFlashcardToDeck = () => {
-    if (!currentFlashcardForm.front.trim() || !currentFlashcardForm.back.trim()) {
-      toast.error('Preencha pelo menos a frente e verso do flashcard');
+    if (!currentFlashcardForm.front.trim() || (!currentFlashcardForm.back.trim() && currentFlashcardForm.type !== 'cloze')) {
+      toast.error('Preencha pelo menos a frente do flashcard');
       return;
     }
 
-    const newFlashcard = {
-      id: Date.now().toString(),
-      ...currentFlashcardForm,
-      category: formData.selectedCategories[0] || 'Geral',
-      created_at: new Date().toISOString()
-    };
-
     if (editingFlashcardIndex !== null) {
-      // Editando flashcard existente
+      // Editando flashcard existente - não processar cloze múltiplo para edições
+      const updatedFlashcard = {
+        id: deckFlashcards[editingFlashcardIndex].id,
+        ...currentFlashcardForm,
+        category: formData.selectedCategories[0] || 'Geral',
+        created_at: deckFlashcards[editingFlashcardIndex].created_at
+      };
+      
       setDeckFlashcards(prev => {
         const updated = [...prev];
-        updated[editingFlashcardIndex] = newFlashcard;
+        updated[editingFlashcardIndex] = updatedFlashcard;
         return updated;
       });
       setEditingFlashcardIndex(null);
       toast.success('Flashcard atualizado!');
     } else {
       // Adicionando novo flashcard
-      setDeckFlashcards(prev => [...prev, newFlashcard]);
-      toast.success('Flashcard adicionado ao arsenal!');
+      if (currentFlashcardForm.type === 'cloze') {
+        // Processar cloze estilo Anki - gerar múltiplos cards
+        const clozeCards = processClozeCard(currentFlashcardForm.front);
+        const newFlashcards = clozeCards.map((clozeCard, index) => ({
+          id: `${Date.now()}_${index}`,
+          type: 'cloze',
+          front: clozeCard.text,
+          back: clozeCard.answer || currentFlashcardForm.back,
+          hint: currentFlashcardForm.hint,
+          explanation: currentFlashcardForm.explanation,
+          difficulty: currentFlashcardForm.difficulty,
+          tags: currentFlashcardForm.tags,
+          category: formData.selectedCategories[0] || 'Geral',
+          created_at: new Date().toISOString(),
+          clozeNumber: clozeCard.clozeNumber,
+          originalText: currentFlashcardForm.front
+        }));
+        
+        setDeckFlashcards(prev => [...prev, ...newFlashcards]);
+        toast.success(`${newFlashcards.length} cards de ocultação adicionados ao arsenal!`);
+      } else {
+        // Outros tipos de flashcard - comportamento normal
+        const newFlashcard = {
+          id: Date.now().toString(),
+          ...currentFlashcardForm,
+          category: formData.selectedCategories[0] || 'Geral',
+          created_at: new Date().toISOString()
+        };
+        
+        setDeckFlashcards(prev => [...prev, newFlashcard]);
+        toast.success('Flashcard adicionado ao arsenal!');
+      }
     }
 
     // Reset form
@@ -1950,21 +2038,47 @@ export default function NewFlashcardDeck() {
                       onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, front: e.target.value }))}
                       rows={3}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
-                      placeholder="Digite a pergunta ou conceito..."
+                      placeholder={
+                        currentFlashcardForm.type === 'cloze' 
+                          ? "Use {{c1::palavra}} para criar ocultações. Ex: O {{c1::Estado de Direito}} é caracterizado pela {{c2::supremacia da lei}}"
+                          : "Digite a pergunta ou conceito..."
+                      }
                     />
+                    {currentFlashcardForm.type === 'cloze' && currentFlashcardForm.front && (
+                      <div className="mt-2 p-3 bg-accent-50 dark:bg-accent-900/20 rounded-lg border border-accent-200 dark:border-accent-800">
+                        <div className="flex items-center gap-2">
+                          <Target className="w-4 h-4 text-accent-600" />
+                          <span className="text-sm font-police-subtitle uppercase tracking-wider text-accent-700 dark:text-accent-400 font-semibold">
+                            📊 CARDS QUE SERÃO GERADOS: {countClozeCards(currentFlashcardForm.front)}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs text-accent-600 dark:text-accent-400 font-police-body">
+                          ⚡ Cada ocultação {`{{c1::}}`}, {`{{c2::}}`}, etc. gera um card separado (estilo Anki)
+                        </p>
+                      </div>
+                    )}
                   </div>
                   
                   <div>
                     <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-                      VERSO DO CARD
+                      {currentFlashcardForm.type === 'cloze' ? 'EXPLICAÇÃO EXTRA (OPCIONAL)' : 'VERSO DO CARD'}
                     </label>
                     <textarea
                       value={currentFlashcardForm.back}
                       onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, back: e.target.value }))}
                       rows={3}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
-                      placeholder="Digite a resposta ou explicação..."
+                      placeholder={
+                        currentFlashcardForm.type === 'cloze'
+                          ? "Informações extras sobre o tópico (opcional - as respostas são geradas automaticamente)"
+                          : "Digite a resposta ou explicação..."
+                      }
                     />
+                    {currentFlashcardForm.type === 'cloze' && (
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 font-police-body">
+                        💡 As respostas são extraídas automaticamente das ocultações {`{{c1::resposta}}`}
+                      </p>
+                    )}
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
