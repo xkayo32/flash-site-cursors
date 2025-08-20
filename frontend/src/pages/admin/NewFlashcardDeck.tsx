@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { categoryService, Category, CategoryType } from '@/services/categoryService';
 import { flashcardDeckService, CreateDeckData } from '@/services/flashcardDeckService';
+import ClozeEditor from '@/components/ClozeEditor';
 import toast from 'react-hot-toast';
 
 const difficulties = ['easy', 'medium', 'hard'];
@@ -107,6 +108,11 @@ export default function NewFlashcardDeck() {
     back: '',
     hint: '',
     explanation: '',
+    // Campos extras estilo Anki
+    extra: '',      // Informações adicionais mostradas na resposta
+    header: '',     // Contexto/cabeçalho do card
+    source: '',     // Fonte/referência
+    comments: '',   // Notas privadas (não aparecem no estudo)
     difficulty: 'medium',
     tags: [] as string[]
   });
@@ -292,6 +298,10 @@ export default function NewFlashcardDeck() {
       back: '',
       hint: '',
       explanation: '',
+      extra: '',
+      header: '',
+      source: '',
+      comments: '',
       difficulty: 'medium',
       tags: []
     });
@@ -316,6 +326,10 @@ export default function NewFlashcardDeck() {
       back: '',
       hint: '',
       explanation: '',
+      extra: '',
+      header: '',
+      source: '',
+      comments: '',
       difficulty: 'medium',
       tags: []
     });
@@ -2033,29 +2047,23 @@ export default function NewFlashcardDeck() {
                     <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
                       FRENTE DO CARD
                     </label>
-                    <textarea
-                      value={currentFlashcardForm.front}
-                      onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, front: e.target.value }))}
-                      rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
-                      placeholder={
-                        currentFlashcardForm.type === 'cloze' 
-                          ? "Use {{c1::palavra}} para criar ocultações. Ex: O {{c1::Estado de Direito}} é caracterizado pela {{c2::supremacia da lei}}"
-                          : "Digite a pergunta ou conceito..."
-                      }
-                    />
-                    {currentFlashcardForm.type === 'cloze' && currentFlashcardForm.front && (
-                      <div className="mt-2 p-3 bg-accent-50 dark:bg-accent-900/20 rounded-lg border border-accent-200 dark:border-accent-800">
-                        <div className="flex items-center gap-2">
-                          <Target className="w-4 h-4 text-accent-600" />
-                          <span className="text-sm font-police-subtitle uppercase tracking-wider text-accent-700 dark:text-accent-400 font-semibold">
-                            📊 CARDS QUE SERÃO GERADOS: {countClozeCards(currentFlashcardForm.front)}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-xs text-accent-600 dark:text-accent-400 font-police-body">
-                          ⚡ Cada ocultação {`{{c1::}}`}, {`{{c2::}}`}, etc. gera um card separado (estilo Anki)
-                        </p>
-                      </div>
+                    {currentFlashcardForm.type === 'cloze' ? (
+                      <ClozeEditor
+                        value={currentFlashcardForm.front}
+                        onChange={(value, metadata) => {
+                          setCurrentFlashcardForm(prev => ({ ...prev, front: value }));
+                        }}
+                        placeholder="Digite o texto e selecione palavras para ocultar..."
+                        showPreview={true}
+                      />
+                    ) : (
+                      <textarea
+                        value={currentFlashcardForm.front}
+                        onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, front: e.target.value }))}
+                        rows={3}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                        placeholder="Digite a pergunta ou conceito..."
+                      />
                     )}
                   </div>
                   
@@ -2107,6 +2115,68 @@ export default function NewFlashcardDeck() {
                         onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, hint: e.target.value }))}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
                         placeholder="Dica para ajudar..."
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Campos Extras Estilo Anki */}
+                  <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <h5 className="font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 text-sm font-semibold flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-accent-500" />
+                      CAMPOS EXTRAS (OPCIONAL)
+                    </h5>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider">
+                          CABEÇALHO/CONTEXTO
+                        </label>
+                        <input
+                          type="text"
+                          value={currentFlashcardForm.header}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, header: e.target.value }))}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Ex: Art. 5º CF"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider">
+                          FONTE/REFERÊNCIA
+                        </label>
+                        <input
+                          type="text"
+                          value={currentFlashcardForm.source}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, source: e.target.value }))}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Ex: Código Penal, página 45"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider">
+                        INFORMAÇÕES EXTRAS
+                      </label>
+                      <textarea
+                        value={currentFlashcardForm.extra}
+                        onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, extra: e.target.value }))}
+                        rows={2}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                        placeholder="Informações adicionais que aparecerão na resposta..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider">
+                        NOTAS PRIVADAS
+                      </label>
+                      <textarea
+                        value={currentFlashcardForm.comments}
+                        onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, comments: e.target.value }))}
+                        rows={2}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                        placeholder="Notas para você (não aparecem no estudo)..."
                       />
                     </div>
                   </div>
