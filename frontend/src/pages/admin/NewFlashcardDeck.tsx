@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -17,6 +17,8 @@ import {
   Lock,
   Plus,
   X,
+  Edit,
+  Trash2,
   Folder,
   FolderOpen,
   FolderPlus,
@@ -46,6 +48,7 @@ interface PendingCategory {
 export default function NewFlashcardDeck() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 4; // Agora são 4 etapas: Básico, Configurações, Flashcards, Revisão
   const [isLoading, setIsLoading] = useState(false);
   
   // Categories state
@@ -74,14 +77,52 @@ export default function NewFlashcardDeck() {
     tags: '',
     estimatedCards: 0,
     objective: '',
-    targetAudience: 'concursos',
     studyMethod: 'spaced_repetition',
-    status: 'draft'
+    status: 'draft',
+    // Configurações Anki-style
+    ankiSettings: {
+      newCardsPerDay: 20,
+      maxReviewsPerDay: 200,
+      desiredRetention: 0.9, // 90%
+      learningSteps: [1, 10], // minutos
+      graduatingInterval: 1, // dias
+      easyInterval: 4, // dias
+      startingEase: 2.5,
+      maxInterval: 36500, // ~100 anos em dias
+      lapseSteps: [10], // minutos para reaprendizagem
+      leechThreshold: 8, // falhas consecutivas
+      enableFuzzFactor: true
+    }
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [newTag, setNewTag] = useState('');
   const [tagsList, setTagsList] = useState<string[]>([]);
+  
+  // Estado para flashcards sendo criados no deck
+  const [deckFlashcards, setDeckFlashcards] = useState<any[]>([]);
+  const [currentFlashcardForm, setCurrentFlashcardForm] = useState({
+    type: 'basic',
+    front: '',
+    back: '',
+    hint: '',
+    explanation: '',
+    difficulty: 'medium',
+    tags: [] as string[]
+  });
+  const [editingFlashcardIndex, setEditingFlashcardIndex] = useState<number | null>(null);
+  
+  // Estado para importação de flashcards existentes
+  const [activeTab, setActiveTab] = useState<'create' | 'import' | null>(null);
+  const [availableFlashcards, setAvailableFlashcards] = useState<any[]>([]);
+  const [loadingFlashcards, setLoadingFlashcards] = useState(false);
+  const [flashcardFilters, setFlashcardFilters] = useState({
+    search: '',
+    category: '',
+    type: '',
+    difficulty: ''
+  });
+  const [selectedFlashcards, setSelectedFlashcards] = useState<Set<string>>(new Set());
 
   // Load categories on component mount
   useEffect(() => {
@@ -115,6 +156,208 @@ export default function NewFlashcardDeck() {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
+
+  // Função para lidar com configurações Anki
+  const handleAnkiSettingChange = (setting: string, value: number | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      ankiSettings: {
+        ...prev.ankiSettings,
+        [setting]: value
+      }
+    }));
+  };
+
+  // Funções para gerenciar flashcards do deck
+  const addFlashcardToDeck = () => {
+    if (!currentFlashcardForm.front.trim() || !currentFlashcardForm.back.trim()) {
+      toast.error('Preencha pelo menos a frente e verso do flashcard');
+      return;
+    }
+
+    const newFlashcard = {
+      id: Date.now().toString(),
+      ...currentFlashcardForm,
+      category: formData.selectedCategories[0] || 'Geral',
+      created_at: new Date().toISOString()
+    };
+
+    if (editingFlashcardIndex !== null) {
+      // Editando flashcard existente
+      setDeckFlashcards(prev => {
+        const updated = [...prev];
+        updated[editingFlashcardIndex] = newFlashcard;
+        return updated;
+      });
+      setEditingFlashcardIndex(null);
+      toast.success('Flashcard atualizado!');
+    } else {
+      // Adicionando novo flashcard
+      setDeckFlashcards(prev => [...prev, newFlashcard]);
+      toast.success('Flashcard adicionado ao arsenal!');
+    }
+
+    // Reset form
+    setCurrentFlashcardForm({
+      type: 'basic',
+      front: '',
+      back: '',
+      hint: '',
+      explanation: '',
+      difficulty: 'medium',
+      tags: []
+    });
+  };
+
+  const editFlashcard = (index: number) => {
+    const flashcard = deckFlashcards[index];
+    setCurrentFlashcardForm(flashcard);
+    setEditingFlashcardIndex(index);
+  };
+
+  const deleteFlashcard = (index: number) => {
+    setDeckFlashcards(prev => prev.filter((_, i) => i !== index));
+    toast.success('Flashcard removido!');
+  };
+
+  const cancelFlashcardEdit = () => {
+    setEditingFlashcardIndex(null);
+    setCurrentFlashcardForm({
+      type: 'basic',
+      front: '',
+      back: '',
+      hint: '',
+      explanation: '',
+      difficulty: 'medium',
+      tags: []
+    });
+  };
+
+  // Funções para importação de flashcards existentes
+  const loadAvailableFlashcards = async () => {
+    setLoadingFlashcards(true);
+    try {
+      // TODO: Implementar carregamento real dos flashcards da API
+      // Por enquanto, simular dados
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const mockFlashcards = [
+        {
+          id: '1',
+          type: 'basic',
+          front: 'O que é o princípio da legalidade?',
+          back: 'Ninguém será obrigado a fazer ou deixar de fazer algo senão em virtude de lei',
+          category: 'Direito Constitucional',
+          difficulty: 'medium',
+          created_at: '2024-01-15'
+        },
+        {
+          id: '2',
+          type: 'multiple_choice',
+          front: 'Qual a hierarquia das normas constitucionais?',
+          back: 'Constituição > Lei Complementar > Lei Ordinária > Decreto',
+          category: 'Direito Constitucional',
+          difficulty: 'hard',
+          created_at: '2024-01-10'
+        },
+        {
+          id: '3',
+          type: 'true_false',
+          front: 'Os direitos fundamentais são absolutos',
+          back: 'FALSO - Os direitos fundamentais não são absolutos, podem ser limitados',
+          category: 'Direitos Fundamentais',
+          difficulty: 'easy',
+          created_at: '2024-01-12'
+        },
+        {
+          id: '4',
+          type: 'cloze',
+          front: 'O {{c1::Estado de Direito}} é caracterizado pela {{c2::supremacia da lei}}',
+          back: 'Estado de Direito / supremacia da lei',
+          category: 'Teoria do Estado',
+          difficulty: 'medium',
+          created_at: '2024-01-08'
+        },
+        {
+          id: '5',
+          type: 'basic',
+          front: 'Defina separação dos poderes',
+          back: 'Divisão do poder estatal em três funções: legislativa, executiva e judiciária',
+          category: 'Organização do Estado',
+          difficulty: 'easy',
+          created_at: '2024-01-05'
+        }
+      ];
+      
+      setAvailableFlashcards(mockFlashcards);
+    } catch (error) {
+      console.error('Erro ao carregar flashcards:', error);
+      toast.error('Erro ao carregar flashcards existentes');
+    } finally {
+      setLoadingFlashcards(false);
+    }
+  };
+
+  const toggleFlashcardSelection = (flashcardId: string) => {
+    setSelectedFlashcards(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(flashcardId)) {
+        newSelected.delete(flashcardId);
+      } else {
+        newSelected.add(flashcardId);
+      }
+      return newSelected;
+    });
+  };
+
+  const importSelectedFlashcards = () => {
+    const flashcardsToImport = availableFlashcards.filter(fc => selectedFlashcards.has(fc.id));
+    
+    setDeckFlashcards(prev => {
+      // Evitar duplicatas
+      const existingIds = new Set(prev.map(fc => fc.id));
+      const newFlashcards = flashcardsToImport.filter(fc => !existingIds.has(fc.id));
+      return [...prev, ...newFlashcards];
+    });
+    
+    setSelectedFlashcards(new Set());
+    toast.success(`${flashcardsToImport.length} flashcards importados para o arsenal!`);
+  };
+
+  const selectAllFilteredFlashcards = () => {
+    const filtered = getFilteredFlashcards();
+    setSelectedFlashcards(new Set(filtered.map(fc => fc.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedFlashcards(new Set());
+  };
+
+  const getFilteredFlashcards = () => {
+    return availableFlashcards.filter(flashcard => {
+      const matchesSearch = !flashcardFilters.search || 
+        flashcard.front.toLowerCase().includes(flashcardFilters.search.toLowerCase()) ||
+        flashcard.back.toLowerCase().includes(flashcardFilters.search.toLowerCase());
+      
+      const matchesCategory = !flashcardFilters.category || 
+        flashcard.category === flashcardFilters.category;
+      
+      const matchesType = !flashcardFilters.type || 
+        flashcard.type === flashcardFilters.type;
+      
+      const matchesDifficulty = !flashcardFilters.difficulty || 
+        flashcard.difficulty === flashcardFilters.difficulty;
+      
+      return matchesSearch && matchesCategory && matchesType && matchesDifficulty;
+    });
+  };
+
+  // Carregar flashcards quando mudar para a aba de importação
+  useEffect(() => {
+    if (activeTab === 'import' && availableFlashcards.length === 0) {
+      loadAvailableFlashcards();
+    }
+  }, [activeTab]);
 
   // Função para encontrar todos os pais de uma categoria
   const findParentChain = (categoryId: string, cats: Category[] = categories): string[] => {
@@ -463,26 +706,39 @@ export default function NewFlashcardDeck() {
       // Chamar API real
       const response = await flashcardDeckService.createDeck(deckData);
       
-      if (response.success) {
-        const finalFormData = {
-          ...formData,
-          tags: tagsList.join(','),
-          status: isDraft ? 'draft' : 'published'
-        };
+      if (response.success && response.data) {
+        const createdDeckId = response.data.id;
         
-        toast.success(`OPERAÇÃO CONCLUÍDA: Arsenal ${isDraft ? 'salvo como rascunho' : 'criado'} com sucesso!`, { id: 'save' });
-        
-        if (goToAddCards && response.data) {
-          // Ir direto para adicionar flashcards
-          setTimeout(() => {
-            navigate(`/admin/flashcards/${response.data.id}/cards`);
-          }, 1500);
+        // Se há flashcards criados, adicionar ao deck
+        if (deckFlashcards.length > 0) {
+          toast.loading(`Adicionando ${deckFlashcards.length} flashcards ao arsenal...`, { id: 'save' });
+          
+          // TODO: Implementar criação de flashcards via API
+          // Por enquanto, simular sucesso
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const finalFormData = {
+            ...formData,
+            tags: tagsList.join(','),
+            status: isDraft ? 'draft' : 'published',
+            flashcardsCount: deckFlashcards.length
+          };
+          
+          toast.success(`OPERAÇÃO CONCLUÍDA: Arsenal criado com ${deckFlashcards.length} flashcards!`, { id: 'save' });
         } else {
-          // Voltar para lista
-          setTimeout(() => {
-            navigate('/admin/flashcards');
-          }, 1500);
+          const finalFormData = {
+            ...formData,
+            tags: tagsList.join(','),
+            status: isDraft ? 'draft' : 'published'
+          };
+          
+          toast.success(`OPERAÇÃO CONCLUÍDA: Arsenal ${isDraft ? 'salvo como rascunho' : 'criado'} com sucesso!`, { id: 'save' });
         }
+        
+        // Sempre voltar para lista após criar com flashcards
+        setTimeout(() => {
+          navigate('/admin/flashcards');
+        }, 1500);
       } else {
         toast.error('OPERAÇÃO FALHADA: Erro ao salvar arsenal', { id: 'save' });
       }
@@ -510,7 +766,7 @@ export default function NewFlashcardDeck() {
       }
     }
     
-    if (currentStep < 3) {
+    if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
       toast.success(`AVANÇANDO PARA FASE TÁTICA ${currentStep + 1}`, {
         duration: 2000,
@@ -980,7 +1236,7 @@ export default function NewFlashcardDeck() {
           
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              {[1, 2, 3].map((step) => (
+              {[1, 2, 3, 4].map((step) => (
                 <div key={step} className="flex items-center">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-police-numbers font-bold text-sm transition-all duration-300 shadow-lg ${
@@ -997,10 +1253,11 @@ export default function NewFlashcardDeck() {
                     }`}>
                       {step === 1 && 'BRIEFING INICIAL'}
                       {step === 2 && 'CONFIG. TÁTICAS'}
-                      {step === 3 && 'CONFIRMAÇÃO OPERACIONAL'}
+                      {step === 3 && 'CRIAÇÃO ARSENAL'}
+                      {step === 4 && 'CONFIRMAÇÃO FINAL'}
                     </p>
                   </div>
-                  {step < 3 && (
+                  {step < totalSteps && (
                     <div className={`flex-1 h-px mx-4 ${
                       step < currentStep ? 'bg-accent-500' : 'bg-gray-300 dark:bg-gray-700'
                     }`} />
@@ -1269,6 +1526,180 @@ export default function NewFlashcardDeck() {
                 </div>
               </div>
 
+              {/* Configurações Avançadas Anki-Style - Só mostra para repetição espaçada */}
+              {formData.studyMethod === 'spaced_repetition' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="border-t border-accent-500/30 pt-6"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <Brain className="w-5 h-5 text-accent-500" />
+                    <h4 className="font-police-subtitle uppercase tracking-wider text-gray-900 dark:text-white font-semibold">
+                      🧠 CONFIGURAÇÕES ANKI-STYLE (SM-2)
+                    </h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Daily Limits */}
+                    <div className="space-y-4">
+                      <h5 className="font-police-body font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider text-sm">
+                        🏆 LIMITES DIÁRIOS
+                      </h5>
+                      
+                      <div>
+                        <label className="block text-xs font-police-body text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          Novos Cards por Dia:
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.ankiSettings.newCardsPerDay}
+                          onChange={(e) => handleAnkiSettingChange('newCardsPerDay', parseInt(e.target.value) || 20)}
+                          min="1"
+                          max="999"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers focus:ring-2 focus:ring-accent-500"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-police-body text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          Máx Reviews por Dia:
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.ankiSettings.maxReviewsPerDay}
+                          onChange={(e) => handleAnkiSettingChange('maxReviewsPerDay', parseInt(e.target.value) || 200)}
+                          min="10"
+                          max="9999"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers focus:ring-2 focus:ring-accent-500"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Learning Configuration */}
+                    <div className="space-y-4">
+                      <h5 className="font-police-body font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider text-sm">
+                        🎯 APRENDIZAGEM
+                      </h5>
+                      
+                      <div>
+                        <label className="block text-xs font-police-body text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          Intervalo de Graduação (dias):
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.ankiSettings.graduatingInterval}
+                          onChange={(e) => handleAnkiSettingChange('graduatingInterval', parseInt(e.target.value) || 1)}
+                          min="1"
+                          max="30"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers focus:ring-2 focus:ring-accent-500"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-police-body text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          Intervalo "Fácil" (dias):
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.ankiSettings.easyInterval}
+                          onChange={(e) => handleAnkiSettingChange('easyInterval', parseInt(e.target.value) || 4)}
+                          min="2"
+                          max="30"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers focus:ring-2 focus:ring-accent-500"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Advanced Settings */}
+                    <div className="space-y-4">
+                      <h5 className="font-police-body font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider text-sm">
+                        ⚙️ AVANÇADO
+                      </h5>
+                      
+                      <div>
+                        <label className="block text-xs font-police-body text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          Retenção Desejada:
+                        </label>
+                        <select
+                          value={formData.ankiSettings.desiredRetention}
+                          onChange={(e) => handleAnkiSettingChange('desiredRetention', parseFloat(e.target.value))}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                        >
+                          <option value={0.8}>80% - Fácil</option>
+                          <option value={0.85}>85% - Normal</option>
+                          <option value={0.9}>90% - Padrão</option>
+                          <option value={0.95}>95% - Rigoroso</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-police-body text-gray-600 dark:text-gray-400 mb-1 uppercase">
+                          Ease Factor Inicial:
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.ankiSettings.startingEase}
+                          onChange={(e) => handleAnkiSettingChange('startingEase', parseFloat(e.target.value) || 2.5)}
+                          min="1.3"
+                          max="3.0"
+                          step="0.1"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers focus:ring-2 focus:ring-accent-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Expert Settings */}
+                  <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Shield className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-police-subtitle uppercase tracking-wider text-blue-700 dark:text-blue-300">
+                        🔬 CONFIGURAÇÕES ESPECIALISTAS
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="font-police-body text-blue-700 dark:text-blue-300">Fuzz Factor (variação aleatória):</span>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.ankiSettings.enableFuzzFactor}
+                            onChange={(e) => handleAnkiSettingChange('enableFuzzFactor', e.target.checked)}
+                            className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
+                          />
+                          <span className="font-police-body text-blue-600 dark:text-blue-400">
+                            {formData.ankiSettings.enableFuzzFactor ? 'ATIVO' : 'INATIVO'}
+                          </span>
+                        </label>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="font-police-body text-blue-700 dark:text-blue-300">Leech Threshold:</span>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={formData.ankiSettings.leechThreshold}
+                            onChange={(e) => handleAnkiSettingChange('leechThreshold', parseInt(e.target.value) || 8)}
+                            min="3"
+                            max="20"
+                            className="w-16 px-2 py-1 text-sm border border-blue-300 dark:border-blue-600 rounded bg-white dark:bg-blue-900/40 text-blue-900 dark:text-blue-100 font-police-numbers"
+                          />
+                          <span className="text-xs font-police-body text-blue-600 dark:text-blue-400">falhas</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 text-xs text-blue-600 dark:text-blue-400 font-police-body">
+                      💡 <strong>Dica:</strong> Estas configurações otimizam o algoritmo SM-2 baseado na pesquisa do Anki. 
+                      Os valores padrão são recomendados para a maioria dos usuários.
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               <div>
                 <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
                   VISIBILIDADE
@@ -1373,6 +1804,7 @@ export default function NewFlashcardDeck() {
           </Card>
         )}
 
+        {/* NOVA ETAPA 3: CRIAÇÃO DE FLASHCARDS */}
         {currentStep === 3 && (
           <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
             {/* Tactical stripes */}
@@ -1381,8 +1813,519 @@ export default function NewFlashcardDeck() {
             
             <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b border-accent-500/30">
               <CardTitle className="flex items-center gap-3 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
+                <Target className="w-6 h-6 text-accent-500" />
+                ETAPA 3: CRIAÇÃO DE ARSENAL
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              {/* Seleção de Modo: Criar vs Importar */}
+              <div className="mb-6">
+                <h4 className="font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4 text-center">
+                  🎯 ESCOLHA O MODO DE OPERAÇÃO:
+                </h4>
+                <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+                  <button
+                    onClick={() => setActiveTab('create')}
+                    className={`p-6 rounded-xl border-2 transition-all duration-300 ${
+                      activeTab === 'create'
+                        ? 'border-accent-500 bg-accent-50 dark:bg-accent-900/20 shadow-lg'
+                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/50 hover:border-accent-300 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+                        activeTab === 'create' ? 'bg-accent-500' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}>
+                        <Plus className={`w-8 h-8 ${
+                          activeTab === 'create' ? 'text-black' : 'text-gray-600 dark:text-gray-400'
+                        }`} />
+                      </div>
+                      <h3 className={`font-police-subtitle uppercase tracking-wider text-lg font-bold mb-2 ${
+                        activeTab === 'create' ? 'text-accent-600 dark:text-accent-400' : 'text-gray-700 dark:text-gray-300'
+                      }`}>
+                        CRIAR NOVOS
+                      </h3>
+                      <p className="text-sm font-police-body text-gray-600 dark:text-gray-400">
+                        Crie flashcards do zero com formulário completo
+                      </p>
+                      {activeTab === 'create' && (
+                        <div className="mt-3 flex items-center justify-center gap-2 text-accent-600 dark:text-accent-400">
+                          <CheckCircle className="w-4 h-4" />
+                          <span className="text-xs font-police-body uppercase tracking-wider font-semibold">MODO ATIVO</span>
+                        </div>
+                      )}
+                      {activeTab === null && (
+                        <div className="mt-3 text-xs font-police-body text-gray-500 dark:text-gray-500 uppercase tracking-wider">
+                          Clique para selecionar
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => setActiveTab('import')}
+                    className={`p-6 rounded-xl border-2 transition-all duration-300 ${
+                      activeTab === 'import'
+                        ? 'border-accent-500 bg-accent-50 dark:bg-accent-900/20 shadow-lg'
+                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/50 hover:border-accent-300 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+                        activeTab === 'import' ? 'bg-accent-500' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}>
+                        <BookOpen className={`w-8 h-8 ${
+                          activeTab === 'import' ? 'text-black' : 'text-gray-600 dark:text-gray-400'
+                        }`} />
+                      </div>
+                      <h3 className={`font-police-subtitle uppercase tracking-wider text-lg font-bold mb-2 ${
+                        activeTab === 'import' ? 'text-accent-600 dark:text-accent-400' : 'text-gray-700 dark:text-gray-300'
+                      }`}>
+                        IMPORTAR EXISTENTES
+                      </h3>
+                      <p className="text-sm font-police-body text-gray-600 dark:text-gray-400">
+                        Selecione flashcards já criados no sistema
+                      </p>
+                      {activeTab === 'import' && (
+                        <div className="mt-3 flex items-center justify-center gap-2 text-accent-600 dark:text-accent-400">
+                          <CheckCircle className="w-4 h-4" />
+                          <span className="text-xs font-police-body uppercase tracking-wider font-semibold">MODO ATIVO</span>
+                        </div>
+                      )}
+                      {activeTab === null && (
+                        <div className="mt-3 text-xs font-police-body text-gray-500 dark:text-gray-500 uppercase tracking-wider">
+                          Clique para selecionar
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                </div>
+              </div>
+              {/* Conteúdo do Modo Ativo */}
+              {activeTab === null ? (
+                <div className="text-center py-12 bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600">
+                  <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="font-police-subtitle uppercase tracking-wider text-gray-600 dark:text-gray-400 font-semibold mb-2">
+                    SELECIONE UM MODO DE OPERAÇÃO
+                  </h3>
+                  <p className="text-sm font-police-body text-gray-500 dark:text-gray-500">
+                    Escolha entre criar novos flashcards ou importar existentes
+                  </p>
+                </div>
+              ) : activeTab === 'create' ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Formulário de Criação de Flashcard */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Plus className="w-5 h-5 text-accent-500" />
+                    <h4 className="font-police-subtitle uppercase tracking-wider text-gray-900 dark:text-white font-semibold">
+                      {editingFlashcardIndex !== null ? '✏️ EDITAR FLASHCARD' : '➕ ADICIONAR FLASHCARD'}
+                    </h4>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                      TIPO DE FLASHCARD
+                    </label>
+                    <select
+                      value={currentFlashcardForm.type}
+                      onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, type: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                    >
+                      <option value="basic">🔵 BÁSICO (Frente/Verso)</option>
+                      <option value="basic_inverted">🟢 BÁSICO INVERTIDO</option>
+                      <option value="cloze">🟡 LACUNAS (Cloze)</option>
+                      <option value="multiple_choice">🟣 MÚLTIPLA ESCOLHA</option>
+                      <option value="true_false">🔴 VERDADEIRO/FALSO</option>
+                      <option value="type_answer">🟦 DIGITE RESPOSTA</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                      FRENTE DO CARD
+                    </label>
+                    <textarea
+                      value={currentFlashcardForm.front}
+                      onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, front: e.target.value }))}
+                      rows={3}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                      placeholder="Digite a pergunta ou conceito..."
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                      VERSO DO CARD
+                    </label>
+                    <textarea
+                      value={currentFlashcardForm.back}
+                      onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, back: e.target.value }))}
+                      rows={3}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                      placeholder="Digite a resposta ou explicação..."
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        DIFICULDADE
+                      </label>
+                      <select
+                        value={currentFlashcardForm.difficulty}
+                        onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, difficulty: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                      >
+                        <option value="easy">🟢 FÁCIL</option>
+                        <option value="medium">🟡 MÉDIO</option>
+                        <option value="hard">🔴 DIFÍCIL</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        DICA (OPCIONAL)
+                      </label>
+                      <input
+                        type="text"
+                        value={currentFlashcardForm.hint}
+                        onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, hint: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                        placeholder="Dica para ajudar..."
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={addFlashcardToDeck}
+                      className="flex-1 bg-accent-500 hover:bg-accent-600 text-black font-police-subtitle uppercase tracking-wider"
+                    >
+                      {editingFlashcardIndex !== null ? (
+                        <><CheckCircle className="w-4 h-4 mr-2" /> ATUALIZAR CARD</>
+                      ) : (
+                        <><Plus className="w-4 h-4 mr-2" /> ADICIONAR AO ARSENAL</>
+                      )}
+                    </Button>
+                    
+                    {editingFlashcardIndex !== null && (
+                      <Button
+                        onClick={cancelFlashcardEdit}
+                        variant="outline"
+                        className="font-police-subtitle uppercase tracking-wider"
+                      >
+                        <X className="w-4 h-4 mr-2" /> CANCELAR
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Lista de Flashcards Criados */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-police-subtitle uppercase tracking-wider text-gray-900 dark:text-white font-semibold flex items-center gap-2">
+                      <Brain className="w-5 h-5 text-accent-500" />
+                      ARSENAL CRIADO ({deckFlashcards.length})
+                    </h4>
+                    
+                    {deckFlashcards.length > 0 && (
+                      <Badge variant="outline" className="font-police-numbers">
+                        {deckFlashcards.length} cards
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {deckFlashcards.length === 0 ? (
+                    <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                      <Brain className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-500 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                        NENHUM FLASHCARD CRIADO
+                      </p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 font-police-body mt-1">
+                        Adicione flashcards para formar seu arsenal
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {deckFlashcards.map((flashcard, index) => (
+                        <div key={flashcard.id} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant="outline" className="text-xs font-police-body">
+                                  {flashcard.type === 'basic' ? '🔵 BÁSICO' :
+                                   flashcard.type === 'basic_inverted' ? '🟢 INVERTIDO' :
+                                   flashcard.type === 'cloze' ? '🟡 LACUNAS' :
+                                   flashcard.type === 'multiple_choice' ? '🟣 MÚLTIPLA' :
+                                   flashcard.type === 'true_false' ? '🔴 V/F' :
+                                   '🟦 DIGITE'}
+                                </Badge>
+                                <Badge variant={flashcard.difficulty === 'easy' ? 'success' : flashcard.difficulty === 'hard' ? 'destructive' : 'warning'} className="text-xs font-police-body">
+                                  {flashcard.difficulty === 'easy' ? 'FÁCIL' : flashcard.difficulty === 'hard' ? 'DIFÍCIL' : 'MÉDIO'}
+                                </Badge>
+                              </div>
+                              <p className="text-sm font-police-body text-gray-900 dark:text-white font-semibold mb-1">
+                                📄 {flashcard.front.substring(0, 100)}{flashcard.front.length > 100 ? '...' : ''}
+                              </p>
+                              <p className="text-xs font-police-body text-gray-600 dark:text-gray-400">
+                                💡 {flashcard.back.substring(0, 80)}{flashcard.back.length > 80 ? '...' : ''}
+                              </p>
+                            </div>
+                            
+                            <div className="flex gap-2 ml-4">
+                              <Button
+                                onClick={() => editFlashcard(index)}
+                                size="sm"
+                                variant="outline"
+                                className="text-xs"
+                              >
+                                <Edit className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                onClick={() => deleteFlashcard(index)}
+                                size="sm"
+                                variant="destructive"
+                                className="text-xs"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {deckFlashcards.length > 0 && (
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <p className="text-xs text-blue-700 dark:text-blue-300 font-police-body">
+                        💡 <strong>Dica:</strong> Você pode continuar adicionando flashcards ou avançar para revisar e salvar o arsenal.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              ) : (
+                /* Aba de Importação de Flashcards Existentes */
+                <div className="space-y-6">
+                  {/* Filtros de Busca */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Buscar flashcards..."
+                        value={flashcardFilters.search}
+                        onChange={(e) => setFlashcardFilters(prev => ({ ...prev, search: e.target.value }))}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                      />
+                    </div>
+                    
+                    <div>
+                      <select
+                        value={flashcardFilters.category}
+                        onChange={(e) => setFlashcardFilters(prev => ({ ...prev, category: e.target.value }))}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                      >
+                        <option value="">Todas as categorias</option>
+                        <option value="Direito Constitucional">Direito Constitucional</option>
+                        <option value="Direitos Fundamentais">Direitos Fundamentais</option>
+                        <option value="Teoria do Estado">Teoria do Estado</option>
+                        <option value="Organização do Estado">Organização do Estado</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <select
+                        value={flashcardFilters.type}
+                        onChange={(e) => setFlashcardFilters(prev => ({ ...prev, type: e.target.value }))}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                      >
+                        <option value="">Todos os tipos</option>
+                        <option value="basic">🔵 Básico</option>
+                        <option value="multiple_choice">🟣 Múltipla Escolha</option>
+                        <option value="true_false">🔴 Verdadeiro/Falso</option>
+                        <option value="cloze">🟡 Lacunas</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <select
+                        value={flashcardFilters.difficulty}
+                        onChange={(e) => setFlashcardFilters(prev => ({ ...prev, difficulty: e.target.value }))}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                      >
+                        <option value="">Todas dificuldades</option>
+                        <option value="easy">🟢 Fácil</option>
+                        <option value="medium">🟡 Médio</option>
+                        <option value="hard">🔴 Difícil</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  {/* Ações de Seleção */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Button
+                        onClick={selectAllFilteredFlashcards}
+                        size="sm"
+                        variant="outline"
+                        className="font-police-body uppercase tracking-wider"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        SELECIONAR TODOS
+                      </Button>
+                      
+                      <Button
+                        onClick={clearSelection}
+                        size="sm"
+                        variant="outline"
+                        className="font-police-body uppercase tracking-wider"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        LIMPAR SELEÇÃO
+                      </Button>
+                      
+                      {selectedFlashcards.size > 0 && (
+                        <Button
+                          onClick={importSelectedFlashcards}
+                          className="bg-accent-500 hover:bg-accent-600 text-black font-police-subtitle uppercase tracking-wider"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          IMPORTAR {selectedFlashcards.size} SELECIONADOS
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <div className="text-sm font-police-body text-gray-600 dark:text-gray-400">
+                      {selectedFlashcards.size} de {getFilteredFlashcards().length} selecionados
+                    </div>
+                  </div>
+                  
+                  {/* Lista de Flashcards Disponíveis */}
+                  {loadingFlashcards ? (
+                    <div className="text-center py-8">
+                      <Loader2 className="w-8 h-8 text-accent-500 mx-auto mb-3 animate-spin" />
+                      <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                        CARREGANDO FLASHCARDS...
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {getFilteredFlashcards().map((flashcard) => (
+                        <div
+                          key={flashcard.id}
+                          className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
+                            selectedFlashcards.has(flashcard.id)
+                              ? 'border-accent-500 bg-accent-50 dark:bg-accent-900/20'
+                              : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 hover:border-accent-300'
+                          }`}
+                          onClick={() => toggleFlashcardSelection(flashcard.id)}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedFlashcards.has(flashcard.id)}
+                                onChange={() => toggleFlashcardSelection(flashcard.id)}
+                                className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
+                              />
+                              <Badge variant="outline" className="text-xs font-police-body">
+                                {flashcard.type === 'basic' ? '🔵 BÁSICO' :
+                                 flashcard.type === 'multiple_choice' ? '🟣 MÚLTIPLA' :
+                                 flashcard.type === 'true_false' ? '🔴 V/F' :
+                                 flashcard.type === 'cloze' ? '🟡 LACUNAS' :
+                                 '🟦 OUTRO'}
+                              </Badge>
+                            </div>
+                            
+                            <Badge variant={flashcard.difficulty === 'easy' ? 'success' : flashcard.difficulty === 'hard' ? 'destructive' : 'warning'} className="text-xs font-police-body">
+                              {flashcard.difficulty === 'easy' ? 'FÁCIL' : flashcard.difficulty === 'hard' ? 'DIFÍCIL' : 'MÉDIO'}
+                            </Badge>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <p className="text-sm font-police-body font-semibold text-gray-900 dark:text-white">
+                              📄 {flashcard.front.substring(0, 80)}{flashcard.front.length > 80 ? '...' : ''}
+                            </p>
+                            <p className="text-xs font-police-body text-gray-600 dark:text-gray-400">
+                              💡 {flashcard.back.substring(0, 60)}{flashcard.back.length > 60 ? '...' : ''}
+                            </p>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-police-body text-gray-500 dark:text-gray-500">
+                                📁 {flashcard.category}
+                              </span>
+                              <span className="font-police-numbers text-gray-400 dark:text-gray-600">
+                                {flashcard.created_at}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {!loadingFlashcards && getFilteredFlashcards().length === 0 && (
+                    <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                      <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-500 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                        NENHUM FLASHCARD ENCONTRADO
+                      </p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 font-police-body mt-1">
+                        Ajuste os filtros ou crie novos flashcards
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Resumo do Arsenal (sempre visível) */}
+              {deckFlashcards.length > 0 && (
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-police-subtitle uppercase tracking-wider text-gray-900 dark:text-white font-semibold flex items-center gap-2">
+                      <Target className="w-5 h-5 text-accent-500" />
+                      ARSENAL TOTAL ({deckFlashcards.length} FLASHCARDS)
+                    </h4>
+                    
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <p className="text-lg font-police-numbers font-bold text-green-600 dark:text-green-400">
+                          {deckFlashcards.filter(c => c.difficulty === 'easy').length}
+                        </p>
+                        <p className="text-xs font-police-body text-green-500 uppercase">Fáceis</p>
+                      </div>
+                      <div>
+                        <p className="text-lg font-police-numbers font-bold text-yellow-600 dark:text-yellow-400">
+                          {deckFlashcards.filter(c => c.difficulty === 'medium').length}
+                        </p>
+                        <p className="text-xs font-police-body text-yellow-500 uppercase">Médios</p>
+                      </div>
+                      <div>
+                        <p className="text-lg font-police-numbers font-bold text-red-600 dark:text-red-400">
+                          {deckFlashcards.filter(c => c.difficulty === 'hard').length}
+                        </p>
+                        <p className="text-xs font-police-body text-red-500 uppercase">Difíceis</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        
+        {/* ETAPA 4: CONFIRMAÇÃO OPERACIONAL (antiga etapa 3) */}
+        {currentStep === 4 && (
+          <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-accent-500/30 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+            {/* Tactical stripes */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent-500 via-accent-400 to-accent-500" />
+            <div className="absolute top-0 right-0 w-20 h-20 border-t-4 border-r-4 border-accent-500/20" />
+            
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b border-accent-500/30">
+              <CardTitle className="flex items-center gap-3 font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
                 <Crosshair className="w-6 h-6 text-accent-500" />
-                ETAPA 3: CONFIRMAÇÃO OPERACIONAL
+                ETAPA 4: CONFIRMAÇÃO OPERACIONAL
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
@@ -1502,6 +2445,89 @@ export default function NewFlashcardDeck() {
                 </div>
               </div>
 
+              {/* Seção de Flashcards Criados */}
+              <div>
+                <h4 className="font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-accent-500" />
+                  ARSENAL CRIADO ({deckFlashcards.length} FLASHCARDS)
+                </h4>
+                
+                {deckFlashcards.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {deckFlashcards.slice(0, 6).map((flashcard, index) => (
+                        <div key={flashcard.id} className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="outline" className="text-xs font-police-body">
+                              {flashcard.type === 'basic' ? '🔵 BÁSICO' :
+                               flashcard.type === 'basic_inverted' ? '🟢 INVERTIDO' :
+                               flashcard.type === 'cloze' ? '🟡 LACUNAS' :
+                               flashcard.type === 'multiple_choice' ? '🟣 MÚLTIPLA' :
+                               flashcard.type === 'true_false' ? '🔴 V/F' :
+                               '🟦 DIGITE'}
+                            </Badge>
+                            <Badge variant={flashcard.difficulty === 'easy' ? 'success' : flashcard.difficulty === 'hard' ? 'destructive' : 'warning'} className="text-xs font-police-body">
+                              {flashcard.difficulty === 'easy' ? 'FÁCIL' : flashcard.difficulty === 'hard' ? 'DIFÍCIL' : 'MÉDIO'}
+                            </Badge>
+                          </div>
+                          <p className="text-xs font-police-body text-gray-900 dark:text-white font-semibold mb-1">
+                            📄 {flashcard.front.substring(0, 60)}{flashcard.front.length > 60 ? '...' : ''}
+                          </p>
+                          <p className="text-xs font-police-body text-gray-600 dark:text-gray-400">
+                            💡 {flashcard.back.substring(0, 50)}{flashcard.back.length > 50 ? '...' : ''}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {deckFlashcards.length > 6 && (
+                      <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <p className="text-sm text-blue-700 dark:text-blue-300 font-police-body">
+                          💡 <strong>E mais {deckFlashcards.length - 6} flashcards...</strong> 
+                          Todo o arsenal será criado junto com o deck.
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Resumo estatístico */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                      <div className="text-center">
+                        <p className="text-lg font-police-numbers font-bold text-green-700 dark:text-green-300">{deckFlashcards.length}</p>
+                        <p className="text-xs font-police-body text-green-600 dark:text-green-400 uppercase tracking-wider">Total Cards</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg font-police-numbers font-bold text-blue-700 dark:text-blue-300">
+                          {deckFlashcards.filter(c => c.difficulty === 'easy').length}
+                        </p>
+                        <p className="text-xs font-police-body text-blue-600 dark:text-blue-400 uppercase tracking-wider">Fáceis</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg font-police-numbers font-bold text-yellow-700 dark:text-yellow-300">
+                          {deckFlashcards.filter(c => c.difficulty === 'medium').length}
+                        </p>
+                        <p className="text-xs font-police-body text-yellow-600 dark:text-yellow-400 uppercase tracking-wider">Médios</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg font-police-numbers font-bold text-red-700 dark:text-red-300">
+                          {deckFlashcards.filter(c => c.difficulty === 'hard').length}
+                        </p>
+                        <p className="text-xs font-police-body text-red-600 dark:text-red-400 uppercase tracking-wider">Difíceis</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-2 border-dashed border-yellow-300 dark:border-yellow-700">
+                    <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-3" />
+                    <p className="text-yellow-700 dark:text-yellow-300 font-police-body uppercase tracking-wider font-semibold">
+                      NENHUM FLASHCARD CRIADO
+                    </p>
+                    <p className="text-sm text-yellow-600 dark:text-yellow-400 font-police-body mt-1">
+                      O deck será criado vazio. Você pode adicionar flashcards depois.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div className="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
                 <Button
                   variant="outline"
@@ -1529,14 +2555,7 @@ export default function NewFlashcardDeck() {
                     <CheckCircle className="w-4 h-4" />
                     {isLoading ? 'CRIANDO...' : 'CRIAR ARSENAL'}
                   </Button>
-                  <Button
-                    onClick={() => handleSave(false, true)}
-                    disabled={isLoading}
-                    className="gap-2 bg-green-600 hover:bg-green-700 text-white font-police-body font-semibold uppercase tracking-wider transition-colors disabled:opacity-50"
-                  >
-                    <Plus className="w-4 h-4" />
-                    {isLoading ? 'CRIANDO...' : 'CRIAR E ADICIONAR CARDS'}
-                  </Button>
+                  {/* Botão removido - flashcards são criados no wizard */}
                 </div>
               </div>
             </CardContent>

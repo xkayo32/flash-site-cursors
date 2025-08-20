@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Play,
   AlertTriangle,
+  AlertCircle,
   Loader2,
   RefreshCw,
   Grid3X3,
@@ -289,6 +290,47 @@ export default function FlashcardsPage() {
     return () => clearTimeout(debounceTimer);
   }, [searchTerm, filterSubject, filterType]);
 
+  // Atalhos de teclado Anki-style para interface de estudo
+  useEffect(() => {
+    const handleKeydown = (event: KeyboardEvent) => {
+      // Só ativa se estivermos em modo de estudo e a resposta está visível
+      if (!studySession || !showAnswer) return;
+      
+      // Evita conflito com inputs de texto
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      switch(event.key) {
+        case '1':
+          event.preventDefault();
+          handleAnswer('again');
+          break;
+        case '2':
+          event.preventDefault();
+          handleAnswer('hard');
+          break;
+        case '3':
+          event.preventDefault();
+          handleAnswer('good');
+          break;
+        case '4':
+          event.preventDefault();
+          handleAnswer('easy');
+          break;
+        case ' ': // Espaço para mostrar resposta
+          if (!showAnswer) {
+            event.preventDefault();
+            setShowAnswer(true);
+          }
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+    return () => document.removeEventListener('keydown', handleKeydown);
+  }, [studySession, showAnswer, currentCard]);
+
   // Função para gravar sessão de estudo
   const recordStudy = async (flashcardId: string, isCorrect: boolean, quality: number = 3) => {
     try {
@@ -548,8 +590,8 @@ export default function FlashcardsPage() {
     }
   };
 
-  // Algoritmo SM-2 (SuperMemo 2) - Implementação completa como no Anki
-  const calculateNextReview = (quality: number, card: Flashcard) => {
+  // Algoritmo SM-2 Melhorado (Anki Style) - 4 botões simples
+  const calculateNextReviewAnkiStyle = (response: 'again' | 'hard' | 'good' | 'easy', card: Flashcard) => {
     const interval = card.interval || 1;
     const repetitions = card.times_studied || 0;
     const easeFactor = card.ease_factor || 2.5;
@@ -558,67 +600,52 @@ export default function FlashcardsPage() {
     let newRepetitions = repetitions;
     let newEaseFactor = easeFactor;
 
-    // Quality: 0 = Esqueci completamente, 1 = Esqueci, 2 = Difícil, 3 = Bom, 4 = Fácil, 5 = Muito fácil
+    // Mapear respostas para qualidade (Anki style): Again=1, Hard=2, Good=3, Easy=4
+    const responses = { again: 1, hard: 2, good: 3, easy: 4 };
+    const quality = responses[response];
     
     if (quality >= 3) {
-      // Resposta correta (Bom, Fácil ou Muito fácil)
+      // Resposta correta (Good ou Easy)
       
-      // Calcula novo intervalo baseado no algoritmo SM-2
-      switch (repetitions) {
-        case 0:
-          newInterval = 1; // 1 dia
-          break;
-        case 1:
-          newInterval = 6; // 6 dias
-          break;
-        default:
-          // Aplica o fator de facilidade ao intervalo anterior
-          newInterval = Math.round(interval * newEaseFactor);
-          
-          // Adiciona variação aleatória (fuzz factor) como no Anki
-          // Evita que muitos cards apareçam no mesmo dia
-          const fuzzRange = Math.max(1, Math.floor(newInterval * 0.05));
-          const fuzz = Math.floor(Math.random() * (2 * fuzzRange + 1)) - fuzzRange;
-          newInterval = Math.max(1, newInterval + fuzz);
-          break;
+      // Learning steps para cards novos (como no Anki)
+      if (repetitions === 0) {
+        newInterval = response === 'easy' ? 4 : 1; // Easy = 4 dias, Good = 1 dia
+      } else if (repetitions === 1) {
+        newInterval = response === 'easy' ? Math.round(6 * 1.3) : 6; // Easy bonus na segunda repetição
+      } else {
+        // Cards maduros - aplica o fator de facilidade
+        newInterval = Math.round(interval * newEaseFactor);
+        
+        // Easy bonus: 30% extra no intervalo (como no Anki)
+        if (response === 'easy') {
+          newInterval = Math.round(newInterval * 1.3);
+        }
+        
+        // Adiciona variação aleatória (fuzz factor) como no Anki
+        const fuzzRange = Math.max(1, Math.floor(newInterval * 0.05));
+        const fuzz = Math.floor(Math.random() * (2 * fuzzRange + 1)) - fuzzRange;
+        newInterval = Math.max(1, newInterval + fuzz);
       }
-      
-      // Aplica multiplicador baseado na qualidade da resposta
-      if (quality === 5) {
-        // Muito fácil - aumenta intervalo em 30%
-        newInterval = Math.round(newInterval * 1.3);
-      } else if (quality === 4) {
-        // Fácil - aumenta intervalo em 15%
-        newInterval = Math.round(newInterval * 1.15);
-      }
-      // quality === 3 (Bom) mantém o intervalo calculado
       
       newRepetitions = repetitions + 1;
       
     } else {
-      // Resposta incorreta (Esqueci completamente, Esqueci ou Difícil)
-      newRepetitions = 0;
-      
-      // Define novo intervalo baseado na dificuldade
-      if (quality === 2) {
-        // Difícil - novo intervalo é 60% do anterior
+      // Resposta incorreta (Again ou Hard)
+      if (response === 'again') {
+        // Again - volta para learning mode
+        newRepetitions = 0;
+        newInterval = 1/1440; // 1 minuto (como no Anki)
+      } else if (response === 'hard') {
+        // Hard - mantém repetições mas reduz intervalo
         newInterval = Math.max(1, Math.round(interval * 0.6));
-      } else if (quality === 1) {
-        // Esqueci - intervalo de 1 dia
-        newInterval = 1;
-      } else {
-        // Esqueci completamente - mostrar novamente em 10 minutos
-        newInterval = 0.007; // ~10 minutos em dias
+        // No hard, não resetamos repetições (diferente do Again)
       }
     }
 
-    // Ajusta o fator de facilidade usando a fórmula SM-2
-    // EF' = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
-    const qFactor = 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02);
-    newEaseFactor = Math.max(1.3, easeFactor + qFactor);
-    
-    // Limita o fator de facilidade máximo
-    newEaseFactor = Math.min(2.5, newEaseFactor);
+    // Ajusta o fator de facilidade usando a fórmula SM-2 adaptada para 4 botões
+    // Anki style: Again(-0.2), Hard(-0.15), Good(+0), Easy(+0.15)
+    const easeAdjustments = { again: -0.2, hard: -0.15, good: 0, easy: 0.15 };
+    newEaseFactor = Math.max(1.3, Math.min(2.5, easeFactor + easeAdjustments[response]));
 
     // Calcula a próxima data de revisão
     const nextReviewDate = new Date();
@@ -639,16 +666,20 @@ export default function FlashcardsPage() {
     };
   };
 
-  const handleAnswer = async (quality: number) => {
+  const handleAnswer = async (response: 'again' | 'hard' | 'good' | 'easy') => {
     if (!currentCard || !studySession) return;
 
     // Atualiza estatísticas da sessão
-    const isCorrect = quality >= 3;
+    const isCorrect = response === 'good' || response === 'easy';
     setSessionStats(prev => ({
       ...prev,
       correct: prev.correct + (isCorrect ? 1 : 0),
       total: prev.total + 1
     }));
+    
+    // Converte resposta para quality number para compatibilidade
+    const qualityMap = { again: 1, hard: 2, good: 3, easy: 4 };
+    const quality = qualityMap[response];
 
     // Gravar sessão de estudo na API
     try {
@@ -664,7 +695,7 @@ export default function FlashcardsPage() {
     }
 
     // Simulação local do SRS para mostrar progressão imediata
-    const updatedSRS = calculateNextReview(quality, currentCard);
+    const updatedSRS = calculateNextReviewAnkiStyle(response, currentCard);
     const updatedCard = {
       ...currentCard,
       interval: updatedSRS.interval,
@@ -1316,13 +1347,24 @@ export default function FlashcardsPage() {
                   </div>
                 </div>
                 
-                {/* Informação adicional */}
-                <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                {/* Informações do Algoritmo Anki-Style */}
+                <div className="mt-4 p-3 bg-gradient-to-r from-gray-50 via-blue-50 to-gray-50 dark:from-gray-800/50 dark:via-blue-900/20 dark:to-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-600 dark:text-gray-400 text-center font-police-body">
                     <Info className="w-3 h-3 inline mr-1" />
-                    INTERVALO: {currentCard?.interval || 0} DIAS • 
-                    FATOR: {(currentCard?.ease_factor || 2.5).toFixed(2)} • 
+                    📊 ALGORITMO ANKI SM-2 • 
+                    INTERVALO: {currentCard?.interval ? (currentCard.interval < 1 ? `${Math.round(currentCard.interval * 1440)} min` : `${currentCard.interval.toFixed(1)} dias`) : '0'} • 
+                    FACILIDADE: {(currentCard?.ease_factor || 2.5).toFixed(2)} • 
                     REPETIÇÕES: {currentCard?.times_studied || 0}
+                  </p>
+                </div>
+                
+                {/* Atalhos de Teclado */}
+                <div className="text-center mt-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-600 font-police-body">
+                    💡 ATALHOS: <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">1</kbd> Novamente • 
+                    <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">2</kbd> Difícil • 
+                    <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">3</kbd> Bom • 
+                    <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">4</kbd> Fácil
                   </p>
                 </div>
               </div>
