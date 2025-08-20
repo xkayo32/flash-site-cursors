@@ -72,7 +72,7 @@ export default function NewFlashcardDeck() {
     difficulty: 'medium',
     isPublic: true,
     tags: '',
-    estimatedCards: 50,
+    estimatedCards: 0,
     objective: '',
     targetAudience: 'concursos',
     studyMethod: 'spaced_repetition',
@@ -413,8 +413,8 @@ export default function NewFlashcardDeck() {
       newErrors.selectedCategories = 'Selecione pelo menos uma categoria';
     }
 
-    if (formData.estimatedCards < 10) {
-      newErrors.estimatedCards = 'O baralho deve ter pelo menos 10 cartões';
+    if (formData.estimatedCards < 0) {
+      newErrors.estimatedCards = 'O número de cartões não pode ser negativo';
     }
 
     setErrors(newErrors);
@@ -475,7 +475,7 @@ export default function NewFlashcardDeck() {
         if (goToAddCards && response.data) {
           // Ir direto para adicionar flashcards
           setTimeout(() => {
-            navigate(`/admin/flashcards/decks/${response.data.id}/cards`);
+            navigate(`/admin/flashcards/${response.data.id}/cards`);
           }, 1500);
         } else {
           // Voltar para lista
@@ -534,15 +534,6 @@ export default function NewFlashcardDeck() {
     return labels[difficulty as keyof typeof labels];
   };
 
-  const getTargetAudienceLabel = (audience: string) => {
-    const labels = {
-      concursos: 'CONCURSOS PÚBLICOS',
-      operacional: 'TREINAMENTO OPERACIONAL',
-      reciclagem: 'RECICLAGEM PROFISSIONAL',
-      especializacao: 'ESPECIALIZAÇÃO'
-    };
-    return labels[audience as keyof typeof labels] || audience.toUpperCase();
-  };
 
   const getStudyMethodLabel = (method: string) => {
     const labels = {
@@ -1239,22 +1230,6 @@ export default function NewFlashcardDeck() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-                    PÚBLICO ALVO
-                  </label>
-                  <select
-                    value={formData.targetAudience}
-                    onChange={(e) => handleInputChange('targetAudience', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
-                  >
-                    <option value="concursos">CONCURSOS PÚBLICOS</option>
-                    <option value="operacional">TREINAMENTO OPERACIONAL</option>
-                    <option value="reciclagem">RECICLAGEM PROFISSIONAL</option>
-                    <option value="especializacao">ESPECIALIZAÇÃO</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
                     MÉTODO DE ESTUDO
                   </label>
                   <select
@@ -1262,69 +1237,69 @@ export default function NewFlashcardDeck() {
                     onChange={(e) => handleInputChange('studyMethod', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                   >
-                    <option value="spaced_repetition">REPETIÇÃO ESPAÇADA</option>
+                    <option value="spaced_repetition">REPETIÇÃO ESPAÇADA (SM-2)</option>
                     <option value="active_recall">RECORDAÇÃO ATIVA</option>
-                    <option value="flashcards">FLASHCARDS TRADICIONAL</option>
-                    <option value="mixed">MÉTODO MISTO</option>
+                    <option value="pomodoro">TÉCNICA POMODORO</option>
+                    <option value="traditional">TRADICIONAL</option>
                   </select>
+                  <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {formData.studyMethod === 'spaced_repetition' && 'Algoritmo SuperMemo 2 otimizado para memorização'}
+                    {formData.studyMethod === 'active_recall' && 'Prática de recuperação ativa da memória'}
+                    {formData.studyMethod === 'pomodoro' && 'Sessões de 25min com pausas de 5min'}
+                    {formData.studyMethod === 'traditional' && 'Estudo contínuo sem algoritmos especiais'}
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-                    NÚMERO ESTIMADO DE CARTÕES *
+                    NÚMERO MÁXIMO DE CARTÕES
                   </label>
                   <input
                     type="number"
                     value={formData.estimatedCards}
                     onChange={(e) => handleInputChange('estimatedCards', parseInt(e.target.value) || 0)}
-                    min="10"
-                    max="1000"
-                    className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all ${
-                      errors.estimatedCards ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
+                    min="0"
+                    max="10000"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-numbers focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                    placeholder="0 = ilimitado"
                   />
-                  {errors.estimatedCards && (
-                    <p className="mt-1 text-sm text-red-600 font-police-body flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.estimatedCards}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-                    VISIBILIDADE
-                  </label>
-                  <div className="flex items-center gap-4 mt-3">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="visibility"
-                        checked={formData.isPublic}
-                        onChange={() => handleInputChange('isPublic', true)}
-                        className="text-accent-500 focus:ring-accent-500"
-                      />
-                      <span className="font-police-body text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                        <Globe className="w-4 h-4" />
-                        PÚBLICO
-                      </span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="visibility"
-                        checked={!formData.isPublic}
-                        onChange={() => handleInputChange('isPublic', false)}
-                        className="text-accent-500 focus:ring-accent-500"
-                      />
-                      <span className="font-police-body text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                        <Lock className="w-4 h-4" />
-                        PRIVADO
-                      </span>
-                    </label>
+                  <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    0 = ilimitado, outros valores definem limite máximo
                   </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                  VISIBILIDADE
+                </label>
+                <div className="flex items-center gap-4 mt-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="visibility"
+                      checked={formData.isPublic}
+                      onChange={() => handleInputChange('isPublic', true)}
+                      className="text-accent-500 focus:ring-accent-500"
+                    />
+                    <span className="font-police-body text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                      <Globe className="w-4 h-4" />
+                      PÚBLICO
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="visibility"
+                      checked={!formData.isPublic}
+                      onChange={() => handleInputChange('isPublic', false)}
+                      className="text-accent-500 focus:ring-accent-500"
+                    />
+                    <span className="font-police-body text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                      <Lock className="w-4 h-4" />
+                      PRIVADO
+                    </span>
+                  </label>
                 </div>
               </div>
 
@@ -1480,8 +1455,8 @@ export default function NewFlashcardDeck() {
                   </h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">Público Alvo:</span>
-                      <span className="font-police-body text-gray-900 dark:text-white uppercase">{getTargetAudienceLabel(formData.targetAudience)}</span>
+                      <span className="font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">Cartões:</span>
+                      <span className="font-police-body text-gray-900 dark:text-white uppercase">{formData.estimatedCards === 0 ? 'ILIMITADO' : formData.estimatedCards}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">Método:</span>
