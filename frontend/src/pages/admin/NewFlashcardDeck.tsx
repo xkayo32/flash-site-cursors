@@ -24,7 +24,8 @@ import {
   FolderPlus,
   Loader2,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -32,6 +33,7 @@ import { Badge } from '@/components/ui/Badge';
 import { categoryService, Category, CategoryType } from '@/services/categoryService';
 import { flashcardDeckService, CreateDeckData } from '@/services/flashcardDeckService';
 import ClozeEditor from '@/components/ClozeEditor';
+import ImageUploader from '@/components/ImageUploader';
 import toast from 'react-hot-toast';
 
 const difficulties = ['easy', 'medium', 'hard'];
@@ -113,6 +115,7 @@ export default function NewFlashcardDeck() {
     header: '',     // Contexto/cabeçalho do card
     source: '',     // Fonte/referência
     comments: '',   // Notas privadas (não aparecem no estudo)
+    images: [] as string[],  // URLs das imagens anexadas
     difficulty: 'medium',
     tags: [] as string[]
   });
@@ -302,6 +305,7 @@ export default function NewFlashcardDeck() {
       header: '',
       source: '',
       comments: '',
+      images: [],
       difficulty: 'medium',
       tags: []
     });
@@ -330,6 +334,7 @@ export default function NewFlashcardDeck() {
       header: '',
       source: '',
       comments: '',
+      images: [],
       difficulty: 'medium',
       tags: []
     });
@@ -2179,6 +2184,20 @@ export default function NewFlashcardDeck() {
                         placeholder="Notas para você (não aparecem no estudo)..."
                       />
                     </div>
+                  </div>
+                  
+                  {/* Upload de Imagens */}
+                  <div className="space-y-2">
+                    <h5 className="font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 text-sm font-semibold flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-accent-500" />
+                      IMAGENS DO FLASHCARD
+                    </h5>
+                    <ImageUploader
+                      value={currentFlashcardForm.images}
+                      onChange={(images) => setCurrentFlashcardForm(prev => ({ ...prev, images }))}
+                      maxImages={3}
+                      maxSizeInMB={5}
+                    />
                   </div>
                   
                   <div className="flex gap-3">
