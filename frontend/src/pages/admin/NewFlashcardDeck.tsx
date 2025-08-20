@@ -25,7 +25,9 @@ import {
   Loader2,
   ChevronRight,
   ChevronDown,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Upload,
+  Download
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -34,6 +36,7 @@ import { categoryService, Category, CategoryType } from '@/services/categoryServ
 import { flashcardDeckService, CreateDeckData } from '@/services/flashcardDeckService';
 import ClozeEditor from '@/components/ClozeEditor';
 import ImageUploader from '@/components/ImageUploader';
+import AnkiImportExport from '@/components/AnkiImportExport';
 import toast from 'react-hot-toast';
 
 const difficulties = ['easy', 'medium', 'hard'];
@@ -122,7 +125,7 @@ export default function NewFlashcardDeck() {
   const [editingFlashcardIndex, setEditingFlashcardIndex] = useState<number | null>(null);
   
   // Estado para importação de flashcards existentes
-  const [activeTab, setActiveTab] = useState<'create' | 'import' | null>(null);
+  const [activeTab, setActiveTab] = useState<'create' | 'import' | 'anki' | null>(null);
   const [availableFlashcards, setAvailableFlashcards] = useState<any[]>([]);
   const [loadingFlashcards, setLoadingFlashcards] = useState(false);
   const [flashcardFilters, setFlashcardFilters] = useState({
@@ -1930,7 +1933,7 @@ export default function NewFlashcardDeck() {
                 <h4 className="font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4 text-center">
                   🎯 ESCOLHA O MODO DE OPERAÇÃO:
                 </h4>
-                <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+                <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto">
                   <button
                     onClick={() => setActiveTab('create')}
                     className={`p-6 rounded-xl border-2 transition-all duration-300 ${
@@ -1994,6 +1997,49 @@ export default function NewFlashcardDeck() {
                         Selecione flashcards já criados no sistema
                       </p>
                       {activeTab === 'import' && (
+                        <div className="mt-3 flex items-center justify-center gap-2 text-accent-600 dark:text-accent-400">
+                          <CheckCircle className="w-4 h-4" />
+                          <span className="text-xs font-police-body uppercase tracking-wider font-semibold">MODO ATIVO</span>
+                        </div>
+                      )}
+                      {activeTab === null && (
+                        <div className="mt-3 text-xs font-police-body text-gray-500 dark:text-gray-500 uppercase tracking-wider">
+                          Clique para selecionar
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => setActiveTab('anki')}
+                    className={`p-6 rounded-xl border-2 transition-all duration-300 ${
+                      activeTab === 'anki'
+                        ? 'border-accent-500 bg-accent-50 dark:bg-accent-900/20 shadow-lg'
+                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/50 hover:border-accent-300 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+                        activeTab === 'anki' ? 'bg-accent-500' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}>
+                        <div className="flex items-center justify-center">
+                          <Upload className={`w-4 h-4 ${
+                            activeTab === 'anki' ? 'text-black' : 'text-gray-600 dark:text-gray-400'
+                          }`} />
+                          <Download className={`w-4 h-4 ${
+                            activeTab === 'anki' ? 'text-black' : 'text-gray-600 dark:text-gray-400'
+                          }`} />
+                        </div>
+                      </div>
+                      <h3 className={`font-police-subtitle uppercase tracking-wider text-lg font-bold mb-2 ${
+                        activeTab === 'anki' ? 'text-accent-600 dark:text-accent-400' : 'text-gray-700 dark:text-gray-300'
+                      }`}>
+                        IMPORTAR/EXPORTAR ANKI
+                      </h3>
+                      <p className="text-sm font-police-body text-gray-600 dark:text-gray-400">
+                        Importar ou exportar formato Anki (.json, .csv)
+                      </p>
+                      {activeTab === 'anki' && (
                         <div className="mt-3 flex items-center justify-center gap-2 text-accent-600 dark:text-accent-400">
                           <CheckCircle className="w-4 h-4" />
                           <span className="text-xs font-police-body uppercase tracking-wider font-semibold">MODO ATIVO</span>
@@ -2309,7 +2355,7 @@ export default function NewFlashcardDeck() {
                   )}
                 </div>
               </div>
-              ) : (
+              ) : activeTab === 'import' ? (
                 /* Aba de Importação de Flashcards Existentes */
                 <div className="space-y-6">
                   {/* Filtros de Busca */}
@@ -2480,7 +2526,32 @@ export default function NewFlashcardDeck() {
                     </div>
                   )}
                 </div>
-              )}
+              ) : activeTab === 'anki' ? (
+                /* Aba de Importação/Exportação Anki */
+                <div className="space-y-6">
+                  <AnkiImportExport
+                    flashcards={deckFlashcards}
+                    deckName={formData.title || 'Meu Deck'}
+                    onImport={(importedCards) => {
+                      // Adicionar os flashcards importados ao deck
+                      const newCards = importedCards.map(card => ({
+                        ...card,
+                        id: `imported_${Date.now()}_${Math.random()}`,
+                        created_at: new Date().toISOString()
+                      }));
+                      setDeckFlashcards(prev => [...prev, ...newCards]);
+                      toast.success(`${newCards.length} flashcards importados com sucesso!`);
+                      // Voltar para a aba de criação para ver os cards importados
+                      setActiveTab('create');
+                    }}
+                    onExport={() => {
+                      toast.success('Flashcards exportados com sucesso!');
+                    }}
+                    showImport={true}
+                    showExport={deckFlashcards.length > 0}
+                  />
+                </div>
+              ) : null}
               
               {/* Resumo do Arsenal (sempre visível) */}
               {deckFlashcards.length > 0 && (
