@@ -4,7 +4,7 @@
 // - media (arquivo JSON com mapeamento de mídia)
 // - arquivos de mídia (0, 1, 2, etc.)
 
-import JSZip from 'jszip';
+import * as JSZip from 'jszip';
 
 // Estrutura do banco de dados Anki
 interface AnkiCollection {
