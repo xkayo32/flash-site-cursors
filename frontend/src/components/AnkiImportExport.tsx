@@ -14,6 +14,8 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ankiExporter, ankiImporter, ExportOptions } from '@/utils/ankiExporter';
+import { exportToApkg } from '@/utils/ankiApkgExporter';
+import { importFromApkg } from '@/utils/ankiApkgImporter';
 import toast from 'react-hot-toast';
 
 interface AnkiImportExportProps {
@@ -35,7 +37,7 @@ export default function AnkiImportExport({
 }: AnkiImportExportProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const [exportFormat, setExportFormat] = useState<'json' | 'csv' | 'anki'>('json');
+  const [exportFormat, setExportFormat] = useState<'json' | 'csv' | 'anki' | 'apkg'>('json');
   const [importPreview, setImportPreview] = useState<any[] | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -49,15 +51,22 @@ export default function AnkiImportExport({
 
     setIsExporting(true);
     try {
-      const options: ExportOptions = {
-        format: exportFormat,
-        includeMedia: true,
-        includeSRS: true
-      };
+      if (exportFormat === 'apkg') {
+        // Exportar para formato .apkg real
+        await exportToApkg(flashcards, deckName);
+        toast.success(`${flashcards.length} flashcards exportados para .apkg com sucesso!`);
+      } else {
+        // Exportar para outros formatos
+        const options: ExportOptions = {
+          format: exportFormat as 'json' | 'csv' | 'anki',
+          includeMedia: true,
+          includeSRS: true
+        };
 
-      await ankiExporter.exportDeck(flashcards, deckName, options);
+        await ankiExporter.exportDeck(flashcards, deckName, options);
+        toast.success(`${flashcards.length} flashcards exportados com sucesso!`);
+      }
       
-      toast.success(`${flashcards.length} flashcards exportados com sucesso!`);
       onExport?.();
     } catch (error) {
       console.error('Erro ao exportar:', error);
@@ -74,7 +83,16 @@ export default function AnkiImportExport({
 
     setIsImporting(true);
     try {
-      const imported = await ankiImporter.importFile(file);
+      let imported: any[] = [];
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      
+      if (extension === 'apkg') {
+        // Importar arquivo .apkg
+        imported = await importFromApkg(file);
+      } else {
+        // Importar outros formatos
+        imported = await ankiImporter.importFile(file);
+      }
       
       if (imported.length > 0) {
         setImportPreview(imported);
@@ -143,7 +161,7 @@ export default function AnkiImportExport({
               <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
                 FORMATO DE EXPORTAÇÃO
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 <button
                   onClick={() => setExportFormat('json')}
                   className={`p-3 rounded-lg border-2 transition-all ${
@@ -179,6 +197,18 @@ export default function AnkiImportExport({
                   <Package className="w-6 h-6 mx-auto mb-1 text-blue-600" />
                   <span className="text-xs font-police-body uppercase">ANKI</span>
                 </button>
+                
+                <button
+                  onClick={() => setExportFormat('apkg')}
+                  className={`p-3 rounded-lg border-2 transition-all ${
+                    exportFormat === 'apkg'
+                      ? 'border-accent-500 bg-accent-50 dark:bg-accent-900/20'
+                      : 'border-gray-300 dark:border-gray-600 hover:border-accent-300'
+                  }`}
+                >
+                  <Package className="w-6 h-6 mx-auto mb-1 text-purple-600" />
+                  <span className="text-xs font-police-body uppercase">.APKG</span>
+                </button>
               </div>
             </div>
 
@@ -191,6 +221,7 @@ export default function AnkiImportExport({
                     <li>• <strong>JSON:</strong> Formato completo com todos os dados</li>
                     <li>• <strong>CSV:</strong> Compatível com Excel/Google Sheets</li>
                     <li>• <strong>ANKI:</strong> JSON compatível com estrutura Anki</li>
+                    <li>• <strong>.APKG:</strong> Formato nativo do Anki (importação direta)</li>
                   </ul>
                 </div>
               </div>
@@ -235,7 +266,7 @@ export default function AnkiImportExport({
             <input
               ref={fileInputRef}
               type="file"
-              accept=".json,.csv,.ankijson"
+              accept=".json,.csv,.ankijson,.apkg"
               onChange={handleFileSelect}
               className="hidden"
             />
@@ -249,7 +280,7 @@ export default function AnkiImportExport({
                 CLIQUE PARA SELECIONAR ARQUIVO
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 font-police-body">
-                Formatos aceitos: JSON, CSV, ANKIJSON
+                Formatos aceitos: JSON, CSV, ANKIJSON, APKG
               </p>
             </div>
 
