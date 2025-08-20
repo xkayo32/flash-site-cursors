@@ -47,6 +47,7 @@ const menuItems = [
   { icon: Calendar, label: 'CRONOGRAMA TÁTICO', path: '/schedule' },
   { icon: Target, label: 'SIMULAÇÕES TÁTICAS', path: '/simulations' },
   { icon: Flame, label: 'CARTÕES TÁTICOS', path: '/flashcards' },
+  { icon: Shield, label: 'MEU ARSENAL', path: '/my-flashcards' },
   { icon: Crosshair, label: 'EXERCÍCIOS TÁTICOS', path: '/questions' },
   { icon: Archive, label: 'ARQUIVO DE PROVAS', path: '/previous-exams' },
   { icon: FileCheck, label: 'BRIEFINGS INTERATIVOS', path: '/summaries' },

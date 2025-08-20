@@ -129,10 +129,11 @@ class FlashcardDeckService {
   }
 
   // Get user's own decks
-  async getUserDecks(): Promise<FlashcardDeck[]> {
+  async getUserDecks(userId?: string): Promise<FlashcardDeck[]> {
     const result = await this.getDecks();
-    const userId = localStorage.getItem('userId'); // Assume we store user ID
-    return result.data.filter(deck => deck.owner_id === userId);
+    const actualUserId = userId || localStorage.getItem('userId'); // Use provided ID or stored ID
+    if (!actualUserId) return [];
+    return result.data.filter(deck => deck.owner_id === actualUserId);
   }
 
   // Get public decks

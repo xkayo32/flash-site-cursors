@@ -54,6 +54,8 @@ export default function IndividualFlashcards() {
   const [selectedDifficulty, setSelectedDifficulty] = useState('Todos');
   const [selectedStatus, setSelectedStatus] = useState('Todos');
   const [selectedType, setSelectedType] = useState('Todos');
+  const [selectedAuthor, setSelectedAuthor] = useState('Todos');
+  const [availableAuthors, setAvailableAuthors] = useState<{id: string, name: string}[]>([]);
   const [selectedCards, setSelectedCards] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
@@ -74,7 +76,8 @@ export default function IndividualFlashcards() {
     loadFlashcards();
     loadStats();
     loadCategories();
-  }, [currentPage, selectedCategory, selectedSubcategory, selectedDifficulty, selectedStatus, selectedType, searchTerm]);
+    loadAuthors();
+  }, [currentPage, selectedCategory, selectedSubcategory, selectedDifficulty, selectedStatus, selectedType, selectedAuthor, searchTerm]);
   
   const loadCategories = async () => {
     try {
@@ -92,6 +95,18 @@ export default function IndividualFlashcards() {
     }
   };
 
+  const loadAuthors = async () => {
+    try {
+      const response = await flashcardService.getFilterOptions();
+      if (response.success && response.data.authors) {
+        setAvailableAuthors(response.data.authors);
+      }
+    } catch (err) {
+      console.error('Error loading authors:', err);
+      setAvailableAuthors([]);
+    }
+  };
+
   const loadFlashcards = async () => {
     try {
       setIsLoading(true);
@@ -103,7 +118,8 @@ export default function IndividualFlashcards() {
         subcategory: selectedSubcategory !== 'Todas' ? selectedSubcategory : undefined,
         difficulty: selectedDifficulty !== 'Todos' ? selectedDifficulty as any : undefined,
         type: selectedType !== 'Todos' ? selectedType as any : undefined,
-        status: selectedStatus !== 'Todos' ? selectedStatus as any : undefined
+        status: selectedStatus !== 'Todos' ? selectedStatus as any : undefined,
+        author_id: selectedAuthor !== 'Todos' ? selectedAuthor : undefined
       };
 
       const response = await flashcardService.getFlashcards(filters);
@@ -534,7 +550,7 @@ export default function IndividualFlashcards() {
               </div>
 
               {/* Second Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
                 <select
                   value={selectedCategory}
                   onChange={(e) => handleCategoryChange(e.target.value)}
@@ -597,6 +613,19 @@ export default function IndividualFlashcards() {
                   ))}
                 </select>
 
+                <select
+                  value={selectedAuthor}
+                  onChange={(e) => setSelectedAuthor(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                >
+                  <option value="Todos">AUTOR</option>
+                  {availableAuthors.map(author => (
+                    <option key={author.id} value={author.id}>
+                      {author.name.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -606,6 +635,7 @@ export default function IndividualFlashcards() {
                     setSelectedType('Todos');
                     setSelectedDifficulty('Todos');
                     setSelectedStatus('Todos');
+                    setSelectedAuthor('Todos');
                   }}
                   className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
                 >

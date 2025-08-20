@@ -17,6 +17,8 @@ import CourseLearningPage from './pages/student/CourseLearningPage';
 import ExamTakingPageNew from './pages/student/ExamTakingPageNew';
 import ExamResultsPage from './pages/student/ExamResultsPage';
 import FlashcardsPage from './pages/student/FlashcardsPage';
+import MyFlashcards from './pages/student/MyFlashcards';
+import NewStudentFlashcard from './pages/student/NewStudentFlashcard';
 import SchedulePage from './pages/student/SchedulePage';
 import QuestionsPage from './pages/student/QuestionsPage';
 import SummariesPage from './pages/student/SummariesPage';
@@ -156,6 +158,9 @@ function Router() {
         <Route path="/exam/:attemptId" element={<ExamAttemptPage />} />
         <Route path="/exam-results/:attemptId" element={<ExamResultsDetailPage />} />
         <Route path="/flashcards" element={<FlashcardsPage />} />
+        <Route path="/my-flashcards" element={<MyFlashcards />} />
+        <Route path="/student/flashcards/new" element={<NewStudentFlashcard />} />
+        <Route path="/student/flashcards/:id/edit" element={<NewStudentFlashcard />} />
         <Route path="/questions" element={<QuestionsPage />} />
         <Route path="/previous-exams" element={<PreviousExamsMilitary />} />
         <Route path="/summaries" element={<SummariesPage />} />
