@@ -1,5 +1,5 @@
 // Utilitário para importar flashcards de formato .apkg (Anki Package)
-import * as JSZip from 'jszip';
+import JSZip from 'jszip';
 
 class AnkiApkgImporter {
   private zip: JSZip;
