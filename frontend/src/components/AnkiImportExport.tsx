@@ -14,8 +14,8 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ankiExporter, ankiImporter, ExportOptions } from '@/utils/ankiExporter';
-import { exportToApkg } from '@/utils/ankiApkgExporter';
-import { importFromApkg } from '@/utils/ankiApkgImporter';
+import { ankiApkgExporter } from '@/utils/ankiApkgExporter';
+import { ankiApkgImporter } from '@/utils/ankiApkgImporter';
 import toast from 'react-hot-toast';
 
 interface AnkiImportExportProps {
@@ -52,9 +52,15 @@ export default function AnkiImportExport({
     setIsExporting(true);
     try {
       if (exportFormat === 'apkg') {
-        // Exportar para formato .apkg real
-        await exportToApkg(flashcards, deckName);
-        toast.success(`${flashcards.length} flashcards exportados para .apkg com sucesso!`);
+        // Exportar para formato JSON (APKG temporariamente indisponível)
+        const blob = await ankiApkgExporter.exportToApkg(flashcards, deckName);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${deckName}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success(`${flashcards.length} flashcards exportados como JSON (APKG temporariamente indisponível)`);
       } else {
         // Exportar para outros formatos
         const options: ExportOptions = {
@@ -87,8 +93,8 @@ export default function AnkiImportExport({
       const extension = file.name.split('.').pop()?.toLowerCase();
       
       if (extension === 'apkg') {
-        // Importar arquivo .apkg
-        imported = await importFromApkg(file);
+        // Importar arquivo .apkg (versão simplificada)
+        imported = await ankiApkgImporter.importApkg(file);
       } else {
         // Importar outros formatos
         imported = await ankiImporter.importFile(file);

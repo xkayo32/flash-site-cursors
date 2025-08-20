@@ -59,22 +59,13 @@ interface AnkiCard {
 }
 
 class AnkiApkgExporter {
-  private zip: any;
   private mediaFiles: Map<string, string>;
   private mediaCounter: number;
   
   constructor() {
     this.mediaFiles = new Map();
     this.mediaCounter = 0;
-    // Inicialização do zip será feita dinamicamente
-  }
-
-  private async initializeZip() {
-    if (!this.zip) {
-      const JSZip = (await import('jszip')).default;
-      this.zip = new JSZip();
-    }
-    return this.zip;
+    // Versão simplificada sem JSZip para evitar problemas
   }
 
   // Gerar ID único baseado em timestamp
@@ -301,33 +292,37 @@ class AnkiApkgExporter {
     return JSON.stringify(media);
   }
 
-  // Exportar para formato .apkg
+  // Exportar para formato .apkg (versão simplificada - retorna JSON)
   async exportToApkg(flashcards: any[], deckName: string): Promise<Blob> {
-    // Inicializar ZIP dinamicamente
-    await this.initializeZip();
-    
-    // Resetar contadores
-    this.mediaFiles.clear();
-    this.mediaCounter = 0;
-    
-    // Criar banco de dados
-    const database = this.createDatabase(flashcards, deckName);
-    
-    // Adicionar banco ao ZIP (simulado como JSON por enquanto)
-    this.zip.file('collection.anki2', database);
-    
-    // Adicionar arquivo de mídia
-    const mediaFile = this.createMediaFile();
-    this.zip.file('media', mediaFile);
-    
-    // Adicionar arquivos de mídia
-    this.mediaFiles.forEach((data, name) => {
-      this.zip.file(name, data, { base64: true });
-    });
-    
-    // Gerar arquivo ZIP
-    const blob = await this.zip.generateAsync({ type: 'blob' });
+    // Temporariamente indisponível devido a problemas com JSZip
+    // Retornando JSON como alternativa
+    const jsonData = this.exportToJson(flashcards, deckName);
+    const blob = new Blob([jsonData], { type: 'application/json' });
     return blob;
+  }
+
+  // Exportar para formato JSON
+  exportToJson(flashcards: any[], deckName: string): string {
+    const exportData = {
+      deck_name: deckName,
+      created_at: new Date().toISOString(),
+      flashcards: flashcards.map(card => ({
+        id: card.id,
+        type: card.type,
+        front: card.front,
+        back: card.back,
+        extra: card.extra,
+        hint: card.hint,
+        category: card.category,
+        subcategory: card.subcategory,
+        difficulty: card.difficulty,
+        tags: card.tags,
+        images: card.images,
+        created_at: card.created_at
+      }))
+    };
+    
+    return JSON.stringify(exportData, null, 2);
   }
 
   // Método auxiliar para download

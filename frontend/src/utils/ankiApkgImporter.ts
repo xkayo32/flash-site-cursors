@@ -1,15 +1,7 @@
-// Utilitário para importar flashcards de formato .apkg (Anki Package)
+// Utilitário para importar flashcards (versão simplificada sem JSZip)
 class AnkiApkgImporter {
-  private zip: any;
-  
   constructor() {
-    // Importação dinâmica para evitar problemas com Vite
-    this.initializeZip();
-  }
-
-  private async initializeZip() {
-    const JSZip = (await import('jszip')).default;
-    this.zip = new JSZip();
+    // Versão simplificada sem JSZip para evitar problemas de compatibilidade
   }
 
   // Converter campos Anki para nosso formato
@@ -83,67 +75,26 @@ class AnkiApkgImporter {
     }
   }
 
-  // Importar arquivo .apkg
+  // Importar arquivo .apkg (versão simplificada - apenas JSON)
   async importApkg(file: File): Promise<any[]> {
     try {
-      // Garantir que o zip está inicializado
-      if (!this.zip) {
-        const JSZip = (await import('jszip')).default;
-        this.zip = new JSZip();
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      
+      if (extension === 'apkg') {
+        // Por enquanto, .apkg não é suportado devido a problemas com JSZip
+        throw new Error('Arquivos .apkg temporariamente indisponíveis. Use formato JSON ou CSV.');
       }
       
-      // Carregar arquivo ZIP
-      const zipContent = await file.arrayBuffer();
-      await this.zip.loadAsync(zipContent);
+      // Tentar ler como texto (JSON/CSV)
+      const content = await file.text();
       
-      // Procurar arquivo de banco de dados
-      const dbFile = this.zip.file('collection.anki2') || 
-                     this.zip.file('collection.anki21') ||
-                     this.zip.file('collection.json'); // Para nosso formato simulado
-      
-      if (!dbFile) {
-        throw new Error('No Anki collection found in .apkg file');
+      if (extension === 'json') {
+        return this.importJson(content);
       }
       
-      // Ler conteúdo do banco
-      const dbContent = await dbFile.async('string');
-      
-      // Processar banco de dados
-      const flashcards = this.processDatabase(dbContent);
-      
-      // Processar mídia se houver
-      const mediaFile = this.zip.file('media');
-      if (mediaFile) {
-        const mediaContent = await mediaFile.async('string');
-        try {
-          const mediaMap = JSON.parse(mediaContent);
-          
-          // Adicionar referências de mídia aos flashcards
-          for (const [mediaId, mediaName] of Object.entries(mediaMap)) {
-            const mediaData = this.zip.file(mediaId);
-            if (mediaData) {
-              const base64 = await mediaData.async('base64');
-              // Adicionar mídia aos flashcards relevantes
-              flashcards.forEach(card => {
-                if (card.back && card.back.includes(mediaId)) {
-                  if (!card.images) card.images = [];
-                  card.images.push(`data:image/png;base64,${base64}`);
-                  card.back = card.back.replace(
-                    `<img src="${mediaId}">`,
-                    '[Imagem anexada]'
-                  );
-                }
-              });
-            }
-          }
-        } catch (e) {
-          console.warn('Could not process media file:', e);
-        }
-      }
-      
-      return flashcards;
+      throw new Error('Formato não suportado. Use JSON por enquanto.');
     } catch (error) {
-      console.error('Error importing .apkg file:', error);
+      console.error('Error importing file:', error);
       throw error;
     }
   }

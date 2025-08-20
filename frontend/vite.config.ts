@@ -17,12 +17,5 @@ export default defineConfig({
       usePolling: true, // Necessário para hot reload no Docker
     },
   },
-  optimizeDeps: {
-    include: ['jszip']
-  },
-  build: {
-    commonjsOptions: {
-      include: [/jszip/, /node_modules/]
-    }
-  }
+  // JSZip removido - causava problemas de compatibilidade
 })
