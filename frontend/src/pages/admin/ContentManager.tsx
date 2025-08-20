@@ -934,7 +934,7 @@ export default function ContentManager() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredContent.map((item) => {
+                  {filteredContent.map((item, index) => {
                     const TypeIcon = getTypeIcon(item.type);
                     return (
                       <tr
