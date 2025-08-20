@@ -1,10 +1,14 @@
 // Utilitário para importar flashcards de formato .apkg (Anki Package)
-import JSZip from 'jszip';
-
 class AnkiApkgImporter {
-  private zip: JSZip;
+  private zip: any;
   
   constructor() {
+    // Importação dinâmica para evitar problemas com Vite
+    this.initializeZip();
+  }
+
+  private async initializeZip() {
+    const JSZip = (await import('jszip')).default;
     this.zip = new JSZip();
   }
 
@@ -82,6 +86,12 @@ class AnkiApkgImporter {
   // Importar arquivo .apkg
   async importApkg(file: File): Promise<any[]> {
     try {
+      // Garantir que o zip está inicializado
+      if (!this.zip) {
+        const JSZip = (await import('jszip')).default;
+        this.zip = new JSZip();
+      }
+      
       // Carregar arquivo ZIP
       const zipContent = await file.arrayBuffer();
       await this.zip.loadAsync(zipContent);

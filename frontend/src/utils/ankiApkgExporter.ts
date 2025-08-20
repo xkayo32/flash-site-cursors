@@ -4,7 +4,7 @@
 // - media (arquivo JSON com mapeamento de mídia)
 // - arquivos de mídia (0, 1, 2, etc.)
 
-import JSZip from 'jszip';
+// Import dinâmico para evitar problemas com Vite
 
 // Estrutura do banco de dados Anki
 interface AnkiCollection {
@@ -59,14 +59,22 @@ interface AnkiCard {
 }
 
 class AnkiApkgExporter {
-  private zip: JSZip;
+  private zip: any;
   private mediaFiles: Map<string, string>;
   private mediaCounter: number;
   
   constructor() {
-    this.zip = new JSZip();
     this.mediaFiles = new Map();
     this.mediaCounter = 0;
+    // Inicialização do zip será feita dinamicamente
+  }
+
+  private async initializeZip() {
+    if (!this.zip) {
+      const JSZip = (await import('jszip')).default;
+      this.zip = new JSZip();
+    }
+    return this.zip;
   }
 
   // Gerar ID único baseado em timestamp
@@ -295,6 +303,9 @@ class AnkiApkgExporter {
 
   // Exportar para formato .apkg
   async exportToApkg(flashcards: any[], deckName: string): Promise<Blob> {
+    // Inicializar ZIP dinamicamente
+    await this.initializeZip();
+    
     // Resetar contadores
     this.mediaFiles.clear();
     this.mediaCounter = 0;
