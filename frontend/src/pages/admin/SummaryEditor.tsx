@@ -47,6 +47,8 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { summaryService, type Summary } from '@/services/summaryService';
 import { categoryService, type Category } from '@/services/categoryService';
+import { flashcardService } from '@/services/flashcardService';
+import { questionService } from '@/services/questionService';
 import toast from 'react-hot-toast';
 
 // Mock data for available questions and flashcards (mantido para funcionalidades do editor)
@@ -155,6 +157,11 @@ export default function SummaryEditor() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // State para flashcards e questões
+  const [realFlashcards, setRealFlashcards] = useState<any[]>([]);
+  const [realQuestions, setRealQuestions] = useState<any[]>([]);
+  const [loadingEmbedData, setLoadingEmbedData] = useState(false);
+  
   // Carregar dados da API
   useEffect(() => {
     loadSummaries();
@@ -256,12 +263,123 @@ export default function SummaryEditor() {
     if (action === 'embedQuestion') {
       setEmbedType('question');
       setShowEmbedModal(true);
+      loadQuestions();
     } else if (action === 'embedFlashcard') {
       setEmbedType('flashcard');
       setShowEmbedModal(true);
+      loadFlashcards();
     } else {
-      // Handle other toolbar actions
+      // Implementar formatação do texto
+      applyFormat(action);
     }
+  };
+
+  const loadFlashcards = async () => {
+    try {
+      setLoadingEmbedData(true);
+      const response = await flashcardService.getFlashcards({ limit: 50 });
+      if (response.success) {
+        setRealFlashcards(response.data || []);
+      }
+    } catch (error) {
+      console.error('Error loading flashcards:', error);
+      toast.error('Erro ao carregar flashcards');
+    } finally {
+      setLoadingEmbedData(false);
+    }
+  };
+
+  const loadQuestions = async () => {
+    try {
+      setLoadingEmbedData(true);
+      const response = await questionService.getQuestions({ limit: 50 });
+      if (response.success) {
+        setRealQuestions(response.data || []);
+      }
+    } catch (error) {
+      console.error('Error loading questions:', error);
+      toast.error('Erro ao carregar questões');
+      // Usar questões mock como fallback
+      setRealQuestions(availableQuestions);
+    } finally {
+      setLoadingEmbedData(false);
+    }
+  };
+
+  const applyFormat = (command: string) => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    // Focar no editor antes de aplicar formatação
+    const editor = document.querySelector('[contentEditable="true"]') as HTMLElement;
+    if (editor) {
+      editor.focus();
+    }
+
+    switch (command) {
+      case 'bold':
+        document.execCommand('bold', false);
+        break;
+      case 'italic':
+        document.execCommand('italic', false);
+        break;
+      case 'underline':
+        document.execCommand('underline', false);
+        break;
+      case 'list':
+        document.execCommand('insertUnorderedList', false);
+        break;
+      case 'orderedList':
+        document.execCommand('insertOrderedList', false);
+        break;
+      case 'heading':
+        // Transformar em H2
+        document.execCommand('formatBlock', false, 'H2');
+        break;
+      case 'quote':
+        document.execCommand('formatBlock', false, 'blockquote');
+        break;
+      case 'alignLeft':
+        document.execCommand('justifyLeft', false);
+        break;
+      case 'alignCenter':
+        document.execCommand('justifyCenter', false);
+        break;
+      case 'alignRight':
+        document.execCommand('justifyRight', false);
+        break;
+      case 'link':
+        const url = prompt('Digite a URL:');
+        if (url) {
+          document.execCommand('createLink', false, url);
+        }
+        break;
+      case 'image':
+        const imageUrl = prompt('Digite a URL da imagem:');
+        if (imageUrl) {
+          document.execCommand('insertImage', false, imageUrl);
+        }
+        break;
+      case 'code':
+        // Envolver seleção em tag code
+        const range = selection.getRangeAt(0);
+        const selectedText = range.toString();
+        range.deleteContents();
+        const codeElement = document.createElement('code');
+        codeElement.textContent = selectedText;
+        codeElement.className = 'bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm font-mono';
+        range.insertNode(codeElement);
+        break;
+      default:
+        console.log('Comando não implementado:', command);
+    }
+
+    // Atualizar o estado do editor
+    setTimeout(() => {
+      if (editor) {
+        setEditorContent(editor.innerHTML);
+      }
+    }, 10);
   };
 
   const handleEmbedItem = (item: any) => {
@@ -756,7 +874,16 @@ export default function SummaryEditor() {
                           
                           <div
                             contentEditable={isEditing}
-                            className="min-h-[500px] p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white prose prose-lg dark:prose-invert max-w-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="min-h-[500px] p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-primary-900 dark:text-white prose prose-lg dark:prose-invert max-w-none focus:outline-none focus:ring-2 focus:ring-primary-500 
+                            [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-4
+                            [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-4
+                            [&>li]:my-1
+                            [&>h1]:text-3xl [&>h1]:font-bold [&>h1]:my-4
+                            [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:my-3
+                            [&>h3]:text-xl [&>h3]:font-bold [&>h3]:my-2
+                            [&>blockquote]:border-l-4 [&>blockquote]:border-primary-500 [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:my-4
+                            [&>code]:bg-gray-100 [&>code]:dark:bg-gray-800 [&>code]:px-2 [&>code]:py-1 [&>code]:rounded [&>code]:text-sm [&>code]:font-mono
+                            [&>p]:my-2 [&>p]:leading-relaxed"
                             dangerouslySetInnerHTML={{ __html: editorContent }}
                             onInput={(e) => setEditorContent(e.currentTarget.innerHTML)}
                           />
@@ -783,10 +910,14 @@ export default function SummaryEditor() {
                                 <label className="block text-sm font-medium text-primary-700 dark:text-gray-300 mb-1">
                                   Categoria
                                 </label>
-                                <select className="w-full px-3 py-2 text-sm border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
-                                  <option>Direito</option>
-                                  <option>Matemática</option>
-                                  <option>Português</option>
+                                <select 
+                                  value={selectedCategory}
+                                  onChange={(e) => setSelectedCategory(e.target.value)}
+                                  className="w-full px-3 py-2 text-sm border border-primary-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-primary-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                                >
+                                  {categories.map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                  ))}
                                 </select>
                               </div>
                             </CardContent>
@@ -931,37 +1062,60 @@ export default function SummaryEditor() {
                 </div>
 
                 <div className="space-y-2">
-                  {embedType === 'question' ? (
-                    availableQuestions.map((question) => (
+                  {loadingEmbedData ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                      <span className="ml-2 text-primary-600 dark:text-gray-400">
+                        Carregando {embedType === 'question' ? 'questões' : 'flashcards'}...
+                      </span>
+                    </div>
+                  ) : embedType === 'question' ? (
+                    (realQuestions.length > 0 ? realQuestions : availableQuestions).map((question) => (
                       <div
                         key={question.id}
-                        className="p-4 border border-primary-200 dark:border-gray-700 rounded-lg hover:bg-primary-50 dark:hover:bg-gray-800 cursor-pointer"
+                        className="p-4 border border-primary-200 dark:border-gray-700 rounded-lg hover:bg-primary-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
                         onClick={() => handleEmbedItem(question)}
                       >
                         <p className="font-medium text-primary-900 dark:text-white">
-                          {question.title}
+                          {question.question || question.title || question.statement}
                         </p>
-                        <p className="text-sm text-primary-600 dark:text-gray-400">
-                          {question.category}
+                        <p className="text-sm text-primary-600 dark:text-gray-400 mt-1">
+                          {question.category || 'Sem categoria'}
                         </p>
+                        <div className="flex gap-2 mt-2">
+                          <Badge variant="outline" className="text-xs">
+                            {question.type || 'multiple_choice'}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {question.difficulty || 'medium'}
+                          </Badge>
+                        </div>
                       </div>
                     ))
                   ) : (
-                    availableFlashcards.map((flashcard) => (
+                    (realFlashcards.length > 0 ? realFlashcards : availableFlashcards).map((flashcard) => (
                       <div
                         key={flashcard.id}
-                        className="p-4 border border-primary-200 dark:border-gray-700 rounded-lg hover:bg-primary-50 dark:hover:bg-gray-800 cursor-pointer"
+                        className="p-4 border border-primary-200 dark:border-gray-700 rounded-lg hover:bg-primary-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
                         onClick={() => handleEmbedItem(flashcard)}
                       >
                         <p className="font-medium text-primary-900 dark:text-white">
-                          {flashcard.front}
+                          {flashcard.front || flashcard.question}
                         </p>
-                        <p className="text-sm text-primary-600 dark:text-gray-400">
-                          {flashcard.back}
+                        <p className="text-sm text-primary-600 dark:text-gray-400 mt-1">
+                          {flashcard.back || flashcard.answer}
                         </p>
-                        <Badge variant="secondary" className="mt-1">
-                          {flashcard.category}
-                        </Badge>
+                        <div className="flex gap-2 mt-2">
+                          <Badge variant="outline" className="text-xs">
+                            {flashcard.type || 'basic'}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {flashcard.category || 'Sem categoria'}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {flashcard.difficulty || 'medium'}
+                          </Badge>
+                        </div>
                       </div>
                     ))
                   )}
