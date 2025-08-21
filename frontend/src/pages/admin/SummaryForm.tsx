@@ -343,45 +343,83 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
     });
   };
 
-  // Funções de manipulação de categorias (copiadas do NewFlashcard)
+  // Função para encontrar todos os pais de uma categoria (igual ao NewFlashcard)
+  const findParentChain = (categoryId: string, cats: Category[] = categories): string[] => {
+    const parentChain: string[] = [];
+    
+    const findParent = (cats: Category[], targetId: string): Category | null => {
+      for (const cat of cats) {
+        if (cat.children) {
+          for (const child of cat.children) {
+            if (child.id === targetId) {
+              return cat;
+            }
+            const found = findParent(cat.children, targetId);
+            if (found) return found;
+          }
+        }
+      }
+      return null;
+    };
+    
+    let currentId = categoryId;
+    while (currentId) {
+      const parent = findParent(cats, currentId);
+      if (parent) {
+        parentChain.push(parent.id);
+        currentId = parent.id;
+      } else {
+        break;
+      }
+    }
+    
+    return parentChain;
+  };
+  
+  // Função para encontrar todos os filhos de uma categoria (igual ao NewFlashcard)
+  const findAllChildren = (categoryId: string, cats: Category[] = categories): string[] => {
+    const children: string[] = [];
+    
+    const addChildren = (cats: Category[]) => {
+      cats.forEach(cat => {
+        if (cat.id === categoryId && cat.children) {
+          cat.children.forEach(child => {
+            children.push(child.id);
+            addChildren(cat.children!);
+          });
+        } else if (cat.children) {
+          addChildren(cat.children);
+        }
+      });
+    };
+    
+    addChildren(cats);
+    return children;
+  };
+
+  // Funções de manipulação de categorias (igual ao NewFlashcard)
   const handleCategoryToggle = (categoryId: string) => {
+    console.log(`🎯 Toggle categoria: ${categoryId}`);
+    
     setSelectedCategories(prev => {
       let newSelectedCategories = [...prev];
+      console.log(`📋 Categorias selecionadas antes:`, prev);
       
-      if (newSelectedCategories.includes(categoryId)) {
+      if (prev.includes(categoryId)) {
         // Desmarcando: remover a categoria e todos os filhos
-        const findAllChildren = (catId: string): string[] => {
-          const children: string[] = [];
-          const findChildren = (cats: Category[]) => {
-            cats.forEach(cat => {
-              if (cat.parent_id === catId) {
-                children.push(cat.id);
-                findChildren(realCategories);
-              }
-            });
-          };
-          findChildren(realCategories);
-          return children;
-        };
-        
+        console.log(`❌ Desmarcando categoria: ${categoryId}`);
         const allChildren = findAllChildren(categoryId);
+        console.log(`👶 Filhos encontrados:`, allChildren);
         newSelectedCategories = newSelectedCategories.filter(id => 
           id !== categoryId && !allChildren.includes(id)
         );
       } else {
         // Marcando: adicionar a categoria e todos os pais
-        const findParentChain = (catId: string): string[] => {
-          const parents: string[] = [];
-          const category = realCategories.find(c => c.id === catId);
-          if (category && category.parent_id) {
-            parents.push(category.parent_id);
-            parents.push(...findParentChain(category.parent_id));
-          }
-          return parents;
-        };
-        
+        console.log(`✅ Marcando categoria: ${categoryId}`);
         const parentChain = findParentChain(categoryId);
+        console.log(`👨‍👩‍👧‍👦 Pais encontrados:`, parentChain);
         const toAdd = [categoryId, ...parentChain];
+        console.log(`📝 Total a adicionar:`, toAdd);
         
         toAdd.forEach(id => {
           if (!newSelectedCategories.includes(id)) {
@@ -390,6 +428,7 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
         });
       }
       
+      console.log(`📋 Categorias selecionadas depois:`, newSelectedCategories);
       return newSelectedCategories;
     });
   };
@@ -709,7 +748,6 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
 
       {/* Content */}
       <motion.div
-        key={activeTab}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3 }}
@@ -944,6 +982,7 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
                 </div>
               </CardContent>
             </Card>
+            </div>
           </div>
         )}
       </motion.div>
