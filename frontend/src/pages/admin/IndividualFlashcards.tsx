@@ -51,6 +51,7 @@ export default function IndividualFlashcards() {
   
   // Hook dinâmico para categorias
   const {
+    categories,
     selectedCategory,
     selectedSubcategory,
     setSelectedCategory,
