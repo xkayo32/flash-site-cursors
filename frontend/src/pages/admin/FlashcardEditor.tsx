@@ -22,7 +22,8 @@ import {
   Eye,
   EyeOff,
   Image as ImageIcon,
-  Loader2
+  Loader2,
+  Tag
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -30,6 +31,7 @@ import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
 import ImageOcclusionEditor from '@/components/ImageOcclusionEditor';
 import { flashcardService, type Flashcard, type CreateFlashcardData } from '@/services/flashcardService';
+import { flashcardDeckService } from '@/services/flashcardDeckService';
 
 // Interface para o deck
 interface DeckInfo {
@@ -78,32 +80,50 @@ export default function FlashcardEditor() {
       setIsLoading(true);
       setError(null);
       
-      // Por enquanto, vamos criar um deck fictício baseado no ID
-      // Em produção, isso viria de uma API de decks
-      const mockDeckInfo: DeckInfo = {
-        id: deckId,
-        title: 'DECK DE FLASHCARDS',
-        description: 'Coleção de flashcards para estudo',
-        category: 'GERAL',
-        subcategory: 'Diversos',
+      // Carregar informações do deck real
+      const deckResponse = await flashcardDeckService.getDeck(deckId);
+      if (!deckResponse.success) {
+        throw new Error('Deck não encontrado');
+      }
+      
+      const deck = deckResponse.data;
+      const realDeckInfo: DeckInfo = {
+        id: deck.id,
+        title: deck.name,
+        description: deck.description || '',
+        category: deck.category,
+        subcategory: '', // Pode adicionar se necessário
         totalCards: 0,
         difficulty: 'medium'
       };
       
-      // Carregar flashcards usando o serviço
-      const response = await flashcardService.getFlashcards({
-        limit: 100,
-        category: mockDeckInfo.category !== 'GERAL' ? mockDeckInfo.category : undefined
-      });
-      
-      if (response.success && response.data) {
-        setCards(response.data);
-        mockDeckInfo.totalCards = response.data.length;
-        setDeckInfo(mockDeckInfo);
+      // Se o deck tem flashcard_ids específicos, carregar apenas esses
+      if (deck.flashcard_ids && deck.flashcard_ids.length > 0) {
+        // Carregar todos os flashcards e filtrar pelos IDs do deck
+        const allCardsResponse = await flashcardService.getFlashcards({ limit: 1000 });
+        if (allCardsResponse.success && allCardsResponse.data) {
+          const deckCards = allCardsResponse.data.filter(card => 
+            deck.flashcard_ids.includes(card.id)
+          );
+          setCards(deckCards);
+          realDeckInfo.totalCards = deckCards.length;
+        }
       } else {
-        setCards([]);
-        setDeckInfo(mockDeckInfo);
+        // Se não tem IDs específicos, filtrar por categoria
+        const response = await flashcardService.getFlashcards({
+          limit: 100,
+          category: deck.category
+        });
+        
+        if (response.success && response.data) {
+          setCards(response.data);
+          realDeckInfo.totalCards = response.data.length;
+        } else {
+          setCards([]);
+        }
       }
+      
+      setDeckInfo(realDeckInfo);
     } catch (err) {
       console.error('Erro ao carregar deck e flashcards:', err);
       setError('Erro ao carregar dados. Por favor, tente novamente.');

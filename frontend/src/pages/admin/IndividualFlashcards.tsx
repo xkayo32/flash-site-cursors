@@ -87,8 +87,11 @@ export default function IndividualFlashcards() {
   const loadAuthors = async () => {
     try {
       const response = await flashcardService.getFilterOptions();
-      if (response.success && response.data.authors) {
+      if (response.success && response.data && response.data.authors) {
         setAvailableAuthors(response.data.authors);
+      } else {
+        // Fallback para array vazio se não houver autores
+        setAvailableAuthors([]);
       }
     } catch (err) {
       console.error('Error loading authors:', err);
@@ -112,8 +115,8 @@ export default function IndividualFlashcards() {
       };
 
       const response = await flashcardService.getFlashcards(filters);
-      setFlashcards(response.data);
-      setTotalPages(response.pagination.pages);
+      setFlashcards(response.data || []);
+      setTotalPages(response.pagination?.pages || 1);
     } catch (error) {
       console.error('Error loading flashcards:', error);
       setError('Erro ao carregar flashcards. Tente novamente.');
@@ -126,7 +129,9 @@ export default function IndividualFlashcards() {
   const loadStats = async () => {
     try {
       const statsResponse = await flashcardService.getStats();
-      setStats(statsResponse.data);
+      if (statsResponse.success && statsResponse.data) {
+        setStats(statsResponse.data);
+      }
     } catch (error) {
       console.error('Error loading stats:', error);
     }

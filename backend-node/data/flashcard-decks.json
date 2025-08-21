@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "deck_1755763725661_142",
+    "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "description": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "subject": "cat_matematica,cat_mat_fin",
+    "flashcard_ids": [],
+    "owner_id": "1",
+    "is_public": true,
+    "created_at": "2025-08-21T08:08:45.661Z",
+    "updated_at": "2025-08-21T08:08:45.661Z",
+    "total_cards": 0,
+    "studied_count": 0,
+    "mastery_level": 0
+  }
+]

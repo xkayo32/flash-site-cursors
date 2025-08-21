@@ -101,6 +101,7 @@ export function useDynamicCategories(): UseDynamicCategoriesReturn {
 
   // Função para atualizar categoria selecionada
   const handleSetSelectedCategory = useCallback((category: string) => {
+    console.log('useDynamicCategories: Setting selected category to:', category, typeof category);
     setSelectedCategory(category);
     setSelectedSubcategory('Todas'); // Reset subcategoria
     loadSubcategories(category);

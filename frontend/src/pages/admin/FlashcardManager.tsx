@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { flashcardService, Flashcard, FlashcardStats } from '@/services/flashcardService';
+import { flashcardDeckService, FlashcardDeck } from '@/services/flashcardDeckService';
 import { useDynamicCategories } from '@/hooks/useDynamicCategories';
+import { CategorySelector } from '@/components/CategorySelector';
 import {
   Search,
   Filter,
@@ -24,8 +26,10 @@ import {
   Star,
   Grid3X3,
   List,
-  Play,
-  Settings
+  Settings,
+  AlertCircle,
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -50,6 +54,8 @@ export default function FlashcardManager() {
   
   // Hook dinâmico para categorias
   const {
+    categories,
+    subcategories,
     selectedCategory,
     selectedSubcategory,
     setSelectedCategory,
@@ -72,40 +78,64 @@ export default function FlashcardManager() {
   const [stats, setStats] = useState<FlashcardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // State para modal de preview
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [selectedDeckForPreview, setSelectedDeckForPreview] = useState<any>(null);
 
-  const loadFlashcards = async () => {
+  const loadDecks = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await flashcardService.getFlashcards({
-        search: searchTerm || undefined,
-        category: selectedCategory !== 'Todos' ? selectedCategory : undefined,
-        subcategory: selectedSubcategory !== 'Todas' ? selectedSubcategory : undefined,
-        difficulty: selectedDifficulty !== 'Todos' ? selectedDifficulty as any : undefined,
-        status: showPublicOnly ? 'published' : undefined,
-        limit: 100
+      console.log('Loading decks with filters:', {
+        search: searchTerm,
+        category: selectedCategory,
+        difficulty: selectedDifficulty,
+        showPublicOnly
       });
       
-      // Mapear os flashcards para adicionar propriedades de exibição
-      const mappedFlashcards: FlashcardDisplay[] = (response.data || []).map(card => ({
-        ...card,
-        title: card.front || card.question || card.text || card.statement || 'Flashcard sem título',
-        description: card.back || card.explanation || card.extra || card.hint || 'Sem descrição',
-        completedCards: card.times_correct || 0,
-        totalCards: card.times_studied || 1,
-        reviews: card.times_studied || 0,
-        rating: card.correct_rate ? (card.correct_rate * 5 / 100).toFixed(1) : 0,
-        isPublic: card.status === 'published',
-        author: card.author_name || 'Anônimo',
-        lastReview: card.next_review || card.updated_at || card.created_at
+      // Carregar decks da API
+      const response = await flashcardDeckService.getDecks({
+        search: searchTerm || undefined,
+        category: selectedCategory !== 'Todos' ? selectedCategory : undefined
+      });
+      
+      console.log('Decks API Response:', response);
+      console.log('Data received:', response.decks?.length || 0, 'decks');
+      
+      // Mapear os decks para o formato de exibição
+      const mappedDecks: FlashcardDisplay[] = (response.decks || []).map(deck => ({
+        id: deck.id,
+        title: deck.name,
+        description: deck.description || 'Sem descrição',
+        category: deck.category,
+        subcategory: '',
+        difficulty: 'medium' as any,
+        completedCards: 0,
+        totalCards: Array.isArray(deck.flashcard_ids) ? deck.flashcard_ids.length : 0,
+        reviews: 0,
+        rating: '0',
+        isPublic: deck.is_public || false,
+        author: 'Admin',
+        lastReview: deck.updated_at || deck.created_at,
+        status: 'published' as any,
+        type: 'basic' as any,
+        tags: [],
+        front: deck.name,
+        back: deck.description,
+        times_studied: 0,
+        times_correct: 0,
+        correct_rate: 0,
+        created_at: deck.created_at,
+        updated_at: deck.updated_at
       }));
       
-      setFlashcards(mappedFlashcards);
+      setFlashcards(mappedDecks);
     } catch (err: any) {
-      console.error('Erro ao carregar flashcards:', err);
-      setError('Erro ao carregar flashcards');
-      toast.error('Erro ao carregar flashcards');
+      console.error('Erro ao carregar decks:', err);
+      setError('Erro ao carregar decks');
+      toast.error('Erro ao carregar decks');
     } finally {
       setLoading(false);
     }
@@ -125,8 +155,8 @@ export default function FlashcardManager() {
   }, []);
 
   useEffect(() => {
-    loadFlashcards();
-  }, [searchTerm, selectedCategory, selectedSubcategory, selectedDifficulty, showPublicOnly]);
+    loadDecks();
+  }, [searchTerm, selectedCategory, selectedDifficulty, showPublicOnly]);
 
   const filteredDecks = flashcards;
 
@@ -156,50 +186,69 @@ export default function FlashcardManager() {
   };
 
   const handleEditDeck = (deckId: string) => {
-    navigate(`/admin/flashcards/cards/${deckId}/edit`);
+    navigate(`/admin/flashcards/${deckId}/edit`);
   };
 
   const handleManageCards = (deckId: string) => {
-    navigate(`/admin/flashcards/cards/${deckId}`);
+    navigate(`/admin/flashcards/${deckId}/cards`);
   };
 
   const handleDeleteDeck = async (deckId: string) => {
-    if (confirm('Tem certeza que deseja excluir este flashcard?')) {
+    if (confirm('Tem certeza que deseja excluir este deck?')) {
       try {
-        await flashcardService.deleteFlashcard(deckId);
-        toast.success('Flashcard excluído com sucesso', {
+        await flashcardDeckService.deleteDeck(deckId);
+        toast.success('Deck excluído com sucesso', {
           duration: 3000,
-          icon: '📦'
+          icon: '🗑️'
         });
-        loadFlashcards();
+        loadDecks();
       } catch (err: any) {
-        console.error('Erro ao excluir flashcard:', err);
-        toast.error('Erro ao excluir flashcard');
+        console.error('Erro ao excluir deck:', err);
+        toast.error('Erro ao excluir deck');
       }
     }
   };
 
-  const handlePreviewDeck = (deckId: string) => {
-    toast.success('Abrindo preview do flashcard...', {
-      duration: 2000,
-      icon: '👁️'
-    });
+  const handlePreviewDeck = async (deckId: string) => {
+    try {
+      const response = await flashcardDeckService.getDeck(deckId);
+      if (response.success) {
+        setSelectedDeckForPreview(response.data);
+        setPreviewModalOpen(true);
+      }
+    } catch (err: any) {
+      console.error('Erro ao carregar preview do deck:', err);
+      toast.error('Erro ao abrir preview do deck');
+    }
   };
 
-  const handlePlayDeck = (deckId: string) => {
-    navigate(`/admin/flashcards/cards/${deckId}/study`);
-    toast.success('Iniciando estudo do flashcard...', {
-      duration: 2000,
-      icon: '🎯'
-    });
-  };
 
-  const handleDuplicateDeck = (deckId: string) => {
-    const originalDeck = flashcards.find(d => d.id === deckId);
-    toast.success(`Flashcard "${originalDeck?.front || originalDeck?.question}" duplicado com sucesso`, {
-      duration: 3000,
-      icon: '📋'
-    });
+  const handleDuplicateDeck = async (deckId: string) => {
+    try {
+      const response = await flashcardDeckService.getDeck(deckId);
+      if (response.success) {
+        const originalDeck = response.data;
+        const duplicatedDeck = {
+          name: `${originalDeck.name} (Cópia)`,
+          description: originalDeck.description,
+          category: originalDeck.category,
+          flashcard_ids: [...originalDeck.flashcard_ids],
+          is_public: false
+        };
+        
+        const createResponse = await flashcardDeckService.createDeck(duplicatedDeck);
+        if (createResponse.success) {
+          toast.success(`Deck "${originalDeck.name}" duplicado com sucesso`, {
+            duration: 3000,
+            icon: '📋'
+          });
+          loadDecks();
+        }
+      }
+    } catch (err: any) {
+      console.error('Erro ao duplicar deck:', err);
+      toast.error('Erro ao duplicar deck');
+    }
   };
 
   const handleSelectDeck = (id: string) => {
@@ -389,10 +438,10 @@ export default function FlashcardManager() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Card className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 hover:shadow-xl transition-all duration-300 overflow-hidden">
+        <Card className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 hover:shadow-xl transition-all duration-300 overflow-visible relative">
           {/* Tactical stripe */}
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent-500" />
-          <CardContent className="p-6">
+          <CardContent className="p-6 relative">
             <div className="space-y-4">
               {/* First Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -418,38 +467,20 @@ export default function FlashcardManager() {
               </div>
 
               {/* Second Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative" style={{ zIndex: 100 }}>
+                <CategorySelector
+                  categories={categories}
+                  selectedValue={selectedCategory}
+                  onChange={(value) => {
+                    console.log('FlashcardManager - CategorySelector onChange:', value, typeof value);
+                    setSelectedCategory(value);
+                  }}
                   disabled={isLoadingCategories}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
-                >
-                  {isLoadingCategories ? (
-                    <option>CARREGANDO...</option>
-                  ) : (
-                    getCategoryOptions().map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))
-                  )}
-                </select>
-
-                <select
-                  value={selectedSubcategory}
-                  onChange={(e) => setSelectedSubcategory(e.target.value)}
-                  disabled={selectedCategory === 'Todos' || isLoadingSubcategories}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {selectedCategory === 'Todos' ? (
-                    <option>SELECIONE CATEGORIA PRIMEIRO</option>
-                  ) : isLoadingSubcategories ? (
-                    <option>CARREGANDO...</option>
-                  ) : (
-                    getSubcategoryOptions().map(subcategory => (
-                      <option key={subcategory} value={subcategory}>{subcategory}</option>
-                    ))
-                  )}
-                </select>
+                  isLoading={isLoadingCategories}
+                  placeholder="SELECIONE CATEGORIA"
+                  label="CATEGORIA"
+                  showAll={true}
+                />
 
                 <select
                   value={selectedDifficulty}
@@ -538,14 +569,55 @@ export default function FlashcardManager() {
         </Card>
       </motion.div>
 
+      {/* Loading State */}
+      {loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex justify-center items-center py-12"
+        >
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-500 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400 font-police-body uppercase tracking-wider">
+              Carregando flashcards...
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-12"
+        >
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h3 className="text-xl font-police-subtitle font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-2">
+            ERRO AO CARREGAR
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 font-police-body mb-6">
+            {error}
+          </p>
+          <Button 
+            onClick={loadDecks}
+            className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            TENTAR NOVAMENTE
+          </Button>
+        </motion.div>
+      )}
+
       {/* Decks Grid/List */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4' : 'space-y-3'}
-      >
-        {filteredDecks.map((deck) => 
+      {!loading && !error && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4' : 'space-y-3'}
+        >
+          {filteredDecks.map((deck) => 
           viewMode === 'grid' ? (
             <Card key={deck.id} className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 hover:shadow-xl transition-all duration-300 overflow-hidden group">
               {/* Tactical stripe */}
@@ -664,13 +736,6 @@ export default function FlashcardManager() {
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => handlePlayDeck(deck.id)}
-                    className="p-2 text-gray-600 hover:text-accent-500 hover:bg-accent-500/10 dark:text-gray-400 dark:hover:text-accent-500 rounded-lg transition-all"
-                    title="Estudar Deck"
-                  >
-                    <Play className="w-4 h-4" />
-                  </button>
                   <button
                     onClick={() => handlePreviewDeck(deck.id)}
                     className="p-2 text-gray-600 hover:text-accent-500 hover:bg-accent-500/10 dark:text-gray-400 dark:hover:text-accent-500 rounded-lg transition-all"
@@ -849,14 +914,6 @@ export default function FlashcardManager() {
                         
                         {/* Actions */}
                         <div className="flex items-center gap-1">
-                          <Button
-                            size="sm"
-                            onClick={() => handlePlayDeck(deck.id)}
-                            className="gap-1 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
-                          >
-                            <Play className="w-3 h-3" />
-                            ESTUDAR
-                          </Button>
                           
                           <button
                             onClick={() => handlePreviewDeck(deck.id)}
@@ -911,10 +968,11 @@ export default function FlashcardManager() {
             </Card>
           )
         )}
-      </motion.div>
+        </motion.div>
+      )}
 
       {/* Empty State */}
-      {filteredDecks.length === 0 && (
+      {!loading && !error && filteredDecks.length === 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -935,6 +993,85 @@ export default function FlashcardManager() {
             CRIAR DECK
           </Button>
         </motion.div>
+      )}
+      
+      {/* Modal de Preview do Deck */}
+      {previewModalOpen && selectedDeckForPreview && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-police-title font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                  PREVIEW DO DECK
+                </h2>
+                <button
+                  onClick={() => setPreviewModalOpen(false)}
+                  className="p-2 text-gray-500 hover:text-red-500 rounded-lg transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-xl font-police-subtitle font-bold text-gray-900 dark:text-white mb-2">
+                    {selectedDeckForPreview.name}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 font-police-body">
+                    {selectedDeckForPreview.description || 'Sem descrição'}
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                    <p className="text-sm font-police-body text-gray-600 dark:text-gray-400 uppercase">
+                      CATEGORIA
+                    </p>
+                    <p className="font-police-numbers font-semibold text-gray-900 dark:text-white">
+                      {selectedDeckForPreview.category}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                    <p className="text-sm font-police-body text-gray-600 dark:text-gray-400 uppercase">
+                      CARTÕES
+                    </p>
+                    <p className="font-police-numbers font-semibold text-gray-900 dark:text-white">
+                      {selectedDeckForPreview.flashcard_ids?.length || 0}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2 justify-end mt-6">
+                  <Button
+                    onClick={() => {
+                      setPreviewModalOpen(false);
+                      handleManageCards(selectedDeckForPreview.id);
+                    }}
+                    className="bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider"
+                  >
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    GERENCIAR CARTÕES
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setPreviewModalOpen(false);
+                      handleEditDeck(selectedDeckForPreview.id);
+                    }}
+                    variant="outline"
+                    className="font-police-body font-semibold uppercase tracking-wider"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    EDITAR DECK
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       )}
     </div>
   );

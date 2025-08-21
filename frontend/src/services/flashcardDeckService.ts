@@ -5,22 +5,21 @@ export interface FlashcardDeck {
   id: string;
   name: string;
   description: string;
-  subject: string;
+  category: string;
   flashcard_ids: string[];
-  owner_id: string;
-  owner_name: string;
-  is_public: boolean;
+  user_id: string;
+  is_public?: boolean;
   created_at: string;
   updated_at: string;
-  total_cards: number;
-  studied_count: number;
-  mastery_level: number;
+  total_cards?: number;
+  studied_count?: number;
+  mastery_level?: number;
 }
 
 export interface CreateDeckData {
   name: string;
   description?: string;
-  subject: string;
+  category: string;
   flashcard_ids?: string[];
   is_public?: boolean;
 }
@@ -55,13 +54,25 @@ class FlashcardDeckService {
   }
 
   // Get all decks (user's own + public decks)
-  async getDecks(): Promise<{ success: boolean; data: FlashcardDeck[] }> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/flashcard-decks`, {
+  async getDecks(filters?: { search?: string; category?: string }): Promise<{ success: boolean; decks: FlashcardDeck[]; total: number }> {
+    const queryParams = new URLSearchParams();
+    
+    if (filters?.search) {
+      queryParams.append('search', filters.search);
+    }
+    
+    if (filters?.category) {
+      queryParams.append('category', filters.category);
+    }
+    
+    const url = `${API_BASE_URL}/api/v1/flashcard-decks${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    
+    const response = await fetch(url, {
       method: 'GET',
       headers: this.getAuthHeaders()
     });
 
-    return this.handleResponse<{ success: boolean; data: FlashcardDeck[] }>(response);
+    return this.handleResponse<{ success: boolean; decks: FlashcardDeck[]; total: number }>(response);
   }
 
   // Get single deck by ID
@@ -133,13 +144,13 @@ class FlashcardDeckService {
     const result = await this.getDecks();
     const actualUserId = userId || localStorage.getItem('userId'); // Use provided ID or stored ID
     if (!actualUserId) return [];
-    return result.data.filter(deck => deck.owner_id === actualUserId);
+    return result.decks.filter(deck => deck.user_id === actualUserId);
   }
 
   // Get public decks
   async getPublicDecks(): Promise<FlashcardDeck[]> {
     const result = await this.getDecks();
-    return result.data.filter(deck => deck.is_public);
+    return result.decks.filter(deck => deck.is_public);
   }
 }
 

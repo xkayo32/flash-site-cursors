@@ -8,12 +8,12 @@
       "type": "review",
       "priority": "high",
       "status": "pending",
-      "date": "2025-08-13",
+      "date": "2025-08-21",
       "time": "09:00",
       "duration": 120,
       "subject": "DIREITO CONSTITUCIONAL TÁTICO",
-      "created_at": "2025-08-13T01:46:05.091Z",
-      "updated_at": "2025-08-13T01:46:05.091Z"
+      "created_at": "2025-08-21T07:21:42.108Z",
+      "updated_at": "2025-08-21T07:21:42.108Z"
     },
     {
       "id": "task_2",
@@ -23,12 +23,12 @@
       "type": "practice",
       "priority": "medium",
       "status": "pending",
-      "date": "2025-08-13",
+      "date": "2025-08-21",
       "time": "14:00",
       "duration": 60,
       "subject": "DIREITO PENAL OPERACIONAL",
-      "created_at": "2025-08-13T01:46:05.091Z",
-      "updated_at": "2025-08-13T01:46:05.091Z"
+      "created_at": "2025-08-21T07:21:42.108Z",
+      "updated_at": "2025-08-21T07:21:42.108Z"
     },
     {
       "id": "task_3",
@@ -38,46 +38,12 @@
       "type": "practice",
       "priority": "high",
       "status": "pending",
-      "date": "2025-08-13",
+      "date": "2025-08-21",
       "time": "16:30",
       "duration": 90,
       "subject": "RACIOCÍNIO LÓGICO TÁTICO",
-      "created_at": "2025-08-13T01:46:05.091Z",
-      "updated_at": "2025-08-13T01:46:05.091Z"
-    },
-    {
-      "id": "task_1755049875236_810",
-      "user_id": "2",
-      "title": "TESTE API CRONOGRAMA",
-      "description": "Teste de criação de tarefa via API",
-      "type": "study",
-      "priority": "medium",
-      "status": "completed",
-      "date": "2025-08-13",
-      "time": "10:00",
-      "duration": 60,
-      "subject": "TESTE",
-      "created_at": "2025-08-13T01:51:15.236Z",
-      "updated_at": "2025-08-13T01:51:26.931Z",
-      "completed_at": "2025-08-13T01:51:26.931Z",
-      "notes": "Tarefa concluída via teste da API"
-    },
-    {
-      "id": "task_1755181203305_953",
-      "user_id": "2",
-      "title": "REVISAR DIREITO ADMINISTRATIVO",
-      "description": "Revisar módulo 5",
-      "type": "review",
-      "priority": "high",
-      "status": "completed",
-      "date": "2025-08-14",
-      "time": "18:00",
-      "duration": 90,
-      "subject": "DIREITO ADMINISTRATIVO",
-      "created_at": "2025-08-14T14:20:03.305Z",
-      "updated_at": "2025-08-14T14:20:03.348Z",
-      "completed_at": "2025-08-14T14:20:03.348Z",
-      "notes": "Revisão concluída"
+      "created_at": "2025-08-21T07:21:42.108Z",
+      "updated_at": "2025-08-21T07:21:42.108Z"
     }
   ],
   "events": [
@@ -87,14 +53,14 @@
       "title": "AULA AO VIVO - DIREITO ADMINISTRATIVO",
       "description": "Princípios da Administração Pública",
       "type": "lesson",
-      "date": "2025-08-14",
+      "date": "2025-08-22",
       "start_time": "19:00",
       "end_time": "21:00",
       "all_day": false,
       "color": "#10b981",
       "course_id": "course_1",
-      "created_at": "2025-08-13T01:46:05.091Z",
-      "updated_at": "2025-08-13T01:46:05.091Z"
+      "created_at": "2025-08-21T07:21:42.108Z",
+      "updated_at": "2025-08-21T07:21:42.108Z"
     },
     {
       "id": "event_2",
@@ -102,15 +68,15 @@
       "title": "SIMULADO GERAL - PF AGENTE",
       "description": "Todas as disciplinas - 120 questões",
       "type": "exam",
-      "date": "2025-08-20",
+      "date": "2025-08-28",
       "start_time": "08:00",
       "end_time": "12:00",
       "all_day": false,
       "color": "#ef4444",
       "exam_id": "exam_1",
       "location": "Online",
-      "created_at": "2025-08-13T01:46:05.091Z",
-      "updated_at": "2025-08-13T01:46:05.091Z"
+      "created_at": "2025-08-21T07:21:42.108Z",
+      "updated_at": "2025-08-21T07:21:42.108Z"
     }
   ],
   "study_sessions": [
@@ -119,7 +85,7 @@
       "user_id": "2",
       "title": "Direitos Fundamentais - Estudo Completo",
       "description": "Módulo 3 do curso de Direito Constitucional",
-      "date": "2025-08-13",
+      "date": "2025-08-21",
       "start_time": "10:00",
       "end_time": "12:00",
       "duration": 120,
@@ -130,16 +96,16 @@
       "status": "completed",
       "progress": 100,
       "notes": "Revisão completa dos artigos 5º ao 17º da CF/88",
-      "created_at": "2025-08-13T01:46:05.091Z",
-      "updated_at": "2025-08-13T01:46:05.091Z",
-      "completed_at": "2025-08-13T01:46:05.091Z"
+      "created_at": "2025-08-21T07:21:42.108Z",
+      "updated_at": "2025-08-21T07:21:42.108Z",
+      "completed_at": "2025-08-21T07:21:42.108Z"
     },
     {
       "id": "session_2",
       "user_id": "2",
       "title": "Simulado - Crimes contra a Administração",
       "description": "30 questões de Direito Penal",
-      "date": "2025-08-13",
+      "date": "2025-08-21",
       "start_time": "14:00",
       "end_time": "14:45",
       "duration": 45,
@@ -149,16 +115,16 @@
       "progress": 100,
       "score": 85,
       "notes": "26 acertos em 30 questões. Revisar peculato.",
-      "created_at": "2025-08-13T01:46:05.092Z",
-      "updated_at": "2025-08-13T01:46:05.092Z",
-      "completed_at": "2025-08-13T01:46:05.092Z"
+      "created_at": "2025-08-21T07:21:42.108Z",
+      "updated_at": "2025-08-21T07:21:42.108Z",
+      "completed_at": "2025-08-21T07:21:42.108Z"
     }
   ],
   "daily_goals": [
     {
       "id": "goal_today",
       "user_id": "2",
-      "date": "2025-08-13",
+      "date": "2025-08-21",
       "study_hours_target": 6,
       "study_hours_completed": 4.5,
       "tasks_target": 5,
@@ -167,13 +133,13 @@
       "questions_completed": 75,
       "flashcards_target": 50,
       "flashcards_completed": 32,
-      "created_at": "2025-08-13T01:46:05.092Z",
-      "updated_at": "2025-08-13T01:46:05.092Z"
+      "created_at": "2025-08-21T07:21:42.108Z",
+      "updated_at": "2025-08-21T07:21:42.108Z"
     },
     {
       "id": "goal_yesterday",
       "user_id": "2",
-      "date": "2025-08-12",
+      "date": "2025-08-20",
       "study_hours_target": 6,
       "study_hours_completed": 6,
       "tasks_target": 4,
@@ -182,8 +148,8 @@
       "questions_completed": 80,
       "flashcards_target": 40,
       "flashcards_completed": 45,
-      "created_at": "2025-08-12T01:46:05.092Z",
-      "updated_at": "2025-08-12T01:46:05.092Z"
+      "created_at": "2025-08-20T07:21:42.108Z",
+      "updated_at": "2025-08-20T07:21:42.108Z"
     }
   ]
 }

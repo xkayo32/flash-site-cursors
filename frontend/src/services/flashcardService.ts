@@ -217,6 +217,9 @@ class FlashcardService {
     });
 
     const url = `${API_BASE_URL}/api/v1/flashcards${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    
+    console.log('FlashcardService - Fetching URL:', url);
+    console.log('FlashcardService - Query params:', queryParams.toString());
 
     const response = await fetch(url, {
       method: 'GET',

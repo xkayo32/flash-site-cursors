@@ -89,6 +89,8 @@ interface FlashcardDeck {
   name: string;
   description: string;
   subject: string;
+  category?: string;
+  flashcard_ids?: string[];
   totalCards: number;
   dueCards: number;
   newCards: number;
@@ -184,10 +186,11 @@ export default function FlashcardsPage() {
     try {
       const result = await flashcardDeckService.getDecks();
       if (result.success) {
-        setUserDecks(result.data);
+        setUserDecks(result.decks || []);
       }
     } catch (error) {
       console.error('Erro ao carregar decks:', error);
+      setUserDecks([]);
     }
   };
 
@@ -387,11 +390,13 @@ export default function FlashcardsPage() {
   }));
   
   // Decks reais salvos pelo usuário
-  const realDecks = userDecks.map(deck => ({
+  const realDecks = (userDecks || []).map(deck => ({
     id: deck.id,
     name: deck.name,
     description: deck.description || '',
-    subject: deck.subject,
+    subject: deck.subject || deck.category,
+    category: deck.category,
+    flashcard_ids: deck.flashcard_ids || [],
     totalCards: deck.total_cards || deck.flashcard_ids?.length || 0,
     dueCards: 0,
     newCards: 0,
@@ -786,8 +791,35 @@ export default function FlashcardsPage() {
   };
 
   const startStudySession = (deck: FlashcardDeck) => {
+    console.log('🎯 Starting study session for deck:', deck.name);
+    console.log('📋 Deck flashcard_ids:', deck.flashcard_ids);
+    console.log('📋 Deck flashcard_ids type:', typeof deck.flashcard_ids);
+    console.log('📋 Deck flashcard_ids length:', deck.flashcard_ids?.length);
+    console.log('📋 Deck category:', deck.category);
+    console.log('📋 Deck subject:', deck.subject);
+    console.log('📚 Total flashcards available:', flashcards.length);
+    
     // Filtra cards do deck selecionado
-    const deckCards = flashcards.filter(card => card.category === deck.subject);
+    let deckCards = [];
+    
+    if (deck.flashcard_ids && deck.flashcard_ids.length > 0) {
+      // Se o deck tem flashcard_ids específicos, usar esses
+      deckCards = flashcards.filter(card => deck.flashcard_ids.includes(card.id));
+    } else {
+      // Senão, filtrar por categoria
+      deckCards = flashcards.filter(card => 
+        card.category === deck.category || card.category === deck.subject
+      );
+    }
+    
+    // Se não encontrou cards, mostrar erro
+    if (deckCards.length === 0) {
+      toast.error('Nenhum flashcard encontrado neste deck', {
+        duration: 3000,
+        icon: '📭'
+      });
+      return;
+    }
     
     // Ordena cards por prioridade SRS (cards vencidos primeiro)
     const sortedCards = deckCards.sort((a, b) => {
@@ -834,7 +866,7 @@ export default function FlashcardsPage() {
           {/* Tactical stripe */}
           <div className={cn(
             "absolute top-0 right-0 w-1 h-full",
-            deck.isUserDeck ? "bg-purple-500" : "bg-accent-500"
+            deck.isUserDeck ? "bg-accent-500" : "bg-accent-500"
           )} />
           
           <CardHeader className="relative z-10 pb-3 flex-shrink-0">
@@ -854,8 +886,8 @@ export default function FlashcardsPage() {
                   className={cn(
                     "font-police-body text-xs uppercase tracking-wider border-2",
                     deck.isUserDeck 
-                      ? "bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-500" 
-                      : "bg-gray-100 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400 border-gray-500"
+                      ? "bg-gray-100 dark:bg-gray-900/20 text-accent-500 border-accent-500/30" 
+                      : "bg-gray-100 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400 border-gray-500/30"
                   )}
                 >
                   {deck.isUserDeck ? '👤' : '🏛️'}
@@ -867,17 +899,17 @@ export default function FlashcardsPage() {
           <CardContent className="pt-0 pb-0 flex-1 flex flex-col relative z-10">
             {/* Contadores */}
             <div className="grid grid-cols-3 gap-2 mb-3">
-              <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-                <div className="text-lg font-bold text-blue-600 font-police-numbers">{deck.totalCards}</div>
-                <div className="text-xs text-blue-600 dark:text-blue-400 font-police-body uppercase">TOTAL</div>
+              <div className="text-center p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="text-lg font-bold text-gray-900 dark:text-white font-police-numbers">{deck.totalCards}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">TOTAL</div>
               </div>
-              <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
-                <div className="text-lg font-bold text-green-600 font-police-numbers">{deck.dueCards}</div>
-                <div className="text-xs text-green-600 dark:text-green-400 font-police-body uppercase">DEVIDO</div>
+              <div className="text-center p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="text-lg font-bold text-accent-500 font-police-numbers">{deck.dueCards}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">DEVIDO</div>
               </div>
-              <div className="text-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
-                <div className="text-lg font-bold text-purple-600 font-police-numbers">{deck.newCards}</div>
-                <div className="text-xs text-purple-600 dark:text-purple-400 font-police-body uppercase">NOVO</div>
+              <div className="text-center p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="text-lg font-bold text-gray-900 dark:text-white font-police-numbers">{deck.newCards}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">NOVO</div>
               </div>
             </div>
             
@@ -901,7 +933,7 @@ export default function FlashcardsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-blue-500 hover:text-blue-600"
+                    className="flex-1 font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-accent-500/30 hover:text-accent-500"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleEditDeck(deck);
@@ -913,7 +945,7 @@ export default function FlashcardsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-red-500 hover:text-red-600"
+                    className="flex-1 font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-gray-500 hover:text-gray-600"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteDeck(deck);
@@ -942,7 +974,7 @@ export default function FlashcardsPage() {
           {/* Tactical stripe */}
           <div className={cn(
             "absolute top-0 right-0 w-1 h-full",
-            deck.isUserDeck ? "bg-purple-500" : "bg-accent-500"
+            deck.isUserDeck ? "bg-accent-500" : "bg-accent-500"
           )} />
           
           <CardContent className="p-4">
@@ -957,8 +989,8 @@ export default function FlashcardsPage() {
                     className={cn(
                       "font-police-body text-xs uppercase tracking-wider border-2 flex-shrink-0",
                       deck.isUserDeck 
-                        ? "bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-500" 
-                        : "bg-gray-100 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400 border-gray-500"
+                        ? "bg-gray-100 dark:bg-gray-900/20 text-accent-500 border-accent-500/30" 
+                        : "bg-gray-100 dark:bg-gray-900/20 text-gray-700 dark:text-gray-400 border-gray-500/30"
                     )}
                   >
                     {deck.isUserDeck ? '👤' : '🏛️'}
@@ -975,16 +1007,16 @@ export default function FlashcardsPage() {
               {/* Contadores compactos */}
               <div className="flex gap-3 flex-shrink-0">
                 <div className="text-center">
-                  <div className="text-lg font-bold text-blue-600 font-police-numbers">{deck.totalCards}</div>
-                  <div className="text-xs text-blue-600 dark:text-blue-400 font-police-body uppercase">TOTAL</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white font-police-numbers">{deck.totalCards}</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">TOTAL</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-green-600 font-police-numbers">{deck.dueCards}</div>
-                  <div className="text-xs text-green-600 dark:text-green-400 font-police-body uppercase">DEVIDO</div>
+                  <div className="text-lg font-bold text-accent-500 font-police-numbers">{deck.dueCards}</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">DEVIDO</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-purple-600 font-police-numbers">{deck.newCards}</div>
-                  <div className="text-xs text-purple-600 dark:text-purple-400 font-police-body uppercase">NOVO</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white font-police-numbers">{deck.newCards}</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 font-police-body uppercase">NOVO</div>
                 </div>
               </div>
               
@@ -995,7 +1027,7 @@ export default function FlashcardsPage() {
                   className="bg-accent-500 hover:bg-accent-600 dark:bg-gray-100 dark:hover:bg-accent-650 text-black dark:text-black hover:text-black dark:hover:text-white font-police-body font-semibold uppercase tracking-wider"
                   onClick={(e) => {
                     e.stopPropagation();
-                    startStudy(deck);
+                    startStudySession(deck);
                   }}
                 >
                   <Play className="w-3 h-3 mr-1" />
@@ -1007,7 +1039,7 @@ export default function FlashcardsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-blue-500 hover:text-blue-600"
+                      className="font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-accent-500/30 hover:text-accent-500"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEditDeck(deck);
@@ -1018,7 +1050,7 @@ export default function FlashcardsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-red-500 hover:text-red-600"
+                      className="font-police-body uppercase tracking-wider text-xs border-gray-300 dark:border-gray-600 hover:border-gray-500 hover:text-gray-600"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteDeck(deck);

@@ -34,6 +34,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { categoryService, Category, CategoryType } from '@/services/categoryService';
 import { flashcardDeckService, CreateDeckData } from '@/services/flashcardDeckService';
+import { flashcardService } from '@/services/flashcardService';
 import ClozeEditor from '@/components/ClozeEditor';
 import ImageUploader from '@/components/ImageUploader';
 import AnkiImportExport from '@/components/AnkiImportExport';
@@ -809,7 +810,7 @@ export default function NewFlashcardDeck() {
       const deckData: CreateDeckData = {
         name: formData.title,
         description: formData.description,
-        subject: formData.selectedCategories.join(','), // Converter categorias para string
+        category: formData.selectedCategories.join(','), // Converter categorias para string
         is_public: formData.isPublic
       };
 
@@ -819,22 +820,61 @@ export default function NewFlashcardDeck() {
       if (response.success && response.data) {
         const createdDeckId = response.data.id;
         
-        // Se há flashcards criados, adicionar ao deck
+        // Se há flashcards criados, criar via API e adicionar ao deck
         if (deckFlashcards.length > 0) {
-          toast.loading(`Adicionando ${deckFlashcards.length} flashcards ao arsenal...`, { id: 'save' });
+          toast.loading(`Criando ${deckFlashcards.length} flashcards...`, { id: 'save' });
           
-          // TODO: Implementar criação de flashcards via API
-          // Por enquanto, simular sucesso
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          const createdFlashcardIds: string[] = [];
           
-          const finalFormData = {
-            ...formData,
-            tags: tagsList.join(','),
-            status: isDraft ? 'draft' : 'published',
-            flashcardsCount: deckFlashcards.length
-          };
+          // Criar cada flashcard individualmente via API
+          for (const flashcard of deckFlashcards) {
+            try {
+              const flashcardData = {
+                type: flashcard.type,
+                category: flashcard.category,
+                subcategory: flashcard.subcategory,
+                difficulty: flashcard.difficulty || 'medium',
+                tags: flashcard.tags || [],
+                status: 'published',
+                front: flashcard.front,
+                back: flashcard.back,
+                extra: flashcard.extra,
+                text: flashcard.text,
+                question: flashcard.question,
+                options: flashcard.options,
+                correct: flashcard.correct,
+                explanation: flashcard.explanation,
+                statement: flashcard.statement,
+                answer: flashcard.answer,
+                hint: flashcard.hint,
+                image: flashcard.image,
+                occlusion_areas: flashcard.occlusionAreas || []
+              };
+              
+              const flashcardResponse = await flashcardService.createFlashcard(flashcardData);
+              if (flashcardResponse.success && flashcardResponse.data) {
+                createdFlashcardIds.push(flashcardResponse.data.id);
+              }
+            } catch (error) {
+              console.error('Erro ao criar flashcard:', error);
+              // Continua criando os outros flashcards mesmo se um falhar
+            }
+          }
           
-          toast.success(`OPERAÇÃO CONCLUÍDA: Arsenal criado com ${deckFlashcards.length} flashcards!`, { id: 'save' });
+          // Adicionar flashcards criados ao deck
+          if (createdFlashcardIds.length > 0) {
+            toast.loading(`Adicionando ${createdFlashcardIds.length} flashcards ao arsenal...`, { id: 'save' });
+            
+            try {
+              await flashcardDeckService.addFlashcardsToDeck(createdDeckId, createdFlashcardIds);
+              toast.success(`OPERAÇÃO CONCLUÍDA: Arsenal criado com ${createdFlashcardIds.length} flashcards salvos!`, { id: 'save' });
+            } catch (error) {
+              console.error('Erro ao adicionar flashcards ao deck:', error);
+              toast.success(`OPERAÇÃO PARCIAL: Arsenal criado, ${createdFlashcardIds.length} flashcards salvos separadamente.`, { id: 'save' });
+            }
+          } else {
+            toast.error('ERRO: Nenhum flashcard pôde ser salvo', { id: 'save' });
+          }
         } else {
           const finalFormData = {
             ...formData,
@@ -2585,6 +2625,25 @@ export default function NewFlashcardDeck() {
                   </div>
                 </div>
               )}
+              
+              {/* Navigation buttons */}
+              <div className="flex justify-between pt-6">
+                <Button
+                  variant="outline"
+                  onClick={prevStep}
+                  className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  ETAPA ANTERIOR
+                </Button>
+                <Button
+                  onClick={nextStep}
+                  className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
+                >
+                  REVISÃO FINAL
+                  <ArrowLeft className="w-4 h-4 rotate-180" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}

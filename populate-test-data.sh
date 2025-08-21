@@ -1,263 +1,259 @@
 #!/bin/bash
 
-# Script para popular dados de teste no backend
-echo "====================================="
-echo "🎯 POPULANDO DADOS DE TESTE"
-echo "====================================="
+echo "🚀 POPULANDO DADOS DE TESTE ORGANIZADOS"
+echo "========================================"
 echo ""
 
-# Configurações
-API_URL="http://173.208.151.106:8180/api/v1"
-
-# Cores
+# Cores para output
 GREEN='\033[0;32m'
-RED='\033[0;31m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
-# Login como admin
-echo -e "${BLUE}🔐 Autenticando como admin...${NC}"
-LOGIN_RESPONSE=$(curl -s -X POST "$API_URL/auth/login" \
+# URL da API
+API_URL="http://localhost:8180/api/v1"
+
+# Obter token de admin
+echo -e "${YELLOW}Fazendo login como admin...${NC}"
+TOKEN=$(curl -s -X POST "$API_URL/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@studypro.com","password":"Admin@123"}')
-
-TOKEN=$(echo $LOGIN_RESPONSE | grep -o '"token":"[^"]*' | sed 's/"token":"//')
+  -d '{"email":"admin@studypro.com","password":"Admin@123"}' | \
+  python3 -c "import sys, json; print(json.load(sys.stdin).get('token', ''))")
 
 if [ -z "$TOKEN" ]; then
-    echo -e "${RED}❌ Falha na autenticação${NC}"
+    echo -e "${RED}❌ Erro ao fazer login. Verifique se o servidor está rodando.${NC}"
     exit 1
 fi
 
-echo -e "${GREEN}✅ Autenticado com sucesso${NC}"
+echo -e "${GREEN}✅ Login realizado com sucesso${NC}"
 echo ""
 
-# Função para criar dados
-create_data() {
-    local ENDPOINT=$1
-    local DATA=$2
-    local DESCRIPTION=$3
-    
-    echo -e "${BLUE}📡 Criando:${NC} $DESCRIPTION"
-    
-    RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
-        -X POST \
-        -H "Authorization: Bearer $TOKEN" \
-        -H "Content-Type: application/json" \
-        -d "$DATA" \
-        "$API_URL$ENDPOINT")
-    
-    HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
-    
-    if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "201" ]; then
-        echo -e "   ${GREEN}✅ Criado com sucesso${NC}"
-    else
-        echo -e "   ${YELLOW}⚠️ Erro ao criar (Status: $HTTP_STATUS)${NC}"
-    fi
-    echo ""
-}
+# ======================
+# CRIAR CATEGORIAS
+# ======================
+echo -e "${BLUE}📚 CRIANDO CATEGORIAS ORGANIZADAS...${NC}"
+echo ""
 
-# ============================================
-# POPULAR DADOS DE TESTE
-# ============================================
+# Categorias principais (Disciplinas)
+declare -a MAIN_CATEGORIES=(
+  '{"name":"Direito","type":"subject","description":"Disciplinas jurídicas"}'
+  '{"name":"Português","type":"subject","description":"Língua portuguesa e literatura"}'
+  '{"name":"Matemática","type":"subject","description":"Matemática e raciocínio lógico"}'
+  '{"name":"Informática","type":"subject","description":"Tecnologia e sistemas"}'
+  '{"name":"Administração","type":"subject","description":"Gestão e administração pública"}'
+)
 
-echo "=== 📚 CRIANDO CURSOS ==="
-for i in {1..5}; do
-    create_data "/courses" '{
-        "title": "Curso Tático '$i' - Operações Especiais",
-        "description": "Treinamento avançado em operações táticas nível '$i'",
-        "category": "POLÍCIA FEDERAL",
-        "price": '$((1000 + i * 100))',
-        "difficulty_level": "intermediate",
-        "duration_hours": '$((40 + i * 10))',
-        "duration_months": '$i',
-        "requirements": ["Ensino médio completo", "Aptidão física"],
-        "objectives": ["Dominar técnicas táticas", "Liderança operacional"],
-        "target_audience": "Agentes de segurança pública",
-        "certification_available": true,
-        "instructor_name": "Comandante Silva",
-        "thumbnail": "/images/course-'$i'.jpg",
-        "status": "published"
-    }' "Curso Tático $i"
+# Array para armazenar IDs das categorias criadas
+declare -A CATEGORY_IDS
+
+for category in "${MAIN_CATEGORIES[@]}"; do
+  NAME=$(echo "$category" | python3 -c "import sys, json; print(json.load(sys.stdin)['name'])")
+  echo "Criando categoria: $NAME"
+  
+  RESPONSE=$(curl -s -X POST "$API_URL/categories" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "$category")
+  
+  ID=$(echo "$RESPONSE" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('data', {}).get('id', ''))" 2>/dev/null)
+  
+  if [ ! -z "$ID" ]; then
+    CATEGORY_IDS[$NAME]=$ID
+    echo -e "${GREEN}  ✅ $NAME criada (ID: $ID)${NC}"
+  else
+    echo -e "${YELLOW}  ⚠️  $NAME pode já existir${NC}"
+  fi
 done
-
-echo "=== 📖 CRIANDO RESUMOS ==="
-for i in {1..10}; do
-    create_data "/summaries" '{
-        "title": "Resumo Tático '$i' - Manual de Operações",
-        "description": "Resumo completo sobre procedimentos operacionais padrão",
-        "content": "## Introdução\nEste resumo aborda os principais conceitos táticos...\n\n## Seção 1\nProcedimentos básicos de abordagem...\n\n## Seção 2\nTécnicas avançadas de infiltração...",
-        "category": "Táticas Policiais",
-        "subcategory": "Operações Especiais",
-        "difficulty": "intermediate",
-        "author": "Major Santos",
-        "tags": ["tática", "operações", "segurança"],
-        "is_premium": '$([ $((i % 2)) -eq 0 ] && echo "true" || echo "false")',
-        "status": "published"
-    }' "Resumo Tático $i"
-done
-
-echo "=== ⚖️ CRIANDO LEGISLAÇÕES ==="
-LEGISLATION_TYPES=("lei" "decreto" "portaria" "resolucao" "instrucao_normativa")
-for i in {1..15}; do
-    TYPE_INDEX=$((i % 5))
-    TYPE=${LEGISLATION_TYPES[$TYPE_INDEX]}
-    create_data "/legislation" '{
-        "title": "Legislação '$i'/2024 - Normas de Segurança Pública",
-        "type": "'$TYPE'",
-        "number": "'$i'/2024",
-        "date": "2024-'$(printf "%02d" $((i % 12 + 1)))'-15",
-        "summary": "Dispõe sobre as normas e procedimentos de segurança pública aplicáveis às forças policiais",
-        "content": "CAPÍTULO I - DAS DISPOSIÇÕES GERAIS\n\nArt. 1º Esta '$TYPE' estabelece as diretrizes...\n\nArt. 2º São princípios fundamentais...",
-        "category": "Segurança Pública",
-        "tags": ["segurança", "polícia", "normas"],
-        "is_active": true,
-        "related_legislation": []
-    }' "Legislação $TYPE $i"
-done
-
-echo "=== ❓ CRIANDO QUESTÕES ==="
-DIFFICULTIES=("easy" "medium" "hard")
-for i in {1..20}; do
-    DIFF_INDEX=$((i % 3))
-    DIFFICULTY=${DIFFICULTIES[$DIFF_INDEX]}
-    create_data "/questions" '{
-        "question": "Questão Tática '$i': Qual é o procedimento correto em uma operação de alto risco?",
-        "type": "multiple_choice",
-        "difficulty": "'$DIFFICULTY'",
-        "category": "Táticas Policiais",
-        "subcategory": "Operações Especiais",
-        "topic": "Procedimentos de Segurança",
-        "options": [
-            "Avaliar a situação e solicitar reforços",
-            "Agir imediatamente sem análise prévia",
-            "Aguardar ordens superiores sempre",
-            "Recuar e abandonar a operação"
-        ],
-        "correct_answer": 0,
-        "explanation": "A avaliação da situação é fundamental antes de qualquer ação em operações de alto risco.",
-        "points": '$((i * 10))',
-        "tags": ["tática", "segurança", "operações"]
-    }' "Questão $DIFFICULTY $i"
-done
-
-echo "=== 🎴 CRIANDO FLASHCARDS ==="
-FLASHCARD_TYPES=("basic" "cloze" "multiple_choice" "true_false" "type_answer")
-for i in {1..20}; do
-    TYPE_INDEX=$((i % 5))
-    TYPE=${FLASHCARD_TYPES[$TYPE_INDEX]}
-    create_data "/flashcards" '{
-        "type": "'$TYPE'",
-        "front": "Flashcard Tático '$i': Conceito de Segurança Operacional",
-        "back": "Conjunto de medidas preventivas para garantir a integridade da operação",
-        "category": "Segurança",
-        "subcategory": "Operações",
-        "difficulty": "medium",
-        "tags": ["segurança", "tática", "operações"],
-        "course_id": null,
-        "deck_id": null
-    }' "Flashcard $TYPE $i"
-done
-
-echo "=== 📝 CRIANDO SIMULADOS ==="
-for i in {1..5}; do
-    create_data "/mockexams" '{
-        "title": "Simulado Tático '$i' - Avaliação Operacional",
-        "description": "Teste seus conhecimentos em procedimentos táticos e operacionais",
-        "category": "Táticas Policiais",
-        "difficulty": "medium",
-        "duration_minutes": '$((60 + i * 15))',
-        "passing_score": 70,
-        "question_count": '$((20 + i * 5))',
-        "instructions": "Leia atentamente cada questão antes de responder",
-        "is_active": true,
-        "tags": ["simulado", "tática", "avaliação"]
-    }' "Simulado $i"
-done
-
-echo "=== 📋 CRIANDO PROVAS ANTERIORES ==="
-ORGANIZATIONS=("Polícia Federal" "Polícia Civil SP" "Polícia Militar RJ" "Bombeiros DF" "Guarda Municipal SP")
-BANCAS=("CESPE" "FCC" "VUNESP" "FGV" "IDECAN")
-for i in {1..20}; do
-    ORG_INDEX=$((i % 5))
-    BANCA_INDEX=$((i % 5))
-    create_data "/previousexams" '{
-        "title": "Concurso '${ORGANIZATIONS[$ORG_INDEX]}' - 202'$((i % 5))'",
-        "organization": "'${ORGANIZATIONS[$ORG_INDEX]}'",
-        "banca": "'${BANCAS[$BANCA_INDEX]}'",
-        "year": 202'$((i % 5))',
-        "position": "Agente",
-        "description": "Prova aplicada no concurso para agente",
-        "question_count": '$((50 + i * 5))',
-        "difficulty": "medium",
-        "tags": ["concurso", "prova", "'${ORGANIZATIONS[$ORG_INDEX]}'"]
-    }' "Prova ${ORGANIZATIONS[$ORG_INDEX]} 202$((i % 5))"
-done
-
-echo "=== 💬 CRIANDO COMENTÁRIOS ==="
-for i in {1..10}; do
-    create_data "/comments" '{
-        "entity_type": "course",
-        "entity_id": "course_'$i'",
-        "content": "Excelente material de estudo! Recomendo fortemente este conteúdo.",
-        "rating": '$((3 + (i % 3)))'
-    }' "Comentário $i"
-done
-
-echo "=== 📅 CRIANDO TAREFAS ==="
-for i in {1..10}; do
-    create_data "/schedule/tasks" '{
-        "title": "Tarefa Operacional '$i'",
-        "description": "Completar módulo de treinamento tático",
-        "priority": "high",
-        "due_date": "2024-12-'$(printf "%02d" $((i + 20)))'",
-        "category": "Treinamento",
-        "status": "pending"
-    }' "Tarefa $i"
-done
-
-echo "=== 📊 CRIANDO DADOS DE ANALYTICS ==="
-# Analytics geralmente são gerados automaticamente, mas vamos criar alguns dados base
-create_data "/analytics/track" '{
-    "event": "course_view",
-    "data": {
-        "course_id": "1",
-        "duration": 300,
-        "completion": 25
-    }
-}' "Analytics - Visualização de Curso"
-
-create_data "/analytics/track" '{
-    "event": "quiz_completed",
-    "data": {
-        "quiz_id": "1",
-        "score": 85,
-        "time_spent": 1200
-    }
-}' "Analytics - Quiz Completado"
 
 echo ""
-echo "====================================="
-echo "📊 RESUMO DA POPULAÇÃO DE DADOS"
-echo "====================================="
-echo ""
-echo -e "${GREEN}✅ Processo concluído!${NC}"
-echo ""
-echo "Dados criados:"
-echo "- 5 Cursos"
-echo "- 10 Resumos"
-echo "- 15 Legislações"
-echo "- 20 Questões"
-echo "- 20 Flashcards"
-echo "- 5 Simulados"
-echo "- 20 Provas Anteriores"
-echo "- 10 Comentários"
-echo "- 10 Tarefas"
-echo "- Dados de Analytics"
-echo ""
-echo "Execute o teste de integração novamente para verificar:"
-echo "./test-admin-final.sh"
-echo ""
-echo "====================================="
 
-exit 0
+# Criar subcategorias para Direito
+echo "Criando subcategorias para Direito..."
+DIREITO_ID=${CATEGORY_IDS[Direito]}
+if [ ! -z "$DIREITO_ID" ]; then
+  declare -a DIREITO_SUBS=(
+    '{"name":"Direito Constitucional","type":"topic","parent_id":"'$DIREITO_ID'","description":"Constituição Federal"}'
+    '{"name":"Direito Administrativo","type":"topic","parent_id":"'$DIREITO_ID'","description":"Administração pública"}'
+    '{"name":"Direito Penal","type":"topic","parent_id":"'$DIREITO_ID'","description":"Código Penal"}'
+    '{"name":"Direito Civil","type":"topic","parent_id":"'$DIREITO_ID'","description":"Código Civil"}'
+    '{"name":"Direito Processual","type":"topic","parent_id":"'$DIREITO_ID'","description":"Processo civil e penal"}'
+  )
+  
+  for sub in "${DIREITO_SUBS[@]}"; do
+    NAME=$(echo "$sub" | python3 -c "import sys, json; print(json.load(sys.stdin)['name'])")
+    echo "  - $NAME"
+    curl -s -X POST "$API_URL/categories" \
+      -H "Authorization: Bearer $TOKEN" \
+      -H "Content-Type: application/json" \
+      -d "$sub" > /dev/null
+  done
+fi
+
+# Criar subcategorias para Português
+echo "Criando subcategorias para Português..."
+PORTUGUES_ID=${CATEGORY_IDS[Português]}
+if [ ! -z "$PORTUGUES_ID" ]; then
+  declare -a PORTUGUES_SUBS=(
+    '{"name":"Gramática","type":"topic","parent_id":"'$PORTUGUES_ID'","description":"Regras gramaticais"}'
+    '{"name":"Interpretação de Texto","type":"topic","parent_id":"'$PORTUGUES_ID'","description":"Compreensão textual"}'
+    '{"name":"Redação","type":"topic","parent_id":"'$PORTUGUES_ID'","description":"Produção textual"}'
+    '{"name":"Ortografia","type":"topic","parent_id":"'$PORTUGUES_ID'","description":"Regras ortográficas"}'
+  )
+  
+  for sub in "${PORTUGUES_SUBS[@]}"; do
+    NAME=$(echo "$sub" | python3 -c "import sys, json; print(json.load(sys.stdin)['name'])")
+    echo "  - $NAME"
+    curl -s -X POST "$API_URL/categories" \
+      -H "Authorization: Bearer $TOKEN" \
+      -H "Content-Type: application/json" \
+      -d "$sub" > /dev/null
+  done
+fi
+
+# Criar subcategorias para Matemática
+echo "Criando subcategorias para Matemática..."
+MATEMATICA_ID=${CATEGORY_IDS[Matemática]}
+if [ ! -z "$MATEMATICA_ID" ]; then
+  declare -a MATEMATICA_SUBS=(
+    '{"name":"Matemática Financeira","type":"topic","parent_id":"'$MATEMATICA_ID'","description":"Juros e investimentos"}'
+    '{"name":"Raciocínio Lógico","type":"topic","parent_id":"'$MATEMATICA_ID'","description":"Lógica proposicional"}'
+    '{"name":"Estatística","type":"topic","parent_id":"'$MATEMATICA_ID'","description":"Probabilidade e estatística"}'
+    '{"name":"Geometria","type":"topic","parent_id":"'$MATEMATICA_ID'","description":"Formas e medidas"}'
+  )
+  
+  for sub in "${MATEMATICA_SUBS[@]}"; do
+    NAME=$(echo "$sub" | python3 -c "import sys, json; print(json.load(sys.stdin)['name'])")
+    echo "  - $NAME"
+    curl -s -X POST "$API_URL/categories" \
+      -H "Authorization: Bearer $TOKEN" \
+      -H "Content-Type: application/json" \
+      -d "$sub" > /dev/null
+  done
+fi
+
+echo ""
+echo -e "${GREEN}✅ Categorias criadas com sucesso!${NC}"
+echo ""
+
+# ======================
+# CRIAR CURSOS
+# ======================
+echo -e "${BLUE}📖 CRIANDO CURSOS...${NC}"
+echo ""
+
+declare -a COURSES=(
+  '{"title":"Direito Constitucional Completo","description":"Curso completo de Direito Constitucional","category":"Direito","subcategory":"Direito Constitucional","price":299.90,"duration_hours":120,"instructor_name":"Dr. João Silva","level":"intermediate","is_published":true}'
+  '{"title":"Direito Administrativo para Concursos","description":"Preparação completa para concursos públicos","category":"Direito","subcategory":"Direito Administrativo","price":249.90,"duration_hours":80,"instructor_name":"Dra. Maria Santos","level":"intermediate","is_published":true}'
+  '{"title":"Português para Concursos","description":"Gramática e interpretação de texto","category":"Português","subcategory":"Gramática","price":199.90,"duration_hours":60,"instructor_name":"Prof. Carlos Lima","level":"beginner","is_published":true}'
+  '{"title":"Matemática Financeira Aplicada","description":"Conceitos e aplicações práticas","category":"Matemática","subcategory":"Matemática Financeira","price":179.90,"duration_hours":40,"instructor_name":"Prof. Ana Costa","level":"intermediate","is_published":true}'
+  '{"title":"Raciocínio Lógico Descomplicado","description":"Lógica para concursos públicos","category":"Matemática","subcategory":"Raciocínio Lógico","price":159.90,"duration_hours":50,"instructor_name":"Prof. Pedro Oliveira","level":"beginner","is_published":true}'
+  '{"title":"Informática Básica","description":"Conceitos fundamentais de informática","category":"Informática","subcategory":"","price":129.90,"duration_hours":30,"instructor_name":"Prof. Lucas Ferreira","level":"beginner","is_published":true}'
+  '{"title":"Administração Pública","description":"Princípios e práticas da administração pública","category":"Administração","subcategory":"","price":219.90,"duration_hours":70,"instructor_name":"Prof. Roberto Alves","level":"intermediate","is_published":true}'
+)
+
+for course in "${COURSES[@]}"; do
+  TITLE=$(echo "$course" | python3 -c "import sys, json; print(json.load(sys.stdin)['title'])")
+  echo "Criando curso: $TITLE"
+  
+  curl -s -X POST "$API_URL/courses" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "$course" > /dev/null
+  
+  echo -e "${GREEN}  ✅ Curso criado${NC}"
+done
+
+echo ""
+echo -e "${GREEN}✅ Cursos criados com sucesso!${NC}"
+echo ""
+
+# ======================
+# CRIAR FLASHCARDS
+# ======================
+echo -e "${BLUE}🎴 CRIANDO FLASHCARDS...${NC}"
+echo ""
+
+declare -a FLASHCARDS=(
+  # Direito Constitucional
+  '{"front":"O que são direitos fundamentais?","back":"São direitos básicos individuais, sociais, políticos e jurídicos previstos na Constituição Federal","type":"basic","category":"Direito","subcategory":"Direito Constitucional","difficulty":"easy","tags":["constituição","direitos"]}'
+  '{"front":"Quais são os poderes da União?","back":"Executivo, Legislativo e Judiciário - independentes e harmônicos entre si","type":"basic","category":"Direito","subcategory":"Direito Constitucional","difficulty":"easy","tags":["poderes","união"]}'
+  '{"front":"O que é cláusula pétrea?","back":"São dispositivos constitucionais que não podem ser alterados nem por emenda constitucional","type":"basic","category":"Direito","subcategory":"Direito Constitucional","difficulty":"medium","tags":["constituição","cláusula pétrea"]}'
+  
+  # Direito Administrativo
+  '{"front":"O que é licitação?","back":"Procedimento administrativo para contratação de serviços ou aquisição de produtos pelo poder público","type":"basic","category":"Direito","subcategory":"Direito Administrativo","difficulty":"easy","tags":["licitação","administração"]}'
+  '{"front":"Quais são os princípios da administração pública?","back":"Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência (LIMPE)","type":"basic","category":"Direito","subcategory":"Direito Administrativo","difficulty":"easy","tags":["princípios","administração"]}'
+  
+  # Português
+  '{"front":"O que é sujeito?","back":"É o termo da oração que indica quem pratica ou sofre a ação expressa pelo verbo","type":"basic","category":"Português","subcategory":"Gramática","difficulty":"easy","tags":["gramática","sujeito"]}'
+  '{"front":"Diferença entre mas e mais?","back":"MAS = conjunção adversativa (porém). MAIS = advérbio de intensidade (quantidade)","type":"basic","category":"Português","subcategory":"Ortografia","difficulty":"easy","tags":["ortografia","gramática"]}'
+  
+  # Matemática
+  '{"front":"Fórmula dos juros simples?","back":"J = C × i × t (Juros = Capital × taxa × tempo)","type":"basic","category":"Matemática","subcategory":"Matemática Financeira","difficulty":"easy","tags":["juros","matemática"]}'
+  '{"front":"O que é proposição?","back":"É uma sentença declarativa que pode ser classificada como verdadeira ou falsa","type":"basic","category":"Matemática","subcategory":"Raciocínio Lógico","difficulty":"easy","tags":["lógica","proposição"]}'
+  
+  # Informática
+  '{"front":"O que é CPU?","back":"Central Processing Unit - Unidade Central de Processamento, o cérebro do computador","type":"basic","category":"Informática","subcategory":"","difficulty":"easy","tags":["hardware","cpu"]}'
+  '{"front":"Diferença entre RAM e ROM?","back":"RAM: memória volátil de acesso aleatório. ROM: memória somente leitura, não volátil","type":"basic","category":"Informática","subcategory":"","difficulty":"medium","tags":["memória","hardware"]}'
+)
+
+for flashcard in "${FLASHCARDS[@]}"; do
+  FRONT=$(echo "$flashcard" | python3 -c "import sys, json; print(json.load(sys.stdin)['front'][:30])")
+  echo "Criando flashcard: $FRONT..."
+  
+  curl -s -X POST "$API_URL/flashcards" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "$flashcard" > /dev/null
+  
+  echo -e "${GREEN}  ✅ Flashcard criado${NC}"
+done
+
+echo ""
+echo -e "${GREEN}✅ Flashcards criados com sucesso!${NC}"
+echo ""
+
+# ======================
+# CRIAR DECKS
+# ======================
+echo -e "${BLUE}📚 CRIANDO DECKS DE FLASHCARDS...${NC}"
+echo ""
+
+declare -a DECKS=(
+  '{"name":"Direito Constitucional - Básico","description":"Conceitos fundamentais de Direito Constitucional","category":"Direito","subcategory":"Direito Constitucional","tags":["constituição","concursos"],"isPublic":true}'
+  '{"name":"Administração Pública - LIMPE","description":"Princípios da Administração Pública","category":"Direito","subcategory":"Direito Administrativo","tags":["administração","princípios"],"isPublic":true}'
+  '{"name":"Português - Gramática Essencial","description":"Conceitos básicos de gramática portuguesa","category":"Português","subcategory":"Gramática","tags":["gramática","português"],"isPublic":true}'
+  '{"name":"Matemática Financeira - Fórmulas","description":"Principais fórmulas de matemática financeira","category":"Matemática","subcategory":"Matemática Financeira","tags":["matemática","finanças"],"isPublic":true}'
+  '{"name":"Raciocínio Lógico - Introdução","description":"Conceitos introdutórios de lógica proposicional","category":"Matemática","subcategory":"Raciocínio Lógico","tags":["lógica","raciocínio"],"isPublic":true}'
+  '{"name":"Informática Básica","description":"Conceitos fundamentais de hardware e software","category":"Informática","subcategory":"","tags":["informática","hardware","software"],"isPublic":true}'
+)
+
+for deck in "${DECKS[@]}"; do
+  NAME=$(echo "$deck" | python3 -c "import sys, json; print(json.load(sys.stdin)['name'])")
+  echo "Criando deck: $NAME"
+  
+  curl -s -X POST "$API_URL/flashcard-decks" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "$deck" > /dev/null
+  
+  echo -e "${GREEN}  ✅ Deck criado${NC}"
+done
+
+echo ""
+echo -e "${GREEN}✅ Decks criados com sucesso!${NC}"
+echo ""
+
+echo "========================================="
+echo -e "${GREEN}🎉 DADOS DE TESTE CRIADOS COM SUCESSO!${NC}"
+echo "========================================="
+echo ""
+echo "Resumo:"
+echo "  📚 Categorias principais: 5"
+echo "  📂 Subcategorias: ~15"
+echo "  📖 Cursos: 7"
+echo "  🎴 Flashcards: 11"
+echo "  📚 Decks: 6"
+echo ""
+echo "Acesse http://localhost:5273/admin/flashcards para testar os filtros!"
+echo ""

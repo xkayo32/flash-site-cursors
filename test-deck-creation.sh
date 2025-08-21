@@ -1,102 +1,97 @@
 #!/bin/bash
 
-echo "======================================="
-echo "🎯 NOVA CRIAÇÃO DE DECK COM FLASHCARDS INTEGRADA"
-echo "======================================="
+echo "===== Testing Deck Creation and Management ====="
+
+# Get fresh token
+echo "1. Getting auth token..."
+TOKEN=$(curl -s -X POST http://localhost:8180/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@studypro.com","password":"Admin@123"}' | \
+  python3 -c "import json, sys; print(json.load(sys.stdin)['token'])")
+
+echo "Token obtained successfully"
 echo ""
 
-# Cores para output
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-RED='\033[0;31m'
-PURPLE='\033[0;35m'
-NC='\033[0m' # No Color
+# Test 1: List existing decks
+echo "2. Listing existing decks:"
+curl -s "http://localhost:8180/api/v1/flashcard-decks" \
+  -H "Authorization: Bearer $TOKEN" | \
+  python3 -c "import json, sys; d=json.load(sys.stdin); print(f'  Total decks: {d.get(\"total\", 0)}')"
 
-echo -e "${GREEN}🏆 FLUXO DE CRIAÇÃO TOTALMENTE INTEGRADO!${NC}"
-echo ""
-echo "======================================="
-echo "📋 NOVO WIZARD DE 4 ETAPAS:"
-echo "======================================="
-echo ""
+# Test 2: Create a new deck
+echo -e "\n3. Creating a new test deck:"
+DECK_RESPONSE=$(curl -s -X POST "http://localhost:8180/api/v1/flashcard-decks" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Deck de Teste - Direito Constitucional",
+    "description": "Deck de teste para verificar salvamento",
+    "category": "Direito",
+    "flashcard_ids": []
+  }')
 
-echo -e "${PURPLE}📝 ETAPA 1: BRIEFING INICIAL${NC}"
-echo "   → Título do deck"
-echo "   → Descrição detalhada" 
-echo "   → Seleção de categorias (com criação rápida)"
-echo "   → Validação obrigatória para prosseguir"
-echo ""
+echo "$DECK_RESPONSE" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+if d.get('success'):
+    print(f'  ✓ Deck created: {d[\"deck\"][\"name\"]}')
+    print(f'  ID: {d[\"deck\"][\"id\"]}')
+else:
+    print(f'  ✗ Error: {d.get(\"message\", \"Unknown error\")}')
+"
 
-echo -e "${PURPLE}⚙️ ETAPA 2: CONFIGURAÇÕES TÁTICAS${NC}"
-echo "   → Método de estudo (com configurações Anki-style)"
-echo "   → Configurações avançadas (quando Repetição Espaçada)"
-echo "   → Limites diários, intervalos, ease factor"
-echo "   → Número máximo de cartões"
-echo "   → Visibilidade (público/privado)"
-echo ""
+DECK_ID=$(echo "$DECK_RESPONSE" | python3 -c "import json, sys; print(json.load(sys.stdin).get('deck', {}).get('id', ''))")
 
-echo -e "${PURPLE}🎯 ETAPA 3: CRIAÇÃO DE ARSENAL (NOVA!)${NC}"
-echo "   → Formulário integrado para criar flashcards"
-echo "   → 6 tipos disponíveis: Básico, Invertido, Lacunas, Múltipla, V/F, Digite"
-echo "   → Preview em tempo real dos flashcards criados"
-echo "   → Edição e exclusão de flashcards"
-echo "   → Estatísticas do arsenal (total, fáceis, médios, difíceis)"
-echo ""
+# Test 3: Create a flashcard for the deck
+echo -e "\n4. Creating a flashcard:"
+FLASHCARD_RESPONSE=$(curl -s -X POST "http://localhost:8180/api/v1/flashcards" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "basic",
+    "category": "Direito",
+    "subcategory": "Direito Constitucional",
+    "difficulty": "easy",
+    "status": "published",
+    "front": "O que é a Constituição Federal?",
+    "back": "É a lei fundamental e suprema do Brasil",
+    "tags": ["constituição", "teste"]
+  }')
 
-echo -e "${PURPLE}✅ ETAPA 4: CONFIRMAÇÃO FINAL${NC}"
-echo "   → Revisão completa de todas as configurações"
-echo "   → Preview dos flashcards criados"
-echo "   → Estatísticas do arsenal"
-echo "   → Salvamento final (deck + flashcards juntos)"
-echo ""
+FLASHCARD_ID=$(echo "$FLASHCARD_RESPONSE" | python3 -c "import json, sys; d=json.load(sys.stdin); print(d.get('data', {}).get('id', '') if d.get('success') else '')")
 
-echo "======================================="
-echo "🧪 COMO TESTAR O NOVO FLUXO:"
-echo "======================================="
-echo ""
+echo "$FLASHCARD_RESPONSE" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+if d.get('success'):
+    print(f'  ✓ Flashcard created: {d[\"data\"][\"front\"][:30]}...')
+    print(f'  ID: {d[\"data\"][\"id\"]}')
+else:
+    print(f'  ✗ Error: {d.get(\"message\", \"Unknown error\")}')
+"
 
-echo -e "${YELLOW}1. ACESSE O CRIADOR:${NC}"
-echo "   → URL: http://localhost:5273/admin/flashcards/new"
-echo ""
+# Test 4: Add flashcard to deck
+if [ ! -z "$DECK_ID" ] && [ ! -z "$FLASHCARD_ID" ]; then
+  echo -e "\n5. Adding flashcard to deck:"
+  curl -s -X POST "http://localhost:8180/api/v1/flashcard-decks/$DECK_ID/flashcards" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "{\"flashcard_ids\": [\"$FLASHCARD_ID\"]}" | \
+    python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+if d.get('success'):
+    print(f'  ✓ Flashcard added to deck')
+    print(f'  Total flashcards in deck: {len(d[\"deck\"][\"flashcard_ids\"])}')
+else:
+    print(f'  ✗ Error: {d.get(\"message\", \"Unknown error\")}')
+"
+fi
 
-echo -e "${YELLOW}2. ETAPA 1 - BRIEFING:${NC}"
-echo "   → Preencha título: \"Arsenal de Direito Constitucional\""
-echo "   → Descrição: \"Flashcards para concurso público\""
-echo "   → Selecione categorias ou crie novas"
-echo "   → Clique \"AVANÇAR\""
-echo ""
+# Test 5: Verify data in database
+echo -e "\n6. Verifying data in PostgreSQL:"
+docker exec estudos-postgres psql -U estudos_user -d estudos_db -c "SELECT COUNT(*) as deck_count FROM flashcard_decks;" 2>/dev/null | grep -E "[0-9]+" | head -1
 
-echo -e "${YELLOW}3. ETAPA 2 - CONFIGURAÇÕES:${NC}"
-echo "   → Escolha \"Repetição Espaçada (SM-2)\""
-echo "   → Veja as configurações Anki aparecerem"
-echo "   → Ajuste limites diários se desejar"
-echo "   → Clique \"AVANÇAR\""
-echo ""
+docker exec estudos-postgres psql -U estudos_user -d estudos_db -c "SELECT COUNT(*) as flashcard_count FROM flashcards;" 2>/dev/null | grep -E "[0-9]+" | head -1
 
-echo -e "${YELLOW}4. ETAPA 3 - CRIAÇÃO DE ARSENAL:${NC}"
-echo "   → Escolha tipo de flashcard (ex: Básico)"
-echo "   → Frente: \"O que é o princípio da legalidade?\""
-echo "   → Verso: \"Ninguém será obrigado a fazer ou deixar de fazer algo senão em virtude de lei\""
-echo "   → Clique \"ADICIONAR AO ARSENAL\""
-echo "   → Crie mais flashcards conforme desejar"
-echo "   → Clique \"AVANÇAR\""
-echo ""
-
-echo -e "${YELLOW}5. ETAPA 4 - CONFIRMAÇÃO:${NC}"
-echo "   → Revise todas as configurações"
-echo "   → Veja o preview dos flashcards criados"
-echo "   → Observe as estatísticas do arsenal"
-echo "   → Clique \"CRIAR ARSENAL\" para finalizar"
-echo ""
-
-echo "======================================="
-echo "🎯 URL PARA TESTE:"
-echo "======================================="
-echo ""
-echo -e "${YELLOW}🎮 Novo Criador de Deck Integrado:${NC}"
-echo "http://localhost:5273/admin/flashcards/new"
-echo ""
-
-echo "======================================="
-echo "🏆 CRIAÇÃO DE DECK COM FLASHCARDS 100% INTEGRADA!"
-echo "======================================="
+echo -e "\n===== Test Complete ====="

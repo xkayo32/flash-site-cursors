@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Frontend Auth</title>
+</head>
+<body>
+    <h1>Testing Frontend Auth and Flashcards</h1>
+    <div id="status"></div>
+    <div id="results"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:8180';
+        const statusEl = document.getElementById('status');
+        const resultsEl = document.getElementById('results');
+        
+        async function test() {
+            // 1. Login
+            statusEl.innerHTML = '<p>1. Logging in...</p>';
+            const loginRes = await fetch(`${API_URL}/api/v1/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: 'admin@studypro.com',
+                    password: 'Admin@123'
+                })
+            });
+            const loginData = await loginRes.json();
+            const token = loginData.token;
+            
+            statusEl.innerHTML += `<p>✓ Token obtained: ${token.substring(0, 20)}...</p>`;
+            
+            // Store token like the frontend does
+            localStorage.setItem('token', token);
+            localStorage.setItem('auth-storage', JSON.stringify({
+                state: {
+                    token: token,
+                    user: loginData.user,
+                    isAuthenticated: true
+                },
+                version: 0
+            }));
+            
+            statusEl.innerHTML += '<p>✓ Token stored in localStorage</p>';
+            
+            // 2. Test flashcards API
+            statusEl.innerHTML += '<p>2. Fetching flashcards...</p>';
+            const flashcardsRes = await fetch(`${API_URL}/api/v1/flashcards`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            const flashcardsData = await flashcardsRes.json();
+            
+            resultsEl.innerHTML = `
+                <h2>Results:</h2>
+                <p>Total flashcards: ${flashcardsData.total || 0}</p>
+                <p>Data length: ${(flashcardsData.data || []).length}</p>
+                <p>First flashcard: ${flashcardsData.data?.[0]?.front || 'N/A'}</p>
+                <h3>Categories found:</h3>
+                <ul>
+                    ${[...new Set(flashcardsData.data?.map(f => f.category) || [])].map(c => `<li>${c}</li>`).join('')}
+                </ul>
+            `;
+            
+            statusEl.innerHTML += '<p>✓ Flashcards fetched successfully</p>';
+            
+            // 3. Test with category filter
+            statusEl.innerHTML += '<p>3. Testing category filter...</p>';
+            const filteredRes = await fetch(`${API_URL}/api/v1/flashcards?category=Direito`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            const filteredData = await filteredRes.json();
+            
+            resultsEl.innerHTML += `
+                <h3>Filtered by "Direito":</h3>
+                <p>Total: ${filteredData.total || 0}</p>
+            `;
+            
+            statusEl.innerHTML += '<p>✓ All tests complete! Check localStorage in DevTools.</p>';
+        }
+        
+        test().catch(err => {
+            statusEl.innerHTML += `<p style="color: red;">Error: ${err.message}</p>`;
+        });
+    </script>
+</body>
+</html>
