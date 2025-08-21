@@ -518,8 +518,9 @@ export default function IndividualFlashcards() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
+        style={{ position: 'relative', zIndex: 2000 }}
       >
-        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative overflow-visible">
           {/* Corner accents */}
           <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-6">
@@ -732,6 +733,7 @@ export default function IndividualFlashcards() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
         className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}
+        style={{ position: 'relative', zIndex: 1 }}
       >
         {filteredCards.map((card) => 
           viewMode === 'grid' ? (
