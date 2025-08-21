@@ -683,13 +683,14 @@ export default function IndividualFlashcards() {
                       paddingRight: '2rem'
                     }}
                   >
-                  <option value="Todos">TIPO</option>
-                  {cardTypes.slice(1).map(type => (
-                    <option key={type} value={type}>
-                      {type.replace('_', ' ').toUpperCase()}
-                    </option>
-                  ))}
-                </select>
+                    <option value="Todos">TIPO</option>
+                    {cardTypes.slice(1).map(type => (
+                      <option key={type} value={type}>
+                        {type.replace('_', ' ').toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
                 <div className={`relative ${selectedDifficulty !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
                   <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
