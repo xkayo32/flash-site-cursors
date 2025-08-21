@@ -110,18 +110,32 @@ export default function NewFlashcardDeck() {
   const [deckFlashcards, setDeckFlashcards] = useState<any[]>([]);
   const [currentFlashcardForm, setCurrentFlashcardForm] = useState({
     type: 'basic',
+    // Campos básicos
     front: '',
     back: '',
+    text: '',       // Para tipo cloze
+    extra: '',      // Informações extras (basic_reversed e cloze)
+    // Campos para múltipla escolha
+    question: '',
+    options: ['', '', '', ''],
+    correct: 0,
+    // Campos para verdadeiro/falso
+    statement: '',
+    answer: 'true',
+    // Campos para digite a resposta
     hint: '',
+    // Campos para oclusão de imagem
+    image: '',
+    occlusionAreas: [] as any[],
+    // Campos gerais
     explanation: '',
-    // Campos extras estilo Anki
-    extra: '',      // Informações adicionais mostradas na resposta
+    difficulty: 'medium',
+    tags: [] as string[],
+    // Campos extras estilo Anki (opcionais)
     header: '',     // Contexto/cabeçalho do card
     source: '',     // Fonte/referência
     comments: '',   // Notas privadas (não aparecem no estudo)
-    images: [] as string[],  // URLs das imagens anexadas
-    difficulty: 'medium',
-    tags: [] as string[]
+    images: [] as string[]  // URLs das imagens anexadas
   });
   const [editingFlashcardIndex, setEditingFlashcardIndex] = useState<number | null>(null);
   
@@ -241,8 +255,52 @@ export default function NewFlashcardDeck() {
 
   // Funções para gerenciar flashcards do deck
   const addFlashcardToDeck = () => {
-    if (!currentFlashcardForm.front.trim() || (!currentFlashcardForm.back.trim() && currentFlashcardForm.type !== 'cloze')) {
-      toast.error('Preencha pelo menos a frente do flashcard');
+    // Validação específica por tipo
+    let isValid = true;
+    let errorMessage = '';
+
+    switch (currentFlashcardForm.type) {
+      case 'basic':
+      case 'basic_inverted':
+        if (!currentFlashcardForm.front.trim() || !currentFlashcardForm.back.trim()) {
+          isValid = false;
+          errorMessage = 'Preencha a frente e verso do flashcard';
+        }
+        break;
+      case 'cloze':
+        if (!currentFlashcardForm.front.trim()) {
+          isValid = false;
+          errorMessage = 'Preencha o texto com as lacunas';
+        }
+        break;
+      case 'multiple_choice':
+        if (!currentFlashcardForm.question.trim() || currentFlashcardForm.options.filter(o => o.trim()).length < 2) {
+          isValid = false;
+          errorMessage = 'Preencha a pergunta e pelo menos 2 opções';
+        }
+        break;
+      case 'true_false':
+        if (!currentFlashcardForm.statement.trim()) {
+          isValid = false;
+          errorMessage = 'Preencha a afirmação';
+        }
+        break;
+      case 'type_answer':
+        if (!currentFlashcardForm.question.trim() || !currentFlashcardForm.answer.trim()) {
+          isValid = false;
+          errorMessage = 'Preencha a pergunta e a resposta esperada';
+        }
+        break;
+      case 'image_occlusion':
+        if (!currentFlashcardForm.image.trim() || (currentFlashcardForm.occlusionAreas || []).length === 0) {
+          isValid = false;
+          errorMessage = 'Adicione a URL da imagem e pelo menos uma área de oclusão';
+        }
+        break;
+    }
+
+    if (!isValid) {
+      toast.error(errorMessage);
       return;
     }
 
@@ -272,6 +330,7 @@ export default function NewFlashcardDeck() {
           type: 'cloze',
           front: clozeCard.text,
           back: clozeCard.answer || currentFlashcardForm.back,
+          text: clozeCard.text,  // IMPORTANTE: campo text é obrigatório para tipo cloze
           hint: currentFlashcardForm.hint,
           explanation: currentFlashcardForm.explanation,
           difficulty: currentFlashcardForm.difficulty,
@@ -303,15 +362,23 @@ export default function NewFlashcardDeck() {
       type: 'basic',
       front: '',
       back: '',
-      hint: '',
-      explanation: '',
+      text: '',
       extra: '',
+      question: '',
+      options: ['', '', '', ''],
+      correct: 0,
+      statement: '',
+      answer: 'true',
+      hint: '',
+      image: '',
+      occlusionAreas: [],
+      explanation: '',
+      difficulty: 'medium',
+      tags: [],
       header: '',
       source: '',
       comments: '',
-      images: [],
-      difficulty: 'medium',
-      tags: []
+      images: []
     });
   };
 
@@ -332,15 +399,23 @@ export default function NewFlashcardDeck() {
       type: 'basic',
       front: '',
       back: '',
-      hint: '',
-      explanation: '',
+      text: '',
       extra: '',
+      question: '',
+      options: ['', '', '', ''],
+      correct: 0,
+      statement: '',
+      answer: 'true',
+      hint: '',
+      image: '',
+      occlusionAreas: [],
+      explanation: '',
+      difficulty: 'medium',
+      tags: [],
       header: '',
       source: '',
       comments: '',
-      images: [],
-      difficulty: 'medium',
-      tags: []
+      images: []
     });
   };
 
@@ -2131,54 +2206,332 @@ export default function NewFlashcardDeck() {
                       <option value="multiple_choice">🟣 MÚLTIPLA ESCOLHA</option>
                       <option value="true_false">🔴 VERDADEIRO/FALSO</option>
                       <option value="type_answer">🟦 DIGITE RESPOSTA</option>
+                      <option value="image_occlusion">🟠 OCLUSÃO DE IMAGEM</option>
                     </select>
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-                      FRENTE DO CARD
-                    </label>
-                    {currentFlashcardForm.type === 'cloze' ? (
-                      <ClozeEditor
-                        value={currentFlashcardForm.front}
-                        onChange={(value, metadata) => {
-                          setCurrentFlashcardForm(prev => ({ ...prev, front: value }));
-                        }}
-                        placeholder="Digite o texto e selecione palavras para ocultar..."
-                        showPreview={true}
-                      />
-                    ) : (
-                      <textarea
-                        value={currentFlashcardForm.front}
-                        onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, front: e.target.value }))}
-                        rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
-                        placeholder="Digite a pergunta ou conceito..."
-                      />
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-                      {currentFlashcardForm.type === 'cloze' ? 'EXPLICAÇÃO EXTRA (OPCIONAL)' : 'VERSO DO CARD'}
-                    </label>
-                    <textarea
-                      value={currentFlashcardForm.back}
-                      onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, back: e.target.value }))}
-                      rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
-                      placeholder={
-                        currentFlashcardForm.type === 'cloze'
-                          ? "Informações extras sobre o tópico (opcional - as respostas são geradas automaticamente)"
-                          : "Digite a resposta ou explicação..."
-                      }
-                    />
-                    {currentFlashcardForm.type === 'cloze' && (
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 font-police-body">
-                        💡 As respostas são extraídas automaticamente das ocultações {`{{c1::resposta}}`}
-                      </p>
-                    )}
-                  </div>
+                  {/* Campos dinâmicos baseados no tipo */}
+                  {currentFlashcardForm.type === 'basic' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          FRENTE DO CARD
+                        </label>
+                        <textarea
+                          value={currentFlashcardForm.front}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, front: e.target.value }))}
+                          rows={3}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Digite a pergunta ou conceito..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          VERSO DO CARD
+                        </label>
+                        <textarea
+                          value={currentFlashcardForm.back}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, back: e.target.value }))}
+                          rows={3}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Digite a resposta ou explicação..."
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {currentFlashcardForm.type === 'basic_reversed' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          FRENTE DO CARD
+                        </label>
+                        <textarea
+                          value={currentFlashcardForm.front}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, front: e.target.value }))}
+                          rows={2}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Ex: Deserção"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          VERSO DO CARD
+                        </label>
+                        <textarea
+                          value={currentFlashcardForm.back}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, back: e.target.value }))}
+                          rows={2}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Ex: Art. 298 CPM"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          INFORMAÇÃO EXTRA (OPCIONAL)
+                        </label>
+                        <textarea
+                          value={currentFlashcardForm.extra}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, extra: e.target.value }))}
+                          rows={2}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Ex: Ausentar-se o militar, sem licença..."
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {currentFlashcardForm.type === 'cloze' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          TEXTO COM LACUNAS
+                        </label>
+                        <ClozeEditor
+                          value={currentFlashcardForm.front}
+                          onChange={(value, metadata) => {
+                            setCurrentFlashcardForm(prev => ({ 
+                              ...prev, 
+                              front: value,
+                              text: value  // Atualizar também o campo text para tipo cloze
+                            }));
+                          }}
+                          placeholder="Digite o texto e selecione palavras para ocultar..."
+                          showPreview={true}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 font-police-body">
+                          💡 As respostas são extraídas automaticamente das ocultações {`{{c1::resposta}}`}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          INFORMAÇÃO EXTRA (OPCIONAL)
+                        </label>
+                        <textarea
+                          value={currentFlashcardForm.extra}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, extra: e.target.value }))}
+                          rows={2}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Informações extras sobre o tópico..."
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {currentFlashcardForm.type === 'multiple_choice' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          PERGUNTA
+                        </label>
+                        <textarea
+                          value={currentFlashcardForm.question}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, question: e.target.value }))}
+                          rows={2}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Digite a pergunta..."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          ALTERNATIVAS
+                        </label>
+                        {currentFlashcardForm.options.map((option, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              checked={currentFlashcardForm.correct === index}
+                              onChange={() => setCurrentFlashcardForm(prev => ({ ...prev, correct: index }))}
+                              className="text-accent-500 focus:ring-accent-500"
+                            />
+                            <input
+                              value={option}
+                              onChange={(e) => {
+                                const newOptions = [...currentFlashcardForm.options];
+                                newOptions[index] = e.target.value;
+                                setCurrentFlashcardForm(prev => ({ ...prev, options: newOptions }));
+                              }}
+                              className="flex-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                              placeholder={`Alternativa ${String.fromCharCode(65 + index)}`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          EXPLICAÇÃO (OPCIONAL)
+                        </label>
+                        <textarea
+                          value={currentFlashcardForm.explanation}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, explanation: e.target.value }))}
+                          rows={2}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Explique por que esta é a resposta correta..."
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {currentFlashcardForm.type === 'true_false' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          AFIRMAÇÃO
+                        </label>
+                        <textarea
+                          value={currentFlashcardForm.statement}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, statement: e.target.value }))}
+                          rows={3}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Digite a afirmação para ser avaliada..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          RESPOSTA
+                        </label>
+                        <select
+                          value={currentFlashcardForm.answer}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, answer: e.target.value }))}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                        >
+                          <option value="true">✅ VERDADEIRO</option>
+                          <option value="false">❌ FALSO</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          EXPLICAÇÃO (OPCIONAL)
+                        </label>
+                        <textarea
+                          value={currentFlashcardForm.explanation}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, explanation: e.target.value }))}
+                          rows={2}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Explique por que é verdadeiro ou falso..."
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {currentFlashcardForm.type === 'type_answer' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          PERGUNTA
+                        </label>
+                        <textarea
+                          value={currentFlashcardForm.question}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, question: e.target.value }))}
+                          rows={2}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Digite a pergunta..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          RESPOSTA ESPERADA
+                        </label>
+                        <input
+                          type="text"
+                          value={currentFlashcardForm.answer}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, answer: e.target.value }))}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Digite a resposta esperada..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          DICA (OPCIONAL)
+                        </label>
+                        <input
+                          type="text"
+                          value={currentFlashcardForm.hint}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, hint: e.target.value }))}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="Dica para ajudar..."
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {currentFlashcardForm.type === 'image_occlusion' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          URL DA IMAGEM
+                        </label>
+                        <input
+                          type="text"
+                          value={currentFlashcardForm.image}
+                          onChange={(e) => setCurrentFlashcardForm(prev => ({ ...prev, image: e.target.value }))}
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                          placeholder="https://exemplo.com/imagem.jpg"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                          ÁREAS DE OCLUSÃO
+                        </label>
+                        <div className="space-y-2">
+                          {(currentFlashcardForm.occlusionAreas || []).map((area: any, idx: number) => (
+                            <div key={idx} className="flex gap-2 items-center">
+                              <input
+                                type="text"
+                                value={area.answer}
+                                onChange={(e) => {
+                                  const newAreas = [...(currentFlashcardForm.occlusionAreas || [])];
+                                  newAreas[idx] = { ...newAreas[idx], answer: e.target.value };
+                                  setCurrentFlashcardForm(prev => ({ ...prev, occlusionAreas: newAreas }));
+                                }}
+                                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                                placeholder={`Resposta da área ${idx + 1}`}
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  const newAreas = currentFlashcardForm.occlusionAreas.filter((_: any, i: number) => i !== idx);
+                                  setCurrentFlashcardForm(prev => ({ ...prev, occlusionAreas: newAreas }));
+                                }}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const newArea = {
+                                id: Date.now().toString(),
+                                x: 10 + (currentFlashcardForm.occlusionAreas.length * 50),
+                                y: 10 + (currentFlashcardForm.occlusionAreas.length * 30),
+                                width: 100,
+                                height: 50,
+                                answer: ''
+                              };
+                              setCurrentFlashcardForm(prev => ({ 
+                                ...prev, 
+                                occlusionAreas: [...(prev.occlusionAreas || []), newArea]
+                              }));
+                            }}
+                            className="w-full"
+                          >
+                            <Plus className="w-4 h-4 mr-2" /> Adicionar Área de Oclusão
+                          </Button>
+                        </div>
+                        
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 font-police-body">
+                          Configure as áreas que serão ocultadas na imagem. Cada área pode ter uma resposta diferente.
+                        </p>
+                      </div>
+                    </>
+                  )}
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -2348,17 +2701,28 @@ export default function NewFlashcardDeck() {
                                    flashcard.type === 'cloze' ? '🟡 LACUNAS' :
                                    flashcard.type === 'multiple_choice' ? '🟣 MÚLTIPLA' :
                                    flashcard.type === 'true_false' ? '🔴 V/F' :
-                                   '🟦 DIGITE'}
+                                   flashcard.type === 'type_answer' ? '🟦 DIGITE' :
+                                   '🟠 OCLUSÃO'}
                                 </Badge>
                                 <Badge variant={flashcard.difficulty === 'easy' ? 'success' : flashcard.difficulty === 'hard' ? 'destructive' : 'warning'} className="text-xs font-police-body">
                                   {flashcard.difficulty === 'easy' ? 'FÁCIL' : flashcard.difficulty === 'hard' ? 'DIFÍCIL' : 'MÉDIO'}
                                 </Badge>
                               </div>
                               <p className="text-sm font-police-body text-gray-900 dark:text-white font-semibold mb-1">
-                                📄 {flashcard.front.substring(0, 100)}{flashcard.front.length > 100 ? '...' : ''}
+                                📄 {flashcard.type === 'multiple_choice' ? (flashcard.question || '').substring(0, 100) :
+                                    flashcard.type === 'true_false' ? (flashcard.statement || '').substring(0, 100) :
+                                    flashcard.type === 'type_answer' ? (flashcard.question || '').substring(0, 100) :
+                                    flashcard.type === 'image_occlusion' ? `Imagem: ${(flashcard.image || '').substring(0, 50)}` :
+                                    (flashcard.front || '').substring(0, 100)}
+                                {((flashcard.front || flashcard.question || flashcard.statement || flashcard.image || '').length > 100) ? '...' : ''}
                               </p>
                               <p className="text-xs font-police-body text-gray-600 dark:text-gray-400">
-                                💡 {flashcard.back.substring(0, 80)}{flashcard.back.length > 80 ? '...' : ''}
+                                💡 {flashcard.type === 'multiple_choice' ? `${(flashcard.options || []).length} opções` :
+                                    flashcard.type === 'true_false' ? (flashcard.answer === 'true' ? 'Verdadeiro' : 'Falso') :
+                                    flashcard.type === 'type_answer' ? (flashcard.answer || '').substring(0, 80) :
+                                    flashcard.type === 'image_occlusion' ? `${(flashcard.occlusionAreas || []).length} áreas` :
+                                    (flashcard.back || '').substring(0, 80)}
+                                {(flashcard.back && flashcard.back.length > 80 && flashcard.type !== 'multiple_choice' && flashcard.type !== 'image_occlusion') ? '...' : ''}
                               </p>
                             </div>
                             
@@ -2797,7 +3161,8 @@ export default function NewFlashcardDeck() {
                                flashcard.type === 'cloze' ? '🟡 LACUNAS' :
                                flashcard.type === 'multiple_choice' ? '🟣 MÚLTIPLA' :
                                flashcard.type === 'true_false' ? '🔴 V/F' :
-                               '🟦 DIGITE'}
+                               flashcard.type === 'type_answer' ? '🟦 DIGITE' :
+                               '🟠 OCLUSÃO'}
                             </Badge>
                             <Badge variant={flashcard.difficulty === 'easy' ? 'success' : flashcard.difficulty === 'hard' ? 'destructive' : 'warning'} className="text-xs font-police-body">
                               {flashcard.difficulty === 'easy' ? 'FÁCIL' : flashcard.difficulty === 'hard' ? 'DIFÍCIL' : 'MÉDIO'}

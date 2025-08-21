@@ -81,13 +81,13 @@ export default function FlashcardPreviewModal({
             </h3>
             <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
               <p className="text-gray-900 dark:text-white font-police-body text-lg">
-                {showAnswer ? card.back : card.front}
+                {showAnswer ? (card.back || '') : (card.front || '')}
               </p>
             </div>
             {showAnswer && card.extra && (
               <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <p className="text-yellow-800 dark:text-yellow-200 font-police-body text-sm">
-                  {card.extra}
+                  {card.extra || ''}
                 </p>
               </div>
             )}
@@ -102,10 +102,10 @@ export default function FlashcardPreviewModal({
             </h3>
             <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
               <p className="text-gray-900 dark:text-white font-police-body text-lg mb-4">
-                {card.question}
+                {card.question || ''}
               </p>
               <div className="space-y-2">
-                {card.options.map((option: string, index: number) => (
+                {(card.options || []).map((option: string, index: number) => (
                   <div
                     key={index}
                     className={`p-3 rounded-lg border transition-colors ${
@@ -124,7 +124,7 @@ export default function FlashcardPreviewModal({
             {showAnswer && card.explanation && (
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <p className="text-blue-800 dark:text-blue-200 font-police-body text-sm">
-                  <strong>EXPLICAÇÃO:</strong> {card.explanation}
+                  <strong>EXPLICAÇÃO:</strong> {card.explanation || ''}
                 </p>
               </div>
             )}
@@ -139,7 +139,7 @@ export default function FlashcardPreviewModal({
             </h3>
             <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
               <p className="text-gray-900 dark:text-white font-police-body text-lg mb-4">
-                {card.statement}
+                {card.statement || ''}
               </p>
               {showAnswer && (
                 <div className={`p-3 rounded-lg ${
@@ -156,7 +156,7 @@ export default function FlashcardPreviewModal({
             {showAnswer && card.explanation && (
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <p className="text-blue-800 dark:text-blue-200 font-police-body text-sm">
-                  <strong>EXPLICAÇÃO:</strong> {card.explanation}
+                  <strong>EXPLICAÇÃO:</strong> {card.explanation || ''}
                 </p>
               </div>
             )}
@@ -172,15 +172,15 @@ export default function FlashcardPreviewModal({
             <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
               <p className="text-gray-900 dark:text-white font-police-body text-lg whitespace-pre-line">
                 {showAnswer 
-                  ? card.text.replace(/{{c\d+::(.*?)}}/g, '$1')
-                  : card.text.replace(/{{c\d+::(.*?)}}/g, '___')
+                  ? (card.text || '').replace(/{{c\d+::(.*?)}}/g, '$1')
+                  : (card.text || '').replace(/{{c\d+::(.*?)}}/g, '___')
                 }
               </p>
             </div>
             {showAnswer && card.extra && (
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <p className="text-blue-800 dark:text-blue-200 font-police-body text-sm">
-                  {card.extra}
+                  {card.extra || ''}
                 </p>
               </div>
             )}
@@ -195,19 +195,19 @@ export default function FlashcardPreviewModal({
             </h3>
             <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
               <p className="text-gray-900 dark:text-white font-police-body text-lg mb-4">
-                {card.question}
+                {card.question || ''}
               </p>
               {showAnswer && (
                 <div className="p-3 bg-green-100 dark:bg-green-900/30 border border-green-500 rounded-lg">
                   <p className="text-green-800 dark:text-green-200 font-police-body font-bold">
-                    RESPOSTA: {card.answer}
+                    RESPOSTA: {card.answer || ''}
                   </p>
                 </div>
               )}
               {card.hint && !showAnswer && (
                 <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-500 rounded-lg mt-2">
                   <p className="text-yellow-800 dark:text-yellow-200 font-police-body text-sm">
-                    💡 DICA: {card.hint}
+                    💡 DICA: {card.hint || ''}
                   </p>
                 </div>
               )}
@@ -222,8 +222,8 @@ export default function FlashcardPreviewModal({
               OCLUSÃO DE IMAGEM
             </h3>
             <ImageOcclusionPreview
-              imageUrl={card.image}
-              occlusionAreas={card.occlusionAreas}
+              imageUrl={card.image || ''}
+              occlusionAreas={card.occlusionAreas || []}
               extra={card.extra}
             />
           </div>

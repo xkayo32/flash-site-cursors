@@ -22,47 +22,62 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
       difficulty,
       status,
       search,
+      created_by_admin,
       limit = 100,
       offset = 0
     } = req.query;
 
-    let query = 'SELECT * FROM flashcards WHERE 1=1';
+    // Join with users table to get author names
+    let query = `
+      SELECT 
+        f.*,
+        u.name as author_name,
+        u.email as author_email
+      FROM flashcards f
+      LEFT JOIN users u ON f.author_id = u.id::text
+      WHERE 1=1
+    `;
     const params: any[] = [];
     let paramIndex = 1;
 
     // Add filters
-    if (category) {
-      query += ` AND category = $${paramIndex}`;
+    if (category && category !== 'Todos') {
+      query += ` AND f.category = $${paramIndex}`;
       params.push(category);
       paramIndex++;
     }
 
-    if (subcategory) {
-      query += ` AND subcategory = $${paramIndex}`;
+    if (subcategory && subcategory !== 'Todas') {
+      query += ` AND f.subcategory = $${paramIndex}`;
       params.push(subcategory);
       paramIndex++;
     }
 
-    if (difficulty) {
-      query += ` AND difficulty = $${paramIndex}`;
+    if (difficulty && difficulty !== 'Todos') {
+      query += ` AND f.difficulty = $${paramIndex}`;
       params.push(difficulty);
       paramIndex++;
     }
 
-    if (status) {
-      query += ` AND status = $${paramIndex}`;
+    if (status && status !== 'Todos') {
+      query += ` AND f.status = $${paramIndex}`;
       params.push(status);
       paramIndex++;
     }
 
+    // Admin filter - check if user is admin by checking email or role
+    if (created_by_admin === 'true') {
+      query += ` AND (u.email LIKE '%admin%' OR u.id = '1')`;
+    }
+
     if (search) {
-      query += ` AND (front ILIKE $${paramIndex} OR back ILIKE $${paramIndex} OR text ILIKE $${paramIndex} OR question ILIKE $${paramIndex})`;
+      query += ` AND (f.front ILIKE $${paramIndex} OR f.back ILIKE $${paramIndex} OR f.text ILIKE $${paramIndex} OR f.question ILIKE $${paramIndex})`;
       params.push(`%${search}%`);
       paramIndex++;
     }
 
     // Add ordering and pagination
-    query += ` ORDER BY created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    query += ` ORDER BY f.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
     params.push(limit, offset);
 
     const result = await pool.query(query, params);
@@ -181,8 +196,12 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
       answer,
       hint,
       image,
-      occlusion_areas
+      occlusion_areas,
+      occlusionAreas // Also accept camelCase
     } = req.body;
+    
+    // Use snake_case version, fallback to camelCase if not provided
+    const occlusionAreasData = occlusion_areas || occlusionAreas;
 
     const id = `fc_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     const author_id = (req as any).user?.id || 1;
@@ -200,7 +219,7 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
       [
         id, type, category, subcategory, difficulty, JSON.stringify(tags || []), status,
         front, back, extra, text, question, JSON.stringify(options || []), correct, explanation,
-        statement, answer, hint, image, JSON.stringify(occlusion_areas || []), author_id
+        statement, answer, hint, image, JSON.stringify(occlusionAreasData || []), author_id
       ]
     );
 
@@ -223,14 +242,23 @@ router.put('/:id', authMiddleware, async (req: Request, res: Response) => {
     const { id } = req.params;
     const updates = req.body;
 
-    // Build dynamic update query
+    // Build dynamic update query with field name mapping
+    const fieldMapping: { [key: string]: string } = {
+      'occlusionAreas': 'occlusion_areas'
+    };
+    
     const updateFields = Object.keys(updates).filter(key => key !== 'id');
-    const setClause = updateFields.map((field, index) => `${field} = $${index + 2}`).join(', ');
+    const setClause = updateFields.map((field, index) => {
+      const dbField = fieldMapping[field] || field;
+      return `${dbField} = $${index + 2}`;
+    }).join(', ');
+    
     const values = [id, ...updateFields.map(field => {
-      if (['tags', 'options', 'occlusion_areas'].includes(field)) {
-        return JSON.stringify(updates[field]);
+      const value = updates[field];
+      if (['tags', 'options', 'occlusionAreas'].includes(field)) {
+        return JSON.stringify(value);
       }
-      return updates[field];
+      return value;
     })];
 
     if (updateFields.length === 0) {

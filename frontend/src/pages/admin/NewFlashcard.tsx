@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Save,
@@ -11,30 +11,58 @@ import {
   BookOpen,
   Edit,
   Image as ImageIcon,
-  Brain
+  Brain,
+  Folder,
+  FolderPlus,
+  FolderOpen,
+  Trash2,
+  Tag,
+  Loader2,
+  X,
+  ChevronRight,
+  ChevronDown,
+  Plus
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
 import ImageOcclusionEditor from '@/components/ImageOcclusionEditor';
+import ClozeEditor from '@/components/ClozeEditor';
 import { flashcardService, type CreateFlashcardData } from '../../services/flashcardService';
-import { useDynamicCategories } from '@/hooks/useDynamicCategories';
+import { categoryService, Category } from '@/services/categoryService';
+
+// Interface para categorias pendentes (antes de salvar)
+interface PendingCategory {
+  id: string;
+  name: string;
+  description?: string;
+  children: PendingCategory[];
+  isExpanded?: boolean;
+  isEditing?: boolean;
+}
 
 export default function NewFlashcard() {
   const navigate = useNavigate();
+  const { cardId } = useParams();
+  const isEditing = Boolean(cardId);
   
-  // Hook dinâmico para categorias
-  const {
-    selectedCategory,
-    selectedSubcategory,
-    setSelectedCategory,
-    setSelectedSubcategory,
-    getCategoryOptions,
-    getSubcategoryOptions,
-    isLoadingCategories,
-    isLoadingSubcategories
-  } = useDynamicCategories();
+  // Categories state (igual ao deck)
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  
+  // Quick category creation modal - NOVO SISTEMA
+  const [showQuickCategoryModal, setShowQuickCategoryModal] = useState(false);
+  const [pendingTree, setPendingTree] = useState<PendingCategory[]>([]);
+  const [savingCategories, setSavingCategories] = useState(false);
+  
+  // Form for adding new category
+  const [newCategoryForm, setNewCategoryForm] = useState({
+    name: '',
+    description: '',
+    parentId: null as string | null
+  });
 
   const [showPreview, setShowPreview] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -59,8 +87,457 @@ export default function NewFlashcard() {
     difficulty: 'medium',
     category: '',
     subcategory: '',
-    tags: ''
+    tags: '',
+    // Campos extras estilo Anki
+    header: '',     // Contexto/cabeçalho do card
+    source: '',     // Fonte/referência
+    comments: '',   // Notas privadas (não aparecem no estudo)
+    images: []      // Array de imagens
   });
+
+  // Load categories (igual ao deck)
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const response = await categoryService.listCategories();
+      if (response.success) {
+        const categoriesData = response.categories || response.data || [];
+        setCategories(categoriesData);
+      } else {
+        toast.error('Erro ao carregar categorias');
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      toast.error('Erro ao carregar categorias');
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  // Load flashcard when editing (after categories are loaded)
+  useEffect(() => {
+    if (isEditing && cardId && categories.length > 0) {
+      loadFlashcard(cardId);
+    }
+  }, [cardId, isEditing, categories.length]);
+
+  // Função para encontrar todos os pais de uma categoria (igual ao deck)
+  const findParentChain = (categoryId: string, cats: Category[] = categories): string[] => {
+    const parentChain: string[] = [];
+    
+    const findParent = (cats: Category[], targetId: string): Category | null => {
+      for (const cat of cats) {
+        if (cat.children) {
+          for (const child of cat.children) {
+            if (child.id === targetId) {
+              return cat;
+            }
+            const found = findParent(cat.children, targetId);
+            if (found) return found;
+          }
+        }
+      }
+      return null;
+    };
+    
+    let currentId = categoryId;
+    while (currentId) {
+      const parent = findParent(categories, currentId);
+      if (parent && !parentChain.includes(parent.id)) {
+        parentChain.push(parent.id);
+        currentId = parent.id;
+      } else {
+        break;
+      }
+    }
+    
+    return parentChain;
+  };
+
+  // Função para encontrar todos os filhos de uma categoria (igual ao deck)
+  const findAllChildren = (categoryId: string, cats: Category[] = categories): string[] => {
+    const children: string[] = [];
+    
+    const findCategory = (cats: Category[], targetId: string): Category | null => {
+      for (const cat of cats) {
+        if (cat.id === targetId) return cat;
+        if (cat.children) {
+          const found = findCategory(cat.children, targetId);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    const collectChildren = (cat: Category) => {
+      if (cat.children) {
+        cat.children.forEach(child => {
+          children.push(child.id);
+          collectChildren(child);
+        });
+      }
+    };
+    
+    const category = findCategory(categories, categoryId);
+    if (category) {
+      collectChildren(category);
+    }
+    
+    return children;
+  };
+
+  // Handle category toggle (igual ao deck)
+  const handleCategoryToggle = (categoryId: string) => {
+    setSelectedCategories(prev => {
+      let newSelectedCategories = [...prev];
+      
+      if (prev.includes(categoryId)) {
+        // Desmarcando: remover a categoria e todos os filhos
+        const allChildren = findAllChildren(categoryId);
+        newSelectedCategories = newSelectedCategories.filter(id => 
+          id !== categoryId && !allChildren.includes(id)
+        );
+      } else {
+        // Marcando: adicionar a categoria e todos os pais
+        const parentChain = findParentChain(categoryId);
+        const toAdd = [categoryId, ...parentChain];
+        
+        toAdd.forEach(id => {
+          if (!newSelectedCategories.includes(id)) {
+            newSelectedCategories.push(id);
+          }
+        });
+      }
+      
+      return newSelectedCategories;
+    });
+  };
+
+  // Category creation functions (from deck)
+  const handleAddToPendingTree = () => {
+    if (!newCategoryForm.name.trim()) {
+      toast.error('Nome da categoria é obrigatório');
+      return;
+    }
+
+    const newCategory: PendingCategory = {
+      id: 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      name: newCategoryForm.name.trim(),
+      description: newCategoryForm.description.trim() || undefined,
+      children: [],
+      isExpanded: true
+    };
+
+    if (newCategoryForm.parentId) {
+      const addToParent = (items: PendingCategory[]): PendingCategory[] => {
+        return items.map(item => {
+          if (item.id === newCategoryForm.parentId) {
+            return {
+              ...item,
+              children: [...item.children, newCategory],
+              isExpanded: true
+            };
+          }
+          if (item.children.length > 0) {
+            return {
+              ...item,
+              children: addToParent(item.children)
+            };
+          }
+          return item;
+        });
+      };
+      setPendingTree(addToParent(pendingTree));
+    } else {
+      setPendingTree([...pendingTree, newCategory]);
+    }
+
+    setNewCategoryForm({
+      name: '',
+      description: '',
+      parentId: newCategoryForm.parentId
+    });
+
+    toast.success(
+      newCategoryForm.parentId ? 'Subcategoria adicionada!' : 'Categoria adicionada!',
+      { icon: '✅', duration: 1500 }
+    );
+  };
+
+  const handleRemoveFromTree = (categoryId: string) => {
+    const removeFromTree = (items: PendingCategory[]): PendingCategory[] => {
+      return items.filter(item => {
+        if (item.id === categoryId) return false;
+        if (item.children.length > 0) {
+          item.children = removeFromTree(item.children);
+        }
+        return true;
+      });
+    };
+    setPendingTree(removeFromTree(pendingTree));
+    toast.success('Categoria removida', { icon: '🗑️', duration: 1500 });
+  };
+
+  const handleToggleExpand = (categoryId: string) => {
+    const toggleExpand = (items: PendingCategory[]): PendingCategory[] => {
+      return items.map(item => {
+        if (item.id === categoryId) {
+          return { ...item, isExpanded: !item.isExpanded };
+        }
+        if (item.children.length > 0) {
+          return { ...item, children: toggleExpand(item.children) };
+        }
+        return item;
+      });
+    };
+    setPendingTree(toggleExpand(pendingTree));
+  };
+
+  const handleSaveAllCategories = async () => {
+    if (pendingTree.length === 0) {
+      toast.error('Nenhuma categoria para salvar');
+      return;
+    }
+
+    setSavingCategories(true);
+    let successCount = 0;
+    let errorCount = 0;
+    const newlyCreatedIds: string[] = [];
+
+    try {
+      const saveCategory = async (
+        category: PendingCategory,
+        parentId?: string
+      ): Promise<string | null> => {
+        try {
+          const response = await categoryService.createCategory({
+            name: category.name,
+            type: parentId ? 'topic' : 'subject',
+            parent: parentId,
+            description: category.description
+          });
+
+          if (response.success && response.data) {
+            successCount++;
+            const savedId = response.data.id;
+            newlyCreatedIds.push(savedId);
+
+            for (const child of category.children) {
+              await saveCategory(child, savedId);
+            }
+
+            return savedId;
+          } else {
+            errorCount++;
+            return null;
+          }
+        } catch (error) {
+          errorCount++;
+          return null;
+        }
+      };
+
+      for (const category of pendingTree) {
+        await saveCategory(category);
+      }
+
+      if (successCount > 0) {
+        toast.success(`✅ ${successCount} categorias salvas com sucesso!`);
+        setPendingTree([]);
+        await loadCategories();
+        
+        setSelectedCategories(prev => [...new Set([...prev, ...newlyCreatedIds])]);
+        
+        setTimeout(() => setShowQuickCategoryModal(false), 1500);
+      }
+
+      if (errorCount > 0) {
+        toast.error(`⚠️ ${errorCount} erros ao salvar`);
+      }
+    } catch (error) {
+      toast.error('Erro ao salvar categorias');
+    } finally {
+      setSavingCategories(false);
+    }
+  };
+
+  const countCategories = (items: PendingCategory[]): number => {
+    let count = 0;
+    items.forEach(item => {
+      count++;
+      if (item.children.length > 0) {
+        count += countCategories(item.children);
+      }
+    });
+    return count;
+  };
+
+  // Renderiza a árvore de categorias (melhorada para clareza visual)
+  const renderCategoryTree = (category: Category, level: number = 0) => {
+    const isSelected = selectedCategories.includes(category.id);
+    const hasChildren = category.children && category.children.length > 0;
+    
+    // Estilo diferenciado por nível
+    const isMainCategory = level === 0;
+    const indentClass = level > 0 ? 'ml-8 border-l-2 border-gray-200 dark:border-gray-600 pl-4' : '';
+
+    return (
+      <div key={category.id} className={`${indentClass} ${isMainCategory ? 'mb-4' : 'mb-2'}`}>
+        <div
+          className={`
+            flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer
+            ${isSelected 
+              ? 'bg-accent-500/20 border-accent-500 shadow-sm' 
+              : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-accent-500/50'
+            }
+            ${isMainCategory 
+              ? 'border-2 font-bold shadow-md' 
+              : 'border ml-0'
+            }
+          `}
+          onClick={() => handleCategoryToggle(category.id)}
+        >
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => handleCategoryToggle(category.id)}
+              className="text-accent-500 focus:ring-accent-500 rounded"
+            />
+            {hasChildren ? (
+              <FolderOpen className={`w-4 h-4 ${isMainCategory ? 'text-accent-500' : 'text-blue-500'}`} />
+            ) : (
+              level === 0 ? (
+                <Tag className="w-4 h-4 text-accent-600" />
+              ) : (
+                <Tag className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              )
+            )}
+          </div>
+          
+          <div className="flex-1">
+            <div className={`font-police-body font-semibold text-gray-900 dark:text-white uppercase tracking-wider ${isMainCategory ? 'text-sm' : 'text-xs'}`}>
+              {category.name}
+            </div>
+            {category.description && (
+              <div className="text-xs text-gray-600 dark:text-gray-400 font-police-body mt-1">
+                {category.description}
+              </div>
+            )}
+          </div>
+
+          {hasChildren && (
+            <Badge 
+              variant="outline" 
+              className={`text-xs font-police-body font-semibold ${isMainCategory ? 'bg-accent-500/10' : 'bg-blue-500/10'}`}
+            >
+              {category.children!.length}
+            </Badge>
+          )}
+        </div>
+        
+        {hasChildren && (
+          <div className="mt-3 space-y-1">
+            {/* Separador visual para subcategorias */}
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-px bg-gradient-to-r from-accent-500/20 via-accent-500/40 to-accent-500/20 flex-1"></div>
+              <span className="text-xs font-police-body text-accent-600 dark:text-accent-400 uppercase tracking-wider px-2">
+                Subcategorias
+              </span>
+              <div className="h-px bg-gradient-to-r from-accent-500/20 via-accent-500/40 to-accent-500/20 flex-1"></div>
+            </div>
+            {category.children!.map(child => renderCategoryTree(child, level + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Get selected category names (igual ao deck)
+  const getSelectedCategoryNames = () => {
+    const selected = categories.filter(cat => selectedCategories.includes(cat.id));
+    const names: string[] = [];
+    
+    const collectNames = (cats: Category[]) => {
+      cats.forEach(cat => {
+        if (selectedCategories.includes(cat.id)) {
+          names.push(cat.name);
+        }
+        if (cat.children) {
+          collectNames(cat.children);
+        }
+      });
+    };
+    
+    collectNames(categories);
+    return names;
+  };
+
+  // (Removido useEffect duplicado - agora usando o novo que aguarda categories)
+
+  const loadFlashcard = async (id: string) => {
+    try {
+      setIsLoading(true);
+      const response = await flashcardService.getFlashcard(id);
+      
+      if (response.success && response.data) {
+        const flashcard = response.data;
+        setCard({
+          type: flashcard.type || 'basic',
+          front: flashcard.front || '',
+          back: flashcard.back || '',
+          question: flashcard.question || '',
+          options: flashcard.options || ['', '', '', ''],
+          correct: flashcard.correct || 0,
+          explanation: flashcard.explanation || '',
+          statement: flashcard.statement || '',
+          answer: flashcard.answer || 'true',
+          text: flashcard.text || '',
+          extra: flashcard.extra || '',
+          hint: flashcard.hint || '',
+          image: flashcard.image || '',
+          occlusionAreas: flashcard.occlusion_areas || [],
+          difficulty: flashcard.difficulty || 'medium',
+          category: flashcard.category || '',
+          subcategory: flashcard.subcategory || '',
+          tags: (flashcard.tags || []).join(', ')
+        });
+        
+        // Set categories - convert category string to array
+        if (flashcard.category) {
+          const categoryIds = flashcard.category.split(',').map(name => name.trim());
+          // Find category IDs by name
+          const findCategoryIdsByName = (cats: Category[], names: string[]): string[] => {
+            const ids: string[] = [];
+            const searchInCategories = (categories: Category[]) => {
+              categories.forEach(cat => {
+                if (names.includes(cat.name)) {
+                  ids.push(cat.id);
+                }
+                if (cat.children) {
+                  searchInCategories(cat.children);
+                }
+              });
+            };
+            searchInCategories(cats);
+            return ids;
+          };
+          
+          const foundIds = findCategoryIdsByName(categories, categoryIds);
+          setSelectedCategories(foundIds);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading flashcard:', error);
+      toast.error('Erro ao carregar flashcard');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const cardTypes = [
     { value: 'basic', label: 'BÁSICO (FRENTE/VERSO)', description: 'Cartão tradicional com pergunta e resposta' },
@@ -129,6 +606,72 @@ export default function NewFlashcard() {
 
   // Categories are now loaded dynamically via useDynamicCategories hook
 
+  // Função utilitária para processar cloze estilo Anki
+  const processClozeCard = (text: string) => {
+    // Encontrar todas as ocultações {{c1::texto}}, {{c2::texto}}, etc.
+    const clozePattern = /\{\{c(\d+)::([^}]+)\}\}/g;
+    const matches = Array.from(text.matchAll(clozePattern));
+    
+    if (matches.length === 0) {
+      // Se não houver marcações cloze, retornar texto original
+      return [{
+        text: text,
+        answer: '',
+        clozeNumber: 0
+      }];
+    }
+
+    // Agrupar por número de cloze
+    const clozeGroups = new Map<string, Array<{index: number, text: string}>>();
+    matches.forEach((match) => {
+      const clozeNum = match[1];
+      const clozeText = match[2];
+      if (!clozeGroups.has(clozeNum)) {
+        clozeGroups.set(clozeNum, []);
+      }
+      clozeGroups.get(clozeNum)?.push({
+        index: match.index || 0,
+        text: clozeText
+      });
+    });
+
+    // Criar um card para cada número de cloze único
+    const cards = Array.from(clozeGroups.entries()).map(([clozeNum, group]) => {
+      let processedText = text;
+      let answer = '';
+      
+      // Substituir apenas as ocultações do grupo atual por [...]
+      group.forEach((item) => {
+        const pattern = new RegExp(`\\{\\{c${clozeNum}::([^}]+)\\}\\}`, 'g');
+        processedText = processedText.replace(pattern, '[...]');
+        answer = item.text; // Usar o primeiro texto como resposta principal
+      });
+      
+      // Manter as outras ocultações visíveis mas sem as marcações
+      processedText = processedText.replace(/\{\{c\d+::([^}]+)\}\}/g, '$1');
+      
+      return {
+        text: processedText,
+        answer: answer,
+        clozeNumber: parseInt(clozeNum)
+      };
+    });
+
+    return cards.sort((a, b) => a.clozeNumber - b.clozeNumber);
+  };
+
+  // Função para contar quantos cards serão gerados
+  const countClozeCards = (text: string) => {
+    if (!text) return 1;
+    const clozePattern = /\{\{c(\d+)::([^}]+)\}\}/g;
+    const matches = Array.from(text.matchAll(clozePattern));
+    
+    if (matches.length === 0) return 1;
+    
+    const numbers = new Set(matches.map(m => m[1]));
+    return numbers.size > 0 ? numbers.size : 1;
+  };
+
   const handleSave = async () => {
     // Validação tática baseada no tipo de intel
     if (card.type === 'basic' || card.type === 'basic_reversed') {
@@ -137,7 +680,7 @@ export default function NewFlashcard() {
         return;
       }
     } else if (card.type === 'cloze') {
-      if (!card.text.trim()) {
+      if (!card.text.trim() && !card.front.trim()) {
         toast.error('OPERAÇÃO FALHADA: Configure texto com lacunas táticas', { icon: '🚨' });
         return;
       }
@@ -165,47 +708,128 @@ export default function NewFlashcard() {
 
     // Prepare data for API
     setIsLoading(true);
-    toast.loading('SALVANDO INTEL TÁTICO...', { id: 'save' });
+    toast.loading(isEditing ? 'ATUALIZANDO INTEL TÁTICO...' : 'SALVANDO INTEL TÁTICO...', { id: 'save' });
     
     try {
-      const flashcardData: CreateFlashcardData = {
-        type: card.type as any,
-        difficulty: card.difficulty as any,
-        category: selectedCategory !== 'Todos' ? selectedCategory : 'GERAL',
-        subcategory: selectedSubcategory !== 'Todas' ? selectedSubcategory : 'Geral',
-        tags: card.tags ? card.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
-        status: 'published',
-        // Type-specific fields
-        front: card.front,
-        back: card.back,
-        extra: card.extra,
-        text: card.text,
-        question: card.question,
-        options: card.options,
-        correct: card.correct,
-        explanation: card.explanation,
-        statement: card.statement,
-        answer: card.answer,
-        hint: card.hint,
-        image: card.image,
-        occlusionAreas: card.occlusionAreas
-      };
+      const categoryString = selectedCategories.length > 0 ? getSelectedCategoryNames().join(',') : 'GERAL';
       
-      const response = await flashcardService.createFlashcard(flashcardData);
-      
-      if (response.success) {
-        toast.success('OPERAÇÃO CONCLUÍDA: Intel tático criado com sucesso!', {
-          id: 'save',
-          duration: 3000,
-          icon: '✅'
-        });
+      // Se for cloze e não estiver editando, processar múltiplos cards
+      if (card.type === 'cloze' && !isEditing) {
+        const textToProcess = card.front || card.text;
+        const clozeCards = processClozeCard(textToProcess);
         
-        // Retornar à base operacional
-        setTimeout(() => {
-          navigate('/admin/flashcards/cards');
-        }, 1000);
+        if (clozeCards.length > 1) {
+          // Criar múltiplos cards
+          let successCount = 0;
+          for (const clozeCard of clozeCards) {
+            const flashcardData: CreateFlashcardData = {
+              type: 'cloze' as any,
+              difficulty: card.difficulty as any,
+              category: categoryString,
+              subcategory: '',
+              tags: card.tags ? card.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+              status: 'published',
+              front: clozeCard.text,
+              back: clozeCard.answer || card.back,
+              text: clozeCard.text,
+              extra: card.extra,
+              explanation: card.explanation,
+              hint: card.hint
+            };
+            
+            const response = await flashcardService.createFlashcard(flashcardData);
+            if (response.success) successCount++;
+          }
+          
+          if (successCount > 0) {
+            toast.success(`OPERAÇÃO CONCLUÍDA: ${successCount} cards de ocultação criados!`, {
+              id: 'save',
+              duration: 3000,
+              icon: '✅'
+            });
+            
+            setTimeout(() => {
+              navigate('/admin/flashcards/cards');
+            }, 1000);
+          } else {
+            throw new Error('Falha ao salvar flashcards');
+          }
+        } else {
+          // Criar único card cloze
+          const flashcardData: CreateFlashcardData = {
+            type: card.type as any,
+            difficulty: card.difficulty as any,
+            category: categoryString,
+            subcategory: '',
+            tags: card.tags ? card.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+            status: 'published',
+            front: card.front || card.text,
+            back: card.back,
+            text: card.text || card.front,
+            extra: card.extra,
+            explanation: card.explanation,
+            hint: card.hint
+          };
+          
+          const response = await flashcardService.createFlashcard(flashcardData);
+          if (response.success) {
+            toast.success('OPERAÇÃO CONCLUÍDA: Intel tático criado com sucesso!', {
+              id: 'save',
+              duration: 3000,
+              icon: '✅'
+            });
+            
+            setTimeout(() => {
+              navigate('/admin/flashcards/cards');
+            }, 1000);
+          } else {
+            throw new Error('Falha ao salvar flashcard');
+          }
+        }
       } else {
-        throw new Error('Falha ao salvar flashcard');
+        // Comportamento normal para outros tipos ou edição
+        const flashcardData: CreateFlashcardData = {
+          type: card.type as any,
+          difficulty: card.difficulty as any,
+          category: categoryString,
+          subcategory: '',
+          tags: card.tags ? card.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+          status: 'published',
+          front: card.front,
+          back: card.back,
+          extra: card.extra,
+          text: card.text,
+          question: card.question,
+          options: card.options,
+          correct: card.correct,
+          explanation: card.explanation,
+          statement: card.statement,
+          answer: card.answer,
+          hint: card.hint,
+          image: card.image,
+          occlusionAreas: card.occlusionAreas
+        };
+        
+        let response;
+        if (isEditing && cardId) {
+          response = await flashcardService.updateFlashcard(cardId, flashcardData);
+        } else {
+          response = await flashcardService.createFlashcard(flashcardData);
+        }
+        
+        if (response.success) {
+          toast.success(`OPERAÇÃO CONCLUÍDA: Intel tático ${isEditing ? 'atualizado' : 'criado'} com sucesso!`, {
+            id: 'save',
+            duration: 3000,
+            icon: '✅'
+          });
+          
+          setTimeout(() => {
+            navigate('/admin/flashcards/cards');
+          }, 1000);
+        } else {
+          throw new Error('Falha ao salvar flashcard');
+        }
       }
     } catch (error) {
       console.error('Error saving flashcard:', error);
@@ -481,10 +1105,10 @@ export default function NewFlashcard() {
             </Button>
             <div className="border-l-4 border-l-accent-500 pl-6">
               <h1 className="text-4xl font-police-title font-bold uppercase tracking-wider text-white">
-                NOVO INTEL TÁTICO
+                {isEditing ? 'EDITAR INTEL TÁTICO' : 'NOVO INTEL TÁTICO'}
               </h1>
               <p className="text-gray-300 font-police-subtitle uppercase tracking-wider mt-1">
-                OPERAÇÃO DE CRIAÇÃO DE FLASHCARD
+                {isEditing ? 'OPERAÇÃO DE ATUALIZAÇÃO DE FLASHCARD' : 'OPERAÇÃO DE CRIAÇÃO DE FLASHCARD'}
               </p>
             </div>
           </div>
@@ -499,14 +1123,6 @@ export default function NewFlashcard() {
               {showPreview ? 'OCULTAR' : 'MOSTRAR'} PREVIEW
             </Button>
             
-            <Button 
-              onClick={handleSave}
-              disabled={isLoading}
-              className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-bold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <CheckCircle className="w-5 h-5" />
-              {isLoading ? 'SALVANDO...' : 'CONFIRMAR OPERAÇÃO'}
-            </Button>
           </div>
         </div>
       </motion.div>
@@ -616,16 +1232,27 @@ export default function NewFlashcard() {
                     <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
                       TEXTO COM LACUNAS
                     </label>
-                    <textarea
-                      rows={4}
-                      value={card.text}
-                      onChange={(e) => setCard({ ...card, text: e.target.value })}
-                      placeholder="USE {{c1::PALAVRA}} PARA CRIAR LACUNAS..."
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                    <ClozeEditor
+                      value={card.front || card.text}
+                      onChange={(value, metadata) => {
+                        setCard({ 
+                          ...card, 
+                          front: value,
+                          text: value  // Atualizar ambos os campos
+                        });
+                      }}
+                      placeholder="Digite o texto e selecione palavras para criar lacunas..."
                     />
-                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-400 font-police-body">
-                      EXEMPLO: O crime de {`{{c1::deserção}}`} tem pena de {`{{c2::6 meses a 2 anos}}`}
-                    </p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">
+                        Selecione o texto e clique em C1, C2, etc. para criar lacunas
+                      </p>
+                      {(card.front || card.text) && (
+                        <Badge variant="outline" className="font-police-numbers">
+                          {countClozeCards(card.front || card.text)} card(s) serão criados
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                   
                   <div>
@@ -851,48 +1478,84 @@ export default function NewFlashcard() {
                 </>
               )}
 
-              {/* Configurações gerais */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-                    CATEGORIA
+              {/* Categorias (Sistema hierárquico igual ao deck) */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                    📁 CATEGORIAS TÁTICAS
                   </label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    disabled={isLoadingCategories}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
-                  >
-                    {isLoadingCategories ? (
-                      <option>CARREGANDO...</option>
-                    ) : (
-                      getCategoryOptions().filter(cat => cat !== 'Todos').map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))
+                  <div className="flex items-center gap-2">
+                    {selectedCategories.length > 0 && (
+                      <Badge className="bg-accent-500 text-black font-police-body font-semibold text-xs">
+                        {selectedCategories.length} selecionada(s)
+                      </Badge>
                     )}
-                  </select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowQuickCategoryModal(true)}
+                      className="gap-2 font-police-body uppercase tracking-wider text-xs border-accent-500/30 hover:border-accent-500 transition-colors"
+                    >
+                      <FolderPlus className="w-3 h-3" />
+                      NOVA CATEGORIA
+                    </Button>
+                  </div>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-                    SUBCATEGORIA
-                  </label>
-                  <select
-                    value={selectedSubcategory}
-                    onChange={(e) => setSelectedSubcategory(e.target.value)}
-                    disabled={selectedCategory === 'Todos' || isLoadingSubcategories}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
-                  >
-                    {selectedCategory === 'Todos' ? (
-                      <option>SELECIONE CATEGORIA PRIMEIRO</option>
-                    ) : isLoadingSubcategories ? (
-                      <option>CARREGANDO...</option>
-                    ) : (
-                      getSubcategoryOptions().filter(sub => sub !== 'Todas').map(sub => (
-                        <option key={sub} value={sub}>{sub}</option>
-                      ))
-                    )}
-                  </select>
+                <div className="space-y-3 max-h-80 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
+                  {loadingCategories ? (
+                    <div className="text-center py-8">
+                      <Loader2 className="w-6 h-6 mx-auto text-accent-500 animate-spin mb-2" />
+                      <p className="font-police-body text-gray-500 dark:text-gray-400 uppercase tracking-wider text-sm">
+                        CARREGANDO CATEGORIAS...
+                      </p>
+                    </div>
+                  ) : categories.length > 0 ? (
+                    <>
+                      <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                          💡 DICA TÁTICA: Você pode selecionar múltiplas categorias e níveis para este flashcard. Isso permitirá organizar em diferentes áreas de conhecimento.
+                        </p>
+                      </div>
+                      
+                      {categories.map(category => renderCategoryTree(category))}
+                      
+                      {selectedCategories.length > 0 && (
+                        <div className="mt-4 p-3 bg-accent-500/10 border border-accent-500/30 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle className="w-4 h-4 text-accent-500" />
+                            <span className="font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-sm">
+                              CATEGORIAS SELECIONADAS ({selectedCategories.length})
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {getSelectedCategoryNames().map((name, index) => (
+                              <Badge key={index} className="bg-accent-500 text-black font-police-body font-semibold text-xs">
+                                {name}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Folder className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                      <p className="font-police-body text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        NENHUMA CATEGORIA ENCONTRADA
+                      </p>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setShowQuickCategoryModal(true)}
+                        className="mt-3 gap-2 bg-accent-500 hover:bg-accent-600 text-black font-police-body font-semibold uppercase tracking-wider"
+                      >
+                        <FolderPlus className="w-4 h-4" />
+                        CRIAR PRIMEIRA CATEGORIA
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -924,6 +1587,72 @@ export default function NewFlashcard() {
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
                   />
                 </div>
+              </div>
+              
+              {/* Campos Extras Estilo Anki */}
+              <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h5 className="font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 text-sm font-semibold flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-accent-500" />
+                  CAMPOS EXTRAS (OPCIONAL)
+                </h5>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider">
+                      CABEÇALHO/CONTEXTO
+                    </label>
+                    <input
+                      type="text"
+                      value={card.header}
+                      onChange={(e) => setCard({ ...card, header: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                      placeholder="Ex: Art. 5º CF"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider">
+                      FONTE/REFERÊNCIA
+                    </label>
+                    <input
+                      type="text"
+                      value={card.source}
+                      onChange={(e) => setCard({ ...card, source: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                      placeholder="Ex: Código Penal, página 45"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-police-body font-medium text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider">
+                    NOTAS PRIVADAS
+                  </label>
+                  <textarea
+                    value={card.comments}
+                    onChange={(e) => setCard({ ...card, comments: e.target.value })}
+                    rows={2}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500"
+                    placeholder="Notas para você (não aparecem no estudo)..."
+                  />
+                </div>
+              </div>
+              
+              {/* Botão de Salvar no Final */}
+              <div className="mt-6 flex justify-end">
+                <Button 
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  size="lg"
+                  className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-bold uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed px-8 py-3"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-5 h-5" />
+                  )}
+                  {isLoading ? (isEditing ? 'ATUALIZANDO...' : 'SALVANDO...') : (isEditing ? 'CONFIRMAR ATUALIZAÇÃO' : 'SALVAR FLASHCARD')}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -976,6 +1705,218 @@ export default function NewFlashcard() {
           onCancel={() => setShowImageOcclusionEditor(false)}
         />
       )}
+
+      {/* Quick Category Modal */}
+      <AnimatePresence>
+        {showQuickCategoryModal && renderQuickCategoryModal()}
+      </AnimatePresence>
     </div>
   );
+
+  // Render modal function for category creation
+  const renderQuickCategoryModal = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+      >
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                🏗️ Construtor de Categorias Aninhadas
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Crie toda a estrutura de categorias antes de salvar no banco
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                if (pendingTree.length > 0) {
+                  if (confirm('Há categorias não salvas. Deseja realmente fechar?')) {
+                    setShowQuickCategoryModal(false);
+                    setPendingTree([]);
+                  }
+                } else {
+                  setShowQuickCategoryModal(false);
+                }
+              }}
+              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+        
+        {/* Body - Two columns */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left column - Form */}
+          <div className="w-1/3 p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-4">
+              ➕ Adicionar Categoria
+            </h4>
+            {newCategoryForm.parentId && (
+              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm">
+                    <span className="text-blue-700 dark:text-blue-300">Criando subcategoria de:</span>
+                    <div className="font-semibold text-blue-900 dark:text-blue-100">
+                      {(() => {
+                        const findName = (items: PendingCategory[], id: string): string => {
+                          for (const item of items) {
+                            if (item.id === id) return item.name;
+                            const found = findName(item.children, id);
+                            if (found) return found;
+                          }
+                          return '';
+                        };
+                        return findName(pendingTree, newCategoryForm.parentId);
+                      })()}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setNewCategoryForm({ ...newCategoryForm, parentId: null })}
+                    className="p-1 hover:bg-blue-100 dark:hover:bg-blue-800 rounded"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Nome *
+                </label>
+                <input
+                  type="text"
+                  value={newCategoryForm.name}
+                  onChange={(e) => setNewCategoryForm({ ...newCategoryForm, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  placeholder="Ex: Direito Constitucional"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddToPendingTree()}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Descrição
+                </label>
+                <textarea
+                  value={newCategoryForm.description}
+                  onChange={(e) => setNewCategoryForm({ ...newCategoryForm, description: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  placeholder="Ex: Estudos sobre a Constituição Federal"
+                  rows={3}
+                />
+              </div>
+              <Button
+                onClick={handleAddToPendingTree}
+                className="w-full gap-2 bg-green-600 hover:bg-green-700"
+                disabled={!newCategoryForm.name.trim()}
+              >
+                <Plus className="w-4 h-4" />
+                {newCategoryForm.parentId ? 'Adicionar Subcategoria' : 'Adicionar Categoria'}
+              </Button>
+            </div>
+          </div>
+          
+          {/* Right column - Tree preview */}
+          <div className="flex-1 p-6 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-semibold text-gray-900 dark:text-white">
+                🌳 Estrutura ({countCategories(pendingTree)} categoria(s))
+              </h4>
+              {pendingTree.length > 0 && (
+                <Button
+                  onClick={handleSaveAllCategories}
+                  disabled={savingCategories}
+                  className="gap-2 bg-accent-500 hover:bg-accent-600 text-black"
+                >
+                  {savingCategories ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4" />
+                  )}
+                  {savingCategories ? 'Salvando...' : 'Salvar Todas'}
+                </Button>
+              )}
+            </div>
+            
+            {pendingTree.length === 0 ? (
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                <FolderOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Nenhuma categoria criada ainda</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {pendingTree.map(category => renderPendingTree(category, 0))}
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+
+  // Render function for pending category tree
+  const renderPendingTree = (category: PendingCategory, level: number = 0): React.ReactNode => {
+    return (
+      <div key={category.id} className={`${level > 0 ? 'ml-6' : ''}`}>
+        <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+          {category.children.length > 0 && (
+            <button
+              onClick={() => handleToggleExpand(category.id)}
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+            >
+              {category.isExpanded ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
+              )}
+            </button>
+          )}
+          <div className="flex-1">
+            <div className="font-semibold text-gray-900 dark:text-white">
+              {category.name}
+            </div>
+            {category.description && (
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                {category.description}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setNewCategoryForm({ ...newCategoryForm, parentId: category.id })}
+              className="p-1 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-800 rounded"
+              title="Adicionar subcategoria"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => handleRemoveFromTree(category.id)}
+              className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-800 rounded"
+              title="Remover categoria"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+        
+        {category.children.length > 0 && category.isExpanded && (
+          <div className="mt-2 space-y-2">
+            {category.children.map(child => renderPendingTree(child, level + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
 }
