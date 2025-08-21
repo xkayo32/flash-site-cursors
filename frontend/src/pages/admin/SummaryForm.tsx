@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils/cn';
 import RichTextEditor from '@/components/RichTextEditor';
+import { categoryService, type Category } from '@/services/categoryService';
 import toast from 'react-hot-toast';
 
 // Dados táticos para cursos/disciplinas
@@ -79,6 +80,30 @@ export default function SummaryForm() {
   
   // Temporary inputs
   const [newTag, setNewTag] = useState('');
+  
+  // Categorias reais da API
+  const [realCategories, setRealCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+
+  // Carregar categorias da API
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const response = await categoryService.listCategories();
+      if (response.success && response.data) {
+        setRealCategories(response.data);
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      toast.error('Erro ao carregar categorias');
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   // Download example file
   const downloadExampleFile = () => {

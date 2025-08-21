@@ -15,9 +15,17 @@ import {
   AlignCenter,
   AlignRight,
   Undo2,
-  Redo2
+  Redo2,
+  Brain,
+  Star,
+  Image,
+  X,
+  Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { flashcardService } from '@/services/flashcardService';
+import { questionService } from '@/services/questionService';
 import toast from 'react-hot-toast';
 
 interface RichTextEditorProps {
@@ -41,6 +49,14 @@ export default function RichTextEditor({
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [selectedText, setSelectedText] = useState('');
+  
+  // Estados para inserção de flashcards e questões
+  const [showFlashcardModal, setShowFlashcardModal] = useState(false);
+  const [showQuestionModal, setShowQuestionModal] = useState(false);
+  const [flashcards, setFlashcards] = useState<any[]>([]);
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [loadingContent, setLoadingContent] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Sincronizar valor inicial
   useEffect(() => {
@@ -114,6 +130,94 @@ export default function RichTextEditor({
   // Desfazer/Refazer
   const undo = () => executeCommand('undo');
   const redo = () => executeCommand('redo');
+
+  // Carregar flashcards
+  const loadFlashcards = async () => {
+    try {
+      setLoadingContent(true);
+      const response = await flashcardService.getFlashcards({ limit: 50 });
+      if (response.success) {
+        setFlashcards(response.data || []);
+      }
+    } catch (error) {
+      console.error('Error loading flashcards:', error);
+      toast.error('Erro ao carregar flashcards');
+    } finally {
+      setLoadingContent(false);
+    }
+  };
+
+  // Carregar questões
+  const loadQuestions = async () => {
+    try {
+      setLoadingContent(true);
+      const response = await questionService.getQuestions({ limit: 50 });
+      if (response.success) {
+        setQuestions(response.data || []);
+      }
+    } catch (error) {
+      console.error('Error loading questions:', error);
+      toast.error('Erro ao carregar questões');
+      // Usar questões mock como fallback
+      setQuestions([
+        { id: 1, question: "Qual é o princípio fundamental da Constituição?", category: "Direito", type: "multiple_choice" },
+        { id: 2, question: "Calcule 2 + 2", category: "Matemática", type: "multiple_choice" }
+      ]);
+    } finally {
+      setLoadingContent(false);
+    }
+  };
+
+  // Abrir modal de flashcards
+  const openFlashcardModal = () => {
+    setShowFlashcardModal(true);
+    loadFlashcards();
+  };
+
+  // Abrir modal de questões
+  const openQuestionModal = () => {
+    setShowQuestionModal(true);
+    loadQuestions();
+  };
+
+  // Inserir flashcard no editor
+  const insertFlashcard = (flashcard: any) => {
+    const flashcardHtml = `
+      <div class="embedded-flashcard bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 my-4" data-type="flashcard" data-id="${flashcard.id}">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold">FLASHCARD</span>
+          <span class="text-xs text-gray-600 dark:text-gray-400">${flashcard.category || 'Sem categoria'}</span>
+        </div>
+        <div class="font-semibold text-gray-900 dark:text-white mb-1">${flashcard.front || flashcard.question}</div>
+        <div class="text-gray-700 dark:text-gray-300 text-sm">${flashcard.back || flashcard.answer}</div>
+      </div>
+    `;
+    
+    document.execCommand('insertHTML', false, flashcardHtml);
+    handleContentChange();
+    setShowFlashcardModal(false);
+    setSearchTerm('');
+    toast.success('Flashcard inserido no resumo!');
+  };
+
+  // Inserir questão no editor
+  const insertQuestion = (question: any) => {
+    const questionHtml = `
+      <div class="embedded-question bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4 my-4" data-type="question" data-id="${question.id}">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold">QUESTÃO</span>
+          <span class="text-xs text-gray-600 dark:text-gray-400">${question.category || 'Sem categoria'}</span>
+        </div>
+        <div class="font-semibold text-gray-900 dark:text-white">${question.question || question.title || question.statement}</div>
+      </div>
+    `;
+    
+    document.execCommand('insertHTML', false, questionHtml);
+    handleContentChange();
+    setShowQuestionModal(false);
+    setSearchTerm('');
+    toast.success('Questão inserida no resumo!');
+  };
 
   // Lidar com colagem
   const handlePaste = (e: React.ClipboardEvent) => {
@@ -306,6 +410,33 @@ export default function RichTextEditor({
             <Type className="w-4 h-4" />
           </Button>
         </div>
+
+        {/* Inserção de conteúdo */}
+        <div className="flex items-center gap-1 border-r pr-2 border-gray-300 dark:border-gray-600">
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={openFlashcardModal}
+            disabled={disabled}
+            className="hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+            title="Inserir Flashcard"
+          >
+            <Star className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={openQuestionModal}
+            disabled={disabled}
+            className="hover:bg-green-100 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400"
+            title="Inserir Questão"
+          >
+            <Brain className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
       </div>
 
       {/* Editor */}
@@ -366,6 +497,150 @@ export default function RichTextEditor({
         </div>
       )}
 
+      {/* Modal de Flashcards */}
+      {showFlashcardModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Inserir Flashcard</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowFlashcardModal(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="mt-3 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Buscar flashcards..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+              </div>
+            </div>
+            
+            <div className="p-4 max-h-96 overflow-y-auto">
+              {loadingContent ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-gray-600 dark:text-gray-400">Carregando flashcards...</span>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {flashcards
+                    .filter(fc => 
+                      !searchTerm || 
+                      (fc.front && fc.front.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                      (fc.back && fc.back.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                      (fc.category && fc.category.toLowerCase().includes(searchTerm.toLowerCase()))
+                    )
+                    .map((flashcard) => (
+                      <div
+                        key={flashcard.id}
+                        className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                        onClick={() => insertFlashcard(flashcard)}
+                      >
+                        <div className="font-medium text-gray-900 dark:text-white">
+                          {flashcard.front || flashcard.question}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          {flashcard.back || flashcard.answer}
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <Badge variant="outline" className="text-xs">
+                            {flashcard.type || 'basic'}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {flashcard.category || 'Sem categoria'}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))
+                  }
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Questões */}
+      {showQuestionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Inserir Questão</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowQuestionModal(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="mt-3 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Buscar questões..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+              </div>
+            </div>
+            
+            <div className="p-4 max-h-96 overflow-y-auto">
+              {loadingContent ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                  <span className="ml-2 text-gray-600 dark:text-gray-400">Carregando questões...</span>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {questions
+                    .filter(q => 
+                      !searchTerm || 
+                      (q.question && q.question.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                      (q.title && q.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                      (q.category && q.category.toLowerCase().includes(searchTerm.toLowerCase()))
+                    )
+                    .map((question) => (
+                      <div
+                        key={question.id}
+                        className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                        onClick={() => insertQuestion(question)}
+                      >
+                        <div className="font-medium text-gray-900 dark:text-white">
+                          {question.question || question.title || question.statement}
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <Badge variant="outline" className="text-xs">
+                            {question.type || 'multiple_choice'}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {question.category || 'Sem categoria'}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {question.difficulty || 'medium'}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))
+                  }
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         .rich-text-editor:empty:before {
           content: attr(data-placeholder);
@@ -398,6 +673,37 @@ export default function RichTextEditor({
         .rich-text-editor ol {
           padding-left: 1.5rem;
           margin: 0.5rem 0;
+        }
+        
+        .embedded-flashcard,
+        .embedded-question {
+          margin: 1rem 0;
+          border-radius: 0.5rem;
+          padding: 1rem;
+          border: 2px solid;
+          user-select: none;
+        }
+        
+        .embedded-flashcard {
+          background-color: #eff6ff;
+          border-color: #bfdbfe;
+        }
+        
+        .embedded-question {
+          background-color: #f0fdf4;
+          border-color: #bbf7d0;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+          .embedded-flashcard {
+            background-color: #1e3a8a20;
+            border-color: #1e40af;
+          }
+          
+          .embedded-question {
+            background-color: #16537e20;
+            border-color: #059669;
+          }
         }
       `}</style>
     </div>
