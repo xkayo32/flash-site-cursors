@@ -38,6 +38,7 @@ import FlashcardStudyModal from '@/components/FlashcardStudyModal';
 import { flashcardService, type Flashcard, type FlashcardStats } from '@/services/flashcardService';
 import { categoryService, type Category } from '@/services/categoryService';
 import { useDynamicCategories } from '@/hooks/useDynamicCategories';
+import { CategorySelector } from '@/components/CategorySelector';
 
 
 // Constantes para filtros (podem ser movidas para API no futuro)
@@ -589,62 +590,23 @@ export default function IndividualFlashcards() {
               </div>
 
               {/* Second Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
-                <div className={`relative ${selectedCategory !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
-                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
-                    Categoria
-                  </label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => handleCategoryChange(e.target.value)}
-                    className="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
-                    disabled={isLoadingCategories}
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                      backgroundPosition: 'right 0.5rem center',
-                      backgroundRepeat: 'no-repeat',
-                      backgroundSize: '1.25em 1.25em',
-                      paddingRight: '2rem'
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 relative" style={{ zIndex: 100 }}>
+                {/* Categoria com CategorySelector */}
+                <div className={`${selectedCategory !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
+                  <CategorySelector
+                    categories={categories}
+                    selectedValue={selectedCategory}
+                    onChange={(value) => {
+                      handleCategoryChange(value);
                     }}
-                  >
-                  {isLoadingCategories ? (
-                    <option>CARREGANDO...</option>
-                  ) : (
-                    getCategoryOptions().map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))
-                  )}
-                  </select>
+                    disabled={isLoadingCategories}
+                    isLoading={isLoadingCategories}
+                    placeholder="TODAS AS CATEGORIAS"
+                    label="CATEGORIA"
+                    showAll={true}
+                  />
                 </div>
 
-                <div className={`relative ${selectedSubcategory !== 'Todas' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
-                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
-                    Subcategoria
-                  </label>
-                  <select
-                    value={selectedSubcategory}
-                    onChange={(e) => setSelectedSubcategory(e.target.value)}
-                    disabled={selectedCategory === 'Todos' || isLoadingSubcategories}
-                    className="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                      backgroundPosition: 'right 0.5rem center',
-                      backgroundRepeat: 'no-repeat',
-                      backgroundSize: '1.25em 1.25em',
-                      paddingRight: '2rem'
-                    }}
-                  >
-                  {selectedCategory === 'Todos' ? (
-                    <option>SUBCATEGORIA</option>
-                  ) : isLoadingSubcategories ? (
-                    <option>CARREGANDO...</option>
-                  ) : (
-                    getSubcategoryOptions().map(subcategory => (
-                      <option key={subcategory} value={subcategory}>{subcategory.toUpperCase()}</option>
-                    ))
-                  )}
-                  </select>
-                </div>
 
                 <div className={`relative ${selectedType !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
                   <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
@@ -653,16 +615,16 @@ export default function IndividualFlashcards() {
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
-                    className="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                      backgroundPosition: 'right 0.5rem center',
+                      backgroundPosition: 'right 0.75rem center',
                       backgroundRepeat: 'no-repeat',
                       backgroundSize: '1.25em 1.25em',
-                      paddingRight: '2rem'
+                      paddingRight: '2.5rem'
                     }}
                   >
-                    <option value="Todos">TIPO</option>
+                    <option value="Todos">TODOS OS TIPOS</option>
                     {cardTypes.slice(1).map(type => (
                       <option key={type} value={type}>
                         {type.replace('_', ' ').toUpperCase()}
@@ -678,18 +640,18 @@ export default function IndividualFlashcards() {
                   <select
                     value={selectedDifficulty}
                     onChange={(e) => setSelectedDifficulty(e.target.value)}
-                    className="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                      backgroundPosition: 'right 0.5rem center',
+                      backgroundPosition: 'right 0.75rem center',
                       backgroundRepeat: 'no-repeat',
                       backgroundSize: '1.25em 1.25em',
-                      paddingRight: '2rem'
+                      paddingRight: '2.5rem'
                     }}
                   >
                     {difficulties.map(difficulty => (
                       <option key={difficulty} value={difficulty}>
-                        {difficulty === 'Todos' ? 'TODAS' : 
+                        {difficulty === 'Todos' ? 'TODAS AS DIFICULDADES' : 
                          difficulty === 'easy' ? '🟢 FÁCIL' :
                          difficulty === 'medium' ? '🟡 MÉDIO' : 
                          difficulty === 'hard' ? '🔴 DIFÍCIL' : 
@@ -706,18 +668,18 @@ export default function IndividualFlashcards() {
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                      backgroundPosition: 'right 0.5rem center',
+                      backgroundPosition: 'right 0.75rem center',
                       backgroundRepeat: 'no-repeat',
                       backgroundSize: '1.25em 1.25em',
-                      paddingRight: '2rem'
+                      paddingRight: '2.5rem'
                     }}
                   >
                     {statuses.map(status => (
                       <option key={status} value={status}>
-                        {status === 'Todos' ? 'TODOS' : 
+                        {status === 'Todos' ? 'TODOS OS STATUS' : 
                          status === 'published' ? '✅ PUBLICADO' :
                          status === 'draft' ? '📝 RASCUNHO' :
                          status === 'archived' ? '📦 ARQUIVADO' :
@@ -734,16 +696,16 @@ export default function IndividualFlashcards() {
                   <select
                     value={selectedAuthor}
                     onChange={(e) => setSelectedAuthor(e.target.value)}
-                    className="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                      backgroundPosition: 'right 0.5rem center',
+                      backgroundPosition: 'right 0.75rem center',
                       backgroundRepeat: 'no-repeat',
                       backgroundSize: '1.25em 1.25em',
-                      paddingRight: '2rem'
+                      paddingRight: '2.5rem'
                     }}
                   >
-                    <option value="Todos">TODOS</option>
+                    <option value="Todos">TODOS OS AUTORES</option>
                     {availableAuthors.map(author => (
                       <option key={author.id} value={author.id}>
                         {author.name.toUpperCase()}
