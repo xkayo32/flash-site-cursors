@@ -3,15 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { flashcardService, Flashcard, FlashcardStats } from '@/services/flashcardService';
 import { flashcardDeckService, FlashcardDeck } from '@/services/flashcardDeckService';
-import { categoryService } from '@/services/categoryService';
-
-interface Category {
-  id: string;
-  name: string;
-  type: string;
-  parent_id?: string | null;
-  children?: Category[];
-}
+import { useDynamicCategories } from '@/hooks/useDynamicCategories';
+import { CategorySelector } from '@/components/CategorySelector';
 import {
   Search,
   Filter,
@@ -59,10 +52,19 @@ interface FlashcardDisplay extends Flashcard {
 export default function FlashcardManager() {
   const navigate = useNavigate();
   
-  // Estado para categorias
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('Todos');
-  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  // Hook dinâmico para categorias
+  const {
+    categories,
+    subcategories,
+    selectedCategory,
+    selectedSubcategory,
+    setSelectedCategory,
+    setSelectedSubcategory,
+    getCategoryOptions,
+    getSubcategoryOptions,
+    isLoadingCategories,
+    isLoadingSubcategories
+  } = useDynamicCategories();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Todos');
@@ -148,23 +150,8 @@ export default function FlashcardManager() {
     }
   };
 
-  const loadCategories = async () => {
-    try {
-      setIsLoadingCategories(true);
-      const response = await categoryService.getCategories();
-      if (response.success && response.categories) {
-        setCategories(response.categories);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar categorias:', error);
-    } finally {
-      setIsLoadingCategories(false);
-    }
-  };
-
   useEffect(() => {
     loadStats();
-    loadCategories();
   }, []);
 
   useEffect(() => {
@@ -469,32 +456,22 @@ export default function FlashcardManager() {
               </div>
 
               {/* Filter Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {/* Categoria */}
-                <div className={`relative ${selectedCategory !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
-                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
-                    Categoria
-                  </label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
-                    disabled={isLoadingCategories}
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                      backgroundPosition: 'right 0.75rem center',
-                      backgroundRepeat: 'no-repeat',
-                      backgroundSize: '1.25em 1.25em',
-                      paddingRight: '2.5rem'
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 relative" style={{ zIndex: 100 }}>
+                {/* Categoria - Mantendo funcionalidade de cascatas */}
+                <div className={`${selectedCategory !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
+                  <CategorySelector
+                    categories={categories}
+                    selectedValue={selectedCategory}
+                    onChange={(value) => {
+                      console.log('FlashcardManager - CategorySelector onChange:', value, typeof value);
+                      setSelectedCategory(value);
                     }}
-                  >
-                    <option value="Todos">TODAS AS CATEGORIAS</option>
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.name}>
-                        {cat.name.toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
+                    disabled={isLoadingCategories}
+                    isLoading={isLoadingCategories}
+                    placeholder="TODAS AS CATEGORIAS"
+                    label="CATEGORIA"
+                    showAll={true}
+                  />
                 </div>
 
                 {/* Dificuldade */}
