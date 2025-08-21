@@ -237,18 +237,18 @@ export function CategorySelector({
             transition={{ duration: 0.2 }}
             className="absolute z-[9999] mt-2 w-full bg-white dark:bg-gray-900 
               border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl
-              max-h-96 overflow-hidden"
+              max-h-[500px] overflow-hidden flex flex-col"
             style={{ zIndex: 9999 }}
           >
             {/* Instructions */}
-            <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
               📁 <strong>Com subpastas:</strong> 1 clique expande | Duplo clique seleciona
               <br />
               📄 <strong>Sem subpastas:</strong> 1 clique seleciona
             </div>
             
             {/* Search bar */}
-            <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -275,7 +275,7 @@ export function CategorySelector({
             </div>
             
             {/* Categories list */}
-            <div className="max-h-80 overflow-y-auto p-2">
+            <div className="flex-1 overflow-y-auto p-2 min-h-0">
               {showAll && (
                 <div 
                   className={`
