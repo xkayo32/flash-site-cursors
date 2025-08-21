@@ -26,33 +26,8 @@ import RichTextEditor from '@/components/RichTextEditor';
 import { categoryService, type Category } from '@/services/categoryService';
 import toast from 'react-hot-toast';
 
-// Dados táticos para cursos/disciplinas
-const materias = [
-  { value: 'DIREITO', label: 'ÁREA JURÍDICA' },
-  { value: 'SEGURANÇA PÚBLICA', label: 'ÁREA OPERACIONAL' },
-  { value: 'CONHECIMENTOS GERAIS', label: 'ÁREA ESTRATÉGICA' }
-];
-
-const submaterias = {
-  'DIREITO': [
-    { value: 'Direito Constitucional', label: 'LEGISLAÇÃO CONSTITUCIONAL TÁTICA' },
-    { value: 'Direito Penal', label: 'CÓDIGO PENAL OPERACIONAL' },
-    { value: 'Direito Administrativo', label: 'NORMAS ADMINISTRATIVAS' },
-    { value: 'Direito Processual Penal', label: 'PROCEDIMENTOS PENAIS TÁTICOS' }
-  ],
-  'SEGURANÇA PÚBLICA': [
-    { value: 'Inteligência Policial', label: 'INTELIGÊNCIA TÁTICA' },
-    { value: 'Táticas Operacionais', label: 'OPERAÇÕES ESPECIAIS' },
-    { value: 'Legislação Especial', label: 'LEGISLAÇÃO OPERACIONAL' },
-    { value: 'Criminologia', label: 'ANÁLISE CRIMINAL TÁTICA' }
-  ],
-  'CONHECIMENTOS GERAIS': [
-    { value: 'Português', label: 'COMUNICAÇÃO OPERACIONAL' },
-    { value: 'Matemática', label: 'CÁLCULOS TÁTICOS' },
-    { value: 'História', label: 'HISTÓRIA ESTRATÉGICA' },
-    { value: 'Geografia', label: 'GEOGRAFIA TÁTICA' }
-  ]
-};
+// Categorias são carregadas dinamicamente da API
+// Fallback removido - usando apenas dados reais do backend
 
 export default function SummaryForm() {
   const navigate = useNavigate();
@@ -552,17 +527,13 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
                         <option value="">
                           {loadingCategories ? 'Carregando matérias...' : 'Selecione uma matéria'}
                         </option>
-                        {loadingCategories ? 
-                          materias.map(materia => (
-                            <option key={materia.value} value={materia.value}>{materia.label}</option>
-                          )) :
-                          realCategories
-                            .filter(cat => !cat.parent_id) // Apenas categorias principais
-                            .map(category => (
-                              <option key={category.id} value={category.name}>
-                                {category.name.toUpperCase()}
-                              </option>
-                            ))
+                        {realCategories
+                          .filter(cat => !cat.parent_id) // Apenas categorias principais
+                          .map(category => (
+                            <option key={category.id} value={category.name}>
+                              {category.name.toUpperCase()}
+                            </option>
+                          ))
                         }
                       </select>
                     </div>
@@ -581,24 +552,19 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
                           {!formData.materia ? 'Selecione uma matéria primeiro' : 
                            loadingCategories ? 'Carregando...' : 'Selecione uma submatéria'}
                         </option>
-                        {loadingCategories ? 
-                          (formData.materia && submaterias[formData.materia as keyof typeof submaterias]?.map(sub => (
-                            <option key={sub.value} value={sub.value}>{sub.label}</option>
-                          ))) :
-                          (formData.materia && 
-                            realCategories
-                              .filter(cat => {
-                                const parentCategory = realCategories.find(parent => 
-                                  parent.name === formData.materia && !parent.parent_id
-                                );
-                                return parentCategory && cat.parent_id === parentCategory.id;
-                              })
-                              .map(subcategory => (
-                                <option key={subcategory.id} value={subcategory.name}>
-                                  {subcategory.name.toUpperCase()}
-                                </option>
-                              ))
-                          )
+                        {formData.materia && 
+                          realCategories
+                            .filter(cat => {
+                              const parentCategory = realCategories.find(parent => 
+                                parent.name === formData.materia && !parent.parent_id
+                              );
+                              return parentCategory && cat.parent_id === parentCategory.id;
+                            })
+                            .map(subcategory => (
+                              <option key={subcategory.id} value={subcategory.name}>
+                                {subcategory.name.toUpperCase()}
+                              </option>
+                            ))
                         }
                       </select>
                     </div>
