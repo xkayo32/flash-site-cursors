@@ -781,7 +781,7 @@ export default function IndividualFlashcards() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700"
+                  className="mt-4 p-4 bg-accent-500/5 dark:bg-accent-500/10 rounded-lg border-2 border-dashed border-accent-500/30"
                 >
                   <div className="flex items-center justify-between">
                     <label className="flex items-center gap-2">
