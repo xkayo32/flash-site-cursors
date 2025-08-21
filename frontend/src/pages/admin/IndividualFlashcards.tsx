@@ -284,8 +284,6 @@ export default function IndividualFlashcards() {
       const cardsToStudy = flashcards.filter(card => selectedCards.includes(card.id));
       setStudyCards(cardsToStudy);
       setShowStudyModal(true);
-      setSelectedCards([]);
-      setShowBulkActions(false);
     }
   };
 
@@ -294,8 +292,6 @@ export default function IndividualFlashcards() {
       for (const cardId of selectedCards) {
         await handleDuplicateCard(cardId);
       }
-      setSelectedCards([]);
-      setShowBulkActions(false);
     }
   };
 
@@ -518,7 +514,7 @@ export default function IndividualFlashcards() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        style={{ position: 'relative', zIndex: 2000 }}
+        style={{ position: 'relative', zIndex: 50 }}
       >
         <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative overflow-visible">
           {/* Corner accents */}
@@ -592,9 +588,9 @@ export default function IndividualFlashcards() {
               </div>
 
               {/* Second Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 relative" style={{ zIndex: 100 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 relative" style={{ zIndex: 55 }}>
                 {/* Categoria com CategorySelector */}
-                <div className={`relative ${selectedCategory !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`} style={{ zIndex: 1000 }}>
+                <div className={`relative ${selectedCategory !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`} style={{ zIndex: 60 }}>
                   <CategorySelector
                     categories={categories}
                     selectedValue={selectedCategory}
@@ -817,6 +813,14 @@ export default function IndividualFlashcards() {
                       +{card.tags.length - 3}
                     </Badge>
                   )}
+                </div>
+
+                {/* Author info */}
+                <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 font-police-body uppercase tracking-wider">
+                    <span>Autor: {card.author_name || card.created_by || 'Admin'}</span>
+                    <span>{new Date(card.created_at).toLocaleDateString('pt-BR')}</span>
+                  </div>
                 </div>
 
                 {/* Footer */}
