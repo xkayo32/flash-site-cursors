@@ -586,31 +586,10 @@ export default function IndividualFlashcards() {
                   )}
                 </div>
                 
-                <Button
-                  variant="outline"
-                  onClick={() => setShowBulkActions(!showBulkActions)}
-                  className={`gap-2 font-police-body uppercase tracking-wider border-2 transition-all ${
-                    showBulkActions 
-                      ? 'border-accent-500 bg-accent-500/10 text-accent-600 dark:text-accent-400' 
-                      : 'border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500'
-                  }`}
-                >
-                  {showBulkActions ? (
-                    <>
-                      <X className="w-4 h-4" />
-                      FECHAR SELEÇÃO
-                    </>
-                  ) : (
-                    <>
-                      <Settings className="w-4 h-4" />
-                      OPERAÇÕES EM GRUPO
-                    </>
-                  )}
-                </Button>
               </div>
 
               {/* Second Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
                 <div className={`relative ${selectedCategory !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
                   <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
                     Categoria
@@ -775,63 +754,6 @@ export default function IndividualFlashcards() {
               </div>
             </div>
 
-            {/* Bulk Actions */}
-            <AnimatePresence>
-              {showBulkActions && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="mt-4 p-4 bg-accent-500/5 dark:bg-accent-500/10 rounded-lg border-2 border-dashed border-accent-500/30"
-                >
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedCards.length === filteredCards.length}
-                        onChange={handleSelectAll}
-                        className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
-                      />
-                      <span className="text-sm text-gray-900 dark:text-white font-police-body font-medium uppercase tracking-wider">
-                        SELECIONAR ARSENAL ({selectedCards.length})
-                      </span>
-                    </label>
-                    
-                    {selectedCards.length > 0 && (
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={handleBulkStudy}
-                          className="gap-1 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
-                        >
-                          <Play className="w-3 h-3" />
-                          EXECUTAR MISSÃO
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={handleBulkDuplicate}
-                          className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
-                        >
-                          <Copy className="w-3 h-3" />
-                          REPLICAR
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={handleBulkArchive}
-                          className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-gray-600 dark:hover:border-gray-500 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                          DESARMAR
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </CardContent>
         </Card>
       </motion.div>

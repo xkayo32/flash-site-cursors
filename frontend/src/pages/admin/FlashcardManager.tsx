@@ -3,8 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { flashcardService, Flashcard, FlashcardStats } from '@/services/flashcardService';
 import { flashcardDeckService, FlashcardDeck } from '@/services/flashcardDeckService';
-import { useDynamicCategories } from '@/hooks/useDynamicCategories';
-import { CategorySelector } from '@/components/CategorySelector';
+import { categoryService } from '@/services/categoryService';
+
+interface Category {
+  id: string;
+  name: string;
+  type: string;
+  parent_id?: string | null;
+  children?: Category[];
+}
 import {
   Search,
   Filter,
@@ -52,19 +59,10 @@ interface FlashcardDisplay extends Flashcard {
 export default function FlashcardManager() {
   const navigate = useNavigate();
   
-  // Hook dinâmico para categorias
-  const {
-    categories,
-    subcategories,
-    selectedCategory,
-    selectedSubcategory,
-    setSelectedCategory,
-    setSelectedSubcategory,
-    getCategoryOptions,
-    getSubcategoryOptions,
-    isLoadingCategories,
-    isLoadingSubcategories
-  } = useDynamicCategories();
+  // Estado para categorias
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Todos');
@@ -150,8 +148,23 @@ export default function FlashcardManager() {
     }
   };
 
+  const loadCategories = async () => {
+    try {
+      setIsLoadingCategories(true);
+      const response = await categoryService.getCategories();
+      if (response.success && response.categories) {
+        setCategories(response.categories);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar categorias:', error);
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
+
   useEffect(() => {
     loadStats();
+    loadCategories();
   }, []);
 
   useEffect(() => {
@@ -456,21 +469,33 @@ export default function FlashcardManager() {
               </div>
 
               {/* Filter Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 relative" style={{ zIndex: 100 }}>
-                {/* Categoria - Mantendo como está */}
-                <CategorySelector
-                  categories={categories}
-                  selectedValue={selectedCategory}
-                  onChange={(value) => {
-                    console.log('FlashcardManager - CategorySelector onChange:', value, typeof value);
-                    setSelectedCategory(value);
-                  }}
-                  disabled={isLoadingCategories}
-                  isLoading={isLoadingCategories}
-                  placeholder="TODAS AS CATEGORIAS"
-                  label="CATEGORIA"
-                  showAll={true}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {/* Categoria */}
+                <div className={`relative ${selectedCategory !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                    Categoria
+                  </label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                    disabled={isLoadingCategories}
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.75rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.25em 1.25em',
+                      paddingRight: '2.5rem'
+                    }}
+                  >
+                    <option value="Todos">TODAS AS CATEGORIAS</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.name.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
                 {/* Dificuldade */}
                 <div className="relative">
@@ -504,99 +529,8 @@ export default function FlashcardManager() {
                     <option value="private">🔒 APENAS PRIVADOS</option>
                   </select>
                 </div>
-
-                {/* Botão de Ações em Lote */}
-                <Button
-                  variant="outline"
-                  onClick={() => setShowBulkActions(!showBulkActions)}
-                  className={`gap-2 font-police-body uppercase tracking-wider border-2 transition-all ${
-                    showBulkActions 
-                      ? 'border-accent-500 bg-accent-500/10 text-accent-600 dark:text-accent-400' 
-                      : 'border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500'
-                  }`}
-                >
-                  {showBulkActions ? (
-                    <>
-                      <X className="w-4 h-4" />
-                      FECHAR SELEÇÃO
-                    </>
-                  ) : (
-                    <>
-                      <Settings className="w-4 h-4" />
-                      AÇÕES EM LOTE
-                    </>
-                  )}
-                </Button>
               </div>
             </div>
-
-            {/* Bulk Actions */}
-            <AnimatePresence>
-              {showBulkActions && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700"
-                >
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedDecks.length === filteredDecks.length}
-                        onChange={handleSelectAll}
-                        className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
-                      />
-                      <span className="text-sm font-police-body font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                        SELECIONAR TODOS
-                      </span>
-                      {selectedDecks.length > 0 && (
-                        <Badge className="bg-accent-500 text-black font-police-numbers">
-                          {selectedDecks.length}/{filteredDecks.length}
-                        </Badge>
-                      )}
-                    </label>
-                    
-                    <div className="flex items-center gap-3">
-                      {selectedDecks.length > 0 && (
-                        <span className="text-sm font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                          {selectedDecks.length} SELECIONADOS:
-                        </span>
-                      )}
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 font-police-body uppercase tracking-wider border-2 hover:bg-blue-500/10 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
-                          disabled={selectedDecks.length === 0}
-                        >
-                          <Copy className="w-4 h-4" />
-                          DUPLICAR
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 font-police-body uppercase tracking-wider border-2 hover:bg-green-500/10 hover:border-green-500 hover:text-green-600 dark:hover:text-green-400 transition-all"
-                          disabled={selectedDecks.length === 0}
-                        >
-                          <Globe className="w-4 h-4" />
-                          PUBLICAR
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 font-police-body uppercase tracking-wider border-2 hover:bg-red-500/10 hover:border-red-500 hover:text-red-600 dark:hover:text-red-400 transition-all"
-                          disabled={selectedDecks.length === 0}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          EXCLUIR
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </CardContent>
         </Card>
       </motion.div>
