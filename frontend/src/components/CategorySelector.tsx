@@ -235,10 +235,10 @@ export function CategorySelector({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="absolute z-[9999] mt-2 w-full bg-white dark:bg-gray-900 
+            className="absolute z-[99999] mt-2 w-full bg-white dark:bg-gray-900 
               border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl
               max-h-[500px] overflow-hidden flex flex-col"
-            style={{ zIndex: 9999 }}
+            style={{ zIndex: 99999 }}
           >
             {/* Instructions */}
             <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-shrink-0">

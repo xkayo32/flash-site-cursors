@@ -458,7 +458,7 @@ export default function FlashcardManager() {
               {/* Filter Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 relative" style={{ zIndex: 100 }}>
                 {/* Categoria - Mantendo funcionalidade de cascatas */}
-                <div className={`${selectedCategory !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
+                <div className={`relative ${selectedCategory !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`} style={{ zIndex: 1000 }}>
                   <CategorySelector
                     categories={categories}
                     selectedValue={selectedCategory}
