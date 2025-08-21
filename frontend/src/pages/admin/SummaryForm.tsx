@@ -547,11 +547,23 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
                           handleInputChange('submateria', '');
                         }}
                         className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                        disabled={loadingCategories}
                       >
-                        <option value="">Selecione uma matéria</option>
-                        {materias.map(materia => (
-                          <option key={materia.value} value={materia.value}>{materia.label}</option>
-                        ))}
+                        <option value="">
+                          {loadingCategories ? 'Carregando matérias...' : 'Selecione uma matéria'}
+                        </option>
+                        {loadingCategories ? 
+                          materias.map(materia => (
+                            <option key={materia.value} value={materia.value}>{materia.label}</option>
+                          )) :
+                          realCategories
+                            .filter(cat => !cat.parent_id) // Apenas categorias principais
+                            .map(category => (
+                              <option key={category.id} value={category.name}>
+                                {category.name.toUpperCase()}
+                              </option>
+                            ))
+                        }
                       </select>
                     </div>
                     
@@ -562,13 +574,32 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
                       <select
                         value={formData.submateria}
                         onChange={(e) => handleInputChange('submateria', e.target.value)}
-                        disabled={!formData.materia}
+                        disabled={!formData.materia || loadingCategories}
                         className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body disabled:opacity-50"
                       >
-                        <option value="">Selecione uma submatéria</option>
-                        {formData.materia && submaterias[formData.materia as keyof typeof submaterias]?.map(sub => (
-                          <option key={sub.value} value={sub.value}>{sub.label}</option>
-                        ))}
+                        <option value="">
+                          {!formData.materia ? 'Selecione uma matéria primeiro' : 
+                           loadingCategories ? 'Carregando...' : 'Selecione uma submatéria'}
+                        </option>
+                        {loadingCategories ? 
+                          (formData.materia && submaterias[formData.materia as keyof typeof submaterias]?.map(sub => (
+                            <option key={sub.value} value={sub.value}>{sub.label}</option>
+                          ))) :
+                          (formData.materia && 
+                            realCategories
+                              .filter(cat => {
+                                const parentCategory = realCategories.find(parent => 
+                                  parent.name === formData.materia && !parent.parent_id
+                                );
+                                return parentCategory && cat.parent_id === parentCategory.id;
+                              })
+                              .map(subcategory => (
+                                <option key={subcategory.id} value={subcategory.name}>
+                                  {subcategory.name.toUpperCase()}
+                                </option>
+                              ))
+                          )
+                        }
                       </select>
                     </div>
                   </div>

@@ -89,6 +89,7 @@ export default function IndividualFlashcards() {
     loadAuthors();
   }, [currentPage, selectedCategory, selectedSubcategory, selectedDifficulty, selectedStatus, selectedType, selectedAuthor, searchTerm]);
 
+
   const loadAuthors = async () => {
     try {
       const response = await flashcardService.getFilterOptions();
@@ -116,7 +117,8 @@ export default function IndividualFlashcards() {
         difficulty: selectedDifficulty !== 'Todos' ? selectedDifficulty as any : undefined,
         type: selectedType !== 'Todos' ? selectedType as any : undefined,
         status: selectedStatus !== 'Todos' ? selectedStatus as any : undefined,
-        author_id: selectedAuthor !== 'Todos' ? selectedAuthor : undefined
+        author_id: selectedAuthor !== 'Todos' ? selectedAuthor : undefined,
+        created_by_admin: true // Mostrar apenas flashcards de admins por padrão
       };
 
       const response = await flashcardService.getFlashcards(filters);
@@ -728,12 +730,12 @@ export default function IndividualFlashcards() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}
+        className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'} overflow-visible`}
         style={{ position: 'relative', zIndex: 1 }}
       >
         {filteredCards.map((card) => 
           viewMode === 'grid' ? (
-            <Card key={card.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
+            <Card key={card.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative overflow-visible" style={{ zIndex: 2 }}>
               {/* Corner accents */}
               <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
               <CardHeader className="pb-4 bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black rounded-t-lg">
@@ -748,14 +750,6 @@ export default function IndividualFlashcards() {
                       {getCardPreview(card)}
                     </p>
                   </div>
-                  {showBulkActions && (
-                    <input
-                      type="checkbox"
-                      checked={selectedCards.includes(card.id)}
-                      onChange={() => handleSelectCard(card.id)}
-                      className="ml-4 rounded border-gray-300 text-accent-500 focus:ring-accent-500"
-                    />
-                  )}
                 </div>
               </CardHeader>
 
@@ -818,7 +812,7 @@ export default function IndividualFlashcards() {
                 {/* Author info */}
                 <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 font-police-body uppercase tracking-wider">
-                    <span>Autor: {card.author_name || card.created_by || 'Admin'}</span>
+                    <span>Autor: {card.author_name || 'Admin User'}</span>
                     <span>{new Date(card.created_at).toLocaleDateString('pt-BR')}</span>
                   </div>
                 </div>
@@ -826,7 +820,7 @@ export default function IndividualFlashcards() {
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="text-xs text-gray-500 dark:text-gray-400 font-police-body">
-                    <p className="uppercase tracking-wider">{card.author_name}</p>
+                    <p className="uppercase tracking-wider">{card.author_name || 'Admin User'}</p>
                     {card.next_review && (
                       <p className="flex items-center gap-1 mt-1">
                         <Calendar className="w-3 h-3" />
@@ -838,36 +832,39 @@ export default function IndividualFlashcards() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handlePreviewCard(card.id)}
-                      className="p-1.5 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
+                      className="p-2 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                       title="Visualizar"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleStudyCard(card.id)}
-                      className="p-1.5 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
+                      className="p-2 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                       title="Estudar"
                     >
                       <Play className="w-4 h-4" />
                     </button>
+                    
                     <button
                       onClick={() => handleEditCard(card.id)}
-                      className="p-1.5 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
-                      title="Editar"
+                      className="p-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
+                      title="Modificar"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
+                    
                     <button
                       onClick={() => handleDuplicateCard(card.id)}
-                      className="p-1.5 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
-                      title="Duplicar"
+                      className="p-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 transition-colors hover:bg-green-50 dark:hover:bg-green-900/20 rounded"
+                      title="Replicar"
                     >
                       <Copy className="w-4 h-4" />
                     </button>
+                    
                     <button
                       onClick={() => handleDeleteCard(card.id)}
-                      className="p-1.5 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-                      title="Arquivar"
+                      className="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                      title="Desarmar"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -876,177 +873,161 @@ export default function IndividualFlashcards() {
               </CardContent>
             </Card>
           ) : (
-            /* List View */
-            <Card key={card.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-xl transition-all duration-300 relative">
-              {/* Corner accents */}
-              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    {showBulkActions && (
-                      <input
-                        type="checkbox"
-                        checked={selectedCards.includes(card.id)}
-                        onChange={() => handleSelectCard(card.id)}
-                        className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
-                      />
-                    )}
+            /* IMPROVED LIST VIEW */
+            <Card 
+              key={card.id} 
+              className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-l-4 border-l-accent-500 hover:shadow-2xl transition-all duration-300 relative mb-4"
+              style={{ position: 'relative', zIndex: 5 + filteredCards.indexOf(card) }}
+            >
+              {/* Corner accent */}
+              <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-accent-500/30" />
+              
+              <CardContent className="p-6">
+                {/* Header Row */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start gap-4 flex-1">
+                    {/* Card Type Icon */}
+                    <div className="flex-shrink-0 w-12 h-12 bg-accent-500/10 rounded-lg flex items-center justify-center">
+                      <BookOpen className="w-6 h-6 text-accent-500" />
+                    </div>
                     
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black p-3 rounded-lg mb-3">
-                            <div className="flex items-center gap-2 mb-2">
-                              {getTypeBadge(card.type)}
-                              {getDifficultyBadge(card.difficulty)}
-                              {getStatusBadge(card.status)}
-                            </div>
-                            <p className="text-sm text-white font-police-body font-medium">
-                              {getCardPreview(card)}
-                            </p>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="secondary" className="font-police-body font-semibold uppercase tracking-wider bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                              {card.category}
-                            </Badge>
-                            {card.subcategory && (
-                              <Badge variant="outline" className="font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600">
-                                {card.subcategory}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="ml-6 text-right">
-                          <div className="flex items-center gap-6">
-                            {/* Stats */}
-                            <div className="text-center">
-                              <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                OPERAÇÕES
-                              </p>
-                              <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
-                                {card.reviews}
-                              </p>
-                            </div>
-                            
-                            <div className="text-center">
-                              <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                ALVOS
-                              </p>
-                              <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
-                                {card.correctCount}
-                              </p>
-                            </div>
-                            
-                            <div className="text-center">
-                              <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                PRECISÃO
-                              </p>
-                              <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
-                                {card.reviews > 0 ? Math.round((card.correctCount / card.reviews) * 100) : 0}%
-                              </p>
-                            </div>
-                            
-                            {/* Next Review */}
-                            <div className="text-center">
-                              <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                PRÓXIMA MISSÃO
-                              </p>
-                              <div className="flex items-center justify-center gap-1">
-                                <Clock className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm font-police-numbers text-gray-900 dark:text-white">
-                                  {new Date(card.nextReview).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                    {/* Main Content */}
+                    <div className="flex-1 min-w-0">
+                      {/* Badges Row */}
+                      <div className="flex items-center gap-2 mb-3">
+                        {getTypeBadge(card.type)}
+                        {getDifficultyBadge(card.difficulty)}
+                        {getStatusBadge(card.status)}
                       </div>
                       
-                      {/* Author, Tags and Actions */}
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center gap-4">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 font-police-body">
-                            <span className="uppercase tracking-wider">{card.author_name}</span>
-                            {card.next_review && (
-                              <span className="flex items-center gap-1 mt-1">
-                                <Calendar className="w-3 h-3" />
-                                {new Date(card.next_review).toLocaleDateString('pt-BR')}
-                              </span>
-                            )}
-                          </div>
-                          
-                          {/* Tags */}
-                          <div className="flex flex-wrap gap-1">
-                            {card.tags.slice(0, 3).map((tag, index) => (
-                              <Badge key={index} variant="outline" className="text-xs font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600">
-                                <Tag className="w-3 h-3 mr-1" />
-                                {tag}
-                              </Badge>
-                            ))}
-                            {card.tags.length > 3 && (
-                              <Badge variant="outline" className="text-xs font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600">
-                                +{card.tags.length - 3}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Actions */}
-                        <div className="flex items-center gap-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handlePreviewCard(card.id)}
-                            className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
-                          >
-                            <Eye className="w-3 h-3" />
-                            ANALISAR
-                          </Button>
-                          
-                          <Button
-                            size="sm"
-                            onClick={() => handleStudyCard(card.id)}
-                            className="gap-1 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-colors"
-                          >
-                            <Play className="w-3 h-3" />
-                            EXECUTAR
-                          </Button>
-                          
-                          <button
-                            onClick={() => handleEditCard(card.id)}
-                            className="p-2 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors"
-                            title="Editar"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          
-                          {/* More Actions Dropdown */}
-                          <div className="relative group">
-                            <button className="p-2 text-gray-600 hover:text-accent-500 dark:text-gray-400 dark:hover:text-accent-500 transition-colors">
-                              <MoreVertical className="w-4 h-4" />
-                            </button>
-                            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                              <button
-                                onClick={() => handleDuplicateCard(card.id)}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-police-body uppercase tracking-wider flex items-center gap-2"
-                              >
-                                <Copy className="w-4 h-4" />
-                                REPLICAR
-                              </button>
-                              <button
-                                onClick={() => handleDeleteCard(card.id)}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-police-body uppercase tracking-wider flex items-center gap-2 border-t border-gray-200 dark:border-gray-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                                DESARMAR
-                              </button>
-                            </div>
-                          </div>
+                      {/* Card Preview */}
+                      <div className="bg-gradient-to-r from-[#14242f] via-gray-800 to-gray-900 p-4 rounded-lg mb-3">
+                        <p className="text-white font-police-body font-medium text-sm leading-relaxed">
+                          {getCardPreview(card)}
+                        </p>
+                      </div>
+                      
+                      {/* Categories */}
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-police-body font-semibold uppercase tracking-wider">
+                          {card.category}
+                        </Badge>
+                        {card.subcategory && (
+                          <Badge variant="outline" className="font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600">
+                            {card.subcategory}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Stats Panel */}
+                  <div className="flex-shrink-0 ml-6">
+                    <div className="grid grid-cols-3 gap-6 text-center">
+                      <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                        <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">
+                          OPERAÇÕES
+                        </p>
+                        <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
+                          {card.times_studied || 0}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                        <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">
+                          PRECISÃO
+                        </p>
+                        <p className="text-lg font-police-numbers font-bold text-gray-900 dark:text-white">
+                          {card.correct_rate ? Math.round(card.correct_rate * 100) : 0}%
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                        <p className="text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">
+                          STATUS
+                        </p>
+                        <div className="flex items-center justify-center gap-1">
+                          <div className={`w-2 h-2 rounded-full ${card.status === 'published' ? 'bg-green-500' : card.status === 'draft' ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                          <span className="text-xs font-police-body uppercase">
+                            {card.status === 'published' ? 'ATIVO' : card.status === 'draft' ? 'PREP' : 'INATIVO'}
+                          </span>
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
+                
+                {/* Footer Row */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                  {/* Left Side - Author & Tags */}
+                  <div className="flex items-center gap-6 flex-1">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 font-police-body">
+                      <span className="uppercase tracking-wider font-semibold">
+                        👤 {card.author_name || 'Admin User'}
+                      </span>
+                      <br />
+                      <span className="text-gray-400">
+                        📅 {new Date(card.created_at).toLocaleDateString('pt-BR')}
+                      </span>
+                    </div>
+                    
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1">
+                      {(card.tags || []).slice(0, 3).map((tag, index) => (
+                        <Badge key={index} variant="outline" className="text-xs font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600">
+                          🏷️ {tag}
+                        </Badge>
+                      ))}
+                      {(card.tags || []).length > 3 && (
+                        <Badge variant="outline" className="text-xs font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600">
+                          +{card.tags.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Right Side - Actions */}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handlePreviewCard(card.id)}
+                      className="gap-2 font-police-body font-semibold uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-all duration-200 hover:scale-105"
+                    >
+                      <Eye className="w-4 h-4" />
+                      ANALISAR
+                    </Button>
+                    
+                    <Button
+                      size="sm"
+                      onClick={() => handleStudyCard(card.id)}
+                      className="gap-2 bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body font-semibold uppercase tracking-wider transition-all duration-200 hover:scale-105"
+                    >
+                      <Play className="w-4 h-4" />
+                      EXECUTAR
+                    </Button>
+                    
+                    <button
+                      onClick={() => handleEditCard(card.id)}
+                      className="p-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                      title="Modificar"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    
+                    <button
+                      onClick={() => handleDuplicateCard(card.id)}
+                      className="p-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 transition-colors hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg"
+                      title="Replicar"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                    
+                    <button
+                      onClick={() => handleDeleteCard(card.id)}
+                      className="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                      title="Desarmar"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </CardContent>

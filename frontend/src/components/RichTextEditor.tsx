@@ -437,7 +437,6 @@ export default function RichTextEditor({
           </Button>
         </div>
       </div>
-      </div>
 
       {/* Editor */}
       <div

@@ -203,7 +203,7 @@ function Router() {
         <Route path="/admin/flashcards/:deckId/cards" element={<FlashcardEditor />} />
         <Route path="/admin/flashcards/cards" element={<IndividualFlashcards />} />
         <Route path="/admin/flashcards/cards/new" element={<NewFlashcard />} />
-        <Route path="/admin/flashcards/cards/:cardId/edit" element={<FlashcardEditor />} />
+        <Route path="/admin/flashcards/cards/:cardId/edit" element={<NewFlashcard />} />
         <Route path="/admin/mock-exams" element={<MockExamManagerSimple />} />
         <Route path="/admin/previous-exams" element={<PreviousExamsManagerSimple />} />
         <Route path="/admin/categories" element={<CategoryManager />} />
