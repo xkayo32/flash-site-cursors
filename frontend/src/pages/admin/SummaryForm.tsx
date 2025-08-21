@@ -88,26 +88,21 @@ export default function SummaryForm() {
         const categoriesData = response.data || response.categories || [];
         console.log('✅ Categorias encontradas:', categoriesData.length);
         
-        // Estruturar hierarquicamente como no NewFlashcard
-        const categoryMap = new Map<string, Category>();
-        const rootCategories: Category[] = [];
+        // A API já retorna a hierarquia construída!
+        console.log('📊 Dados das categorias com hierarquia:', categoriesData);
         
-        // Primeiro, criar o map de todas as categorias
-        categoriesData.forEach((cat: Category) => {
-          categoryMap.set(cat.id, { ...cat, children: [] });
-        });
+        // Filtrar apenas categorias principais (parent_id = null)
+        // As subcategorias já vêm dentro de 'children'
+        const rootCategories = categoriesData.filter((cat: Category) => !cat.parent_id);
         
-        // Depois, construir a hierarquia
-        categoriesData.forEach((cat: Category) => {
-          const category = categoryMap.get(cat.id)!;
-          if (cat.parent_id) {
-            const parent = categoryMap.get(cat.parent_id);
-            if (parent) {
-              parent.children = parent.children || [];
-              parent.children.push(category);
-            }
+        console.log('🌳 Categorias principais encontradas:', rootCategories.length);
+        
+        // Verificar se as categorias têm filhos
+        rootCategories.forEach(cat => {
+          if (cat.children && cat.children.length > 0) {
+            console.log(`👨‍👩‍👧‍👦 ${cat.name} tem ${cat.children.length} filhos:`, cat.children.map(c => c.name));
           } else {
-            rootCategories.push(category);
+            console.log(`👤 ${cat.name} não tem filhos`);
           }
         });
         
@@ -386,6 +381,8 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
   const renderCategoryTree = (category: Category, level: number = 0) => {
     const isSelected = selectedCategories.includes(category.id);
     const hasChildren = category.children && category.children.length > 0;
+    
+    console.log(`🌲 Renderizando categoria: ${category.name} (level: ${level}, hasChildren: ${hasChildren}, children: ${category.children?.length || 0})`);
     
     // Estilo diferenciado por nível
     const isMainCategory = level === 0;

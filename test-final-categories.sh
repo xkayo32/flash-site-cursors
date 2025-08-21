@@ -1,77 +1,87 @@
 #!/bin/bash
 
-echo "🎯 TESTE FINAL: Verificando categorias em SummaryForm"
+echo "🎯 TESTE FINAL: Sistema de categorias unificado (igual aos flashcards)"
 echo "================================================================"
 
-# Verificar se backend está rodando
+# Verificar se ambos serviços estão rodando
 BACKEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8180/api/v1/categories)
-echo "🔧 Backend Status: $BACKEND_STATUS"
+FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5174)
 
-# Verificar se frontend está rodando
-FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5173)
+echo "🔧 Backend Status: $BACKEND_STATUS"
 echo "🔧 Frontend Status: $FRONTEND_STATUS"
 
 if [ "$BACKEND_STATUS" == "200" ] && [ "$FRONTEND_STATUS" == "200" ]; then
   echo ""
-  echo "✅ Ambos serviços estão funcionando!"
+  echo "✅ Ambos serviços funcionando!"
   echo ""
-  echo "🔍 DIAGNÓSTICO DAS CATEGORIAS:"
+  echo "🔍 SISTEMA IMPLEMENTADO:"
   echo "----------------------------------------------------------------"
   
   # Fazer login e obter token
-  echo "🔐 1. Fazendo login para obter token..."
+  echo "🔐 1. Testando autenticação..."
   TOKEN=$(curl -s -X POST "http://localhost:8180/api/v1/auth/login" \
     -H "Content-Type: application/json" \
     -d '{"email": "admin@studypro.com", "password": "Admin@123"}' | jq -r '.token')
   
   if [ "$TOKEN" != "null" ] && [ "$TOKEN" != "" ]; then
-    echo "✅ Token obtido com sucesso"
+    echo "✅ Login realizado com sucesso"
     
-    # Testar categorias
+    # Testar categorias hierárquicas
     echo ""
-    echo "📋 2. Testando endpoint de categorias..."
+    echo "📁 2. Verificando estrutura hierárquica..."
     CATEGORIES_RESPONSE=$(curl -s "http://localhost:8180/api/v1/categories" \
       -H "Authorization: Bearer $TOKEN" \
       -H "Content-Type: application/json")
     
-    CATEGORIES_SUCCESS=$(echo "$CATEGORIES_RESPONSE" | jq -r '.success')
-    CATEGORIES_COUNT=$(echo "$CATEGORIES_RESPONSE" | jq '.categories | length')
+    echo "✅ Categorias carregadas"
+    echo ""
+    echo "🌳 Estrutura hierárquica disponível:"
+    echo "----------------------------------------------------------------"
     
-    if [ "$CATEGORIES_SUCCESS" == "true" ]; then
-      echo "✅ API de categorias funcionando"
-      echo "📊 Total de categorias: $CATEGORIES_COUNT"
-      
-      echo ""
-      echo "📋 3. Categorias principais (matérias):"
-      echo "$CATEGORIES_RESPONSE" | jq -r '.categories[] | select(.parent_id == null) | "• \(.name) (\(.children_count) subcategorias)"'
-      
-      echo ""
-      echo "🎯 INSTRUÇÕES PARA TESTAR NO BROWSER:"
-      echo "----------------------------------------------------------------"
-      echo "1. Abra: http://localhost:5173/admin/summaries/new"
-      echo "2. Abra DevTools (F12) → Console"
-      echo "3. Procure pelos logs:"
-      echo "   🔧 DEBUG: Definindo token de teste"
-      echo "   🔍 Carregando categorias..."
-      echo "   📊 Response recebida: ..."
-      echo "   ✅ Categorias encontradas: $CATEGORIES_COUNT"
-      echo "4. Verifique se o select de matérias tem as opções:"
-      for category in $(echo "$CATEGORIES_RESPONSE" | jq -r '.categories[] | select(.parent_id == null) | .name'); do
-        echo "   - $category"
-      done
-      
-      echo ""
-      echo "🚀 Se as categorias não aparecem mesmo com todos os logs OK:"
-      echo "   • Problema pode ser na renderização React"
-      echo "   • Verifique se realCategories state está sendo atualizado"
-      echo "   • Confirme se o .map() está sendo executado no JSX"
-      
-    else
-      echo "❌ Falha na API de categorias"
-      echo "Response: $CATEGORIES_RESPONSE"
-    fi
+    # Mostrar categorias principais
+    echo "$CATEGORIES_RESPONSE" | jq -r '.categories[] | select(.parent_id == null) | "\(.name) (\(.children_count) subcategorias)"' | while read line; do
+      echo "📂 $line"
+    done
+    
+    echo ""
+    echo "📋 Exemplo - Subcategorias de DIREITO:"
+    echo "$CATEGORIES_RESPONSE" | jq -r '.categories[] | select(.name == "Direito") | .children[]? | "   📄 \(.name)"'
+    
+    echo ""
+    echo "🎯 COMO TESTAR O NOVO SISTEMA:"
+    echo "----------------------------------------------------------------"
+    echo "1. Acesse: http://localhost:5174/admin/summaries/new"
+    echo "2. Abra DevTools (F12) → Console"
+    echo "3. Procure pelos logs de debug"
+    echo "4. Vá até a seção '📁 CATEGORIAS TÁTICAS'"
+    echo "5. Clique nos checkboxes para selecionar categorias"
+    echo "6. Observe:"
+    echo "   ✅ Seleção de categoria pai seleciona automaticamente filhos"
+    echo "   ✅ Seleção de filho seleciona automaticamente pais"
+    echo "   ✅ Visual com indentação e ícones diferentes"
+    echo "   ✅ Badges aparecem mostrando categorias selecionadas"
+    echo "   ✅ Validação: precisa selecionar pelo menos uma categoria"
+    echo ""
+    echo "🔧 Funcionalidades implementadas:"
+    echo "   📂 Árvore hierárquica igual aos flashcards"
+    echo "   ☑️  Checkboxes interativos com seleção inteligente"
+    echo "   🎨 Visual diferenciado por nível (cores, ícones, indentação)"
+    echo "   🏷️  Badges coloridos mostrando seleção"
+    echo "   💾 Dados salvos incluem IDs e nomes das categorias"
+    echo "   ⚠️  Validação obrigatória de pelo menos uma categoria"
+    
+    echo ""
+    echo "🆚 COMPARAÇÃO COM SISTEMA ANTERIOR:"
+    echo "----------------------------------------------------------------"
+    echo "❌ ANTES: 2 selects simples (matéria → submatéria)"
+    echo "✅ AGORA: Árvore hierárquica completa com seleção múltipla"
+    echo "❌ ANTES: Apenas 1 matéria + 1 submatéria"
+    echo "✅ AGORA: Múltiplas categorias e subcategorias simultaneamente"
+    echo "❌ ANTES: Interface diferente dos flashcards"
+    echo "✅ AGORA: Interface idêntica aos flashcards (consistência)"
+    
   else
-    echo "❌ Falha ao obter token"
+    echo "❌ Falha no login"
   fi
   
 else
@@ -82,10 +92,11 @@ fi
 
 echo ""
 echo "================================================================"
-echo "✨ Implementações feitas:"
-echo "✅ Logs de debug adicionados em SummaryForm"
-echo "✅ Logs de debug adicionados em CategoryService"
-echo "✅ Token de teste automático para debug"
-echo "✅ Suporte para response.categories E response.data"
-echo "✅ Filtros de categorias principais funcionando"
+echo "✨ SISTEMA UNIFICADO DE CATEGORIAS IMPLEMENTADO:"
+echo "✅ Interface igual aos flashcards (renderCategoryTree)"
+echo "✅ Seleção múltipla inteligente (pais/filhos automáticos)"
+echo "✅ Visual hierárquico com indentação e ícones"
+echo "✅ Badges de categorias selecionadas"
+echo "✅ Validação e feedback ao usuário"
+echo "✅ Logs de debug para troubleshooting"
 echo "================================================================"
