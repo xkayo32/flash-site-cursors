@@ -34,23 +34,30 @@ import FlashcardPreviewModal from '@/components/FlashcardPreviewModal';
 import FlashcardStudyModal from '@/components/FlashcardStudyModal';
 import { flashcardService, type Flashcard, type FlashcardStats } from '@/services/flashcardService';
 import { categoryService, type Category } from '@/services/categoryService';
+import { useDynamicCategories } from '@/hooks/useDynamicCategories';
 
 
-// Constantes para filtros
-const materias: { [key: string]: string[] } = {
-  'DIREITO': ['Todas', 'Constitucional', 'Administrativo', 'Penal', 'Processual Penal', 'Processual Civil'],
-  'SEGURANÇA PÚBLICA': ['Todas', 'Operações Táticas', 'Procedimentos', 'Hierarquia', 'Legislação Policial'],
-  'CONHECIMENTOS GERAIS': ['Todas', 'História', 'Geografia', 'Atualidades', 'Informática']
-};
+// Constantes para filtros (podem ser movidas para API no futuro)
 const difficulties = ['Todos', 'easy', 'medium', 'hard'];
 const statuses = ['Todos', 'active', 'pending', 'archived'];
 const cardTypes = ['Todos', 'basic', 'basic_reversed', 'multiple_choice', 'true_false', 'cloze', 'type_answer', 'image_occlusion'];
 
 export default function IndividualFlashcards() {
   const navigate = useNavigate();
+  
+  // Hook dinâmico para categorias
+  const {
+    selectedCategory,
+    selectedSubcategory,
+    setSelectedCategory,
+    setSelectedSubcategory,
+    getCategoryOptions,
+    getSubcategoryOptions,
+    isLoadingCategories,
+    isLoadingSubcategories
+  } = useDynamicCategories();
+
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Todos');
-  const [selectedSubcategory, setSelectedSubcategory] = useState('Todas');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Todos');
   const [selectedStatus, setSelectedStatus] = useState('Todos');
   const [selectedType, setSelectedType] = useState('Todos');
@@ -68,32 +75,14 @@ export default function IndividualFlashcards() {
   const [stats, setStats] = useState<FlashcardStats | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [categories, setCategories] = useState<string[]>(['Todos']);
   const [error, setError] = useState<string | null>(null);
 
   // Load flashcards from API
   useEffect(() => {
     loadFlashcards();
     loadStats();
-    loadCategories();
     loadAuthors();
   }, [currentPage, selectedCategory, selectedSubcategory, selectedDifficulty, selectedStatus, selectedType, selectedAuthor, searchTerm]);
-  
-  const loadCategories = async () => {
-    try {
-      const response = await categoryService.listCategories();
-      if (response.success && response.data) {
-        const categoryNames = response.data
-          .filter(cat => cat.type === 'subject')
-          .map(cat => cat.name);
-        setCategories(['Todos', ...categoryNames]);
-      }
-    } catch (err) {
-      console.error('Error loading categories:', err);
-      // Manter as categorias padrão em caso de erro
-      setCategories(['Todos', 'DIREITO', 'SEGURANÇA PÚBLICA', 'CONHECIMENTOS GERAIS']);
-    }
-  };
 
   const loadAuthors = async () => {
     try {
@@ -144,8 +133,7 @@ export default function IndividualFlashcards() {
   };
 
   const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    setSelectedSubcategory('Todas');
+    setSelectedCategory(category); // Já resetará a subcategoria automaticamente
   };
 
   // Filtering is now done by API, so we use flashcards directly
@@ -555,22 +543,29 @@ export default function IndividualFlashcards() {
                   value={selectedCategory}
                   onChange={(e) => handleCategoryChange(e.target.value)}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                  disabled={isLoadingCategories}
                 >
-                  {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
+                  {isLoadingCategories ? (
+                    <option>CARREGANDO...</option>
+                  ) : (
+                    getCategoryOptions().map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))
+                  )}
                 </select>
 
                 <select
                   value={selectedSubcategory}
                   onChange={(e) => setSelectedSubcategory(e.target.value)}
-                  disabled={selectedCategory === 'Todos'}
+                  disabled={selectedCategory === 'Todos' || isLoadingSubcategories}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {selectedCategory === 'Todos' ? (
                     <option>SUBCATEGORIA</option>
+                  ) : isLoadingSubcategories ? (
+                    <option>CARREGANDO...</option>
                   ) : (
-                    materias[selectedCategory]?.map(subcategory => (
+                    getSubcategoryOptions().map(subcategory => (
                       <option key={subcategory} value={subcategory}>{subcategory.toUpperCase()}</option>
                     ))
                   )}

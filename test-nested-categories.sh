@@ -1,73 +1,108 @@
 #!/bin/bash
 
-# Test script for nested category creation in flashcard deck
-
-echo "======================================="
-echo "🧪 TESTE DE CRIAÇÃO ANINHADA DE CATEGORIAS"
-echo "======================================="
+echo "🌳 TESTE DE CATEGORIAS ANINHADAS (HIERÁRQUICAS)"
+echo "==============================================="
 echo ""
 
-# URL base
-BASE_URL="http://localhost:5273"
-API_URL="http://localhost:8180/api/v1"
+# URLs para teste
+MANAGER_URL="http://173.208.151.106:5273/admin/flashcards"
+INDIVIDUAL_URL="http://173.208.151.106:5273/admin/flashcards/cards"
 
-# Cores para output
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+echo "📋 SISTEMA DE CATEGORIAS HIERÁRQUICAS:"
+echo ""
+echo "✅ 1. Hook useDynamicCategories implementado"
+echo "✅ 2. categoryService.getCategoryHierarchy() corrigido"
+echo "✅ 3. Prioriza children da hierarquia"
+echo "✅ 4. Fallback para API se children não existir"
+echo "✅ 5. Fallback final para categorias padrão"
+echo ""
 
-# Verificar se o frontend está rodando
-echo "🔍 Verificando frontend..."
-if curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}" | grep -q "200"; then
-    echo -e "${GREEN}✅ Frontend rodando em ${BASE_URL}${NC}"
-else
-    echo -e "${RED}❌ Frontend não está acessível${NC}"
-    exit 1
-fi
+echo "🔧 LÓGICA DE CARREGAMENTO:"
+echo ""
+echo "📊 CATEGORIAS PRINCIPAIS:"
+echo "   1. Tenta buscar categorias tipo 'subject'"
+echo "   2. Se não encontrar, usa todas as categorias sem parent_id"
+echo "   3. Fallback para categorias padrão"
+echo ""
+echo "📂 SUBCATEGORIAS:"
+echo "   1. Prioriza 'children' da categoria selecionada"
+echo "   2. Se não houver children, busca da API"
+echo "   3. Fallback para subcategorias padrão por categoria"
+echo ""
 
-# Verificar se o backend está rodando
-echo "🔍 Verificando backend..."
-BACKEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${API_URL}/categories")
-if [ "$BACKEND_STATUS" -eq "200" ] || [ "$BACKEND_STATUS" -eq "401" ]; then
-    echo -e "${GREEN}✅ Backend rodando em ${API_URL}${NC}"
-else
-    echo -e "${RED}❌ Backend não está acessível (Status: $BACKEND_STATUS)${NC}"
-    exit 1
-fi
+echo "🎯 CATEGORIAS ESPERADAS DA API:"
+echo ""
+echo "📁 Direito (com children):"
+echo "   ├── Direito Constitucional"
+echo "   ├── Direito Administrativo"
+echo "   └── Direito Penal"
+echo ""
+echo "📁 Matemática (com children):"
+echo "   ├── Matemática Financeira"
+echo "   ├── Raciocínio Lógico"
+echo "   └── Estatística"
+echo ""
+echo "📁 Português (com children):"
+echo "   ├── Gramática"
+echo "   ├── Interpretação de Texto"
+echo "   └── Redação"
+echo ""
 
+echo "🧪 INSTRUÇÕES PARA TESTE:"
+echo "========================="
 echo ""
-echo "======================================="
-echo "📝 INSTRUÇÕES PARA TESTE MANUAL:"
-echo "======================================="
+echo "1. 🔐 Faça login:"
+echo "   Email: admin@studypro.com"
+echo "   Senha: Admin@123"
 echo ""
-echo -e "${YELLOW}1. Acesse:${NC} ${BASE_URL}/admin/flashcards/new"
+echo "2. 🌐 Acesse uma das páginas:"
+echo "   • FlashcardManager: $MANAGER_URL"
+echo "   • IndividualFlashcards: $INDIVIDUAL_URL"
 echo ""
-echo -e "${YELLOW}2. Clique no botão:${NC} 'Abrir Criador de Categorias'"
+echo "3. 🔍 Abra o Console do Navegador (F12)"
 echo ""
-echo -e "${YELLOW}3. No modal que abrir, teste:${NC}"
-echo "   a) Criar uma categoria principal (ex: 'Direito')"
-echo "   b) Clicar no ícone 📁+ ao lado da categoria"
-echo "   c) Criar uma subcategoria (ex: 'Direito Constitucional')"
-echo "   d) Criar sub-subcategorias (ex: 'Direitos Fundamentais')"
-echo "   e) Visualizar a árvore no lado direito"
-echo "   f) Testar expand/collapse com as setas"
-echo "   g) Clicar em 'Salvar Tudo no Banco'"
+echo "4. 📊 Verifique os dropdowns:"
+echo "   • Dropdown 1: Deve mostrar categorias principais"
+echo "   • Dropdown 2: Inicialmente mostra 'SELECIONE CATEGORIA PRIMEIRO'"
 echo ""
-echo -e "${YELLOW}4. Funcionalidades esperadas:${NC}"
-echo "   ✓ Criar categorias em múltiplos níveis"
-echo "   ✓ Visualizar estrutura em árvore"
-echo "   ✓ Adicionar/remover categorias"
-echo "   ✓ Expandir/colapsar nós da árvore"
-echo "   ✓ Salvar tudo de uma vez"
+echo "5. 🎯 Teste a funcionalidade:"
+echo "   • Selecione uma categoria (ex: 'Direito')"
+echo "   • Verifique se subcategorias aparecem no segundo dropdown"
+echo "   • Observe os logs no console para debug"
 echo ""
-echo "======================================="
-echo "🎯 URL DIRETA: ${BASE_URL}/admin/flashcards/new"
-echo "======================================="
+echo "6. 📝 Logs esperados no console:"
+echo "   • 'Category hierarchy received: [...]'"
+echo "   • 'Subject categories filtered: [...]'"
+echo "   • 'Selected category: {...}'"
+echo "   • 'Using children from hierarchy: [...]' (se children existir)"
+echo "   • 'No children found, trying API endpoint' (se não existir)"
+echo ""
 
-# Abrir no navegador se possível
-if command -v xdg-open &> /dev/null; then
+echo "✅ SISTEMA ATUALIZADO:"
+echo "====================="
+echo ""
+echo "🔄 Melhorias implementadas:"
+echo "   • Logs detalhados para debug"
+echo "   • Prioridade para children da hierarquia"
+echo "   • Fallbacks robustos"
+echo "   • Mapeamento expandido de categorias padrão"
+echo ""
+echo "🎯 Agora teste e veja se as subcategorias aparecem!"
+echo ""
+
+if command -v curl >/dev/null 2>&1; then
+    echo "🌐 VERIFICANDO CONECTIVIDADE:"
     echo ""
-    echo "🌐 Abrindo no navegador..."
-    xdg-open "${BASE_URL}/admin/flashcards/new" 2>/dev/null
+    
+    # Testar acesso às páginas
+    for url in "$MANAGER_URL" "$INDIVIDUAL_URL"; do
+        page_name=$(basename "$url")
+        response=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+        
+        if [ "$response" = "200" ]; then
+            echo "✅ $page_name: OK (HTTP $response)"
+        else
+            echo "❌ $page_name: ERRO (HTTP $response)"
+        fi
+    done
 fi

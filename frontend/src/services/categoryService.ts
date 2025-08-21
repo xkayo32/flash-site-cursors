@@ -146,6 +146,56 @@ class CategoryService {
       return { success: false, message: 'Erro ao excluir categoria' };
     }
   }
+
+  async getSubcategories(parentCategoryId: string): Promise<CategoriesResponse> {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.categories.list}/parent/${parentCategoryId}`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      const data = await response.json();
+      // Garantir que sempre retornamos no formato esperado
+      if (data.categories && !data.data) {
+        data.data = data.categories;
+      }
+      return data;
+    } catch (error) {
+      console.error('Error getting subcategories:', error);
+      return { success: false, message: 'Erro ao buscar subcategorias' };
+    }
+  }
+
+  async getCategoryByName(name: string): Promise<CategoryResponse> {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.categories.list}/name/${name}`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error getting category by name:', error);
+      return { success: false, message: 'Erro ao buscar categoria por nome' };
+    }
+  }
+
+  // Método utilitário para obter hierarquia completa
+  async getCategoryHierarchy(): Promise<Category[]> {
+    try {
+      const response = await this.listCategories();
+      // A API já retorna as categorias com children preenchido!
+      const categories = response.categories || response.data || [];
+      
+      // Filtrar apenas categorias principais (sem parent_id)
+      // A API já inclui as children em cada categoria
+      return categories.filter(cat => !cat.parent_id);
+    } catch (error) {
+      console.error('Error getting category hierarchy:', error);
+      return [];
+    }
+  }
 }
 
 export const categoryService = new CategoryService();

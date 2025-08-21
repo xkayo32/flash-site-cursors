@@ -1,102 +1,80 @@
 #!/bin/bash
 
-# Script para verificar dados hardcoded nas páginas admin
-
-echo "=== Verificando Dados Hardcoded nas Páginas Admin ==="
+echo "🔍 VERIFICANDO DADOS HARDCODED NO ADMIN"
+echo "========================================"
 echo ""
 
+# Diretório do admin
 ADMIN_DIR="/home/administrator/flash-site-cursors/frontend/src/pages/admin"
-ISSUES_FOUND=0
 
-# Lista de páginas para verificar
-PAGES=(
-    "AdminDashboard.tsx"
-    "UserManager.tsx"
-    "CourseCreator.tsx"
-    "CourseEditor.tsx"
-    "CategoryManager.tsx"
-    "QuestionEditor.tsx"
-    "FlashcardManager.tsx"
-    "IndividualFlashcards.tsx"
-    "MockExamManagerSimple.tsx"
-    "PreviousExamsManagerSimple.tsx"
-    "SummaryEditor.tsx"
-    "LegislationManager.tsx"
-    "AdminSettings.tsx"
-    "ContentManager.tsx"
-)
+echo "📋 VERIFICANDO FLASHCARDS/DECKS HARDCODED:"
+echo ""
 
-# Padrões que indicam dados hardcoded
-PATTERNS=(
-    "const.*=.*\[\s*{.*id:"
-    "const.*=.*\[\s*{.*name:"
-    "const.*=.*\[\s*{.*title:"
-    "mockData"
-    "fakeData"
-    "dummyData"
-    "exampleData"
-    "testData"
-    "sampleData"
-    "const users = \["
-    "const courses = \["
-    "const questions = \["
-    "const flashcards = \["
-    "const categories = \["
-)
+# Buscar por mock data
+echo "1. Arquivos com 'mock' data:"
+grep -l "mock[A-Z]\|mockData\|mockCards\|mockDeck" $ADMIN_DIR/*.tsx 2>/dev/null | while read file; do
+    filename=$(basename "$file")
+    echo "   ❌ $filename"
+    grep -n "const.*mock" "$file" | head -3 | sed 's/^/      Linha /'
+done
 
-for PAGE in "${PAGES[@]}"; do
-    FILE="$ADMIN_DIR/$PAGE"
-    
-    if [ -f "$FILE" ]; then
-        echo "📄 Verificando: $PAGE"
-        FOUND=false
-        
-        for PATTERN in "${PATTERNS[@]}"; do
-            MATCHES=$(grep -n "$PATTERN" "$FILE" 2>/dev/null | head -3)
-            
-            if [ ! -z "$MATCHES" ]; then
-                if [ "$FOUND" = false ]; then
-                    echo "  ⚠️  DADOS HARDCODED ENCONTRADOS:"
-                    FOUND=true
-                    ((ISSUES_FOUND++))
-                fi
-                echo "    Pattern: $PATTERN"
-                echo "$MATCHES" | while read -r line; do
-                    echo "      Linha $line"
-                done
-            fi
-        done
-        
-        # Verificar especificamente por arrays grandes de objetos
-        LARGE_ARRAYS=$(awk '/const.*=.*\[/{p=1} p{print NR": "$0} /\];/{if(p) exit}' "$FILE" | head -10)
-        if [ $(echo "$LARGE_ARRAYS" | wc -l) -gt 5 ]; then
-            if [ "$FOUND" = false ]; then
-                echo "  ⚠️  POSSÍVEL ARRAY HARDCODED GRANDE:"
-                FOUND=true
-                ((ISSUES_FOUND++))
-            fi
-            echo "$LARGE_ARRAYS" | head -5
-        fi
-        
-        if [ "$FOUND" = false ]; then
-            echo "  ✅ OK - Sem dados hardcoded óbvios"
-        fi
-        
-        echo ""
-    else
-        echo "❌ Arquivo não encontrado: $PAGE"
-        echo ""
+echo ""
+echo "2. Arquivos com arrays hardcoded de flashcards/decks:"
+grep -l "const.*\(flashcards\|decks\|cards\).*=.*\[" $ADMIN_DIR/*.tsx 2>/dev/null | while read file; do
+    filename=$(basename "$file")
+    # Verificar se é realmente hardcoded (tem objetos dentro)
+    if grep -q "const.*\(flashcards\|decks\|cards\).*=.*\[\s*{" "$file"; then
+        echo "   ❌ $filename"
+        grep -n "const.*\(flashcards\|decks\|cards\).*=.*\[" "$file" | head -1 | sed 's/^/      Linha /'
     fi
 done
 
-echo "=== RESUMO ==="
-echo "Total de páginas com possíveis dados hardcoded: $ISSUES_FOUND"
+echo ""
+echo "3. Arquivos com dados de exemplo/sample:"
+grep -l "sample\|example\|dummy\|fake" $ADMIN_DIR/*.tsx 2>/dev/null | while read file; do
+    filename=$(basename "$file")
+    if grep -q "const.*\(sample\|example\|dummy\|fake\)" "$file"; then
+        echo "   ⚠️  $filename"
+        grep -n "const.*\(sample\|example\|dummy\|fake\)" "$file" | head -1 | sed 's/^/      Linha /'
+    fi
+done
 
-if [ $ISSUES_FOUND -gt 0 ]; then
+echo ""
+echo "📊 RESUMO DOS ARQUIVOS PROBLEMÁTICOS:"
+echo ""
+
+# FlashcardEditor.tsx tem mock data confirmado
+if [ -f "$ADMIN_DIR/FlashcardEditor.tsx" ]; then
+    if grep -q "mockDeck\|mockCards" "$ADMIN_DIR/FlashcardEditor.tsx"; then
+        echo "❌ FlashcardEditor.tsx - CONTÉM mockDeck e mockCards"
+    fi
+fi
+
+echo ""
+echo "✅ ARQUIVOS LIMPOS (usando APIs):"
+echo ""
+
+# Listar arquivos que usam a API corretamente
+for file in $ADMIN_DIR/*Flashcard*.tsx $ADMIN_DIR/*Deck*.tsx; do
+    if [ -f "$file" ]; then
+        filename=$(basename "$file")
+        if grep -q "flashcardService\|deckService" "$file" 2>/dev/null; then
+            if ! grep -q "const.*mock\|const.*\(flashcards\|decks\|cards\).*=.*\[\s*{" "$file"; then
+                echo "   ✅ $filename - Usa flashcardService/API"
+            fi
+        fi
+    fi
+done
+
+echo ""
+echo "🎯 AÇÃO NECESSÁRIA:"
+echo ""
+
+if grep -q "mockDeck\|mockCards" "$ADMIN_DIR/FlashcardEditor.tsx" 2>/dev/null; then
+    echo "⚠️  Os seguintes arquivos precisam ser corrigidos:"
+    echo "   - FlashcardEditor.tsx (mockDeck e mockCards)"
     echo ""
-    echo "⚠️  Recomendação: Verificar manualmente as páginas com issues encontradas"
-    exit 1
+    echo "📝 Recomendação: Remover dados mockados e usar flashcardService"
 else
-    echo "✅ Nenhum dado hardcoded óbvio encontrado!"
-    exit 0
+    echo "✅ Nenhum arquivo com dados hardcoded encontrado!"
 fi

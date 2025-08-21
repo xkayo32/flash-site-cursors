@@ -19,14 +19,27 @@ import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
 import ImageOcclusionEditor from '@/components/ImageOcclusionEditor';
 import { flashcardService, type CreateFlashcardData } from '../../services/flashcardService';
+import { useDynamicCategories } from '@/hooks/useDynamicCategories';
 
 export default function NewFlashcard() {
   const navigate = useNavigate();
+  
+  // Hook dinâmico para categorias
+  const {
+    selectedCategory,
+    selectedSubcategory,
+    setSelectedCategory,
+    setSelectedSubcategory,
+    getCategoryOptions,
+    getSubcategoryOptions,
+    isLoadingCategories,
+    isLoadingSubcategories
+  } = useDynamicCategories();
+
   const [showPreview, setShowPreview] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
   const [showImageOcclusionEditor, setShowImageOcclusionEditor] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [categories, setCategories] = useState<{ [key: string]: string[] }>({});
   
   const [card, setCard] = useState({
     type: 'basic',
@@ -44,8 +57,8 @@ export default function NewFlashcard() {
     image: '',
     occlusionAreas: [],
     difficulty: 'medium',
-    category: 'DIREITO',
-    subcategory: 'Geral',
+    category: '',
+    subcategory: '',
     tags: ''
   });
 
@@ -114,42 +127,7 @@ export default function NewFlashcard() {
     }
   };
 
-  // Load categories from API
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const response = await flashcardService.getFilterOptions();
-        if (response.success) {
-          // Group subcategories by main categories for now
-          // In a real implementation, this should come from a proper category hierarchy
-          const categoriesMap: { [key: string]: string[] } = {
-            'DIREITO': ['Geral', 'Constitucional', 'Administrativo', 'Penal', 'Processual Penal', 'Processual Civil', 'Penal Militar'],
-            'SEGURANÇA PÚBLICA': ['Operações Táticas', 'Procedimentos', 'Hierarquia', 'Legislação Policial'],
-            'CONHECIMENTOS GERAIS': ['História', 'Geografia', 'Atualidades', 'Informática']
-          };
-          
-          // Add any new categories from API
-          response.data.categories.forEach(cat => {
-            if (!categoriesMap[cat]) {
-              categoriesMap[cat] = response.data.subcategories || ['Geral'];
-            }
-          });
-          
-          setCategories(categoriesMap);
-        }
-      } catch (error) {
-        console.error('Error loading categories:', error);
-        // Use fallback categories
-        setCategories({
-          'DIREITO': ['Geral', 'Constitucional', 'Administrativo', 'Penal', 'Processual Penal', 'Processual Civil'],
-          'SEGURANÇA PÚBLICA': ['Operações Táticas', 'Procedimentos', 'Hierarquia', 'Legislação Policial'],
-          'CONHECIMENTOS GERAIS': ['História', 'Geografia', 'Atualidades', 'Informática']
-        });
-      }
-    };
-    
-    loadCategories();
-  }, []);
+  // Categories are now loaded dynamically via useDynamicCategories hook
 
   const handleSave = async () => {
     // Validação tática baseada no tipo de intel
@@ -193,8 +171,8 @@ export default function NewFlashcard() {
       const flashcardData: CreateFlashcardData = {
         type: card.type as any,
         difficulty: card.difficulty as any,
-        category: card.category,
-        subcategory: card.subcategory,
+        category: selectedCategory !== 'Todos' ? selectedCategory : 'GERAL',
+        subcategory: selectedSubcategory !== 'Todas' ? selectedSubcategory : 'Geral',
         tags: card.tags ? card.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
         status: 'published',
         // Type-specific fields
@@ -880,13 +858,18 @@ export default function NewFlashcard() {
                     CATEGORIA
                   </label>
                   <select
-                    value={card.category}
-                    onChange={(e) => setCard({ ...card, category: e.target.value, subcategory: 'Geral' })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    disabled={isLoadingCategories}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
                   >
-                    {Object.keys(categories).map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
+                    {isLoadingCategories ? (
+                      <option>CARREGANDO...</option>
+                    ) : (
+                      getCategoryOptions().filter(cat => cat !== 'Todos').map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))
+                    )}
                   </select>
                 </div>
                 
@@ -895,13 +878,20 @@ export default function NewFlashcard() {
                     SUBCATEGORIA
                   </label>
                   <select
-                    value={card.subcategory}
-                    onChange={(e) => setCard({ ...card, subcategory: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+                    value={selectedSubcategory}
+                    onChange={(e) => setSelectedSubcategory(e.target.value)}
+                    disabled={selectedCategory === 'Todos' || isLoadingSubcategories}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50"
                   >
-                    {categories[card.category as keyof typeof categories]?.map(sub => (
-                      <option key={sub} value={sub}>{sub}</option>
-                    ))}
+                    {selectedCategory === 'Todos' ? (
+                      <option>SELECIONE CATEGORIA PRIMEIRO</option>
+                    ) : isLoadingSubcategories ? (
+                      <option>CARREGANDO...</option>
+                    ) : (
+                      getSubcategoryOptions().filter(sub => sub !== 'Todas').map(sub => (
+                        <option key={sub} value={sub}>{sub}</option>
+                      ))
+                    )}
                   </select>
                 </div>
               </div>
