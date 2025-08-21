@@ -443,31 +443,21 @@ export default function FlashcardManager() {
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent-500" />
           <CardContent className="p-6 relative">
             <div className="space-y-4">
-              {/* First Row */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="relative md:col-span-2">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="BUSCAR DECKS TÁTICOS..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
-                  />
-                </div>
-                
-                <Button
-                  variant="outline"
-                  onClick={() => setShowBulkActions(!showBulkActions)}
-                  className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
-                >
-                  <Filter className="w-4 h-4" />
-                  AÇÕES EM LOTE
-                </Button>
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="BUSCAR DECKS POR NOME OU DESCRIÇÃO..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all"
+                />
               </div>
 
-              {/* Second Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative" style={{ zIndex: 100 }}>
+              {/* Filter Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 relative" style={{ zIndex: 100 }}>
+                {/* Categoria - Mantendo como está */}
                 <CategorySelector
                   categories={categories}
                   selectedValue={selectedCategory}
@@ -477,37 +467,66 @@ export default function FlashcardManager() {
                   }}
                   disabled={isLoadingCategories}
                   isLoading={isLoadingCategories}
-                  placeholder="SELECIONE CATEGORIA"
+                  placeholder="TODAS AS CATEGORIAS"
                   label="CATEGORIA"
                   showAll={true}
                 />
 
-                <select
-                  value={selectedDifficulty}
-                  onChange={(e) => setSelectedDifficulty(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
-                >
-                  {['Todos', 'easy', 'medium', 'hard'].map(difficulty => (
-                    <option key={difficulty} value={difficulty}>
-                      {difficulty === 'Todos' ? 'DIFICULDADE' : 
-                       difficulty === 'easy' ? 'FÁCIL' :
-                       difficulty === 'medium' ? 'MÉDIO' :
-                       difficulty === 'hard' ? 'DIFÍCIL' : difficulty.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
+                {/* Dificuldade */}
+                <div className="relative">
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                    Dificuldade
+                  </label>
+                  <select
+                    value={selectedDifficulty}
+                    onChange={(e) => setSelectedDifficulty(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="Todos">TODAS AS DIFICULDADES</option>
+                    <option value="easy">🟢 FÁCIL</option>
+                    <option value="medium">🟡 MÉDIO</option>
+                    <option value="hard">🔴 DIFÍCIL</option>
+                  </select>
+                </div>
 
-                <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={showPublicOnly}
-                    onChange={(e) => setShowPublicOnly(e.target.checked)}
-                    className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
-                  />
-                  <span className="text-gray-700 dark:text-gray-300 font-police-body uppercase tracking-wider">
-                    PÚBLICOS
-                  </span>
-                </label>
+                {/* Status Público/Privado */}
+                <div className="relative">
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                    Visibilidade
+                  </label>
+                  <select
+                    value={showPublicOnly ? 'public' : 'all'}
+                    onChange={(e) => setShowPublicOnly(e.target.value === 'public')}
+                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="all">📊 TODOS OS DECKS</option>
+                    <option value="public">🌐 APENAS PÚBLICOS</option>
+                    <option value="private">🔒 APENAS PRIVADOS</option>
+                  </select>
+                </div>
+
+                {/* Botão de Ações em Lote */}
+                <Button
+                  variant="outline"
+                  onClick={() => setShowBulkActions(!showBulkActions)}
+                  className={`gap-2 font-police-body uppercase tracking-wider border-2 transition-all ${
+                    showBulkActions 
+                      ? 'border-accent-500 bg-accent-500/10 text-accent-600 dark:text-accent-400' 
+                      : 'border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500'
+                  }`}
+                >
+                  {showBulkActions ? (
+                    <>
+                      <X className="w-4 h-4" />
+                      FECHAR SELEÇÃO
+                    </>
+                  ) : (
+                    <>
+                      <Settings className="w-4 h-4" />
+                      AÇÕES EM LOTE
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
 
@@ -528,39 +547,52 @@ export default function FlashcardManager() {
                         onChange={handleSelectAll}
                         className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
                       />
-                      <span className="text-sm text-gray-900 dark:text-white font-police-body font-medium uppercase tracking-wider">
-                        SELECIONAR TODOS ({selectedDecks.length})
+                      <span className="text-sm font-police-body font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                        SELECIONAR TODOS
                       </span>
+                      {selectedDecks.length > 0 && (
+                        <Badge className="bg-accent-500 text-black font-police-numbers">
+                          {selectedDecks.length}/{filteredDecks.length}
+                        </Badge>
+                      )}
                     </label>
                     
-                    {selectedDecks.length > 0 && (
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                    <div className="flex items-center gap-3">
+                      {selectedDecks.length > 0 && (
+                        <span className="text-sm font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                          {selectedDecks.length} SELECIONADOS:
+                        </span>
+                      )}
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 font-police-body uppercase tracking-wider border-2 hover:bg-blue-500/10 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+                          disabled={selectedDecks.length === 0}
                         >
-                          <Globe className="w-3 h-3" />
-                          TORNAR PÚBLICO
+                          <Copy className="w-4 h-4" />
+                          DUPLICAR
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 font-police-body uppercase tracking-wider border-2 hover:bg-green-500/10 hover:border-green-500 hover:text-green-600 dark:hover:text-green-400 transition-all"
+                          disabled={selectedDecks.length === 0}
                         >
-                          <Copy className="w-3 h-3" />
-                          DUPLICAR SELECIONADOS
+                          <Globe className="w-4 h-4" />
+                          PUBLICAR
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="gap-1 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-gray-600 dark:hover:border-gray-500 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 font-police-body uppercase tracking-wider border-2 hover:bg-red-500/10 hover:border-red-500 hover:text-red-600 dark:hover:text-red-400 transition-all"
+                          disabled={selectedDecks.length === 0}
                         >
-                          <Trash2 className="w-3 h-3" />
-                          ARQUIVAR SELECIONADOS
+                          <Trash2 className="w-4 h-4" />
+                          EXCLUIR
                         </Button>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </motion.div>
               )}

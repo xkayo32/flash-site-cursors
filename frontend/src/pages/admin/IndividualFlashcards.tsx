@@ -24,7 +24,10 @@ import {
   CheckCircle,
   AlertCircle,
   Clock,
-  Loader2
+  Loader2,
+  X,
+  Settings,
+  RefreshCw
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -518,116 +521,32 @@ export default function IndividualFlashcards() {
           {/* Corner accents */}
           <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-500/20" />
           <CardContent className="p-6">
-            <div className="space-y-4">
-              {/* First Row */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="relative md:col-span-2">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="BUSCAR NO ARSENAL INTEL..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
-                  />
-                </div>
-                
-                <Button
-                  variant="outline"
-                  onClick={() => setShowBulkActions(!showBulkActions)}
-                  className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
-                >
-                  <Filter className="w-4 h-4" />
-                  OPERAÇÕES EM GRUPO
-                </Button>
+            {/* Filter Header with Active Count */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Filter className="w-5 h-5 text-accent-500" />
+                <h3 className="text-lg font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
+                  FILTROS AVANÇADOS
+                </h3>
+                {/* Active filters indicator */}
+                {(searchTerm || selectedCategory !== 'Todos' || selectedSubcategory !== 'Todas' || selectedType !== 'Todos' || selectedDifficulty !== 'Todos' || selectedStatus !== 'Todos' || selectedAuthor !== 'Todos') && (
+                  <Badge className="bg-accent-500/20 text-accent-600 dark:text-accent-400 border border-accent-500/30 font-police-body">
+                    {[
+                      searchTerm && 1,
+                      selectedCategory !== 'Todos' && 1,
+                      selectedSubcategory !== 'Todas' && 1,
+                      selectedType !== 'Todos' && 1,
+                      selectedDifficulty !== 'Todos' && 1,
+                      selectedStatus !== 'Todos' && 1,
+                      selectedAuthor !== 'Todos' && 1
+                    ].filter(Boolean).reduce((a, b) => a + b, 0)} ATIVOS
+                  </Badge>
+                )}
               </div>
-
-              {/* Second Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
-                  disabled={isLoadingCategories}
-                >
-                  {isLoadingCategories ? (
-                    <option>CARREGANDO...</option>
-                  ) : (
-                    getCategoryOptions().map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))
-                  )}
-                </select>
-
-                <select
-                  value={selectedSubcategory}
-                  onChange={(e) => setSelectedSubcategory(e.target.value)}
-                  disabled={selectedCategory === 'Todos' || isLoadingSubcategories}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {selectedCategory === 'Todos' ? (
-                    <option>SUBCATEGORIA</option>
-                  ) : isLoadingSubcategories ? (
-                    <option>CARREGANDO...</option>
-                  ) : (
-                    getSubcategoryOptions().map(subcategory => (
-                      <option key={subcategory} value={subcategory}>{subcategory.toUpperCase()}</option>
-                    ))
-                  )}
-                </select>
-
-                <select
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
-                >
-                  <option value="Todos">TIPO</option>
-                  {cardTypes.slice(1).map(type => (
-                    <option key={type} value={type}>
-                      {type.replace('_', ' ').toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={selectedDifficulty}
-                  onChange={(e) => setSelectedDifficulty(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
-                >
-                  {difficulties.map(difficulty => (
-                    <option key={difficulty} value={difficulty}>
-                      {difficulty === 'Todos' ? 'DIFICULDADE' : difficulty.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
-                >
-                  {statuses.map(status => (
-                    <option key={status} value={status}>
-                      {status === 'Todos' ? 'STATUS' : status.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={selectedAuthor}
-                  onChange={(e) => setSelectedAuthor(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
-                >
-                  <option value="Todos">AUTOR</option>
-                  {availableAuthors.map(author => (
-                    <option key={author.id} value={author.id}>
-                      {author.name.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-
+              {(searchTerm || selectedCategory !== 'Todos' || selectedSubcategory !== 'Todas' || selectedType !== 'Todos' || selectedDifficulty !== 'Todos' || selectedStatus !== 'Todos' || selectedAuthor !== 'Todos') && (
                 <Button
-                  variant="outline"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setSearchTerm('');
                     setSelectedCategory('Todos');
@@ -637,10 +556,221 @@ export default function IndividualFlashcards() {
                     setSelectedStatus('Todos');
                     setSelectedAuthor('Todos');
                   }}
-                  className="gap-2 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500 transition-colors"
+                  className="gap-2 text-gray-600 dark:text-gray-400 hover:text-accent-500 dark:hover:text-accent-400 font-police-body uppercase tracking-wider text-sm"
                 >
-                  LIMPAR
+                  <RefreshCw className="w-3 h-3" />
+                  LIMPAR FILTROS
                 </Button>
+              )}
+            </div>
+            
+            <div className="space-y-4">
+              {/* First Row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="relative md:col-span-2 group">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-accent-500 transition-colors" />
+                  <input
+                    type="text"
+                    placeholder="BUSCAR NO ARSENAL INTEL..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body placeholder:font-police-body placeholder:uppercase placeholder:tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                    >
+                      <X className="w-4 h-4 text-gray-500" />
+                    </button>
+                  )}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  onClick={() => setShowBulkActions(!showBulkActions)}
+                  className={`gap-2 font-police-body uppercase tracking-wider border-2 transition-all ${
+                    showBulkActions 
+                      ? 'border-accent-500 bg-accent-500/10 text-accent-600 dark:text-accent-400' 
+                      : 'border-gray-300 dark:border-gray-600 hover:border-accent-500 dark:hover:border-accent-500'
+                  }`}
+                >
+                  {showBulkActions ? (
+                    <>
+                      <X className="w-4 h-4" />
+                      FECHAR SELEÇÃO
+                    </>
+                  ) : (
+                    <>
+                      <Settings className="w-4 h-4" />
+                      OPERAÇÕES EM GRUPO
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Second Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3">
+                <div className={`relative ${selectedCategory !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                    Categoria
+                  </label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                    disabled={isLoadingCategories}
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.25em 1.25em',
+                      paddingRight: '2rem'
+                    }}
+                  >
+                  {isLoadingCategories ? (
+                    <option>CARREGANDO...</option>
+                  ) : (
+                    getCategoryOptions().map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))
+                  )}
+                  </select>
+                </div>
+
+                <div className={`relative ${selectedSubcategory !== 'Todas' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                    Subcategoria
+                  </label>
+                  <select
+                    value={selectedSubcategory}
+                    onChange={(e) => setSelectedSubcategory(e.target.value)}
+                    disabled={selectedCategory === 'Todos' || isLoadingSubcategories}
+                    className="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.25em 1.25em',
+                      paddingRight: '2rem'
+                    }}
+                  >
+                  {selectedCategory === 'Todos' ? (
+                    <option>SUBCATEGORIA</option>
+                  ) : isLoadingSubcategories ? (
+                    <option>CARREGANDO...</option>
+                  ) : (
+                    getSubcategoryOptions().map(subcategory => (
+                      <option key={subcategory} value={subcategory}>{subcategory.toUpperCase()}</option>
+                    ))
+                  )}
+                  </select>
+                </div>
+
+                <div className={`relative ${selectedType !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                    Tipo
+                  </label>
+                  <select
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    className="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.25em 1.25em',
+                      paddingRight: '2rem'
+                    }}
+                  >
+                  <option value="Todos">TIPO</option>
+                  {cardTypes.slice(1).map(type => (
+                    <option key={type} value={type}>
+                      {type.replace('_', ' ').toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+
+                <div className={`relative ${selectedDifficulty !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                    Dificuldade
+                  </label>
+                  <select
+                    value={selectedDifficulty}
+                    onChange={(e) => setSelectedDifficulty(e.target.value)}
+                    className="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.25em 1.25em',
+                      paddingRight: '2rem'
+                    }}
+                  >
+                    {difficulties.map(difficulty => (
+                      <option key={difficulty} value={difficulty}>
+                        {difficulty === 'Todos' ? 'TODAS' : 
+                         difficulty === 'easy' ? '🟢 FÁCIL' :
+                         difficulty === 'medium' ? '🟡 MÉDIO' : 
+                         difficulty === 'hard' ? '🔴 DIFÍCIL' : 
+                         difficulty.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={`relative ${selectedStatus !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                    Status
+                  </label>
+                  <select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    className="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.25em 1.25em',
+                      paddingRight: '2rem'
+                    }}
+                  >
+                    {statuses.map(status => (
+                      <option key={status} value={status}>
+                        {status === 'Todos' ? 'TODOS' : 
+                         status === 'published' ? '✅ PUBLICADO' :
+                         status === 'draft' ? '📝 RASCUNHO' :
+                         status === 'archived' ? '📦 ARQUIVADO' :
+                         status.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={`relative ${selectedAuthor !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`}>
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                    Autor
+                  </label>
+                  <select
+                    value={selectedAuthor}
+                    onChange={(e) => setSelectedAuthor(e.target.value)}
+                    className="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.25em 1.25em',
+                      paddingRight: '2rem'
+                    }}
+                  >
+                    <option value="Todos">TODOS</option>
+                    {availableAuthors.map(author => (
+                      <option key={author.id} value={author.id}>
+                        {author.name.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
