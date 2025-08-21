@@ -16,7 +16,10 @@ import {
   Star,
   Link2,
   HelpCircle,
-  Download
+  Download,
+  FolderOpen,
+  Tag,
+  CheckCircle
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -38,14 +41,16 @@ export default function SummaryForm() {
   // Form state
   const [formData, setFormData] = useState({
     title: '',
-    materia: '',
-    submateria: '',
     topico: '',
     course: '',
     status: 'draft',
     visibility: 'private',
     tags: [] as string[]
   });
+  
+  // Categorias selecionadas (igual ao NewFlashcard)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   
   const [editorContent, setEditorContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -80,9 +85,34 @@ export default function SummaryForm() {
       
       // A API retorna 'categories' não 'data'
       if (response.success && (response.data || response.categories)) {
-        const categories = response.data || response.categories || [];
-        console.log('✅ Categorias encontradas:', categories.length);
-        setRealCategories(categories);
+        const categoriesData = response.data || response.categories || [];
+        console.log('✅ Categorias encontradas:', categoriesData.length);
+        
+        // Estruturar hierarquicamente como no NewFlashcard
+        const categoryMap = new Map<string, Category>();
+        const rootCategories: Category[] = [];
+        
+        // Primeiro, criar o map de todas as categorias
+        categoriesData.forEach((cat: Category) => {
+          categoryMap.set(cat.id, { ...cat, children: [] });
+        });
+        
+        // Depois, construir a hierarquia
+        categoriesData.forEach((cat: Category) => {
+          const category = categoryMap.get(cat.id)!;
+          if (cat.parent_id) {
+            const parent = categoryMap.get(cat.parent_id);
+            if (parent) {
+              parent.children = parent.children || [];
+              parent.children.push(category);
+            }
+          } else {
+            rootCategories.push(category);
+          }
+        });
+        
+        setCategories(rootCategories);
+        setRealCategories(categoriesData); // Manter para compatibilidade
       } else {
         console.error('❌ Resposta inválida:', response);
         toast.error('Erro ao carregar categorias');
@@ -301,6 +331,144 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Funções de manipulação de categorias (copiadas do NewFlashcard)
+  const handleCategoryToggle = (categoryId: string) => {
+    setSelectedCategories(prev => {
+      let newSelectedCategories = [...prev];
+      
+      if (newSelectedCategories.includes(categoryId)) {
+        // Desmarcando: remover a categoria e todos os filhos
+        const findAllChildren = (catId: string): string[] => {
+          const children: string[] = [];
+          const findChildren = (cats: Category[]) => {
+            cats.forEach(cat => {
+              if (cat.parent_id === catId) {
+                children.push(cat.id);
+                findChildren(realCategories);
+              }
+            });
+          };
+          findChildren(realCategories);
+          return children;
+        };
+        
+        const allChildren = findAllChildren(categoryId);
+        newSelectedCategories = newSelectedCategories.filter(id => 
+          id !== categoryId && !allChildren.includes(id)
+        );
+      } else {
+        // Marcando: adicionar a categoria e todos os pais
+        const findParentChain = (catId: string): string[] => {
+          const parents: string[] = [];
+          const category = realCategories.find(c => c.id === catId);
+          if (category && category.parent_id) {
+            parents.push(category.parent_id);
+            parents.push(...findParentChain(category.parent_id));
+          }
+          return parents;
+        };
+        
+        const parentChain = findParentChain(categoryId);
+        const toAdd = [categoryId, ...parentChain];
+        
+        toAdd.forEach(id => {
+          if (!newSelectedCategories.includes(id)) {
+            newSelectedCategories.push(id);
+          }
+        });
+      }
+      
+      return newSelectedCategories;
+    });
+  };
+
+  // Renderiza a árvore de categorias (igual ao NewFlashcard)
+  const renderCategoryTree = (category: Category, level: number = 0) => {
+    const isSelected = selectedCategories.includes(category.id);
+    const hasChildren = category.children && category.children.length > 0;
+    
+    // Estilo diferenciado por nível
+    const isMainCategory = level === 0;
+    const indentClass = level > 0 ? 'ml-8 border-l-2 border-gray-200 dark:border-gray-600 pl-4' : '';
+    
+    return (
+      <div key={category.id} className={`${indentClass} ${isMainCategory ? 'mb-4' : 'mb-2'}`}>
+        <div
+          className={`
+            flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer
+            ${isSelected 
+              ? 'bg-accent-500/20 border-accent-500 shadow-sm' 
+              : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-accent-500/50'
+            }
+          `}
+          onClick={() => handleCategoryToggle(category.id)}
+        >
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => handleCategoryToggle(category.id)}
+              className="text-accent-500 focus:ring-accent-500 rounded"
+            />
+            {hasChildren ? (
+              <FolderOpen className={`w-4 h-4 ${isMainCategory ? 'text-accent-500' : 'text-blue-500'}`} />
+            ) : (
+              level === 0 ? (
+                <Tag className="w-4 h-4 text-accent-600" />
+              ) : (
+                <Tag className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              )
+            )}
+          </div>
+          
+          <div className="flex-1">
+            <div className={`font-police-body ${isMainCategory ? 'font-bold text-gray-900 dark:text-white' : 'font-medium text-gray-700 dark:text-gray-300'}`}>
+              {category.name}
+            </div>
+            {category.description && (
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {category.description}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {hasChildren && (
+          <div className="mt-2">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-px bg-gradient-to-r from-accent-500/20 via-accent-500/40 to-accent-500/20 flex-1"></div>
+              <span className="text-xs font-police-body text-accent-600 dark:text-accent-400 uppercase tracking-wider px-2">
+                Subcategorias
+              </span>
+              <div className="h-px bg-gradient-to-r from-accent-500/20 via-accent-500/40 to-accent-500/20 flex-1"></div>
+            </div>
+            {category.children!.map(child => renderCategoryTree(child, level + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Get selected category names (igual ao NewFlashcard)
+  const getSelectedCategoryNames = () => {
+    const selected = realCategories.filter(cat => selectedCategories.includes(cat.id));
+    const names: string[] = [];
+    
+    const collectNames = (cats: Category[]) => {
+      cats.forEach(cat => {
+        if (selectedCategories.includes(cat.id)) {
+          names.push(cat.name);
+        }
+        if (cat.children) {
+          collectNames(cat.children);
+        }
+      });
+    };
+    
+    collectNames(categories);
+    return names;
+  };
+
   // Handle tags
   const addTag = () => {
     if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
@@ -315,8 +483,13 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
 
   // Save summary
   const handleSave = async () => {
-    if (!formData.title || !formData.materia || !formData.submateria) {
-      toast.error('Por favor, preencha todos os campos obrigatórios');
+    if (!formData.title) {
+      toast.error('Por favor, preencha o título do resumo');
+      return;
+    }
+    
+    if (selectedCategories.length === 0) {
+      toast.error('Por favor, selecione pelo menos uma categoria');
       return;
     }
     
@@ -328,10 +501,21 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
     setIsLoading(true);
     
     try {
-      // Simulate API call
+      // Simulate API call with form data
+      const summaryData = {
+        ...formData,
+        categories: selectedCategories,
+        categoryNames: getSelectedCategoryNames(),
+        content: editorContent
+      };
+      
+      console.log('💾 Dados do resumo a serem salvos:', summaryData);
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      toast.success(isEditing ? 'Resumo atualizado com sucesso!' : 'Resumo criado com sucesso!');
+      toast.success(
+        `${isEditing ? 'Resumo atualizado' : 'Resumo criado'} com sucesso! Categorias: ${getSelectedCategoryNames().join(', ')}`,
+        { duration: 4000 }
+      );
       navigate('/admin/summaries');
       
     } catch (error) {
@@ -515,106 +699,98 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
               onToggleFullscreen={toggleFullscreen}
             />
 
-            {/* Classification and Settings - Horizontal Layout */}
+            {/* Categorias Táticas (igual ao NewFlashcard) */}
+            <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="font-police-title uppercase tracking-wider text-sm">
+                  📁 CATEGORIAS TÁTICAS
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingCategories ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="w-6 h-6 border-2 border-accent-500 border-t-transparent rounded-full animate-spin mr-3" />
+                    <span className="font-police-body text-gray-600 dark:text-gray-400">
+                      Carregando categorias táticas...
+                    </span>
+                  </div>
+                ) : categories.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="font-police-body text-gray-500 dark:text-gray-400">
+                      Nenhuma categoria disponível
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                      <p className="text-xs font-police-body text-yellow-700 dark:text-yellow-300 uppercase tracking-wider">
+                        💡 DICA TÁTICA: Você pode selecionar múltiplas categorias e níveis para este resumo. Isso permitirá organizar em diferentes áreas de conhecimento.
+                      </p>
+                    </div>
+                    
+                    {categories.map(category => renderCategoryTree(category))}
+                    
+                    {selectedCategories.length > 0 && (
+                      <div className="mt-4 p-3 bg-accent-500/10 border border-accent-500/30 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle className="w-4 h-4 text-accent-500" />
+                          <span className="font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-sm">
+                            CATEGORIAS SELECIONADAS ({selectedCategories.length})
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {getSelectedCategoryNames().map((name, index) => (
+                            <Badge key={index} className="bg-accent-500 text-black font-police-body font-semibold text-xs">
+                              {name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Configurações Adicionais */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Course/Subject Selection */}
+              {/* Tópico e Curso */}
               <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="font-police-title uppercase tracking-wider text-sm">
-                    CLASSIFICAÇÃO DO BRIEFING
+                    🎯 CONFIGURAÇÕES ADICIONAIS
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
-                        MATÉRIA *
-                      </label>
-                      <select
-                        value={formData.materia}
-                        onChange={(e) => {
-                          handleInputChange('materia', e.target.value);
-                          handleInputChange('submateria', '');
-                        }}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
-                        disabled={loadingCategories}
-                      >
-                        <option value="">
-                          {loadingCategories ? 'Carregando matérias...' : 'Selecione uma matéria'}
-                        </option>
-                        {realCategories
-                          .filter(cat => !cat.parent_id) // Apenas categorias principais
-                          .map(category => (
-                            <option key={category.id} value={category.name}>
-                              {category.name.toUpperCase()}
-                            </option>
-                          ))
-                        }
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
-                        SUBMATÉRIA *
-                      </label>
-                      <select
-                        value={formData.submateria}
-                        onChange={(e) => handleInputChange('submateria', e.target.value)}
-                        disabled={!formData.materia || loadingCategories}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body disabled:opacity-50"
-                      >
-                        <option value="">
-                          {!formData.materia ? 'Selecione uma matéria primeiro' : 
-                           loadingCategories ? 'Carregando...' : 'Selecione uma submatéria'}
-                        </option>
-                        {formData.materia && 
-                          realCategories
-                            .filter(cat => {
-                              const parentCategory = realCategories.find(parent => 
-                                parent.name === formData.materia && !parent.parent_id
-                              );
-                              return parentCategory && cat.parent_id === parentCategory.id;
-                            })
-                            .map(subcategory => (
-                              <option key={subcategory.id} value={subcategory.name}>
-                                {subcategory.name.toUpperCase()}
-                              </option>
-                            ))
-                        }
-                      </select>
-                    </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                      TÓPICO ESPECÍFICO
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.topico}
+                      onChange={(e) => handleInputChange('topico', e.target.value)}
+                      placeholder="Ex: Princípios Fundamentais da Constituição"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                    />
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
-                        TÓPICO
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.topico}
-                        onChange={(e) => handleInputChange('topico', e.target.value)}
-                        placeholder="Ex: Princípios Fundamentais"
-                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
-                        CURSO RELACIONADO
-                      </label>
-                      <select
-                        value={formData.course}
-                        onChange={(e) => handleInputChange('course', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
-                      >
-                        <option value="">Selecione um curso</option>
-                        <option value="pf-agente">POLÍCIA FEDERAL - AGENTE</option>
-                        <option value="pf-delegado">POLÍCIA FEDERAL - DELEGADO</option>
-                        <option value="prf">POLÍCIA RODOVIÁRIA FEDERAL</option>
-                        <option value="pc-delegado">POLÍCIA CIVIL - DELEGADO</option>
-                      </select>
-                    </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 font-police-body uppercase tracking-wider">
+                      CURSO RELACIONADO
+                    </label>
+                    <select
+                      value={formData.course}
+                      onChange={(e) => handleInputChange('course', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+                    >
+                      <option value="">Selecione um curso</option>
+                      <option value="pf-agente">POLÍCIA FEDERAL - AGENTE</option>
+                      <option value="pf-delegado">POLÍCIA FEDERAL - DELEGADO</option>
+                      <option value="prf">POLÍCIA RODOVIÁRIA FEDERAL</option>
+                      <option value="pc-delegado">POLÍCIA CIVIL - DELEGADO</option>
+                    </select>
                   </div>
                 </CardContent>
               </Card>
