@@ -19,7 +19,10 @@ import {
   Download,
   FolderOpen,
   Tag,
-  CheckCircle
+  CheckCircle,
+  ChevronDown,
+  ChevronRight,
+  Folder
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -51,6 +54,7 @@ export default function SummaryForm() {
   // Categorias selecionadas (igual ao NewFlashcard)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   
   const [editorContent, setEditorContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -326,6 +330,19 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Função para expandir/recolher categorias
+  const toggleCategoryExpansion = (categoryId: string) => {
+    setExpandedCategories(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(categoryId)) {
+        newExpanded.delete(categoryId);
+      } else {
+        newExpanded.add(categoryId);
+      }
+      return newExpanded;
+    });
+  };
+
   // Funções de manipulação de categorias (copiadas do NewFlashcard)
   const handleCategoryToggle = (categoryId: string) => {
     setSelectedCategories(prev => {
@@ -377,50 +394,76 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
     });
   };
 
-  // Renderiza a árvore de categorias (igual ao NewFlashcard)
+  // Renderiza a árvore de categorias com expansão controlada
   const renderCategoryTree = (category: Category, level: number = 0) => {
     const isSelected = selectedCategories.includes(category.id);
     const hasChildren = category.children && category.children.length > 0;
+    const isExpanded = expandedCategories.has(category.id);
     
-    console.log(`🌲 Renderizando categoria: ${category.name} (level: ${level}, hasChildren: ${hasChildren}, children: ${category.children?.length || 0})`);
+    console.log(`🌲 Renderizando categoria: ${category.name} (level: ${level}, hasChildren: ${hasChildren}, isExpanded: ${isExpanded})`);
     
     // Estilo diferenciado por nível
     const isMainCategory = level === 0;
-    const indentClass = level > 0 ? 'ml-8 border-l-2 border-gray-200 dark:border-gray-600 pl-4' : '';
+    const indentClass = level > 0 ? 'ml-6 border-l-2 border-gray-200 dark:border-gray-600 pl-4' : '';
     
     return (
-      <div key={category.id} className={`${indentClass} ${isMainCategory ? 'mb-4' : 'mb-2'}`}>
+      <div key={category.id} className={`${indentClass} ${isMainCategory ? 'mb-3' : 'mb-2'}`}>
         <div
           className={`
-            flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer
+            flex items-center gap-3 p-3 rounded-lg border transition-all duration-200
             ${isSelected 
               ? 'bg-accent-500/20 border-accent-500 shadow-sm' 
               : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-accent-500/50'
             }
           `}
-          onClick={() => handleCategoryToggle(category.id)}
         >
+          {/* Botão de expansão (só para categorias com filhos) */}
+          {hasChildren && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleCategoryExpansion(category.id);
+              }}
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+              title={isExpanded ? 'Recolher subcategorias' : 'Expandir subcategorias'}
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              )}
+            </button>
+          )}
+          
+          {/* Checkbox da categoria */}
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
               checked={isSelected}
               onChange={() => handleCategoryToggle(category.id)}
               className="text-accent-500 focus:ring-accent-500 rounded"
+              onClick={(e) => e.stopPropagation()}
             />
             {hasChildren ? (
-              <FolderOpen className={`w-4 h-4 ${isMainCategory ? 'text-accent-500' : 'text-blue-500'}`} />
-            ) : (
-              level === 0 ? (
-                <Tag className="w-4 h-4 text-accent-600" />
+              isExpanded ? (
+                <FolderOpen className={`w-4 h-4 ${isMainCategory ? 'text-accent-500' : 'text-blue-500'}`} />
               ) : (
-                <Tag className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <Folder className={`w-4 h-4 ${isMainCategory ? 'text-accent-500' : 'text-blue-500'}`} />
               )
+            ) : (
+              <Tag className={`w-4 h-4 ${isMainCategory ? 'text-accent-600' : 'text-gray-500 dark:text-gray-400'}`} />
             )}
           </div>
           
+          {/* Nome e descrição da categoria */}
           <div className="flex-1">
             <div className={`font-police-body ${isMainCategory ? 'font-bold text-gray-900 dark:text-white' : 'font-medium text-gray-700 dark:text-gray-300'}`}>
               {category.name}
+              {hasChildren && (
+                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                  ({category.children!.length} subcategorias)
+                </span>
+              )}
             </div>
             {category.description && (
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -430,12 +473,13 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
           </div>
         </div>
         
-        {hasChildren && (
+        {/* Subcategorias (só aparecem se expandido) */}
+        {hasChildren && isExpanded && (
           <div className="mt-2">
             <div className="flex items-center gap-2 mb-3">
               <div className="h-px bg-gradient-to-r from-accent-500/20 via-accent-500/40 to-accent-500/20 flex-1"></div>
               <span className="text-xs font-police-body text-accent-600 dark:text-accent-400 uppercase tracking-wider px-2">
-                Subcategorias
+                Subcategorias de {category.name}
               </span>
               <div className="h-px bg-gradient-to-r from-accent-500/20 via-accent-500/40 to-accent-500/20 flex-1"></div>
             </div>
@@ -696,59 +740,6 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
               onToggleFullscreen={toggleFullscreen}
             />
 
-            {/* Categorias Táticas (igual ao NewFlashcard) */}
-            <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="font-police-title uppercase tracking-wider text-sm">
-                  📁 CATEGORIAS TÁTICAS
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loadingCategories ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="w-6 h-6 border-2 border-accent-500 border-t-transparent rounded-full animate-spin mr-3" />
-                    <span className="font-police-body text-gray-600 dark:text-gray-400">
-                      Carregando categorias táticas...
-                    </span>
-                  </div>
-                ) : categories.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="font-police-body text-gray-500 dark:text-gray-400">
-                      Nenhuma categoria disponível
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-                      <p className="text-xs font-police-body text-yellow-700 dark:text-yellow-300 uppercase tracking-wider">
-                        💡 DICA TÁTICA: Você pode selecionar múltiplas categorias e níveis para este resumo. Isso permitirá organizar em diferentes áreas de conhecimento.
-                      </p>
-                    </div>
-                    
-                    {categories.map(category => renderCategoryTree(category))}
-                    
-                    {selectedCategories.length > 0 && (
-                      <div className="mt-4 p-3 bg-accent-500/10 border border-accent-500/30 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="w-4 h-4 text-accent-500" />
-                          <span className="font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-sm">
-                            CATEGORIAS SELECIONADAS ({selectedCategories.length})
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {getSelectedCategoryNames().map((name, index) => (
-                            <Badge key={index} className="bg-accent-500 text-black font-police-body font-semibold text-xs">
-                              {name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
             {/* Configurações Adicionais */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -824,7 +815,62 @@ A Constituição é a *lei fundamental* do Estado, ocupando o topo da hierarquia
         )}
         
         {activeTab === 'settings' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            {/* Categorias Táticas - Movido para CONFIG. OPERACIONAIS */}
+            <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="font-police-title uppercase tracking-wider text-sm">
+                  📁 CATEGORIAS TÁTICAS
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingCategories ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="w-6 h-6 border-2 border-accent-500 border-t-transparent rounded-full animate-spin mr-3" />
+                    <span className="font-police-body text-gray-600 dark:text-gray-400">
+                      Carregando categorias táticas...
+                    </span>
+                  </div>
+                ) : categories.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="font-police-body text-gray-500 dark:text-gray-400">
+                      Nenhuma categoria disponível
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                      <p className="text-xs font-police-body text-yellow-700 dark:text-yellow-300 uppercase tracking-wider">
+                        💡 DICA TÁTICA: Clique nas setas para expandir/recolher categorias. Selecione múltiplas para organizar melhor este resumo.
+                      </p>
+                    </div>
+                    
+                    {categories.map(category => renderCategoryTree(category))}
+                    
+                    {selectedCategories.length > 0 && (
+                      <div className="mt-4 p-3 bg-accent-500/10 border border-accent-500/30 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle className="w-4 h-4 text-accent-500" />
+                          <span className="font-police-subtitle font-semibold text-gray-900 dark:text-white uppercase tracking-wider text-sm">
+                            CATEGORIAS SELECIONADAS ({selectedCategories.length})
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {getSelectedCategoryNames().map((name, index) => (
+                            <Badge key={index} className="bg-accent-500 text-black font-police-body font-semibold text-xs">
+                              {name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="font-police-title uppercase tracking-wider">CONFIGURAÇÕES DE PUBLICAÇÃO</CardTitle>
