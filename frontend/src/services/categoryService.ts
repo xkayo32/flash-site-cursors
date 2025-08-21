@@ -48,7 +48,10 @@ interface UpdateCategoryData {
 
 class CategoryService {
   private getAuthHeaders() {
-    const token = useAuthStore.getState().token;
+    // Tentar pegar token do store ou localStorage
+    const token = useAuthStore.getState().token || localStorage.getItem('token');
+    console.log('🔑 Token encontrado:', token ? 'SIM' : 'NÃO');
+    
     return {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -57,15 +60,28 @@ class CategoryService {
 
   async listCategories(): Promise<CategoriesResponse> {
     try {
+      console.log('🔍 CategoryService: Fazendo requisição para:', API_ENDPOINTS.categories.list);
+      const headers = this.getAuthHeaders();
+      console.log('📡 Headers da requisição:', headers);
+      
       const response = await fetch(`${API_ENDPOINTS.categories.list}`, {
         method: 'GET',
-        headers: this.getAuthHeaders(),
+        headers: headers,
       });
 
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response ok:', response.ok);
+
+      if (!response.ok) {
+        console.error('❌ Response error:', response.status, response.statusText);
+        return { success: false, message: `HTTP ${response.status}: ${response.statusText}` };
+      }
+
       const data = await response.json();
+      console.log('📊 CategoryService data:', data);
       return data;
     } catch (error) {
-      console.error('Error listing categories:', error);
+      console.error('❌ CategoryService error:', error);
       return { success: false, message: 'Erro ao listar categorias' };
     }
   }

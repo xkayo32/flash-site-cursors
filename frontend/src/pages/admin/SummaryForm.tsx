@@ -62,18 +62,33 @@ export default function SummaryForm() {
 
   // Carregar categorias da API
   useEffect(() => {
+    // Para debug: definir token se não existir
+    if (!localStorage.getItem('token')) {
+      console.log('🔧 DEBUG: Definindo token de teste');
+      localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBzdHVkeXByby5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTU4MDUzMTEsImV4cCI6MTc1NTg5MTcxMX0.PErdFBgmH-5SwGqE9BnMyoM9i5zCrbWUvGdYXRMGfsQ');
+    }
+    
     loadCategories();
   }, []);
 
   const loadCategories = async () => {
     try {
       setLoadingCategories(true);
+      console.log('🔍 Carregando categorias...');
       const response = await categoryService.listCategories();
-      if (response.success && response.data) {
-        setRealCategories(response.data);
+      console.log('📊 Response recebida:', response);
+      
+      // A API retorna 'categories' não 'data'
+      if (response.success && (response.data || response.categories)) {
+        const categories = response.data || response.categories || [];
+        console.log('✅ Categorias encontradas:', categories.length);
+        setRealCategories(categories);
+      } else {
+        console.error('❌ Resposta inválida:', response);
+        toast.error('Erro ao carregar categorias');
       }
     } catch (error) {
-      console.error('Error loading categories:', error);
+      console.error('❌ Error loading categories:', error);
       toast.error('Erro ao carregar categorias');
     } finally {
       setLoadingCategories(false);

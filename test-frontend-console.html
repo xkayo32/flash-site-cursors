@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste SummaryForm Categorias</title>
+</head>
+<body>
+    <h1>Teste das Categorias - Console do Browser</h1>
+    <p>Abra o console do navegador (F12) para ver os logs.</p>
+    
+    <script>
+        console.log('🎯 Iniciando teste das categorias...');
+        
+        // Simular token de autenticação (como se fosse do localStorage)
+        const token = 'admin-token';
+        
+        async function testCategoriesAPI() {
+            try {
+                console.log('🔍 Fazendo requisição para categories...');
+                
+                const response = await fetch('http://localhost:8180/api/v1/categories', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response ok:', response.ok);
+                
+                if (!response.ok) {
+                    console.error('❌ Response não ok:', response.status, response.statusText);
+                    return;
+                }
+                
+                const data = await response.json();
+                console.log('📊 Dados recebidos:', data);
+                
+                if (data.success && data.categories) {
+                    console.log('✅ Sucesso! Categorias encontradas:', data.categories.length);
+                    
+                    // Simular o que o SummaryForm faz
+                    const mainCategories = data.categories.filter(cat => !cat.parent_id);
+                    console.log('📋 Categorias principais:', mainCategories);
+                    
+                    // Mostrar como ficariam os options
+                    console.log('🔧 Options do select:');
+                    mainCategories.forEach(cat => {
+                        console.log(`<option value="${cat.name}">${cat.name.toUpperCase()}</option>`);
+                    });
+                    
+                } else {
+                    console.error('❌ Resposta inválida:', data);
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro na requisição:', error);
+            }
+        }
+        
+        // Executar o teste
+        testCategoriesAPI();
+        
+        // Simular problema de CORS
+        console.log('🔍 Verificando possível problema de CORS...');
+        console.log('Frontend URL: http://localhost:5173');
+        console.log('Backend URL: http://localhost:8180');
+        console.log('Se houver erro de CORS, as categorias não vão carregar no browser.');
+    </script>
+</body>
+</html>
