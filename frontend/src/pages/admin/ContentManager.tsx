@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { categoryService, Category } from '@/services/categoryService';
 import {
   Search,
   Filter,
@@ -26,11 +27,18 @@ import {
   Lock,
   GraduationCap,
   Scale,
-  ClipboardList
+  ClipboardList,
+  ChevronRight,
+  ChevronDown,
+  Folder,
+  FolderOpen,
+  Tag,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { cn } from '@/utils/cn';
 
 // Estrutura militar/tática para academia operacional
 const materias = {
@@ -58,12 +66,10 @@ const types = ['Todos', 'course', 'flashcards', 'questions', 'summary', 'mock_ex
 const statuses = ['Todos', 'published', 'draft', 'review', 'archived'];
 
 import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/utils/cn';
 import { summaryService } from '@/services/summaryService';
 import { courseService } from '@/services/courseService';
 import { flashcardService } from '@/services/flashcardService';
 import { questionService } from '@/services/questionService';
-import { categoryService } from '@/services/categoryService';
 import { mockExamService } from '@/services/mockExamService';
 import previousExamService from '@/services/previousExamService';
 import legislationService from '@/services/legislationService';
@@ -114,7 +120,7 @@ export default function ContentManager() {
   
   // Estado dos dados da API
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
-  const [categories, setCategories] = useState<string[]>(['TODOS']);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error' | 'info'} | null>(null);
   const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
@@ -135,6 +141,13 @@ export default function ContentManager() {
   const [filterSubmateria, setFilterSubmateria] = useState('TODOS');
   const [filterTopico, setFilterTopico] = useState('TODOS');
   const [error, setError] = useState<string | null>(null);
+  
+  // Estados para o sistema de categorias hierárquicas
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [categorySearchTerm, setCategorySearchTerm] = useState('');
   
   // Carregar dados da API
   useEffect(() => {
@@ -397,18 +410,198 @@ export default function ContentManager() {
   
   const loadCategories = async () => {
     try {
-      const response = await categoryService.listCategories();
-      if (response.success && response.data) {
-        const categoryNames = response.data
-          .filter(cat => cat.type === 'subject')
-          .map(cat => cat.name);
-        setCategories(['TODOS', ...categoryNames]);
-      }
+      setLoadingCategories(true);
+      const response = await categoryService.getCategoryHierarchy();
+      console.log('🎯 Categories loaded:', response);
+      setCategories(response);
     } catch (err) {
       console.error('Error loading categories:', err);
-      // Manter as categorias padrão em caso de erro
-      setCategories(['TODOS', 'OPERAÇÕES TÁTICAS', 'ARSENAL OPERACIONAL', 'ARSENAL INTEL', 'COMANDO ESPECIAL', 'BRIEFINGS INTEL']);
+      setCategories([]);
+    } finally {
+      setLoadingCategories(false);
     }
+  };
+  
+  // Funções para gerenciar categorias hierárquicas
+  const toggleCategoryExpansion = (categoryId: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+  
+  const findParentChain = (categoryId: string, cats: Category[] = categories): string[] => {
+    const parentChain: string[] = [];
+    
+    const findParentRecursive = (id: string, catList: Category[]): boolean => {
+      for (const cat of catList) {
+        if (cat.id === id) {
+          return true;
+        }
+        if (cat.children && cat.children.length > 0) {
+          if (findParentRecursive(id, cat.children)) {
+            parentChain.unshift(cat.id);
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    
+    findParentRecursive(categoryId, cats);
+    return parentChain;
+  };
+  
+  const findAllChildren = (categoryId: string, cats: Category[] = categories): string[] => {
+    const childrenIds: string[] = [];
+    
+    const findChildrenRecursive = (id: string, catList: Category[]) => {
+      for (const cat of catList) {
+        if (cat.id === id) {
+          if (cat.children && cat.children.length > 0) {
+            cat.children.forEach(child => {
+              childrenIds.push(child.id);
+              findChildrenRecursive(child.id, catList);
+            });
+          }
+          return;
+        }
+        if (cat.children && cat.children.length > 0) {
+          findChildrenRecursive(id, cat.children);
+        }
+      }
+    };
+    
+    findChildrenRecursive(categoryId, cats);
+    return childrenIds;
+  };
+  
+  const handleCategoryToggle = (categoryId: string) => {
+    setSelectedCategories(prev => {
+      const isSelected = prev.includes(categoryId);
+      
+      if (isSelected) {
+        // Desmarcar categoria e todos os filhos
+        const childrenIds = findAllChildren(categoryId);
+        return prev.filter(id => id !== categoryId && !childrenIds.includes(id));
+      } else {
+        // Marcar categoria e todos os pais
+        const parentChain = findParentChain(categoryId);
+        return [...new Set([...prev, categoryId, ...parentChain])];
+      }
+    });
+  };
+  
+  const getSelectedCategoryNames = (): string => {
+    if (selectedCategories.length === 0) return 'TODAS AS CATEGORIAS';
+    if (selectedCategories.length === 1) {
+      const findCategoryName = (id: string, cats: Category[]): string => {
+        for (const cat of cats) {
+          if (cat.id === id) return cat.name;
+          if (cat.children) {
+            const found = findCategoryName(id, cat.children);
+            if (found) return found;
+          }
+        }
+        return '';
+      };
+      return findCategoryName(selectedCategories[0], categories) || 'CATEGORIA';
+    }
+    return `${selectedCategories.length} CATEGORIAS`;
+  };
+  
+  const renderCategoryTree = (cats: Category[], level = 0): JSX.Element[] => {
+    const filteredCats = categorySearchTerm
+      ? cats.filter(cat => 
+          cat.name.toLowerCase().includes(categorySearchTerm.toLowerCase()) ||
+          (cat.children && cat.children.some(child => 
+            child.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
+          ))
+        )
+      : cats;
+    
+    return filteredCats.map(category => {
+      const hasChildren = category.children && category.children.length > 0;
+      const isExpanded = expandedCategories.includes(category.id);
+      const isSelected = selectedCategories.includes(category.id);
+      const childrenSelected = category.children?.some(child => 
+        selectedCategories.includes(child.id)
+      ) || false;
+      
+      return (
+        <div key={category.id} className="select-none">
+          <div
+            className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200",
+              "hover:bg-gray-100 dark:hover:bg-gray-700",
+              isSelected && "bg-accent-500/20 hover:bg-accent-500/30 dark:bg-accent-500/20 dark:hover:bg-accent-500/30",
+              childrenSelected && !isSelected && "bg-accent-500/10"
+            )}
+            style={{ paddingLeft: `${level * 24 + 12}px` }}
+          >
+            {hasChildren && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleCategoryExpansion(category.id);
+                }}
+                className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+              >
+                {isExpanded ? (
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-gray-500" />
+                )}
+              </button>
+            )}
+            
+            {!hasChildren && (
+              <div className="w-5" />
+            )}
+            
+            <div className="flex items-center gap-2 flex-1" onClick={() => handleCategoryToggle(category.id)}>
+              {hasChildren ? (
+                isExpanded ? (
+                  <FolderOpen className="w-4 h-4 text-accent-500" />
+                ) : (
+                  <Folder className="w-4 h-4 text-gray-500" />
+                )
+              ) : (
+                <Tag className="w-4 h-4 text-gray-400" />
+              )}
+              
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => {}} // Controlled by onClick above
+                className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
+                onClick={(e) => e.stopPropagation()}
+              />
+              
+              <span className={cn(
+                "font-police-body text-sm",
+                isSelected ? "font-semibold text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"
+              )}>
+                {category.name}
+              </span>
+              
+              {category.contentCount && (
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
+                  ({Object.values(category.contentCount).reduce((a, b) => a + b, 0)})
+                </span>
+              )}
+            </div>
+          </div>
+          
+          {hasChildren && isExpanded && (
+            <div className="mt-1">
+              {renderCategoryTree(category.children!, level + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
   };
   
   // Import/Export functionality
@@ -654,21 +847,15 @@ export default function ContentManager() {
                 />
               </div>
 
-              {/* Materia Filter */}
-              <select
-                value={filterMateria}
-                onChange={(e) => {
-                  setFilterMateria(e.target.value);
-                  setFilterSubmateria('TODOS');
-                  setFilterTopico('TODOS');
-                }}
-                className="px-3 py-2 text-sm border rounded-lg transition-all duration-300 font-police-body font-medium uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
+              {/* Category Filter with Modal */}
+              <Button
+                onClick={() => setShowCategoryModal(true)}
+                variant="outline"
+                className="justify-between font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-2 border-gray-300 dark:border-gray-700 hover:border-accent-500 hover:text-accent-500 dark:hover:border-accent-500 min-w-[200px] text-sm px-3 py-2"
               >
-                <option value="TODOS">TODAS AS MATÉRIAS</option>
-                {categories.filter(c => c !== 'TODOS').map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
+                <span className="truncate">{getSelectedCategoryNames()}</span>
+                <Filter className="w-4 h-4 ml-2 flex-shrink-0" />
+              </Button>
 
               {/* Type Filter */}
               <select
@@ -1351,6 +1538,100 @@ export default function ContentManager() {
                       SALVAR ALTERAÇÕES
                     </Button>
                   </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Category Selection Modal */}
+      <AnimatePresence>
+        {showCategoryModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            onClick={() => setShowCategoryModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className={cn(
+                "rounded-lg p-6 max-w-2xl w-full border-2 shadow-2xl max-h-[80vh] overflow-hidden flex flex-col",
+                resolvedTheme === 'dark' 
+                  ? 'bg-gray-800 border-gray-700' 
+                  : 'bg-white border-gray-300'
+              )}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className={cn(
+                  "text-xl font-bold font-police-title uppercase tracking-wider",
+                  resolvedTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                )}>
+                  SELECIONAR CATEGORIAS
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCategoryModal(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {/* Search */}
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar categorias..."
+                  value={categorySearchTerm}
+                  onChange={(e) => setCategorySearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2 text-sm border rounded-lg transition-all duration-300 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
+                />
+              </div>
+              
+              {/* Category Tree */}
+              <div className="flex-1 overflow-y-auto border rounded-lg border-gray-200 dark:border-gray-700 p-2">
+                {loadingCategories ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-accent-500" />
+                  </div>
+                ) : categories.length > 0 ? (
+                  renderCategoryTree(categories)
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    Nenhuma categoria disponível
+                  </div>
+                )}
+              </div>
+              
+              {/* Actions */}
+              <div className="flex justify-between items-center mt-4">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {selectedCategories.length} categoria(s) selecionada(s)
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedCategories([]);
+                      setCategorySearchTerm('');
+                    }}
+                    className="font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-2 border-gray-300 dark:border-gray-700 hover:border-gray-500 hover:text-gray-500"
+                  >
+                    LIMPAR
+                  </Button>
+                  <Button
+                    onClick={() => setShowCategoryModal(false)}
+                    className="font-police-body font-semibold transition-all duration-300 uppercase tracking-wider shadow-lg bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black"
+                  >
+                    APLICAR FILTROS
+                  </Button>
                 </div>
               </div>
             </motion.div>
