@@ -464,7 +464,7 @@ export default function MyCoursesPage() {
       }
     });
 
-  const categories = ['all', ...new Set(enrolledCourses.map(c => c.category))];
+  const courseCategories = ['all', ...new Set(enrolledCourses.map(c => c.category))];
 
   // Operações próximas do prazo limite (30 dias)
   const expiringCourses = enrolledCourses.filter(course => {
