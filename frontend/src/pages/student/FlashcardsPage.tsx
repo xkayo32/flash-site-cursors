@@ -42,7 +42,7 @@ import { StudyProLogo } from '@/components/ui/StudyProLogo';
 import { StatCard } from '@/components/student';
 import flashcardService, { Flashcard as APIFlashcard, FlashcardType } from '@/services/flashcardService';
 import flashcardDeckService from '@/services/flashcardDeckService';
-import categoryService, { Category } from '@/services/categoryService';
+import { categoryService, Category } from '@/services/categoryService';
 
 // Tipos locais (compatíveis com a API)
 interface Flashcard {
