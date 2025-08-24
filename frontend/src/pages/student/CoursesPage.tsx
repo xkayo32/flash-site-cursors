@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { courseService } from '@/services/courseService';
 import type { Course as CourseFromAPI } from '@/services/courseService';
+import { categoryService, type Category } from '@/services/categoryService';
 import {
   Search,
   Filter,
@@ -13,6 +14,7 @@ import {
   TrendingUp,
   Calendar,
   ChevronDown,
+  ChevronRight,
   CheckCircle,
   Play,
   FileText,
@@ -26,7 +28,10 @@ import {
   Crosshair,
   Activity,
   AlertTriangle,
-  Command
+  Command,
+  Layers,
+  Folder,
+  FolderOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
@@ -100,17 +105,6 @@ const transformCourseFromAPI = (course: CourseFromAPI): Course => {
   };
 };
 
-// Categorias disponíveis
-const categories = [
-  { value: 'all', label: 'TODAS AS OPERAÇÕES' },
-  { value: 'POLÍCIA', label: 'POLÍCIA' },
-  { value: 'FISCAL', label: 'FISCAL' },
-  { value: 'TRIBUNAIS', label: 'TRIBUNAIS' },
-  { value: 'BANCÁRIOS', label: 'BANCÁRIOS' },
-  { value: 'CONTROLE', label: 'CONTROLE' },
-  { value: 'PREVIDÊNCIA', label: 'PREVIDÊNCIA' }
-];
-
 // Níveis disponíveis
 const levels = [
   { value: 'all', label: 'TODOS OS NÍVEIS' },
@@ -130,7 +124,7 @@ const sortOptions = [
 
 export default function CoursesPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
   const [showFilters, setShowFilters] = useState(false);
@@ -143,6 +137,184 @@ export default function CoursesPage() {
   const [enrollmentLoading, setEnrollmentLoading] = useState<string | null>(null);
   const [enrolledCourses, setEnrolledCourses] = useState<Set<string>>(new Set());
   const [courseProgress, setCourseProgress] = useState<Map<string, number>>(new Map());
+  
+  // Estados para o sistema hierárquico de categorias
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
+
+  // Carregar categorias da API
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await categoryService.getAll();
+        setCategories(data);
+      } catch (error) {
+        console.error('Erro ao carregar categorias:', error);
+      }
+    };
+    loadCategories();
+  }, []);
+
+  // Funções para gerenciamento hierárquico de categorias
+  const findCategoryById = (id: string, cats: Category[] = categories): Category | null => {
+    for (const cat of cats) {
+      if (cat.id === id) return cat;
+      if (cat.children) {
+        const found = findCategoryById(id, cat.children);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const findParentChain = (categoryId: string): string[] => {
+    const parentChain: string[] = [];
+    
+    const findParent = (id: string) => {
+      for (const cat of categories) {
+        if (cat.id === id && cat.parent_id) {
+          parentChain.push(cat.parent_id);
+          findParent(cat.parent_id);
+          break;
+        }
+        if (cat.children) {
+          const childCat = cat.children.find(c => c.id === id);
+          if (childCat && cat.id) {
+            parentChain.push(cat.id);
+            findParent(cat.id);
+            break;
+          }
+        }
+      }
+    };
+    
+    findParent(categoryId);
+    return parentChain;
+  };
+
+  const findAllChildren = (categoryId: string, cats: Category[] = categories): string[] => {
+    const childrenIds: string[] = [];
+    
+    const findChildren = (id: string) => {
+      const category = findCategoryById(id, cats);
+      if (category?.children) {
+        category.children.forEach(child => {
+          childrenIds.push(child.id);
+          findChildren(child.id);
+        });
+      }
+    };
+    
+    findChildren(categoryId);
+    return childrenIds;
+  };
+
+  const handleCategoryToggle = (categoryId: string) => {
+    setSelectedCategories(prev => {
+      const isSelected = prev.includes(categoryId);
+      
+      if (isSelected) {
+        // Desmarcar categoria e todos os filhos
+        const childrenToRemove = findAllChildren(categoryId);
+        return prev.filter(id => id !== categoryId && !childrenToRemove.includes(id));
+      } else {
+        // Marcar categoria e todos os pais
+        const parentsToAdd = findParentChain(categoryId);
+        return [...new Set([...prev, categoryId, ...parentsToAdd])];
+      }
+    });
+  };
+
+  const toggleCategoryExpansion = (categoryId: string) => {
+    setExpandedCategories(prev =>
+      prev.includes(categoryId)
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  // Filtered categories for search
+  const filteredCategories = categorySearch
+    ? categories.filter(cat => 
+        cat.name.toLowerCase().includes(categorySearch.toLowerCase()) ||
+        (cat.children && cat.children.some(child => 
+          child.name.toLowerCase().includes(categorySearch.toLowerCase())
+        ))
+      )
+    : categories;
+
+  // Renderizar árvore de categorias
+  const renderCategoryTree = (cats: Category[], level: number = 0): JSX.Element[] => {
+    return cats.map(category => {
+      const hasChildren = category.children && category.children.length > 0;
+      const isExpanded = expandedCategories.includes(category.id);
+      const isSelected = selectedCategories.includes(category.id);
+      const hasSelectedChildren = category.children?.some(child => 
+        selectedCategories.includes(child.id)
+      );
+
+      return (
+        <div key={category.id}>
+          <div
+            className={`
+              flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all
+              ${isSelected 
+                ? 'bg-accent-500/20 text-accent-600 dark:text-accent-500 font-semibold' 
+                : hasSelectedChildren
+                  ? 'bg-accent-500/10 text-accent-600 dark:text-accent-500'
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+              }
+            `}
+            style={{ paddingLeft: `${level * 20 + 12}px` }}
+          >
+            {hasChildren && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleCategoryExpansion(category.id);
+                }}
+                className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+              >
+                {isExpanded ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </button>
+            )}
+            
+            <div className="flex items-center gap-2 flex-1" onClick={() => handleCategoryToggle(category.id)}>
+              {hasChildren ? (
+                isExpanded ? <FolderOpen className="w-4 h-4" /> : <Folder className="w-4 h-4" />
+              ) : (
+                <div className="w-4" />
+              )}
+              
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => {}}
+                className="w-4 h-4 text-accent-500 rounded border-gray-300 dark:border-gray-600 focus:ring-accent-500"
+                onClick={(e) => e.stopPropagation()}
+              />
+              
+              <span className="font-police-body uppercase tracking-wider text-sm">
+                {category.name}
+              </span>
+            </div>
+          </div>
+          
+          {hasChildren && isExpanded && (
+            <div className="mt-1">
+              {renderCategoryTree(category.children!, level + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
 
   // Carregar cursos da API
   useEffect(() => {
@@ -242,9 +414,29 @@ export default function CoursesPage() {
       );
     }
 
-    // Filtrar por categoria
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(course => course.category === selectedCategory);
+    // Filtrar por categorias selecionadas
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(course => {
+        // Verificar se a categoria do curso corresponde a alguma categoria selecionada
+        return selectedCategories.some(catId => {
+          const category = findCategoryById(catId);
+          if (!category) return false;
+          
+          // Verificar se a categoria do curso corresponde ao nome da categoria selecionada
+          // ou suas subcategorias
+          const categoryName = category.name.toUpperCase();
+          const allChildrenIds = findAllChildren(catId);
+          const allChildrenNames = allChildrenIds.map(id => {
+            const cat = findCategoryById(id);
+            return cat?.name.toUpperCase();
+          }).filter(Boolean);
+          
+          return course.category === categoryName || 
+                 allChildrenNames.includes(course.category) ||
+                 course.subcategory === categoryName ||
+                 allChildrenNames.includes(course.subcategory || '');
+        });
+      });
     }
 
     // Filtrar por nível
@@ -277,7 +469,7 @@ export default function CoursesPage() {
     }
 
     return filtered;
-  }, [courses, searchTerm, selectedCategory, selectedLevel, sortBy, showOnlyEnrolled]);
+  }, [courses, searchTerm, selectedCategories, selectedLevel, sortBy, showOnlyEnrolled]);
 
   const CourseCard = ({ course, index }: { course: Course; index: number }) => (
     <motion.div
@@ -765,15 +957,26 @@ export default function CoursesPage() {
 
           {/* Filtros rápidos */}
           <div className="flex gap-2">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body"
+            <button
+              type="button"
+              onClick={() => setCategoryModalOpen(true)}
+              className={`px-4 py-3 border rounded-lg bg-white dark:bg-gray-800 text-left font-police-body transition-all flex items-center justify-between gap-2 ${
+                selectedCategories.length > 0
+                  ? 'border-accent-500 text-accent-600 dark:text-accent-500'
+                  : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
+              }`}
             >
-              {categories.map(cat => (
-                <option key={cat.value} value={cat.value}>{cat.label}</option>
-              ))}
-            </select>
+              <span className="flex items-center gap-2">
+                <Layers className="w-4 h-4" />
+                {selectedCategories.length === 0
+                  ? 'TODAS AS OPERAÇÕES'
+                  : selectedCategories.length === 1
+                    ? findCategoryById(selectedCategories[0])?.name.toUpperCase() || 'OPERAÇÃO'
+                    : `${selectedCategories.length} OPERAÇÕES`
+                }
+              </span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
 
             <select
               value={sortBy}
@@ -977,6 +1180,120 @@ export default function CoursesPage() {
           SUGERIR NOVA OPERAÇÃO
         </Button>
       </motion.div>
+
+      {/* Modal de Seleção de Categorias */}
+      {categoryModalOpen && (
+        <motion.div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={(e) => e.target === e.currentTarget && setCategoryModalOpen(false)}
+        >
+          <motion.div 
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden border border-accent-500/30"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-police-title uppercase tracking-wider text-gray-900 dark:text-white flex items-center gap-3">
+                  <Crosshair className="w-6 h-6 text-accent-500" />
+                  ÁREAS OPERACIONAIS
+                </h2>
+                <button
+                  onClick={() => setCategoryModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              {/* Search */}
+              <div className="mb-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Buscar áreas operacionais..."
+                    value={categorySearch}
+                    onChange={(e) => setCategorySearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-accent-500"
+                  />
+                </div>
+              </div>
+
+              {/* Categories Tree */}
+              <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+                {filteredCategories.length === 0 ? (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-8 font-police-body">
+                    Nenhuma área operacional encontrada
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {renderCategoryTree(filteredCategories)}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Categories Summary */}
+              {selectedCategories.length > 0 && (
+                <div className="mt-6 p-4 bg-accent-500/10 rounded-lg border border-accent-500/30">
+                  <p className="text-sm font-police-subtitle uppercase tracking-wider text-accent-700 dark:text-accent-300 mb-2">
+                    Áreas Selecionadas ({selectedCategories.length})
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCategories.map((categoryId) => {
+                      const category = findCategoryById(categoryId);
+                      return category ? (
+                        <Badge 
+                          key={categoryId}
+                          className="bg-accent-500 text-white hover:bg-accent-600 font-police-body"
+                        >
+                          {category.name.toUpperCase()}
+                        </Badge>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSelectedCategories([]);
+                  setCategorySearch('');
+                }}
+                className="font-police-body uppercase tracking-wider"
+              >
+                Limpar
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setCategoryModalOpen(false)}
+                className="font-police-body uppercase tracking-wider"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => setCategoryModalOpen(false)}
+                className="bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black font-police-body uppercase tracking-wider"
+              >
+                Confirmar Seleção
+              </Button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }
