@@ -26,12 +26,18 @@ import {
   BarChart3,
   Target,
   Crosshair,
-  RefreshCw
+  RefreshCw,
+  ChevronRight,
+  ChevronDown,
+  Folder,
+  FolderOpen,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { questionService, type Question, type QuestionFilters } from '../../services/questionService';
+import { categoryService, type Category } from '@/services/categoryService';
 import toast from 'react-hot-toast';
 
 const difficulties = ['Todos', 'easy', 'medium', 'hard'];
@@ -53,6 +59,14 @@ export default function QuestionEditor() {
   const [subjects, setSubjects] = useState<string[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
   const [examBoards, setExamBoards] = useState<string[]>([]);
+  
+  // Estados para o sistema de categorias hierárquicas
+  const [categoriesHierarchy, setCategoriesHierarchy] = useState<Category[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [categorySearchTerm, setCategorySearchTerm] = useState('');
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -88,7 +102,200 @@ export default function QuestionEditor() {
     };
 
     loadFilterOptions();
+    loadCategoriesHierarchy();
   }, []);
+  
+  const loadCategoriesHierarchy = async () => {
+    try {
+      setLoadingCategories(true);
+      const response = await categoryService.getCategoryHierarchy();
+      console.log('🎯 Categories hierarchy loaded:', response);
+      setCategoriesHierarchy(response);
+    } catch (err) {
+      console.error('Error loading categories hierarchy:', err);
+      setCategoriesHierarchy([]);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+  
+  // Funções para gerenciar categorias hierárquicas
+  const toggleCategoryExpansion = (categoryId: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+  
+  const findParentChain = (categoryId: string, cats: Category[] = categoriesHierarchy): string[] => {
+    const parentChain: string[] = [];
+    
+    const findParentRecursive = (id: string, catList: Category[]): boolean => {
+      for (const cat of catList) {
+        if (cat.id === id) {
+          return true;
+        }
+        if (cat.children && cat.children.length > 0) {
+          if (findParentRecursive(id, cat.children)) {
+            parentChain.unshift(cat.id);
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    
+    findParentRecursive(categoryId, cats);
+    return parentChain;
+  };
+  
+  const findAllChildren = (categoryId: string, cats: Category[] = categoriesHierarchy): string[] => {
+    const childrenIds: string[] = [];
+    
+    const findChildrenRecursive = (id: string, catList: Category[]) => {
+      for (const cat of catList) {
+        if (cat.id === id) {
+          if (cat.children && cat.children.length > 0) {
+            cat.children.forEach(child => {
+              childrenIds.push(child.id);
+              findChildrenRecursive(child.id, catList);
+            });
+          }
+          return;
+        }
+        if (cat.children && cat.children.length > 0) {
+          findChildrenRecursive(id, cat.children);
+        }
+      }
+    };
+    
+    findChildrenRecursive(categoryId, cats);
+    return childrenIds;
+  };
+  
+  const handleCategoryToggle = (categoryId: string) => {
+    setSelectedCategories(prev => {
+      const isSelected = prev.includes(categoryId);
+      
+      if (isSelected) {
+        // Desmarcar categoria e todos os filhos
+        const childrenIds = findAllChildren(categoryId);
+        return prev.filter(id => id !== categoryId && !childrenIds.includes(id));
+      } else {
+        // Marcar categoria e todos os pais
+        const parentChain = findParentChain(categoryId);
+        return [...new Set([...prev, categoryId, ...parentChain])];
+      }
+    });
+  };
+  
+  const getSelectedCategoryNames = (): string => {
+    if (selectedCategories.length === 0) return 'TODAS AS MATÉRIAS';
+    if (selectedCategories.length === 1) {
+      const findCategoryName = (id: string, cats: Category[]): string => {
+        for (const cat of cats) {
+          if (cat.id === id) return cat.name;
+          if (cat.children) {
+            const found = findCategoryName(id, cat.children);
+            if (found) return found;
+          }
+        }
+        return '';
+      };
+      return findCategoryName(selectedCategories[0], categoriesHierarchy) || 'MATÉRIA';
+    }
+    return `${selectedCategories.length} MATÉRIAS`;
+  };
+  
+  const renderCategoryTree = (cats: Category[], level = 0): JSX.Element[] => {
+    const filteredCats = categorySearchTerm
+      ? cats.filter(cat => 
+          cat.name.toLowerCase().includes(categorySearchTerm.toLowerCase()) ||
+          (cat.children && cat.children.some(child => 
+            child.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
+          ))
+        )
+      : cats;
+    
+    return filteredCats.map(category => {
+      const hasChildren = category.children && category.children.length > 0;
+      const isExpanded = expandedCategories.includes(category.id);
+      const isSelected = selectedCategories.includes(category.id);
+      const childrenSelected = category.children?.some(child => 
+        selectedCategories.includes(child.id)
+      ) || false;
+      
+      return (
+        <div key={category.id} className="select-none">
+          <div
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 ${
+              isSelected ? 'bg-accent-500/20 hover:bg-accent-500/30 dark:bg-accent-500/20 dark:hover:bg-accent-500/30' : ''
+            } ${childrenSelected && !isSelected ? 'bg-accent-500/10' : ''}`}
+            style={{ paddingLeft: `${level * 24 + 12}px` }}
+          >
+            {hasChildren && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleCategoryExpansion(category.id);
+                }}
+                className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+              >
+                {isExpanded ? (
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-gray-500" />
+                )}
+              </button>
+            )}
+            
+            {!hasChildren && (
+              <div className="w-5" />
+            )}
+            
+            <div className="flex items-center gap-2 flex-1" onClick={() => handleCategoryToggle(category.id)}>
+              {hasChildren ? (
+                isExpanded ? (
+                  <FolderOpen className="w-4 h-4 text-accent-500" />
+                ) : (
+                  <Folder className="w-4 h-4 text-gray-500" />
+                )
+              ) : (
+                <Tag className="w-4 h-4 text-gray-400" />
+              )}
+              
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => {}} // Controlled by onClick above
+                className="rounded border-gray-300 text-accent-500 focus:ring-accent-500"
+                onClick={(e) => e.stopPropagation()}
+              />
+              
+              <span className={`font-police-body text-sm ${
+                isSelected ? 'font-semibold text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'
+              }`}>
+                {category.name}
+              </span>
+              
+              {category.contentCount && (
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
+                  ({Object.values(category.contentCount).reduce((a, b) => a + b, 0)})
+                </span>
+              )}
+            </div>
+          </div>
+          
+          {hasChildren && isExpanded && (
+            <div className="mt-1">
+              {renderCategoryTree(category.children!, level + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
 
   // Load questions with current filters
   const loadQuestions = async (page = 1) => {
@@ -380,17 +587,14 @@ export default function QuestionEditor() {
 
           {/* Filter Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            <select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-police-body focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+            <Button
+              onClick={() => setShowCategoryModal(true)}
+              variant="outline"
+              className="justify-between font-police-body font-medium uppercase tracking-wider transition-all duration-300 border border-gray-300 dark:border-gray-600 hover:border-accent-500 hover:text-accent-500 dark:hover:border-accent-500 px-3 py-2 h-auto"
             >
-              {subjects.map(subject => (
-                <option key={subject} value={subject}>
-                  {subject.toUpperCase()}
-                </option>
-              ))}
-            </select>
+              <span className="truncate">{getSelectedCategoryNames()}</span>
+              <Filter className="w-4 h-4 ml-2 flex-shrink-0" />
+            </Button>
 
             <select
               value={selectedTopic}
@@ -981,6 +1185,103 @@ export default function QuestionEditor() {
                     className="font-police-body uppercase tracking-wider"
                   >
                     FECHAR
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Category Selection Modal */}
+      <AnimatePresence>
+        {showCategoryModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            onClick={() => setShowCategoryModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="rounded-lg p-6 max-w-2xl w-full border-2 shadow-2xl max-h-[80vh] overflow-hidden flex flex-col bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold font-police-title uppercase tracking-wider text-gray-900 dark:text-white">
+                  SELECIONAR MATÉRIAS OPERACIONAIS
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCategoryModal(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {/* Search */}
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar matérias operacionais..."
+                  value={categorySearchTerm}
+                  onChange={(e) => setCategorySearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2 text-sm border rounded-lg transition-all duration-300 font-police-body uppercase tracking-wider border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
+                />
+              </div>
+              
+              {/* Category Tree */}
+              <div className="flex-1 overflow-y-auto border rounded-lg border-gray-200 dark:border-gray-700 p-2">
+                {loadingCategories ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-accent-500" />
+                    <span className="ml-2 font-police-body text-sm text-gray-600 dark:text-gray-400">
+                      CARREGANDO BANCO DE QUESTÕES...
+                    </span>
+                  </div>
+                ) : categoriesHierarchy.length > 0 ? (
+                  <div className="space-y-2">
+                    {renderCategoryTree(categoriesHierarchy)}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Brain className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="font-police-body text-sm">
+                      NENHUMA MATÉRIA OPERACIONAL DISPONÍVEL
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Actions */}
+              <div className="flex justify-between items-center mt-4">
+                <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                  <Target className="w-4 h-4 inline mr-1" />
+                  {selectedCategories.length} MATÉRIA(S) SELECIONADA(S)
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedCategories([]);
+                      setCategorySearchTerm('');
+                    }}
+                    className="font-police-body font-medium uppercase tracking-wider transition-all duration-300 border-2 border-gray-300 dark:border-gray-700 hover:border-gray-500 hover:text-gray-500"
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    LIMPAR
+                  </Button>
+                  <Button
+                    onClick={() => setShowCategoryModal(false)}
+                    className="font-police-body font-semibold transition-all duration-300 uppercase tracking-wider shadow-lg bg-accent-500 hover:bg-accent-600 dark:hover:bg-accent-650 text-black"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    APLICAR FILTROS
                   </Button>
                 </div>
               </div>
