@@ -8,7 +8,7 @@ echo "📍 Server IP: 173.208.151.106"
 echo ""
 
 # Change to project directory
-cd /home/administrator/flash-site-cursos
+cd /home/administrator/flash-site-cursors
 
 # Start services with docker compose
 docker compose up -d
