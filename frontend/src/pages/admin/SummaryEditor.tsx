@@ -711,20 +711,14 @@ export default function SummaryEditor() {
                   />
                 </div>
 
-                <select
-                  value={filterMateria}
-                  onChange={(e) => {
-                    setFilterMateria(e.target.value);
-                    setFilterSubmateria('TODOS');
-                    setFilterTopico('TODOS');
-                  }}
-                  className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-police-body uppercase tracking-wider"
+                <Button
+                  onClick={() => setShowCategoryModal(true)}
+                  variant="outline"
+                  className="justify-between font-police-body font-medium uppercase tracking-wider transition-all duration-300 border border-gray-300 dark:border-gray-600 hover:border-accent-500 hover:text-accent-500 dark:hover:border-accent-500 px-3 py-2 text-sm h-auto"
                 >
-                  <option value="TODOS">TODAS AS MATÉRIAS</option>
-                  <option value="DIREITO">DIREITO</option>
-                  <option value="SEGURANÇA PÚBLICA">SEGURANÇA PÚBLICA</option>
-                  <option value="CONHECIMENTOS GERAIS">CONHECIMENTOS GERAIS</option>
-                </select>
+                  <span className="truncate">{getSelectedCategoryNames()}</span>
+                  <Filter className="w-4 h-4 ml-2 flex-shrink-0" />
+                </Button>
 
                 <select
                   value={selectedStatus}
