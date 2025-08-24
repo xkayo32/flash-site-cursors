@@ -5,11 +5,15 @@ import { authMiddleware, AuthRequest } from '../middleware/auth.middleware';
 
 const router = Router();
 
-// Data file paths - try data directory first, fallback to project root
+// Data file paths - try data-local directory first, then data directory, fallback to project root
 const getDataPath = (filename: string) => {
+  const dataLocalPath = path.join(__dirname, '../../data-local', filename);
   const dataPath = path.join(__dirname, '../../data', filename);
   const rootPath = path.join(__dirname, '../../', filename);
-  return fs.existsSync(dataPath) ? dataPath : rootPath;
+  
+  if (fs.existsSync(dataLocalPath)) return dataLocalPath;
+  if (fs.existsSync(dataPath)) return dataPath;
+  return rootPath;
 };
 
 const legislationPath = getDataPath('legislation.json');

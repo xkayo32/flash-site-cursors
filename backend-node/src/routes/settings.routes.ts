@@ -38,9 +38,9 @@ const upload = multer({
   }
 });
 
-// Settings file paths
-const settingsPath = path.join(__dirname, '../../data/settings.json');
-const userSettingsPath = path.join(__dirname, '../../../user_settings.json');
+// Settings file paths - use data-local for settings, data for users
+const settingsPath = path.join(__dirname, '../../data-local/settings.json');
+const userSettingsPath = path.join(__dirname, '../../data-local/user_settings.json');
 const usersPath = path.join(__dirname, '../../data/users.json');
 
 // Ensure data directory exists
