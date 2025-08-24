@@ -27,7 +27,10 @@ import {
   Loader2,
   X,
   Settings,
-  RefreshCw
+  RefreshCw,
+  ChevronRight,
+  ChevronDown,
+  Layers
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -37,8 +40,6 @@ import FlashcardPreviewModal from '@/components/FlashcardPreviewModal';
 import FlashcardStudyModal from '@/components/FlashcardStudyModal';
 import { flashcardService, type Flashcard, type FlashcardStats } from '@/services/flashcardService';
 import { categoryService, type Category } from '@/services/categoryService';
-import { useDynamicCategories } from '@/hooks/useDynamicCategories';
-import { CategorySelector } from '@/components/CategorySelector';
 
 
 // Constantes para filtros (podem ser movidas para API no futuro)
@@ -49,18 +50,12 @@ const cardTypes = ['Todos', 'basic', 'basic_reversed', 'multiple_choice', 'true_
 export default function IndividualFlashcards() {
   const navigate = useNavigate();
   
-  // Hook dinâmico para categorias
-  const {
-    categories,
-    selectedCategory,
-    selectedSubcategory,
-    setSelectedCategory,
-    setSelectedSubcategory,
-    getCategoryOptions,
-    getSubcategoryOptions,
-    isLoadingCategories,
-    isLoadingSubcategories
-  } = useDynamicCategories();
+  // Estados para categorias hierárquicas
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Todos');
@@ -82,12 +77,181 @@ export default function IndividualFlashcards() {
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState<string | null>(null);
 
+  // Carregar categorias
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const response = await categoryService.getCategories();
+      if (response.success) {
+        setCategories(response.data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar categorias:', error);
+    }
+  };
+
+  // Funções para gerenciar hierarquia de categorias
+  const findParentChain = (categoryId: string, cats: Category[] = categories): string[] => {
+    const parentChain: string[] = [];
+    
+    const findParent = (id: string) => {
+      for (const cat of cats) {
+        if (cat.id === id && cat.parent_id) {
+          parentChain.push(cat.parent_id);
+          findParent(cat.parent_id);
+          break;
+        }
+        if (cat.children) {
+          const childCat = cat.children.find(c => c.id === id);
+          if (childCat && cat.id) {
+            parentChain.push(cat.id);
+            findParent(cat.id);
+            break;
+          }
+        }
+      }
+    };
+    
+    findParent(categoryId);
+    return parentChain;
+  };
+
+  const findAllChildren = (categoryId: string, cats: Category[] = categories): string[] => {
+    const childrenIds: string[] = [];
+    
+    const findChildren = (id: string) => {
+      const category = findCategoryById(id, cats);
+      if (category?.children) {
+        category.children.forEach(child => {
+          childrenIds.push(child.id);
+          findChildren(child.id);
+        });
+      }
+    };
+    
+    findChildren(categoryId);
+    return childrenIds;
+  };
+
+  const findCategoryById = (id: string, cats: Category[] = categories): Category | null => {
+    for (const cat of cats) {
+      if (cat.id === id) return cat;
+      if (cat.children) {
+        const found = findCategoryById(id, cat.children);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const handleCategoryToggle = (categoryId: string) => {
+    setSelectedCategories(prev => {
+      const isSelected = prev.includes(categoryId);
+      
+      if (isSelected) {
+        // Desmarcar categoria e todos os filhos
+        const childrenIds = findAllChildren(categoryId);
+        return prev.filter(id => id !== categoryId && !childrenIds.includes(id));
+      } else {
+        // Marcar categoria e todos os pais
+        const parentChain = findParentChain(categoryId);
+        return [...new Set([...prev, categoryId, ...parentChain])];
+      }
+    });
+  };
+
+  const handleExpandToggle = (categoryId: string) => {
+    setExpandedCategories(prev =>
+      prev.includes(categoryId)
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  // Renderizar árvore de categorias
+  const renderCategoryTree = (cats: Category[], level: number = 0): JSX.Element[] => {
+    const filteredCats = categorySearch
+      ? cats.filter(cat => 
+          cat.name.toLowerCase().includes(categorySearch.toLowerCase()) ||
+          (cat.children && cat.children.some(child => 
+            child.name.toLowerCase().includes(categorySearch.toLowerCase())
+          ))
+        )
+      : cats;
+
+    return filteredCats.map(category => {
+      const hasChildren = category.children && category.children.length > 0;
+      const isExpanded = expandedCategories.includes(category.id);
+      const isSelected = selectedCategories.includes(category.id);
+      const hasSelectedChildren = category.children?.some(child => 
+        selectedCategories.includes(child.id)
+      );
+
+      return (
+        <div key={category.id}>
+          <div
+            className={`
+              flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all
+              ${isSelected 
+                ? 'bg-accent-500/20 text-accent-600 dark:text-accent-500 font-semibold' 
+                : hasSelectedChildren
+                  ? 'bg-accent-500/10 text-gray-700 dark:text-gray-300'
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+              }
+            `}
+            style={{ marginLeft: `${level * 20}px` }}
+          >
+            {hasChildren && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleExpandToggle(category.id);
+                }}
+                className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+              >
+                {isExpanded ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </button>
+            )}
+            {!hasChildren && (
+              <div className="w-5" />
+            )}
+            
+            <label className="flex items-center gap-2 flex-1 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => handleCategoryToggle(category.id)}
+                className="w-4 h-4 text-accent-500 border-gray-300 rounded focus:ring-accent-500"
+              />
+              <span className="font-police-body uppercase tracking-wider text-sm">
+                {category.name}
+              </span>
+            </label>
+          </div>
+          
+          {hasChildren && isExpanded && (
+            <div>
+              {renderCategoryTree(category.children!, level + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
+
   // Load flashcards from API
   useEffect(() => {
     loadFlashcards();
     loadStats();
     loadAuthors();
-  }, [currentPage, selectedCategory, selectedSubcategory, selectedDifficulty, selectedStatus, selectedType, selectedAuthor, searchTerm]);
+  }, [currentPage, selectedCategories, selectedDifficulty, selectedStatus, selectedType, selectedAuthor, searchTerm]);
 
 
   const loadAuthors = async () => {
@@ -112,8 +276,7 @@ export default function IndividualFlashcards() {
         page: currentPage,
         limit: 20,
         search: searchTerm || undefined,
-        category: selectedCategory !== 'Todos' ? selectedCategory : undefined,
-        subcategory: selectedSubcategory !== 'Todas' ? selectedSubcategory : undefined,
+        category: selectedCategories.length > 0 ? selectedCategories[0] : undefined,
         difficulty: selectedDifficulty !== 'Todos' ? selectedDifficulty as any : undefined,
         type: selectedType !== 'Todos' ? selectedType as any : undefined,
         status: selectedStatus !== 'Todos' ? selectedStatus as any : undefined,
@@ -142,10 +305,6 @@ export default function IndividualFlashcards() {
     } catch (error) {
       console.error('Error loading stats:', error);
     }
-  };
-
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category); // Já resetará a subcategoria automaticamente
   };
 
   // Filtering is now done by API, so we use flashcards directly
@@ -530,12 +689,11 @@ export default function IndividualFlashcards() {
                   FILTROS AVANÇADOS
                 </h3>
                 {/* Active filters indicator */}
-                {(searchTerm || selectedCategory !== 'Todos' || selectedSubcategory !== 'Todas' || selectedType !== 'Todos' || selectedDifficulty !== 'Todos' || selectedStatus !== 'Todos' || selectedAuthor !== 'Todos') && (
+                {(searchTerm || selectedCategories.length > 0 || selectedType !== 'Todos' || selectedDifficulty !== 'Todos' || selectedStatus !== 'Todos' || selectedAuthor !== 'Todos') && (
                   <Badge className="bg-accent-500/20 text-accent-600 dark:text-accent-400 border border-accent-500/30 font-police-body">
                     {[
                       searchTerm && 1,
-                      selectedCategory !== 'Todos' && 1,
-                      selectedSubcategory !== 'Todas' && 1,
+                      selectedCategories.length > 0 && 1,
                       selectedType !== 'Todos' && 1,
                       selectedDifficulty !== 'Todos' && 1,
                       selectedStatus !== 'Todos' && 1,
@@ -544,14 +702,13 @@ export default function IndividualFlashcards() {
                   </Badge>
                 )}
               </div>
-              {(searchTerm || selectedCategory !== 'Todos' || selectedSubcategory !== 'Todas' || selectedType !== 'Todos' || selectedDifficulty !== 'Todos' || selectedStatus !== 'Todos' || selectedAuthor !== 'Todos') && (
+              {(searchTerm || selectedCategories.length > 0 || selectedType !== 'Todos' || selectedDifficulty !== 'Todos' || selectedStatus !== 'Todos' || selectedAuthor !== 'Todos') && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
                     setSearchTerm('');
-                    setSelectedCategory('Todos');
-                    setSelectedSubcategory('Todas');
+                    setSelectedCategories([]);
                     setSelectedType('Todos');
                     setSelectedDifficulty('Todos');
                     setSelectedStatus('Todos');
@@ -591,20 +748,28 @@ export default function IndividualFlashcards() {
 
               {/* Second Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 relative" style={{ zIndex: 55 }}>
-                {/* Categoria com CategorySelector */}
-                <div className={`relative ${selectedCategory !== 'Todos' ? 'ring-2 ring-accent-500/30 rounded-lg' : ''}`} style={{ zIndex: 60 }}>
-                  <CategorySelector
-                    categories={categories}
-                    selectedValue={selectedCategory}
-                    onChange={(value) => {
-                      handleCategoryChange(value);
-                    }}
-                    disabled={isLoadingCategories}
-                    isLoading={isLoadingCategories}
-                    placeholder="TODAS AS CATEGORIAS"
-                    label="CATEGORIA"
-                    showAll={true}
-                  />
+                {/* Categoria com Modal Hierárquico */}
+                <div className="relative">
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                    CATEGORIAS OPERACIONAIS
+                  </label>
+                  <button
+                    onClick={() => setCategoryModalOpen(true)}
+                    className={`w-full px-4 py-3 border-2 rounded-lg bg-gray-50 dark:bg-gray-900 text-left font-police-body uppercase tracking-wider focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-all flex items-center justify-between ${
+                      selectedCategories.length > 0
+                        ? 'border-accent-500 text-accent-600 dark:text-accent-500'
+                        : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Layers className="w-4 h-4" />
+                      {selectedCategories.length === 0
+                        ? 'TODAS AS CATEGORIAS'
+                        : `${selectedCategories.length} SELECIONADA${selectedCategories.length > 1 ? 'S' : ''}`
+                      }
+                    </span>
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
                 </div>
 
 
@@ -1102,6 +1267,100 @@ export default function IndividualFlashcards() {
             }}
             onComplete={handleStudyComplete}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Modal de Seleção de Categorias */}
+      <AnimatePresence>
+        {categoryModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setCategoryModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header do Modal */}
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-police-title font-bold uppercase tracking-wider text-gray-900 dark:text-white">
+                      CATEGORIAS OPERACIONAIS
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body mt-1">
+                      Selecione as categorias para filtrar os flashcards
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setCategoryModalOpen(false)}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  </button>
+                </div>
+
+                {/* Barra de Busca */}
+                <div className="mt-4 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Buscar categoria..."
+                    value={categorySearch}
+                    onChange={(e) => setCategorySearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-police-body placeholder:text-gray-400 focus:ring-2 focus:ring-accent-500 focus:border-accent-500"
+                  />
+                </div>
+              </div>
+
+              {/* Lista de Categorias */}
+              <div className="p-6 max-h-[400px] overflow-y-auto">
+                {categories.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 dark:text-gray-400 font-police-body">
+                      Nenhuma categoria encontrada
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {renderCategoryTree(categories)}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer do Modal */}
+              <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                    {selectedCategories.length} categoria{selectedCategories.length !== 1 && 's'} selecionada{selectedCategories.length !== 1 && 's'}
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedCategories([]);
+                      }}
+                      className="font-police-body uppercase tracking-wider"
+                    >
+                      Limpar
+                    </Button>
+                    <Button
+                      onClick={() => setCategoryModalOpen(false)}
+                      className="bg-accent-500 hover:bg-accent-600 text-black font-police-body uppercase tracking-wider"
+                    >
+                      Aplicar Filtros
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
