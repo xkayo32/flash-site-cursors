@@ -353,7 +353,7 @@ export default function NewStudentFlashcard() {
         tags: ['direito', 'recursos', 'prazos']
       },
       cloze: {
-        front: 'O prazo para interpor recurso ordinário é de {{c1::15}} dias {{c2::úteis}}',
+        front: `O prazo para interpor recurso ordinário é de {{c1::15}} dias {{c2::úteis}}`,
         back: 'Conforme art. 895 da CLT',
         source: 'Consolidação das Leis do Trabalho',
         tags: ['direito', 'recursos']
@@ -676,7 +676,7 @@ export default function NewStudentFlashcard() {
                       onChange={(value) => setFormData(prev => ({ ...prev, front: value }))}
                     />
                     <p className="text-xs text-gray-500 mt-2">
-                      Use {{c1::texto}} para criar lacunas
+                      Use {`{{c1::texto}}`} para criar lacunas
                     </p>
                   </div>
                 )}
