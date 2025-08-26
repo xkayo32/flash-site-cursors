@@ -545,8 +545,18 @@ export default function MyFlashcards() {
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {myDecks.map((deck) => (
+                <>
+                  <div className="flex justify-end mb-4">
+                    <Button
+                      onClick={() => navigate('/student/decks/new')}
+                      className="bg-accent-500 hover:bg-accent-600 text-black font-police-subtitle uppercase tracking-wider"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      CRIAR NOVO DECK
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {myDecks.map((deck) => (
                     <Card key={deck.id} className="hover:shadow-lg transition-shadow">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
@@ -594,7 +604,8 @@ export default function MyFlashcards() {
                       </CardContent>
                     </Card>
                   ))}
-                </div>
+                  </div>
+                </>
               )}
             </div>
           )}
