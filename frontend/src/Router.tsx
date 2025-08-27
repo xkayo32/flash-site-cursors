@@ -20,6 +20,9 @@ import FlashcardsPage from './pages/student/FlashcardsPage';
 import MyFlashcards from './pages/student/MyFlashcards';
 import NewStudentFlashcard from './pages/student/NewStudentFlashcard';
 import NewStudentDeck from './pages/student/NewStudentDeck';
+import DeckView from './pages/student/DeckView';
+import StudyDeck from './pages/student/StudyDeck';
+import StudentFlashcardManager from './pages/student/StudentFlashcardManager';
 import SchedulePage from './pages/student/SchedulePage';
 import QuestionsPage from './pages/student/QuestionsPage';
 import SummariesPage from './pages/student/SummariesPage';
@@ -162,7 +165,11 @@ function Router() {
         <Route path="/my-flashcards" element={<MyFlashcards />} />
         <Route path="/student/flashcards/new" element={<NewStudentFlashcard />} />
         <Route path="/student/flashcards/:id/edit" element={<NewStudentFlashcard />} />
+        <Route path="/student/flashcards/manager" element={<StudentFlashcardManager />} />
         <Route path="/student/decks/new" element={<NewStudentDeck />} />
+        <Route path="/student/decks/:id" element={<DeckView />} />
+        <Route path="/student/decks/:id/study" element={<StudyDeck />} />
+        <Route path="/student/decks/:deckId/cards" element={<StudyDeck />} />
         <Route path="/student/decks/:id/edit" element={<NewStudentDeck />} />
         <Route path="/questions" element={<QuestionsPage />} />
         <Route path="/previous-exams" element={<PreviousExamsMilitary />} />
