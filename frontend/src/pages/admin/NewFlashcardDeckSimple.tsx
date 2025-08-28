@@ -382,7 +382,7 @@ export default function NewFlashcardDeckSimple() {
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     SALVANDO...
                   </>
-                )} : (
+                ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
                     CRIAR DECK
