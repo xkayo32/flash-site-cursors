@@ -38,6 +38,7 @@ import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
 import FlashcardPreviewModal from '@/components/FlashcardPreviewModal';
 import FlashcardStudyModal from '@/components/FlashcardStudyModal';
+import { CategoryFilterModal } from '@/components/CategoryFilterModal';
 import { flashcardService, type Flashcard, type FlashcardStats } from '@/services/flashcardService';
 import { categoryService, type Category } from '@/services/categoryService';
 
@@ -50,12 +51,9 @@ const cardTypes = ['Todos', 'basic', 'basic_reversed', 'multiple_choice', 'true_
 export default function IndividualFlashcards() {
   const navigate = useNavigate();
   
-  // Estados para categorias hierárquicas
-  const [categories, setCategories] = useState<Category[]>([]);
+  // Estados para filtros
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-  const [categorySearch, setCategorySearch] = useState('');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Todos');
