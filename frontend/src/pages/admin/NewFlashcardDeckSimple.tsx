@@ -341,7 +341,7 @@ export default function NewFlashcardDeckSimple() {
                       </label>
                     ))}
                   </div>
-                )
+                )}
               </div>
               
               {selectedFlashcards.length > 0 && (

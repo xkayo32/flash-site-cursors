@@ -341,7 +341,7 @@ export default function NewStudentDeckSimple() {
                       </label>
                     ))}
                   </div>
-                )
+                )}
               </div>
               
               {selectedFlashcards.length > 0 && (
