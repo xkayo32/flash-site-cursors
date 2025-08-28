@@ -29,6 +29,7 @@ export default function NewStudentDeckSimple() {
   const [deckName, setDeckName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedFlashcards, setSelectedFlashcards] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   
   // Dados auxiliares
   const [categories, setCategories] = useState<Category[]>([]);
@@ -116,10 +117,18 @@ export default function NewStudentDeckSimple() {
     }
   };
   
-  // Filtrar flashcards por categoria
-  const filteredFlashcards = selectedCategory 
-    ? availableFlashcards.filter(fc => fc.category === selectedCategory)
-    : availableFlashcards;
+  // Filtrar flashcards pela busca
+  const filteredFlashcards = availableFlashcards.filter(fc => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return (
+      fc.front?.toLowerCase().includes(term) ||
+      fc.back?.toLowerCase().includes(term) ||
+      fc.question?.toLowerCase().includes(term) ||
+      fc.text?.toLowerCase().includes(term) ||
+      fc.category?.toLowerCase().includes(term)
+    );
+  });
   
   // Renderizar lista plana de categorias
   const flattenCategories = (cats: Category[]): { id: string; name: string; level: number }[] => {
@@ -216,16 +225,53 @@ export default function NewStudentDeckSimple() {
             
             {/* Seleção de Flashcards */}
             <div>
-              <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
-                Flashcards ({selectedFlashcards.length} selecionados)
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                  Flashcards ({selectedFlashcards.length} selecionados)
+                </label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate('/student/flashcards/new')}
+                    className="text-xs"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    CRIAR NOVO
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      // TODO: Implementar importação
+                      toast.info('Importação de flashcards em breve');
+                    }}
+                    className="text-xs"
+                  >
+                    <Package className="w-3 h-3 mr-1" />
+                    IMPORTAR
+                  </Button>
+                </div>
+              </div>
+              
+              
+              {/* Campo de busca */}
+              <div className="mb-3">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Buscar flashcards..."
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 text-sm"
+                />
+              </div>
               
               <div className="max-h-96 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-800">
                 {filteredFlashcards.length === 0 ? (
                   <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-                    {selectedCategory 
-                      ? 'Nenhum flashcard disponível nesta categoria'
-                      : 'Selecione uma categoria primeiro'}
+                    Nenhum flashcard disponível. Crie ou importe flashcards primeiro.
                   </p>
                 ) : (
                   <div className="space-y-2">
