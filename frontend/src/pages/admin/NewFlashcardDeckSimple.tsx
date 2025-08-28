@@ -628,7 +628,7 @@ export default function NewFlashcardDeckSimple() {
                       />
                     </div>
                   </>
-                )
+                )}
                 
                 {newFlashcard.type === 'type_answer' && (
                   <>
@@ -669,7 +669,7 @@ export default function NewFlashcardDeckSimple() {
                       />
                     </div>
                   </>
-                )
+                )}
                 
                 {newFlashcard.type === 'image_occlusion' && (
                   <>
@@ -696,7 +696,7 @@ export default function NewFlashcardDeckSimple() {
                           />
                         </div>
                       </div>
-                    )
+                    )}
                   </>
                 )}
                 
