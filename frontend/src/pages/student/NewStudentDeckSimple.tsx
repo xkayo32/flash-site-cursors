@@ -8,7 +8,8 @@ import {
   X,
   Package,
   Loader2,
-  Check
+  Check,
+  Upload
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -16,6 +17,8 @@ import { Badge } from '@/components/ui/Badge';
 import { categoryService, Category } from '@/services/categoryService';
 import { flashcardDeckService } from '@/services/flashcardDeckService';
 import { flashcardService } from '@/services/flashcardService';
+import ClozeEditor from '@/components/ClozeEditor';
+import ImageUploader from '@/components/ImageUploader';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 
@@ -39,14 +42,20 @@ export default function NewStudentDeckSimple() {
     type: 'basic',
     front: '',
     back: '',
+    extra: '',
     question: '',
     answer: '',
+    explanation: '',
     options: ['', '', '', ''],
     correctAnswer: 0,
     text: '',
+    hint: '',
+    image: '',
+    occlusion_areas: [] as any[],
     difficulty: 'medium',
     category: '',
-    subcategory: ''
+    subcategory: '',
+    tags: [] as string[]
   });
   
   // Carregar categorias
@@ -435,6 +444,7 @@ export default function NewStudentDeckSimple() {
                     <option value="multiple_choice">🟣 MÚLTIPLA ESCOLHA</option>
                     <option value="true_false">🔴 VERDADEIRO/FALSO</option>
                     <option value="type_answer">🟦 DIGITE RESPOSTA</option>
+                    <option value="image_occlusion">🟠 OCLUSÃO DE IMAGEM</option>
                   </select>
                 </div>
                 
@@ -464,6 +474,71 @@ export default function NewStudentDeckSimple() {
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                         placeholder="Digite a resposta ou explicação..."
                       />
+                    </div>
+                  </>
+                )}
+                
+                {newFlashcard.type === 'basic_inverted' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Frente do Card
+                      </label>
+                      <textarea
+                        value={newFlashcard.front}
+                        onChange={(e) => setNewFlashcard(prev => ({ ...prev, front: e.target.value }))}
+                        rows={2}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder="Ex: Deserção"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Verso do Card
+                      </label>
+                      <textarea
+                        value={newFlashcard.back}
+                        onChange={(e) => setNewFlashcard(prev => ({ ...prev, back: e.target.value }))}
+                        rows={2}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder="Ex: Art. 298 CPM"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Informação Extra (Opcional)
+                      </label>
+                      <textarea
+                        value={newFlashcard.extra}
+                        onChange={(e) => setNewFlashcard(prev => ({ ...prev, extra: e.target.value }))}
+                        rows={2}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder="Ex: Ausentar-se o militar, sem licença..."
+                      />
+                    </div>
+                  </>
+                )}
+                
+                {newFlashcard.type === 'cloze' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Texto com Lacunas
+                      </label>
+                      <ClozeEditor
+                        value={newFlashcard.text}
+                        onChange={(value) => {
+                          setNewFlashcard(prev => ({ 
+                            ...prev, 
+                            text: value,
+                            front: value
+                          }));
+                        }}
+                        placeholder="Digite o texto e selecione palavras para ocultar..."
+                      />
+                      <p className="text-xs text-gray-500 mt-2">
+                        Selecione o texto e clique em "Ocultar" ou use {{c1::texto}} manualmente
+                      </p>
                     </div>
                   </>
                 )}
@@ -540,6 +615,88 @@ export default function NewStudentDeckSimple() {
                         <option value="false">Falso</option>
                       </select>
                     </div>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Explicação (Opcional)
+                      </label>
+                      <textarea
+                        value={newFlashcard.explanation}
+                        onChange={(e) => setNewFlashcard(prev => ({ ...prev, explanation: e.target.value }))}
+                        rows={2}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder="Explique por que é verdadeiro ou falso..."
+                      />
+                    </div>
+                  </>
+                )}
+                
+                {newFlashcard.type === 'type_answer' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Pergunta
+                      </label>
+                      <textarea
+                        value={newFlashcard.question}
+                        onChange={(e) => setNewFlashcard(prev => ({ ...prev, question: e.target.value }))}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder="Digite a pergunta..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Resposta Esperada
+                      </label>
+                      <input
+                        type="text"
+                        value={newFlashcard.answer}
+                        onChange={(e) => setNewFlashcard(prev => ({ ...prev, answer: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder="Digite a resposta exata esperada..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Dica (Opcional)
+                      </label>
+                      <input
+                        type="text"
+                        value={newFlashcard.hint}
+                        onChange={(e) => setNewFlashcard(prev => ({ ...prev, hint: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder="Ex: Começa com 'A'..."
+                      />
+                    </div>
+                  </>
+                )}
+                
+                {newFlashcard.type === 'image_occlusion' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Imagem
+                      </label>
+                      <ImageUploader
+                        value={newFlashcard.image}
+                        onChange={(url) => setNewFlashcard(prev => ({ ...prev, image: url }))}
+                        placeholder="Clique para fazer upload de uma imagem"
+                      />
+                    </div>
+                    {newFlashcard.image && (
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          Clique na imagem para adicionar áreas de oclusão
+                        </p>
+                        <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-2">
+                          <img 
+                            src={newFlashcard.image} 
+                            alt="Imagem para oclusão"
+                            className="w-full h-auto"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
                 
@@ -595,14 +752,20 @@ export default function NewStudentDeckSimple() {
                             type: 'basic',
                             front: '',
                             back: '',
+                            extra: '',
                             question: '',
                             answer: '',
+                            explanation: '',
                             options: ['', '', '', ''],
                             correctAnswer: 0,
                             text: '',
+                            hint: '',
+                            image: '',
+                            occlusion_areas: [],
                             difficulty: 'medium',
                             category: selectedCategory || '',
-                            subcategory: ''
+                            subcategory: '',
+                            tags: []
                           });
                         }
                       } catch (error) {
@@ -611,7 +774,7 @@ export default function NewStudentDeckSimple() {
                       }
                     }}
                     className="bg-accent-500 hover:bg-accent-600 text-black"
-                    disabled={!newFlashcard.front && !newFlashcard.question}
+                    disabled={!newFlashcard.front && !newFlashcard.question && !newFlashcard.text && !newFlashcard.image}
                   >
                     <Save className="w-4 h-4 mr-2" />
                     CRIAR E ADICIONAR
