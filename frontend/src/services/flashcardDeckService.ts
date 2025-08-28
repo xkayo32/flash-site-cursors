@@ -19,7 +19,8 @@ export interface FlashcardDeck {
 export interface CreateDeckData {
   name: string;
   description?: string;
-  category: string;
+  category?: string;
+  subject?: string; // Backend usa subject ao invés de category
   flashcard_ids?: string[];
   is_public?: boolean;
 }

@@ -87,23 +87,26 @@ export default function NewStudentDeckSimple() {
     try {
       setIsLoading(true);
       
-      // Criar deck
-      const deckData = {
+      // Criar deck - backend espera 'subject' ao invés de 'category'
+      const deckData: any = {
         name: deckName,
         description: `Deck criado por ${user?.name || 'Aluno'}`,
         category: selectedCategory,
+        subject: selectedCategory, // Backend usa 'subject'
         flashcard_ids: selectedFlashcards,
-        user_id: user?.id || '',
-        status: 'published' as const
+        is_public: false
       };
       
+      console.log('Criando deck com dados:', deckData);
       const response = await flashcardDeckService.createDeck(deckData);
+      console.log('Resposta da API:', response);
       
       if (response.success) {
         toast.success('Deck criado com sucesso!');
         navigate('/student/flashcards');
       } else {
-        toast.error('Erro ao criar deck');
+        console.error('Falha ao criar deck:', response);
+        toast.error(response.message || 'Erro ao criar deck');
       }
     } catch (error) {
       console.error('Erro ao salvar deck:', error);
