@@ -537,7 +537,7 @@ export default function NewFlashcardDeckSimple() {
                         placeholder="Digite o texto e selecione palavras para ocultar..."
                       />
                       <p className="text-xs text-gray-500 mt-2">
-                        Selecione o texto e clique em "Ocultar" ou use {{c1::texto}} manualmente
+                        Selecione o texto e clique em "Ocultar" ou use {'{'}c1::texto{'}'} manualmente
                       </p>
                     </div>
                   </>
