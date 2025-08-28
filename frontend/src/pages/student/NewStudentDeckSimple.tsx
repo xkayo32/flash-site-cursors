@@ -696,7 +696,7 @@ export default function NewStudentDeckSimple() {
                           />
                         </div>
                       </div>
-                    )
+                    )}
                   </>
                 )}
                 
