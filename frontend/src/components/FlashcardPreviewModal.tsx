@@ -36,7 +36,14 @@ export default function FlashcardPreviewModal({
 }: FlashcardPreviewModalProps) {
   const [showAnswer, setShowAnswer] = useState(false);
 
+  // Verificação de segurança
+  if (!card) {
+    return null;
+  }
+
   const getDifficultyBadge = (difficulty: string) => {
+    if (!difficulty) return null;
+    
     const config = {
       easy: { label: 'FÁCIL', color: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
       medium: { label: 'MÉDIO', color: 'bg-gray-300 text-gray-900 dark:bg-gray-600 dark:text-gray-200' },
@@ -44,6 +51,8 @@ export default function FlashcardPreviewModal({
     };
     
     const diffConfig = config[difficulty as keyof typeof config];
+    if (!diffConfig) return null;
+    
     return (
       <Badge className={`${diffConfig.color} font-police-body font-semibold uppercase tracking-wider`}>
         {diffConfig.label}
@@ -52,6 +61,8 @@ export default function FlashcardPreviewModal({
   };
 
   const getTypeBadge = (type: string) => {
+    if (!type) return null;
+    
     const config = {
       basic: { label: 'BÁSICO', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' },
       basic_reversed: { label: 'INVERTIDO', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' },
@@ -63,6 +74,8 @@ export default function FlashcardPreviewModal({
     };
     
     const typeConfig = config[type as keyof typeof config];
+    if (!typeConfig) return null;
+    
     return (
       <Badge className={`${typeConfig.color} font-police-body font-semibold uppercase tracking-wider`}>
         {typeConfig.label}
