@@ -52,7 +52,7 @@ interface PendingCategory {
   isEditing?: boolean;
 }
 
-export default function NewStudentDeck() {
+export default function NewFlashcardDeck() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4; // Agora são 4 etapas: Básico, Configurações, Flashcards, Revisão
@@ -962,7 +962,7 @@ export default function NewStudentDeck() {
         
         // Sempre voltar para lista após criar com flashcards
         setTimeout(() => {
-          navigate('/student/flashcards');
+          navigate('/admin/flashcards');
         }, 1500);
       } else {
         toast.error('OPERAÇÃO FALHADA: Erro ao salvar arsenal', { id: 'save' });
@@ -1402,7 +1402,7 @@ export default function NewStudentDeck() {
           <div className="flex items-center gap-6">
             <Button
               variant="ghost"
-              onClick={() => navigate('/student/flashcards')}
+              onClick={() => navigate('/admin/flashcards')}
               className="gap-2 font-police-body uppercase tracking-wider hover:bg-white/10 text-white hover:text-accent-500 border border-transparent hover:border-accent-500/30 transition-all duration-300"
             >
               <ArrowLeft className="w-5 h-5" />

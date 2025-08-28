@@ -1,0 +1,28 @@
+{
+  "name": "flash-site-cursors",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">",
+  "main": "test-apkg-structure.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xkayo32/flash-site-cursors.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/xkayo32/flash-site-cursors/issues"
+  },
+  "homepage": "https://github.com/xkayo32/flash-site-cursors#readme",
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "sqlite3": "^5.1.7"
+  }
+}

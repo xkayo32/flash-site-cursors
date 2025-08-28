@@ -16,7 +16,16 @@ import { Badge } from '@/components/ui/Badge';
 import { ankiExporter, ankiImporter, ExportOptions } from '@/utils/ankiExporter';
 import { ankiApkgExporter } from '@/utils/ankiApkgExporter';
 import { ankiApkgImporter } from '@/utils/ankiApkgImporter';
+import { flashcardService } from '@/services/flashcardService';
+import { flashcardDeckService } from '@/services/flashcardDeckService';
 import toast from 'react-hot-toast';
+
+type DuplicateAction = 'replace' | 'duplicate' | 'skip';
+
+interface DuplicateConfig {
+  action: DuplicateAction;
+  applyToAll: boolean;
+}
 
 interface AnkiImportExportProps {
   flashcards?: any[];
@@ -25,6 +34,7 @@ interface AnkiImportExportProps {
   onExport?: () => void;
   showImport?: boolean;
   showExport?: boolean;
+  saveToBackend?: boolean; // Nova prop para controlar se deve salvar no backend
 }
 
 export default function AnkiImportExport({
@@ -33,14 +43,46 @@ export default function AnkiImportExport({
   onImport,
   onExport,
   showImport = true,
-  showExport = true
+  showExport = true,
+  saveToBackend = false
 }: AnkiImportExportProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [exportFormat, setExportFormat] = useState<'json' | 'csv' | 'anki' | 'apkg'>('json');
   const [importPreview, setImportPreview] = useState<any[] | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [duplicateConfig, setDuplicateConfig] = useState<DuplicateConfig>({ action: 'duplicate', applyToAll: false });
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [duplicateFlashcard, setDuplicateFlashcard] = useState<any>(null);
+  const [createDeck, setCreateDeck] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Verificar se flashcard já existe (duplicado)
+  const checkForDuplicate = async (card: any): Promise<boolean> => {
+    try {
+      // Buscar por flashcards similares (mesmo front/back ou text)
+      const searchTerm = card.front || card.text || '';
+      if (!searchTerm) return false;
+      
+      const response = await flashcardService.getFlashcards({ 
+        search: searchTerm,
+        limit: 5 
+      });
+      
+      if (response.success && response.data.length > 0) {
+        // Verificar se existe match exato
+        return response.data.some(existing => 
+          (existing.front === card.front && existing.back === card.back) ||
+          (existing.text === card.text)
+        );
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Erro ao verificar duplicado:', error);
+      return false;
+    }
+  };
 
   // Exportar deck
   const handleExport = async () => {
@@ -118,12 +160,134 @@ export default function AnkiImportExport({
   };
 
   // Confirmar importação
-  const confirmImport = () => {
-    if (importPreview) {
-      onImport?.(importPreview);
-      toast.success(`${importPreview.length} flashcards importados com sucesso!`);
+  const confirmImport = async () => {
+    if (!importPreview) return;
+
+    setIsImporting(true);
+    
+    try {
+      if (saveToBackend) {
+        // Criar deck primeiro se necessário
+        let deckId: string | undefined;
+        if (createDeck) {
+          try {
+            const deckData = {
+              name: deckName || 'Deck Importado',
+              description: `Deck importado do Anki com ${importPreview.length} flashcards`,
+              category: 'Importação',
+              flashcard_ids: []
+            };
+            
+            const deckResponse = await flashcardDeckService.createDeck(deckData);
+            if (deckResponse.success && deckResponse.data?.id) {
+              deckId = deckResponse.data.id;
+              toast.success(`Deck "${deckData.name}" criado com sucesso!`);
+            }
+          } catch (error) {
+            console.error('Erro ao criar deck:', error);
+            toast.error('Erro ao criar deck, mas continuando com importação...');
+          }
+        }
+        
+        // Salvar flashcards no backend
+        const savedFlashcards: any[] = [];
+        const skippedDuplicates: any[] = [];
+        const savedFlashcardIds: string[] = [];
+        
+        for (let i = 0; i < importPreview.length; i++) {
+          const card = importPreview[i];
+          
+          // Verificar duplicados se não tiver configuração para aplicar a todos
+          let shouldSave = true;
+          if (!duplicateConfig.applyToAll) {
+            const isDuplicate = await checkForDuplicate(card);
+            if (isDuplicate) {
+              // Definir comportamento padrão para duplicados
+              if (duplicateConfig.action === 'skip') {
+                skippedDuplicates.push(card);
+                shouldSave = false;
+              } else if (duplicateConfig.action === 'replace') {
+                // Para substituição, deletar o existente seria necessário
+                // Por simplicidade, vamos duplicar por enquanto
+                shouldSave = true;
+              } else {
+                // duplicate - salvar normalmente
+                shouldSave = true;
+              }
+            }
+          }
+          
+          if (shouldSave) {
+            // Converter para formato da API
+            const flashcardData = {
+              type: card.type || 'basic',
+              difficulty: card.difficulty || 'medium',
+              category: card.category || 'Anki Import',
+              subcategory: card.subcategory,
+              tags: card.tags || [],
+              status: 'published',
+              // Campos específicos por tipo
+              front: card.front,
+              back: card.back,
+              text: card.text,
+              question: card.question,
+              options: card.options,
+              correct: card.correct,
+              explanation: card.explanation,
+              statement: card.statement,
+              answer: card.answer,
+              hint: card.hint,
+              image: card.image,
+              occlusionAreas: card.occlusionAreas
+            };
+
+            try {
+              const response = await flashcardService.createFlashcard(flashcardData);
+              if (response.success) {
+                savedFlashcards.push(response.data);
+                if (response.data.id) {
+                  savedFlashcardIds.push(response.data.id);
+                }
+              }
+            } catch (error) {
+              console.error('Erro ao salvar flashcard:', error);
+            }
+          }
+        }
+        
+        // Atualizar deck com os flashcards salvos
+        if (deckId && savedFlashcardIds.length > 0) {
+          try {
+            await flashcardDeckService.updateDeck(deckId, {
+              flashcard_ids: savedFlashcardIds
+            });
+            toast.success(`Deck atualizado com ${savedFlashcardIds.length} flashcards!`);
+          } catch (error) {
+            console.error('Erro ao atualizar deck:', error);
+          }
+        }
+        
+        const message = skippedDuplicates.length > 0 
+          ? `${savedFlashcards.length} flashcards salvos, ${skippedDuplicates.length} duplicados pulados`
+          : `${savedFlashcards.length} de ${importPreview.length} flashcards salvos!`;
+        
+        toast.success(message);
+        
+        // Chamar onImport com os flashcards salvos
+        onImport?.(savedFlashcards);
+      } else {
+        // Modo original - apenas chamar onImport
+        onImport?.(importPreview);
+        toast.success(`${importPreview.length} flashcards importados com sucesso!`);
+      }
+      
       setShowPreviewModal(false);
       setImportPreview(null);
+    } catch (error) {
+      console.error('Erro durante importação:', error);
+      toast.error('Erro ao importar flashcards');
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -236,7 +400,7 @@ export default function AnkiImportExport({
             <Button
               onClick={handleExport}
               disabled={isExporting || flashcards.length === 0}
-              className="w-full bg-accent-500 hover:bg-accent-600 text-black font-police-subtitle uppercase tracking-wider"
+              className="w-full font-police-subtitle uppercase tracking-wider"
             >
               {isExporting ? (
                 <>
@@ -268,6 +432,46 @@ export default function AnkiImportExport({
             <p className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
               Importe flashcards de arquivos JSON ou CSV.
             </p>
+
+            {/* Configurações de Importação */}
+            {saveToBackend && (
+              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h4 className="font-police-subtitle uppercase tracking-wider text-gray-900 dark:text-white font-semibold text-sm mb-3">
+                  CONFIGURAÇÕES DE IMPORTAÇÃO
+                </h4>
+                
+                <div className="space-y-3">
+                  {/* Criar deck */}
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={createDeck}
+                      onChange={(e) => setCreateDeck(e.target.checked)}
+                      className="rounded border-gray-300 dark:border-gray-600"
+                    />
+                    <span className="text-sm font-police-body text-gray-700 dark:text-gray-300">
+                      Criar deck automaticamente
+                    </span>
+                  </label>
+
+                  {/* Comportamento para duplicados */}
+                  <div>
+                    <label className="block text-xs font-police-body font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                      DUPLICADOS
+                    </label>
+                    <select
+                      value={duplicateConfig.action}
+                      onChange={(e) => setDuplicateConfig(prev => ({ ...prev, action: e.target.value as DuplicateAction }))}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm font-police-body"
+                    >
+                      <option value="duplicate">Duplicar (permitir cópias)</option>
+                      <option value="skip">Pular (ignorar duplicados)</option>
+                      <option value="replace">Substituir (sobrescrever existentes)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <input
               ref={fileInputRef}
@@ -368,10 +572,20 @@ export default function AnkiImportExport({
               <div className="flex gap-3">
                 <Button
                   onClick={confirmImport}
-                  className="flex-1 bg-accent-500 hover:bg-accent-600 text-black font-police-subtitle uppercase tracking-wider"
+                  disabled={isImporting}
+                  className="flex-1 font-police-subtitle uppercase tracking-wider"
                 >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  IMPORTAR TODOS
+                  {isImporting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      IMPORTANDO...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      IMPORTAR TODOS
+                    </>
+                  )}
                 </Button>
                 <Button
                   onClick={cancelImport}

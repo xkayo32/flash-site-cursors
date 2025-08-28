@@ -135,8 +135,8 @@ export default function LegislationPage() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const data = await categoryService.getAll();
-        setCategories(data);
+        const categories = await categoryService.getCategoryHierarchy();
+        setCategories(categories);
       } catch (error) {
         console.error('Erro ao carregar categorias:', error);
       }

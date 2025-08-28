@@ -164,8 +164,8 @@ export default function FlashcardsPage() {
   const [deckFilter, setDeckFilter] = useState<'all' | 'my' | 'system'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [editingDeck, setEditingDeck] = useState<FlashcardDeck | null>(null);
-  const [flashcardVisibility, setFlashcardVisibility] = useState<'my' | 'all'>('my'); // Padrão: ver apenas seus flashcards
-  const [deckVisibility, setDeckVisibility] = useState<'my' | 'all'>('my'); // Padrão: ver apenas seus decks
+  const [flashcardVisibility, setFlashcardVisibility] = useState<'my' | 'all'>('all'); // Padrão: ver todos os flashcards
+  const [deckVisibility, setDeckVisibility] = useState<'my' | 'all'>('all'); // Padrão: ver todos os decks
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deckToDelete, setDeckToDelete] = useState<FlashcardDeck | null>(null);

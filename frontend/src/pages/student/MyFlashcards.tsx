@@ -49,7 +49,7 @@ export default function MyFlashcards() {
   const [filters, setFilters] = useState<FlashcardFilters>({
     author_id: user?.id,
     page: 1,
-    limit: 20
+    limit: 100 // Aumentar para mostrar mais flashcards por página
   });
   
   // Modals
@@ -66,6 +66,28 @@ export default function MyFlashcards() {
     masteryRate: 0
   });
 
+  // Carregar contagem total de flashcards via stats API
+  const updateTotalStats = async () => {
+    try {
+      const statsResponse = await flashcardService.getStats({ author_id: user?.id });
+      
+      if (statsResponse.success && statsResponse.data) {
+        // Converter strings para números
+        const totalCards = parseInt(statsResponse.data.total) || 0;
+        
+        setStats(prev => ({ 
+          ...prev, 
+          totalCards,
+          studiedToday: 0, // Por enquanto 0, pode ser implementado depois
+          dueForReview: parseInt(statsResponse.data.published) || 0,
+          masteryRate: parseFloat(statsResponse.data.avg_correct_rate) || 0
+        }));
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar stats:', error);
+    }
+  };
+
   // Carregar flashcards do usuário
   const loadMyFlashcards = async () => {
     setLoading(true);
@@ -77,7 +99,8 @@ export default function MyFlashcards() {
       
       if (response.success) {
         setFlashcards(response.data);
-        setStats(prev => ({ ...prev, totalCards: response.pagination.total }));
+        // Sempre atualizar total após carregar
+        await updateTotalStats();
       }
     } catch (error) {
       console.error('Erro ao carregar flashcards:', error);
@@ -90,7 +113,9 @@ export default function MyFlashcards() {
   // Carregar decks do usuário
   const loadMyDecks = async () => {
     try {
-      const decks = await flashcardDeckService.getUserDecks(user?.id || '');
+      // Passar user.id como string para garantir consistência
+      const userIdString = user?.id?.toString() || '';
+      const decks = await flashcardDeckService.getUserDecks(userIdString);
       setMyDecks(decks);
       setStats(prev => ({ ...prev, totalDecks: decks.length }));
     } catch (error) {
@@ -521,6 +546,38 @@ export default function MyFlashcards() {
                   </Button>
                 </div>
               )}
+
+              {/* Paginação */}
+              {stats.totalCards > filters.limit && (
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 font-police-body">
+                    Mostrando {flashcards.length} de {stats.totalCards} flashcards
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={filters.page <= 1}
+                      onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}
+                      className="font-police-body"
+                    >
+                      Anterior
+                    </Button>
+                    <span className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 font-police-numbers">
+                      Página {filters.page}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={flashcards.length < filters.limit}
+                      onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}
+                      className="font-police-body"
+                    >
+                      Próxima
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           
@@ -615,21 +672,15 @@ export default function MyFlashcards() {
             <AnkiImportExport
               flashcards={flashcards}
               deckName="Meus Flashcards"
+              saveToBackend={true}
               onImport={async (importedCards) => {
-                // Adicionar user_id aos cards importados
-                const cardsWithUser = importedCards.map(card => ({
-                  ...card,
-                  author_id: user?.id,
-                  status: 'draft' // Importados como privados por padrão
-                }));
-                
-                // Salvar no backend
-                for (const card of cardsWithUser) {
-                  await flashcardService.createFlashcard(card);
-                }
-                
-                toast.success(`${importedCards.length} flashcards importados!`);
-                loadMyFlashcards();
+                // Cards já foram salvos no backend pelo componente
+                // Recarregar a lista e atualizar stats
+                await Promise.all([
+                  loadMyFlashcards(),
+                  loadMyDecks() // Atualizar decks também caso tenha sido criado
+                ]);
+                toast.success('Flashcards e estatísticas atualizados!');
               }}
               onExport={() => {
                 toast.success('Flashcards exportados com sucesso!');

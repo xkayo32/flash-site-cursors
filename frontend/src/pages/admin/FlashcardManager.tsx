@@ -92,10 +92,8 @@ export default function FlashcardManager() {
 
   const loadCategories = async () => {
     try {
-      const response = await categoryService.getCategories();
-      if (response.success) {
-        setCategories(response.data || []);
-      }
+      const categories = await categoryService.getCategoryHierarchy();
+      setCategories(categories || []);
     } catch (error) {
       console.error('Erro ao carregar categorias:', error);
     }

@@ -210,9 +210,9 @@ export default function MyCoursesPage() {
   const loadCategories = async () => {
     try {
       setLoadingCategories(true);
-      const response = await categoryService.getCategories();
-      if (response.success && response.data) {
-        setCategories(response.data);
+      const categories = await categoryService.getCategoryHierarchy();
+      if (Array.isArray(categories)) {
+        setCategories(categories);
       }
     } catch (error) {
       console.error('Erro ao carregar categorias:', error);
