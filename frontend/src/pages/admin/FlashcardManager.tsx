@@ -607,7 +607,7 @@ export default function FlashcardManager() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <Card className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 hover:shadow-xl transition-all duration-300 overflow-visible relative">
+        <Card className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-accent-500 dark:hover:border-accent-500 hover:shadow-xl transition-all duration-300 relative">
           {/* Tactical stripe */}
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent-500" />
           <CardContent className="p-6 relative">
@@ -628,7 +628,7 @@ export default function FlashcardManager() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 relative" style={{ zIndex: 100 }}>
                 {/* Categoria com Modal Hierárquico */}
                 <div className="relative">
-                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     CATEGORIAS TÁTICAS
                   </label>
                   <button
@@ -652,7 +652,7 @@ export default function FlashcardManager() {
 
                 {/* Dificuldade */}
                 <div className="relative">
-                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Dificuldade
                   </label>
                   <select
@@ -669,7 +669,7 @@ export default function FlashcardManager() {
 
                 {/* Status Público/Privado */}
                 <div className="relative">
-                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider z-10">
+                  <label className="absolute -top-2 left-3 px-1 bg-white dark:bg-gray-800 text-xs font-police-body text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Visibilidade
                   </label>
                   <select
@@ -1116,7 +1116,7 @@ export default function FlashcardManager() {
       
       {/* Modal de Preview do Deck */}
       {previewModalOpen && selectedDeckForPreview && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -1200,14 +1200,14 @@ export default function FlashcardManager() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
             onClick={() => setCategoryModalOpen(false)}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden relative z-[10000]"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header do Modal */}
