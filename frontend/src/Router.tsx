@@ -51,7 +51,6 @@ import AdminSettings from './pages/admin/AdminSettings';
 import CourseForm from './pages/admin/CourseForm';
 import SummaryForm from './pages/admin/SummaryForm';
 import FlashcardManager from './pages/admin/FlashcardManager';
-import NewFlashcardDeck from './pages/admin/NewFlashcardDeck';
 import NewFlashcardDeckSimple from './pages/admin/NewFlashcardDeckSimple';
 import FlashcardEditor from './pages/admin/FlashcardEditor';
 import IndividualFlashcards from './pages/admin/IndividualFlashcards';
