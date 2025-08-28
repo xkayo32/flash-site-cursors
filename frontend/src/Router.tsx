@@ -20,6 +20,7 @@ import FlashcardsPage from './pages/student/FlashcardsPage';
 import MyFlashcards from './pages/student/MyFlashcards';
 import NewStudentFlashcard from './pages/student/NewStudentFlashcard';
 import NewStudentDeck from './pages/student/NewStudentDeck';
+import NewStudentDeckSimple from './pages/student/NewStudentDeckSimple';
 import DeckView from './pages/student/DeckView';
 import StudyDeck from './pages/student/StudyDeck';
 import StudentFlashcardManager from './pages/student/StudentFlashcardManager';
@@ -51,6 +52,7 @@ import CourseForm from './pages/admin/CourseForm';
 import SummaryForm from './pages/admin/SummaryForm';
 import FlashcardManager from './pages/admin/FlashcardManager';
 import NewFlashcardDeck from './pages/admin/NewFlashcardDeck';
+import NewFlashcardDeckSimple from './pages/admin/NewFlashcardDeckSimple';
 import FlashcardEditor from './pages/admin/FlashcardEditor';
 import IndividualFlashcards from './pages/admin/IndividualFlashcards';
 import NewFlashcard from './pages/admin/NewFlashcard';
@@ -166,7 +168,7 @@ function Router() {
         <Route path="/student/flashcards/new" element={<NewStudentFlashcard />} />
         <Route path="/student/flashcards/:id/edit" element={<NewStudentFlashcard />} />
         <Route path="/student/flashcards/manager" element={<StudentFlashcardManager />} />
-        <Route path="/student/decks/new" element={<NewStudentDeck />} />
+        <Route path="/student/decks/new" element={<NewStudentDeckSimple />} />
         <Route path="/student/decks/:id" element={<DeckView />} />
         <Route path="/student/decks/:id/study" element={<StudyDeck />} />
         <Route path="/student/decks/:deckId/cards" element={<StudyDeck />} />
@@ -208,7 +210,7 @@ function Router() {
         <Route path="/admin/questions/view/:id" element={<QuestionView />} />
         <Route path="/admin/questions/edit/:id" element={<NewQuestion />} />
         <Route path="/admin/flashcards" element={<FlashcardManager />} />
-        <Route path="/admin/flashcards/new" element={<NewFlashcardDeck />} />
+        <Route path="/admin/flashcards/new" element={<NewFlashcardDeckSimple />} />
         <Route path="/admin/flashcards/:deckId/edit" element={<FlashcardEditor />} />
         <Route path="/admin/flashcards/:deckId/cards" element={<FlashcardEditor />} />
         <Route path="/admin/flashcards/cards" element={<IndividualFlashcards />} />
