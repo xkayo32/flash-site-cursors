@@ -382,12 +382,12 @@ export default function NewStudentDeckSimple() {
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     SALVANDO...
                   </>
-                ) : (
+                )} : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
                     CRIAR DECK
                   </>
-                )}
+                )}}
               </Button>
             </div>
           </CardContent>
@@ -476,7 +476,7 @@ export default function NewStudentDeckSimple() {
                       />
                     </div>
                   </>
-                )}
+                )}}
                 
                 {newFlashcard.type === 'basic_inverted' && (
                   <>
@@ -517,7 +517,7 @@ export default function NewStudentDeckSimple() {
                       />
                     </div>
                   </>
-                )}
+                )}}
                 
                 {newFlashcard.type === 'cloze' && (
                   <>
@@ -541,7 +541,7 @@ export default function NewStudentDeckSimple() {
                       </p>
                     </div>
                   </>
-                )}
+                )}}
                 
                 {newFlashcard.type === 'multiple_choice' && (
                   <>
@@ -585,7 +585,7 @@ export default function NewStudentDeckSimple() {
                       </div>
                     ))}
                   </>
-                )}
+                )}}
                 
                 {newFlashcard.type === 'true_false' && (
                   <>
@@ -628,7 +628,7 @@ export default function NewStudentDeckSimple() {
                       />
                     </div>
                   </>
-                )}
+                )}}
                 
                 {newFlashcard.type === 'type_answer' && (
                   <>
@@ -669,7 +669,7 @@ export default function NewStudentDeckSimple() {
                       />
                     </div>
                   </>
-                )}
+                )}}
                 
                 {newFlashcard.type === 'image_occlusion' && (
                   <>
@@ -698,7 +698,7 @@ export default function NewStudentDeckSimple() {
                       </div>
                     )}
                   </>
-                )}
+                )}}
                 
                 {/* Dificuldade */}
                 <div>
