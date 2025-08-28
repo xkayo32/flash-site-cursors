@@ -33,10 +33,12 @@ export default function NewFlashcardDeckSimple() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedFlashcards, setSelectedFlashcards] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedParentDeck, setSelectedParentDeck] = useState<string>('');
   
   // Dados auxiliares
   const [categories, setCategories] = useState<Category[]>([]);
   const [availableFlashcards, setAvailableFlashcards] = useState<any[]>([]);
+  const [availableDecks, setAvailableDecks] = useState<any[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newFlashcard, setNewFlashcard] = useState({
     type: 'basic',
@@ -58,10 +60,11 @@ export default function NewFlashcardDeckSimple() {
     tags: [] as string[]
   });
   
-  // Carregar categorias
+  // Carregar dados
   useEffect(() => {
     loadCategories();
     loadFlashcards();
+    loadDecks();
   }, []);
   
   const loadCategories = async () => {
@@ -74,6 +77,17 @@ export default function NewFlashcardDeckSimple() {
       toast.error('Erro ao carregar categorias');
     } finally {
       setLoadingCategories(false);
+    }
+  };
+  
+  const loadDecks = async () => {
+    try {
+      const response = await flashcardDeckService.getDecks();
+      if (response.success && response.decks) {
+        setAvailableDecks(response.decks);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar decks:', error);
     }
   };
   
@@ -118,7 +132,8 @@ export default function NewFlashcardDeckSimple() {
         category: selectedCategory,
         subject: selectedCategory, // Backend usa 'subject'
         flashcard_ids: selectedFlashcards,
-        is_public: true
+        is_public: true,
+        parent_deck_id: selectedParentDeck || undefined
       };
       
       console.log('Criando deck com dados:', deckData);
@@ -173,6 +188,26 @@ export default function NewFlashcardDeckSimple() {
   };
   
   const flatCategories = flattenCategories(categories);
+  
+  // Função para criar hierarquia de decks
+  const buildDeckHierarchy = (decks: any[], parentId: string | null = null, level = 0): any[] => {
+    const result: any[] = [];
+    const filtered = decks.filter(d => (d.parent_deck_id || null) === parentId);
+    
+    filtered.forEach(deck => {
+      result.push({
+        ...deck,
+        level,
+        displayName: `${'  '.repeat(level)}${level > 0 ? '└─ ' : ''}${deck.name}`
+      });
+      // Adicionar decks filhos
+      result.push(...buildDeckHierarchy(decks, deck.id, level + 1));
+    });
+    
+    return result;
+  };
+  
+  const hierarchicalDecks = buildDeckHierarchy(availableDecks);
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -244,6 +279,28 @@ export default function NewFlashcardDeckSimple() {
                   </option>
                 ))}
               </select>
+            </div>
+            
+            {/* Deck Pai (Opcional) */}
+            <div>
+              <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                Deck Pai (Opcional)
+              </label>
+              <select
+                value={selectedParentDeck}
+                onChange={(e) => setSelectedParentDeck(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500"
+              >
+                <option value="">Nenhum (Deck principal)</option>
+                {hierarchicalDecks.map((deck) => (
+                  <option key={deck.id} value={deck.id}>
+                    {deck.displayName || deck.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Escolha um deck pai para criar uma hierarquia de decks aninhados
+              </p>
             </div>
             
             {/* Seleção de Flashcards */}

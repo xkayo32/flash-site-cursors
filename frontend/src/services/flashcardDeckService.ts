@@ -9,6 +9,8 @@ export interface FlashcardDeck {
   flashcard_ids: string[];
   user_id: string;
   is_public?: boolean;
+  parent_deck_id?: string;
+  child_decks?: FlashcardDeck[];
   created_at: string;
   updated_at: string;
   total_cards?: number;
@@ -23,6 +25,7 @@ export interface CreateDeckData {
   subject?: string; // Backend usa subject ao invés de category
   flashcard_ids?: string[];
   is_public?: boolean;
+  parent_deck_id?: string;
 }
 
 export interface UpdateDeckData extends Partial<CreateDeckData> {}
