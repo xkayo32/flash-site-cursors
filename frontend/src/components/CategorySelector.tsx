@@ -235,7 +235,7 @@ export function CategorySelector({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="absolute z-[99999] mt-2 w-full bg-white dark:bg-gray-900 
+            className="absolute z-40 mt-2 w-full bg-white dark:bg-gray-900 
               border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl
               max-h-[500px] overflow-hidden flex flex-col"
             style={{ zIndex: 99999 }}

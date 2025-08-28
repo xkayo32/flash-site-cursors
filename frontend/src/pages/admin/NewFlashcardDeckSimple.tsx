@@ -458,7 +458,7 @@ export default function NewFlashcardDeckSimple() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
             onClick={() => setShowCreateModal(false)}
           >
             <motion.div
@@ -466,7 +466,7 @@ export default function NewFlashcardDeckSimple() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-[10000]"
             >
               <div className="sticky top-0 bg-gradient-to-r from-gray-900 via-[#14242f] to-gray-900 text-white p-4 border-b border-accent-500">
                 <div className="flex items-center justify-between">
