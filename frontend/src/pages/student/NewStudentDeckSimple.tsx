@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -34,6 +34,20 @@ export default function NewStudentDeckSimple() {
   // Dados auxiliares
   const [categories, setCategories] = useState<Category[]>([]);
   const [availableFlashcards, setAvailableFlashcards] = useState<any[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newFlashcard, setNewFlashcard] = useState({
+    type: 'basic',
+    front: '',
+    back: '',
+    question: '',
+    answer: '',
+    options: ['', '', '', ''],
+    correctAnswer: 0,
+    text: '',
+    difficulty: 'medium',
+    category: '',
+    subcategory: ''
+  });
   
   // Carregar categorias
   useEffect(() => {
@@ -234,7 +248,10 @@ export default function NewStudentDeckSimple() {
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => navigate('/student/flashcards/new')}
+                    onClick={() => {
+                      setNewFlashcard(prev => ({ ...prev, category: selectedCategory || '' }));
+                      setShowCreateModal(true);
+                    }}
                     className="text-xs"
                   >
                     <Plus className="w-3 h-3 mr-1" />
@@ -367,6 +384,244 @@ export default function NewStudentDeckSimple() {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Modal de Criação de Flashcard */}
+      <AnimatePresence>
+        {showCreateModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowCreateModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            >
+              <div className="sticky top-0 bg-gradient-to-r from-gray-900 via-[#14242f] to-gray-900 text-white p-4 border-b border-accent-500">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-police-title uppercase tracking-wider">
+                    CRIAR NOVO FLASHCARD
+                  </h3>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowCreateModal(false)}
+                    className="text-white hover:text-accent-500"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="p-6 space-y-4">
+                {/* Tipo de Flashcard */}
+                <div>
+                  <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                    Tipo de Flashcard
+                  </label>
+                  <select
+                    value={newFlashcard.type}
+                    onChange={(e) => setNewFlashcard(prev => ({ ...prev, type: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  >
+                    <option value="basic">🔵 BÁSICO (Frente/Verso)</option>
+                    <option value="basic_inverted">🟢 BÁSICO INVERTIDO</option>
+                    <option value="cloze">🟡 LACUNAS (Cloze)</option>
+                    <option value="multiple_choice">🟣 MÚLTIPLA ESCOLHA</option>
+                    <option value="true_false">🔴 VERDADEIRO/FALSO</option>
+                    <option value="type_answer">🟦 DIGITE RESPOSTA</option>
+                  </select>
+                </div>
+                
+                {/* Campos dinâmicos baseados no tipo */}
+                {newFlashcard.type === 'basic' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Frente do Card
+                      </label>
+                      <textarea
+                        value={newFlashcard.front}
+                        onChange={(e) => setNewFlashcard(prev => ({ ...prev, front: e.target.value }))}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder="Digite a pergunta ou conceito..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Verso do Card
+                      </label>
+                      <textarea
+                        value={newFlashcard.back}
+                        onChange={(e) => setNewFlashcard(prev => ({ ...prev, back: e.target.value }))}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder="Digite a resposta ou explicação..."
+                      />
+                    </div>
+                  </>
+                )}
+                
+                {newFlashcard.type === 'multiple_choice' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Pergunta
+                      </label>
+                      <textarea
+                        value={newFlashcard.question}
+                        onChange={(e) => setNewFlashcard(prev => ({ ...prev, question: e.target.value }))}
+                        rows={2}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder="Digite a pergunta..."
+                      />
+                    </div>
+                    {newFlashcard.options.map((option, index) => (
+                      <div key={index}>
+                        <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                          Opção {index + 1} {index === newFlashcard.correctAnswer && '(CORRETA)'}
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="radio"
+                            name="correctOption"
+                            checked={index === newFlashcard.correctAnswer}
+                            onChange={() => setNewFlashcard(prev => ({ ...prev, correctAnswer: index }))}
+                            className="mt-2"
+                          />
+                          <input
+                            type="text"
+                            value={option}
+                            onChange={(e) => {
+                              const newOptions = [...newFlashcard.options];
+                              newOptions[index] = e.target.value;
+                              setNewFlashcard(prev => ({ ...prev, options: newOptions }));
+                            }}
+                            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                            placeholder={`Digite a opção ${index + 1}...`}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+                
+                {newFlashcard.type === 'true_false' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Afirmação
+                      </label>
+                      <textarea
+                        value={newFlashcard.question}
+                        onChange={(e) => setNewFlashcard(prev => ({ ...prev, question: e.target.value }))}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder="Digite a afirmação..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                        Resposta
+                      </label>
+                      <select
+                        value={newFlashcard.answer}
+                        onChange={(e) => setNewFlashcard(prev => ({ ...prev, answer: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      >
+                        <option value="">Selecione...</option>
+                        <option value="true">Verdadeiro</option>
+                        <option value="false">Falso</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+                
+                {/* Dificuldade */}
+                <div>
+                  <label className="block text-sm font-police-subtitle uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">
+                    Dificuldade
+                  </label>
+                  <select
+                    value={newFlashcard.difficulty}
+                    onChange={(e) => setNewFlashcard(prev => ({ ...prev, difficulty: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  >
+                    <option value="easy">Fácil</option>
+                    <option value="medium">Médio</option>
+                    <option value="hard">Difícil</option>
+                  </select>
+                </div>
+                
+                {/* Botões de Ação */}
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowCreateModal(false)}
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    CANCELAR
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        // Criar flashcard
+                        const flashcardData = {
+                          ...newFlashcard,
+                          status: 'published',
+                          category: selectedCategory || newFlashcard.category,
+                          author_id: user?.id || '2' // ID do aluno
+                        };
+                        
+                        const response = await flashcardService.createFlashcard(flashcardData);
+                        
+                        if (response.success && response.data) {
+                          // Adicionar à lista de flashcards disponíveis
+                          setAvailableFlashcards(prev => [...prev, response.data]);
+                          // Adicionar à seleção automática
+                          setSelectedFlashcards(prev => [...prev, response.data.id]);
+                          
+                          toast.success('Flashcard criado e adicionado ao deck!');
+                          setShowCreateModal(false);
+                          
+                          // Resetar formulário
+                          setNewFlashcard({
+                            type: 'basic',
+                            front: '',
+                            back: '',
+                            question: '',
+                            answer: '',
+                            options: ['', '', '', ''],
+                            correctAnswer: 0,
+                            text: '',
+                            difficulty: 'medium',
+                            category: selectedCategory || '',
+                            subcategory: ''
+                          });
+                        }
+                      } catch (error) {
+                        console.error('Erro ao criar flashcard:', error);
+                        toast.error('Erro ao criar flashcard');
+                      }
+                    }}
+                    className="bg-accent-500 hover:bg-accent-600 text-black"
+                    disabled={!newFlashcard.front && !newFlashcard.question}
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    CRIAR E ADICIONAR
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
