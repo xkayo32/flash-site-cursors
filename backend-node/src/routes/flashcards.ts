@@ -23,6 +23,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
       status,
       search,
       created_by_admin,
+      deck_id,
       limit = 100,
       offset = 0
     } = req.query;
@@ -73,6 +74,17 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
     if (search) {
       query += ` AND (f.front ILIKE $${paramIndex} OR f.back ILIKE $${paramIndex} OR f.text ILIKE $${paramIndex} OR f.question ILIKE $${paramIndex})`;
       params.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    // Filter by deck_id - get flashcards that belong to a specific deck
+    if (deck_id) {
+      query += ` AND f.id IN (
+        SELECT jsonb_array_elements_text(flashcard_ids) 
+        FROM flashcard_decks 
+        WHERE id = $${paramIndex}
+      )`;
+      params.push(deck_id);
       paramIndex++;
     }
 

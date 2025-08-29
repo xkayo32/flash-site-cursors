@@ -35,6 +35,11 @@ export default function FlashcardStudyModal({
   const [studyResults, setStudyResults] = useState<{ [key: number]: boolean }>({});
   const [startTime] = useState(Date.now());
 
+  // Verificar se há cards disponíveis
+  if (!cards || cards.length === 0) {
+    return null;
+  }
+
   const currentCard = cards[currentCardIndex];
   const totalCards = cards.length;
   const progress = ((currentCardIndex + 1) / totalCards) * 100;

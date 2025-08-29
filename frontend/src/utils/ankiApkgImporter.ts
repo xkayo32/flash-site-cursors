@@ -1,6 +1,7 @@
 // Utilitário para importar flashcards do Anki (.apkg)
 import JSZip from 'jszip';
 import initSqlJs, { Database } from 'sql.js';
+import AnkiVersionHelper, { AnkiVersionInfo } from './ankiVersionHelper';
 
 class AnkiApkgImporter {
   constructor() {
@@ -123,31 +124,112 @@ class AnkiApkgImporter {
     }
   }
 
-  // Método alternativo para importar JSON exportado pelo nosso sistema
+  // Método alternativo para importar JSON exportado pelo nosso sistema ou Anki
   async importJson(content: string): Promise<any[]> {
     try {
       const data = JSON.parse(content);
       
-      // Se for nosso formato de exportação
+      // Se for formato de exportação do Anki (com notes)
       if (data.notes && Array.isArray(data.notes)) {
-        return this.processDatabase(content);
+        return this.processAnkiJsonExport(data);
       }
       
-      // Se for array direto de flashcards
+      // Se for array direto de flashcards (nosso formato)
       if (Array.isArray(data)) {
-        return data;
+        return this.validateAndProcessFlashcards(data);
       }
       
       // Se for um deck com cards
       if (data.cards && Array.isArray(data.cards)) {
-        return data.cards;
+        return this.validateAndProcessFlashcards(data.cards);
       }
       
-      throw new Error('Unrecognized JSON format');
+      // Se for formato Anki Connect JSON
+      if (data.result && Array.isArray(data.result)) {
+        return this.processAnkiConnectExport(data.result);
+      }
+      
+      throw new Error('Formato JSON não reconhecido. Formatos suportados: Anki JSON, AnkiConnect, ou nosso formato padrão.');
     } catch (error) {
       console.error('Error importing JSON:', error);
       throw error;
     }
+  }
+  
+  // Processar exportação JSON do Anki
+  private processAnkiJsonExport(data: any): any[] {
+    const flashcards: any[] = [];
+    
+    if (data.notes && Array.isArray(data.notes)) {
+      data.notes.forEach((note: any) => {
+        const fields = this.parseAnkiFields(note.flds || note.fields || '');
+        const tags = note.tags ? 
+          (Array.isArray(note.tags) ? note.tags : note.tags.split(' ').filter((t: string) => t)) : 
+          [];
+        
+        const flashcard = {
+          id: `imported_${note.id || Date.now()}_${Math.random()}`,
+          type: this.detectCardType(note.modelName || 'Basic', fields.front),
+          front: fields.front,
+          back: fields.back,
+          extra: fields.extra,
+          tags: tags,
+          difficulty: 'medium',
+          created_at: new Date().toISOString()
+        };
+        
+        flashcards.push(flashcard);
+      });
+    }
+    
+    return flashcards;
+  }
+  
+  // Processar exportação do AnkiConnect
+  private processAnkiConnectExport(notes: any[]): any[] {
+    const flashcards: any[] = [];
+    
+    notes.forEach((note: any) => {
+      const fields = note.fields || {};
+      const tags = note.tags || [];
+      
+      const flashcard = {
+        id: `imported_${note.noteId || Date.now()}_${Math.random()}`,
+        type: this.detectCardType(note.modelName || 'Basic', fields.Front || ''),
+        front: this.cleanHtml(fields.Front || fields.front || ''),
+        back: this.cleanHtml(fields.Back || fields.back || ''),
+        extra: this.cleanHtml(fields.Extra || ''),
+        tags: tags,
+        difficulty: 'medium',
+        created_at: new Date().toISOString()
+      };
+      
+      flashcards.push(flashcard);
+    });
+    
+    return flashcards;
+  }
+  
+  // Validar e processar flashcards
+  private validateAndProcessFlashcards(cards: any[]): any[] {
+    return cards.map((card, index) => {
+      // Garantir que cada card tem os campos necessários
+      return {
+        id: card.id || `imported_${Date.now()}_${index}`,
+        type: card.type || 'basic',
+        front: card.front || card.question || '',
+        back: card.back || card.answer || '',
+        text: card.text,
+        options: card.options,
+        correct_answer: card.correct_answer,
+        is_true: card.is_true,
+        extra: card.extra || card.explanation,
+        tags: card.tags || [],
+        difficulty: card.difficulty || 'medium',
+        category: card.category || 'Imported',
+        created_at: card.created_at || new Date().toISOString()
+      };
+    });
   }
 
   // Importar arquivo .apkg real do Anki
@@ -163,14 +245,36 @@ class AnkiApkgImporter {
       
       console.log('Arquivo .apkg descompactado, arquivos encontrados:', Object.keys(zip.files));
       
-      // Procurar pelo arquivo collection.anki21 ou collection.anki2
-      let collectionFile = zip.files['collection.anki21'] || zip.files['collection.anki2'];
+      // Detectar versão do Anki
+      const versionInfo = AnkiVersionHelper.detectAnkiVersion(zip.files);
+      console.log('Versão do Anki detectada:', versionInfo);
+      
+      // Verificar se a versão é suportada
+      if (!versionInfo.isSupported) {
+        console.warn('Versão do Anki não suportada:', versionInfo.message);
+        
+        // Tentar fallback para JSON se disponível
+        if (versionInfo.fallbackFormat === 'json') {
+          const helpMessage = AnkiVersionHelper.getVersionHelpMessage(versionInfo);
+          throw new Error(helpMessage);
+        }
+      }
+      
+      // Usar o arquivo de coleção detectado
+      const collectionFile = zip.files[versionInfo.collectionFile];
       
       if (!collectionFile) {
-        throw new Error('Arquivo de coleção não encontrado no .apkg');
+        throw new Error(`Arquivo de coleção '${versionInfo.collectionFile}' não encontrado no .apkg`);
       }
       
       console.log('Arquivo de coleção encontrado:', collectionFile.name);
+      console.log('Versão suportada:', versionInfo.message);
+      
+      // Verificar disponibilidade do SQL.js antes de continuar
+      const sqlAvailable = await AnkiVersionHelper.checkSqlJsAvailability();
+      if (!sqlAvailable) {
+        console.warn('SQL.js não disponível, tentando fallback local...');
+      }
       
       // Ler o arquivo SQLite
       const dbData = await collectionFile.async('uint8array');
@@ -183,8 +287,14 @@ class AnkiApkgImporter {
       console.log('Abrindo banco de dados Anki...');
       const db = new SQL.Database(dbData);
       
-      // Extrair os dados reais do banco
-      const flashcards = await this.extractRealAnkiData(db);
+      // Validar estrutura do banco
+      if (!AnkiVersionHelper.validateSqliteStructure(db)) {
+        db.close();
+        throw new Error('Estrutura do banco SQLite inválida. O arquivo pode estar corrompido.');
+      }
+      
+      // Extrair os dados reais do banco com informações de versão
+      const flashcards = await this.extractRealAnkiData(db, versionInfo);
       
       // Fechar o banco
       db.close();
@@ -199,7 +309,7 @@ class AnkiApkgImporter {
   }
 
   // Extrair dados reais do banco SQLite do Anki
-  private async extractRealAnkiData(db: Database): Promise<any[]> {
+  private async extractRealAnkiData(db: Database, versionInfo?: AnkiVersionInfo): Promise<any[]> {
     try {
       console.log('Extraindo dados reais do banco Anki...');
       
@@ -237,7 +347,7 @@ class AnkiApkgImporter {
       
       for (const row of notesData.values) {
         try {
-          const flashcard = this.convertAnkiNoteToFlashcard(row, notesData.columns);
+          const flashcard = this.convertAnkiNoteToFlashcard(row, notesData.columns, versionInfo);
           if (flashcard) {
             flashcards.push(flashcard);
           }
@@ -257,7 +367,7 @@ class AnkiApkgImporter {
         const basicResult = db.exec("SELECT * FROM notes LIMIT 5");
         if (basicResult && basicResult.length > 0) {
           console.log('Usando extração básica como fallback...');
-          return this.processSimpleNotes(basicResult[0]);
+          return this.processSimpleNotes(basicResult[0], versionInfo);
         }
       } catch (fallbackError) {
         console.error('Erro no fallback:', fallbackError);
@@ -268,7 +378,7 @@ class AnkiApkgImporter {
   }
   
   // Processar notas de forma simples
-  private processSimpleNotes(notesData: any): any[] {
+  private processSimpleNotes(notesData: any, versionInfo?: AnkiVersionInfo): any[] {
     const flashcards: any[] = [];
     
     console.log('Processando notas simples:', notesData);
@@ -299,24 +409,32 @@ class AnkiApkgImporter {
         // Detectar se é cloze ou básico
         const isClozeDeletion = cleanedFields[0] && cleanedFields[0].includes('{{c1::');
         
+        // Processar campos baseado na versão
+        const processedFields = versionInfo ? 
+          AnkiVersionHelper.processFields({ 
+            Front: cleanedFields[0], 
+            Back: cleanedFields[1] 
+          }, versionInfo.version) : 
+          { front: cleanedFields[0], back: cleanedFields[1] };
+        
         if (isClozeDeletion) {
           flashcards.push({
             type: 'cloze',
             difficulty: 'medium',
             category: tags[0] || 'Anki Import',
-            text: cleanedFields[0],
+            text: processedFields.front || cleanedFields[0],
             tags: tags,
-            source: `Anki - Note ${noteId}`
+            source: `Anki ${versionInfo?.version || 'unknown'} - Note ${noteId}`
           });
         } else {
           flashcards.push({
             type: 'basic',
             difficulty: 'medium', 
             category: tags[0] || 'Anki Import',
-            front: cleanedFields[0] || 'Frente não encontrada',
-            back: cleanedFields[1] || 'Verso não encontrado',
+            front: processedFields.front || cleanedFields[0] || 'Frente não encontrada',
+            back: processedFields.back || cleanedFields[1] || 'Verso não encontrado',
             tags: tags,
-            source: `Anki - Note ${noteId}`
+            source: `Anki ${versionInfo?.version || 'unknown'} - Note ${noteId}`
           });
         }
       } catch (error) {
@@ -329,7 +447,7 @@ class AnkiApkgImporter {
   }
   
   // Converter nota do Anki para formato do sistema
-  private convertAnkiNoteToFlashcard(row: any[], columns: string[]): any | null {
+  private convertAnkiNoteToFlashcard(row: any[], columns: string[], versionInfo?: AnkiVersionInfo): any | null {
     try {
       const noteData = {};
       columns.forEach((col, index) => {
@@ -342,27 +460,50 @@ class AnkiApkgImporter {
       // Limpar HTML dos campos
       const cleanedFields = fields.map(field => this.cleanHtml(field));
       
-      // Detectar tipo de card baseado no conteúdo
-      const isClozeDeletion = cleanedFields[0] && cleanedFields[0].includes('{{c1::');
+      // Processar campos baseado na versão do Anki
+      const fieldData = {};
+      cleanedFields.forEach((field, index) => {
+        if (index === 0) fieldData['Front'] = field;
+        if (index === 1) fieldData['Back'] = field;
+        if (index === 2) fieldData['Extra'] = field;
+      });
       
+      const processedFields = versionInfo ? 
+        AnkiVersionHelper.processFields(fieldData, versionInfo.version) : 
+        { front: cleanedFields[0], back: cleanedFields[1], extra: cleanedFields[2] };
+      
+      // Detectar tipo de card baseado no conteúdo
+      const isClozeDeletion = processedFields.front && processedFields.front.includes('{{c1::');
+      
+      // Detectar tipo baseado em modelo se disponível
+      let cardType = 'basic';
       if (isClozeDeletion) {
+        cardType = 'cloze';
+      } else if (noteData['mid'] && versionInfo) {
+        // Aqui poderíamos usar informações do modelo se tivéssemos acesso
+        // Por enquanto, usar detecção baseada em conteúdo
+        cardType = 'basic';
+      }
+      
+      if (cardType === 'cloze') {
         return {
           type: 'cloze',
           difficulty: 'medium',
           category: tags[0] || 'Anki Import',
-          text: cleanedFields[0],
+          text: processedFields.front,
           tags: tags,
-          source: `Anki - Note ${noteData['id']}`
+          source: `Anki ${versionInfo?.version || 'unknown'} - Note ${noteData['id']}`
         };
       } else {
         return {
           type: 'basic',
           difficulty: 'medium',
           category: tags[0] || 'Anki Import', 
-          front: cleanedFields[0] || 'Campo frontal vazio',
-          back: cleanedFields[1] || 'Campo traseiro vazio',
+          front: processedFields.front || 'Campo frontal vazio',
+          back: processedFields.back || 'Campo traseiro vazio',
+          extra: processedFields.extra,
           tags: tags,
-          source: `Anki - Note ${noteData['id']}`
+          source: `Anki ${versionInfo?.version || 'unknown'} - Note ${noteData['id']}`
         };
       }
     } catch (error) {

@@ -54,7 +54,8 @@ export default function StudentFlashcardManager() {
   const { user } = useAuthStore();
   
   // Navegação entre abas
-  const [activeTab, setActiveTab] = useState<'create' | 'import' | 'manage'>('create');
+  const [activeTab, setActiveTab] = useState<'create' | 'manage'>('create');
+  const [showImportModal, setShowImportModal] = useState(false);
   
   // Estados para criação de flashcards (igual ao admin)
   const [flashcardType, setFlashcardType] = useState<FlashcardType>('basic');
@@ -627,12 +628,18 @@ export default function StudentFlashcardManager() {
           <div className="flex gap-1 mt-6">
             {[
               { key: 'create', label: 'CRIAR CARTÕES', icon: Plus },
-              { key: 'import', label: 'IMPORTAR ANKI', icon: Upload },
+              { key: 'import', label: 'IMPORTAR ANKI', icon: Upload, isModal: true },
               { key: 'manage', label: 'GERENCIAR', icon: Settings }
-            ].map(({ key, label, icon: Icon }) => (
+            ].map(({ key, label, icon: Icon, isModal }) => (
               <button
                 key={key}
-                onClick={() => setActiveTab(key as any)}
+                onClick={() => {
+                  if (key === 'import') {
+                    setShowImportModal(true);
+                  } else {
+                    setActiveTab(key as any);
+                  }
+                }}
                 className={`flex items-center gap-2 px-6 py-3 rounded-t-lg font-police-title text-sm font-bold uppercase tracking-wider transition-all ${
                   activeTab === key
                     ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
@@ -859,27 +866,6 @@ export default function StudentFlashcardManager() {
             </motion.div>
           )}
 
-          {activeTab === 'import' && (
-            <motion.div
-              key="import"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <Card className="border-2 border-gray-200 dark:border-gray-800 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-1 h-full bg-accent-500" />
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3 font-police-title uppercase tracking-wider">
-                    <Package className="w-6 h-6 text-accent-500" />
-                    IMPORTAÇÃO ANKI
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <AnkiImportExport />
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
 
           {activeTab === 'manage' && (
             <motion.div
@@ -908,6 +894,39 @@ export default function StudentFlashcardManager() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Modal de Importação */}
+        {showImportModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
+            >
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-police-title tracking-wider text-gray-900 dark:text-white">
+                    IMPORTAÇÃO ANKI
+                  </h3>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowImportModal(false)}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="p-6 max-h-[60vh] overflow-y-auto">
+                <AnkiImportExport />
+              </div>
+            </motion.div>
+          </div>
+        )}
       </div>
     </div>
   );

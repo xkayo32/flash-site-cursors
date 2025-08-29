@@ -19,7 +19,9 @@ import {
   Award,
   TrendingUp,
   RefreshCw,
-  Zap
+  Zap,
+  Upload,
+  X
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -27,6 +29,7 @@ import { Badge } from '@/components/ui/Badge';
 import { flashcardDeckService } from '@/services/flashcardDeckService';
 import { flashcardService } from '@/services/flashcardService';
 import toast from 'react-hot-toast';
+import AnkiImportExport from '@/components/AnkiImportExport';
 
 export default function DeckView() {
   const { id } = useParams();
@@ -34,6 +37,7 @@ export default function DeckView() {
   const [deck, setDeck] = useState<any>(null);
   const [flashcards, setFlashcards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [stats, setStats] = useState({
     totalCards: 0,
     studied: 0,
@@ -69,7 +73,7 @@ export default function DeckView() {
 
   const loadDeckFlashcards = async () => {
     try {
-      const result = await flashcardService.getFlashcards({ deck_id: id });
+      const result = await flashcardService.getFlashcardsByDeck(id!);
       if (result.success && result.data) {
         setFlashcards(result.data);
         calculateStats(result.data);
@@ -117,6 +121,26 @@ export default function DeckView() {
 
   const handleEditDeck = () => {
     navigate(`/student/decks/${id}/edit`);
+  };
+
+  const handleDeleteDeck = async () => {
+    if (!id) return;
+    
+    // Confirmar exclusão
+    const confirmDelete = window.confirm(
+      `Tem certeza que deseja deletar o arsenal "${deck?.name}"?\n\nEsta ação não pode ser desfeita.`
+    );
+    
+    if (!confirmDelete) return;
+    
+    try {
+      await flashcardDeckService.deleteDeck(id);
+      toast.success('Arsenal deletado com sucesso!');
+      navigate('/my-flashcards'); // Voltar para a lista de decks
+    } catch (error) {
+      console.error('Erro ao deletar deck:', error);
+      toast.error('Erro ao deletar o arsenal');
+    }
   };
 
   if (loading) {
@@ -175,12 +199,28 @@ export default function DeckView() {
                 ESTUDAR ARSENAL
               </Button>
               <Button
+                onClick={() => setShowImportModal(true)}
+                variant="outline"
+                className="gap-2 text-white border-white/20 hover:bg-white/10 font-police-body uppercase tracking-wider"
+              >
+                <Upload className="w-5 h-5" />
+                IMPORTAR
+              </Button>
+              <Button
                 onClick={handleEditDeck}
                 variant="outline"
                 className="gap-2 text-white border-white/20 hover:bg-white/10 font-police-body uppercase tracking-wider"
               >
                 <Edit className="w-5 h-5" />
                 EDITAR
+              </Button>
+              <Button
+                onClick={handleDeleteDeck}
+                variant="outline"
+                className="gap-2 text-red-500 border-red-500/50 hover:bg-red-500/10 hover:text-red-400 font-police-body uppercase tracking-wider"
+              >
+                <Trash2 className="w-5 h-5" />
+                DELETAR
               </Button>
             </div>
           </div>
@@ -412,6 +452,77 @@ export default function DeckView() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Modal de Importação */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
+          >
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-police-title tracking-wider text-gray-900 dark:text-white">
+                  IMPORTAR FLASHCARDS PARA O ARSENAL
+                </h3>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowImportModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              <AnkiImportExport
+                flashcards={flashcards}
+                deckName={deck?.name || "Arsenal"}
+                onImport={async (imported) => {
+                  try {
+                    // Salvar os flashcards importados no backend
+                    const savedCards = [];
+                    for (const card of imported) {
+                      const savedCard = await flashcardService.createFlashcard(card);
+                      savedCards.push(savedCard);
+                    }
+                    
+                    // Adicionar os IDs dos novos flashcards ao deck
+                    if (deck && id) {
+                      const updatedDeck = {
+                        ...deck,
+                        flashcard_ids: [
+                          ...(deck.flashcard_ids || []),
+                          ...savedCards.map(c => c.id)
+                        ]
+                      };
+                      await flashcardDeckService.updateDeck(id, updatedDeck);
+                      setDeck(updatedDeck);
+                    }
+                    
+                    // Recarregar os flashcards do deck
+                    loadDeckFlashcards();
+                    
+                    toast.success(`${imported.length} flashcards importados com sucesso!`);
+                    setShowImportModal(false);
+                  } catch (error) {
+                    console.error('Erro ao importar flashcards:', error);
+                    toast.error('Erro ao importar flashcards');
+                  }
+                }}
+                showExport={false}
+                showImport={true}
+                saveToBackend={false}
+              />
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

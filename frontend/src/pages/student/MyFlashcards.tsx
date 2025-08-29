@@ -136,6 +136,24 @@ export default function MyFlashcards() {
     }
   };
 
+  // Excluir deck
+  const handleDeleteDeck = async (deckId: string, deckName: string) => {
+    const confirmDelete = confirm(
+      `Tem certeza que deseja deletar o arsenal "${deckName}"?\n\nEsta ação não pode ser desfeita.`
+    );
+    
+    if (!confirmDelete) return;
+    
+    try {
+      await flashcardDeckService.deleteDeck(deckId);
+      toast.success('Arsenal deletado com sucesso!');
+      loadMyDecks(); // Recarregar lista de decks
+    } catch (error) {
+      console.error('Erro ao deletar deck:', error);
+      toast.error('Erro ao deletar o arsenal');
+    }
+  };
+
   // Alternar visibilidade
   const handleToggleVisibility = async (flashcard: Flashcard) => {
     try {
@@ -657,6 +675,15 @@ export default function MyFlashcards() {
                             <Edit className="w-4 h-4 mr-1" />
                             Editar
                           </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteDeck(deck.id, deck.name)}
+                            className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Deletar
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -693,8 +720,7 @@ export default function MyFlashcards() {
       {/* Preview Modal */}
       {previewCard && (
         <FlashcardPreviewModal
-          flashcard={previewCard}
-          isOpen={!!previewCard}
+          card={previewCard}
           onClose={() => setPreviewCard(null)}
           onEdit={() => navigate(`/student/flashcards/${previewCard.id}/edit`)}
           onStudy={() => startStudySession([previewCard])}
@@ -702,10 +728,9 @@ export default function MyFlashcards() {
       )}
       
       {/* Study Modal */}
-      {showStudyModal && (
+      {showStudyModal && studyCards.length > 0 && (
         <FlashcardStudyModal
-          flashcards={studyCards}
-          isOpen={showStudyModal}
+          cards={studyCards}
           onClose={() => {
             setShowStudyModal(false);
             setStudyCards([]);

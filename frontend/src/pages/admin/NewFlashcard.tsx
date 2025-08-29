@@ -680,7 +680,7 @@ export default function NewFlashcard() {
         return;
       }
     } else if (card.type === 'cloze') {
-      if (!card.text.trim() && !card.front.trim()) {
+      if (!card.text || !card.text.trim()) {
         toast.error('OPERAÇÃO FALHADA: Configure texto com lacunas táticas', { icon: '🚨' });
         return;
       }
@@ -715,7 +715,7 @@ export default function NewFlashcard() {
       
       // Se for cloze e não estiver editando, processar múltiplos cards
       if (card.type === 'cloze' && !isEditing) {
-        const textToProcess = card.front || card.text;
+        const textToProcess = card.text || '';
         const clozeCards = processClozeCard(textToProcess);
         
         if (clozeCards.length > 1) {
@@ -1233,12 +1233,11 @@ export default function NewFlashcard() {
                       TEXTO COM LACUNAS
                     </label>
                     <ClozeEditor
-                      value={card.front || card.text}
+                      value={card.text || ''}
                       onChange={(value, metadata) => {
                         setCard({ 
                           ...card, 
-                          front: value,
-                          text: value  // Atualizar ambos os campos
+                          text: value  // Atualizar apenas o campo text para cloze
                         });
                       }}
                       placeholder="Digite o texto e selecione palavras para criar lacunas..."
@@ -1247,9 +1246,9 @@ export default function NewFlashcard() {
                       <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">
                         Selecione o texto e clique em C1, C2, etc. para criar lacunas
                       </p>
-                      {(card.front || card.text) && (
+                      {card.text && (
                         <Badge variant="outline" className="font-police-numbers">
-                          {countClozeCards(card.front || card.text)} card(s) serão criados
+                          {countClozeCards(card.text)} card(s) serão criados
                         </Badge>
                       )}
                     </div>

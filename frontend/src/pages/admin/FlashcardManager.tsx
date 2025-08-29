@@ -5,6 +5,7 @@ import { flashcardService, Flashcard, FlashcardStats } from '@/services/flashcar
 import { flashcardDeckService, FlashcardDeck } from '@/services/flashcardDeckService';
 import { categoryService } from '@/services/categoryService';
 import { CategoryFilterModal } from '@/components/CategoryFilterModal';
+import AnkiImportExport from '@/components/AnkiImportExport';
 import {
   Search,
   Filter,
@@ -395,6 +396,19 @@ export default function FlashcardManager() {
               <List className="w-4 h-4" />
             </button>
           </div>
+          
+          <AnkiImportExport
+            flashcards={[]} // Vazio pois são decks, não cards individuais
+            deckName="Importação Anki"
+            onImport={(imported) => {
+              toast.success(`${imported.length} flashcards importados com sucesso!`);
+              loadFlashcards();
+              loadStats();
+            }}
+            showExport={false} // Não mostrar export aqui
+            showImport={true}
+            saveToBackend={true}
+          />
           
           <Button 
             onClick={() => navigate('/admin/flashcards/cards/new')}

@@ -138,9 +138,10 @@ export default function NewStudentDeck() {
     images: [] as string[]  // URLs das imagens anexadas
   });
   const [editingFlashcardIndex, setEditingFlashcardIndex] = useState<number | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
   
   // Estado para importação de flashcards existentes
-  const [activeTab, setActiveTab] = useState<'create' | 'import' | 'anki' | null>(null);
+  const [activeTab, setActiveTab] = useState<'create' | 'import' | null>(null);
   const [availableFlashcards, setAvailableFlashcards] = useState<any[]>([]);
   const [loadingFlashcards, setLoadingFlashcards] = useState(false);
   const [flashcardFilters, setFlashcardFilters] = useState({
@@ -2126,40 +2127,22 @@ export default function NewStudentDeck() {
                   </button>
                   
                   <button
-                    onClick={() => setActiveTab('anki')}
-                    className={`p-6 rounded-xl border-2 transition-all duration-300 ${
-                      activeTab === 'anki'
-                        ? 'border-accent-500 bg-accent-50 dark:bg-accent-900/20 shadow-lg'
-                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/50 hover:border-accent-300 hover:shadow-md'
-                    }`}
+                    onClick={() => setShowImportModal(true)}
+                    className="p-6 rounded-xl border-2 transition-all duration-300 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/50 hover:border-accent-300 hover:shadow-md"
                   >
                     <div className="text-center">
-                      <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-                        activeTab === 'anki' ? 'bg-accent-500' : 'bg-gray-200 dark:bg-gray-700'
-                      }`}>
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
                         <div className="flex items-center justify-center">
-                          <Upload className={`w-4 h-4 ${
-                            activeTab === 'anki' ? 'text-black' : 'text-gray-600 dark:text-gray-400'
-                          }`} />
-                          <Download className={`w-4 h-4 ${
-                            activeTab === 'anki' ? 'text-black' : 'text-gray-600 dark:text-gray-400'
-                          }`} />
+                          <Upload className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                          <Download className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                         </div>
                       </div>
-                      <h3 className={`font-police-subtitle uppercase tracking-wider text-lg font-bold mb-2 ${
-                        activeTab === 'anki' ? 'text-accent-600 dark:text-accent-400' : 'text-gray-700 dark:text-gray-300'
-                      }`}>
+                      <h3 className="font-police-subtitle uppercase tracking-wider text-lg font-bold mb-2 text-gray-700 dark:text-gray-300">
                         IMPORTAR/EXPORTAR ANKI
                       </h3>
                       <p className="text-sm font-police-body text-gray-600 dark:text-gray-400">
                         Importar ou exportar formato Anki (.json, .csv)
                       </p>
-                      {activeTab === 'anki' && (
-                        <div className="mt-3 flex items-center justify-center gap-2 text-accent-600 dark:text-accent-400">
-                          <CheckCircle className="w-4 h-4" />
-                          <span className="text-xs font-police-body uppercase tracking-wider font-semibold">MODO ATIVO</span>
-                        </div>
-                      )}
                       {activeTab === null && (
                         <div className="mt-3 text-xs font-police-body text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                           Clique para selecionar
@@ -2930,31 +2913,6 @@ export default function NewStudentDeck() {
                     </div>
                   )}
                 </div>
-              ) : activeTab === 'anki' ? (
-                /* Aba de Importação/Exportação Anki */
-                <div className="space-y-6">
-                  <AnkiImportExport
-                    flashcards={deckFlashcards}
-                    deckName={formData.title || 'Meu Deck'}
-                    onImport={(importedCards) => {
-                      // Adicionar os flashcards importados ao deck
-                      const newCards = importedCards.map(card => ({
-                        ...card,
-                        id: `imported_${Date.now()}_${Math.random()}`,
-                        created_at: new Date().toISOString()
-                      }));
-                      setDeckFlashcards(prev => [...prev, ...newCards]);
-                      toast.success(`${newCards.length} flashcards importados com sucesso!`);
-                      // Voltar para a aba de criação para ver os cards importados
-                      setActiveTab('create');
-                    }}
-                    onExport={() => {
-                      toast.success('Flashcards exportados com sucesso!');
-                    }}
-                    showImport={true}
-                    showExport={deckFlashcards.length > 0}
-                  />
-                </div>
               ) : null}
               
               {/* Resumo do Arsenal (sempre visível) */}
@@ -3265,6 +3223,58 @@ export default function NewStudentDeck() {
       <AnimatePresence>
         {showQuickCategoryModal && renderQuickCategoryModal()}
       </AnimatePresence>
+
+      {/* Modal de Importação */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
+          >
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-police-title tracking-wider text-gray-900 dark:text-white">
+                  IMPORTAR/EXPORTAR ANKI
+                </h3>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowImportModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              <AnkiImportExport
+                flashcards={deckFlashcards}
+                deckName={formData.title || 'Meu Deck'}
+                onImport={(importedCards) => {
+                  // Adicionar os flashcards importados ao deck
+                  const newCards = importedCards.map(card => ({
+                    ...card,
+                    id: `imported_${Date.now()}_${Math.random()}`,
+                    created_at: new Date().toISOString()
+                  }));
+                  setDeckFlashcards(prev => [...prev, ...newCards]);
+                  toast.success(`${newCards.length} flashcards importados com sucesso!`);
+                  setShowImportModal(false);
+                }}
+                onExport={() => {
+                  toast.success('Flashcards exportados com sucesso!');
+                }}
+                showImport={true}
+                showExport={deckFlashcards.length > 0}
+              />
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

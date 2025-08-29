@@ -38,6 +38,7 @@ import { Badge } from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
 import FlashcardPreviewModal from '@/components/FlashcardPreviewModal';
 import FlashcardStudyModal from '@/components/FlashcardStudyModal';
+import AnkiImportExport from '@/components/AnkiImportExport';
 import { CategoryFilterModal } from '@/components/CategoryFilterModal';
 import { flashcardService, type Flashcard, type FlashcardStats } from '@/services/flashcardService';
 import { categoryService, type Category } from '@/services/categoryService';
@@ -567,6 +568,18 @@ export default function IndividualFlashcards() {
               <List className="w-4 h-4" />
             </button>
           </div>
+          
+          <AnkiImportExport
+            flashcards={flashcards}
+            deckName="Flashcards Individuais"
+            onImport={(imported) => {
+              toast.success(`${imported.length} flashcards importados com sucesso!`);
+              loadFlashcards();
+            }}
+            showExport={true}
+            showImport={true}
+            saveToBackend={true}
+          />
           
           <Button 
             onClick={handleCreateCard} 

@@ -100,6 +100,7 @@ export interface FlashcardFilters {
   type?: FlashcardType;
   status?: FlashcardStatus;
   author_id?: string;
+  deck_id?: string; // For filtering by deck
   due_only?: boolean; // For study sessions
 }
 
@@ -383,6 +384,14 @@ class FlashcardService {
       due_only: true,
       limit,
       page: 1
+    });
+  }
+
+  // Get flashcards by deck ID
+  async getFlashcardsByDeck(deckId: string, filters: Omit<FlashcardFilters, 'deck_id'> = {}): Promise<FlashcardResponse> {
+    return this.getFlashcards({
+      ...filters,
+      deck_id: deckId
     });
   }
 

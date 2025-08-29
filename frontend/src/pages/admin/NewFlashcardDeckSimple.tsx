@@ -19,6 +19,7 @@ import { flashcardDeckService } from '@/services/flashcardDeckService';
 import { flashcardService } from '@/services/flashcardService';
 import ClozeEditor from '@/components/ClozeEditor';
 import ImageUploader from '@/components/ImageUploader';
+import AnkiImportExport from '@/components/AnkiImportExport';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 
@@ -40,6 +41,7 @@ export default function NewFlashcardDeckSimple() {
   const [availableFlashcards, setAvailableFlashcards] = useState<any[]>([]);
   const [availableDecks, setAvailableDecks] = useState<any[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [newFlashcard, setNewFlashcard] = useState({
     type: 'basic',
     front: '',
@@ -327,13 +329,10 @@ export default function NewFlashcardDeckSimple() {
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => {
-                      // TODO: Implementar importação
-                      toast.info('Importação de flashcards em breve');
-                    }}
+                    onClick={() => setShowImportModal(true)}
                     className="text-xs"
                   >
-                    <Package className="w-3 h-3 mr-1" />
+                    <Upload className="w-3 h-3 mr-1" />
                     IMPORTAR
                   </Button>
                 </div>
@@ -841,6 +840,58 @@ export default function NewFlashcardDeckSimple() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Modal de Importação */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
+          >
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-police-title tracking-wider text-gray-900 dark:text-white">
+                  IMPORTAR FLASHCARDS
+                </h3>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowImportModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              <AnkiImportExport
+                flashcards={[]}
+                deckName={deck.name || "Novo Arsenal"}
+                onImport={(imported) => {
+                  // Adicionar os flashcards importados ao deck
+                  const newCards = imported.map((card: any) => ({
+                    ...card,
+                    id: `imported_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                  }));
+                  setDeck(prev => ({
+                    ...prev,
+                    flashcards: [...prev.flashcards, ...newCards]
+                  }));
+                  toast.success(`${imported.length} flashcards importados com sucesso!`);
+                  setShowImportModal(false);
+                }}
+                showExport={false}
+                showImport={true}
+                saveToBackend={false}
+              />
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

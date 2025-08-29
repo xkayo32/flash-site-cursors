@@ -768,7 +768,7 @@ export default function NewStudentFlashcard() {
         return;
       }
     } else if (card.type === 'cloze') {
-      if (!card.text.trim() && !card.front.trim()) {
+      if (!card.text || !card.text.trim()) {
         toast.error('🚨 OPERAÇÃO FALHADA: Configure texto com lacunas táticas');
         return;
       }
@@ -801,7 +801,7 @@ export default function NewStudentFlashcard() {
       const categoryString = selectedCategories.length > 0 ? getSelectedCategoryNames().join(',') : 'GERAL';
       
       if (card.type === 'cloze' && !isEditing) {
-        const textToProcess = card.front || card.text;
+        const textToProcess = card.text || '';
         const clozeCards = processClozeCard(textToProcess);
         
         if (clozeCards.length > 1) {
@@ -1481,12 +1481,11 @@ export default function NewStudentFlashcard() {
                         🎯 TEXTO COM LACUNAS TÁTICAS
                       </label>
                       <ClozeEditor
-                        value={card.front || card.text}
+                        value={card.text || ''}
                         onChange={(value, metadata) => {
                           setCard({ 
                             ...card, 
-                            front: value,
-                            text: value
+                            text: value  // Atualizar apenas o campo text para cloze
                           });
                         }}
                         placeholder="Digite o texto e selecione palavras para criar lacunas..."
@@ -1495,9 +1494,9 @@ export default function NewStudentFlashcard() {
                         <p className="text-xs text-gray-600 dark:text-gray-400 font-police-body">
                           Selecione texto e clique C1, C2, etc. para criar lacunas
                         </p>
-                        {(card.front || card.text) && (
+                        {card.text && (
                           <Badge variant="outline" className="font-police-numbers">
-                            {countClozeCards(card.front || card.text)} cartão(s) serão criados
+                            {countClozeCards(card.text)} cartão(s) serão criados
                           </Badge>
                         )}
                       </div>
