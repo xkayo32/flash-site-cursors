@@ -239,4 +239,13 @@ cd backend-node && npm install && npm run dev
 
 ---
 
-*Última atualização: Janeiro 2025*
+*Última atualização: 29 de Janeiro de 2025*
+
+## 📝 Últimas Atualizações
+
+### 29/01/2025
+- Implementação de modais customizados para exclusão (substituindo window.confirm)
+- Cores diferenciadas: vermelho para decks, amarelo para flashcards
+- Preview do conteúdo antes de deletar
+- Atualização imediata da interface sem recarregar
+- Organização completa da estrutura de arquivos do projeto
