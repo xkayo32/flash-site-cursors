@@ -1,118 +1,96 @@
 #!/bin/bash
 
-echo "🎯 TESTE COMPLETO - SISTEMA DE FLASHCARDS PARA ESTUDANTES"
-echo "========================================================="
+echo "🎯 TESTE - NOVA SEPARAÇÃO DE DADOS ALUNO"
+echo "========================================="
 echo ""
 
-# Verificar se o servidor está rodando
-if ! curl -s http://localhost:5173 > /dev/null; then
-    echo "❌ ERRO: Frontend não está rodando em localhost:5173"
-    echo "Execute: cd frontend && npm run dev"
+echo "📊 IMPLEMENTAÇÃO REALIZADA:"
+echo "✅ Filtro padrão: MEUS cards/decks (apenas do aluno)"
+echo "✅ Toggle adicionado: alternar entre MEUS e TODOS"
+echo "✅ Aluno vê por padrão apenas seus próprios dados"
+echo "✅ Pode alternar para ver todos os públicos do admin"
+echo ""
+
+echo "🔍 VERIFICANDO DADOS NO BANCO:"
+echo ""
+
+# Contar dados
+ADMIN_CARDS=$(docker exec estudos-postgres psql -U estudos_user -d estudos_db -c "SELECT COUNT(*) FROM flashcards WHERE author_id = '1';" | grep -v "count\|--" | grep -v "^$" | head -1)
+ALUNO_CARDS=$(docker exec estudos-postgres psql -U estudos_user -d estudos_db -c "SELECT COUNT(*) FROM flashcards WHERE author_id = '2';" | grep -v "count\|--" | grep -v "^$" | head -1)
+ADMIN_DECKS=$(docker exec estudos-postgres psql -U estudos_user -d estudos_db -c "SELECT COUNT(*) FROM flashcard_decks WHERE user_id = '1';" | grep -v "count\|--" | grep -v "^$" | head -1)
+ALUNO_DECKS=$(docker exec estudos-postgres psql -U estudos_user -d estudos_db -c "SELECT COUNT(*) FROM flashcard_decks WHERE user_id = '2';" | grep -v "count\|--" | grep -v "^$" | head -1)
+
+echo "📋 Flashcards:"
+echo "   Admin (ID=1): $ADMIN_CARDS cards"
+echo "   Aluno (ID=2): $ALUNO_CARDS cards"
+echo ""
+echo "📦 Decks:"
+echo "   Admin (ID=1): $ADMIN_DECKS decks"
+echo "   Aluno (ID=2): $ALUNO_DECKS decks"
+
+echo ""
+echo "🔌 TESTANDO COMPORTAMENTO DAS APIs:"
+echo ""
+
+# Login aluno
+ALUNO_TOKEN=$(curl -s -X POST -H "Content-Type: application/json" -d '{"email":"aluno@example.com","password":"aluno123"}' http://173.208.151.106:8180/api/v1/auth/login | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+
+if [ -z "$ALUNO_TOKEN" ]; then
+    echo "❌ Falha no login"
     exit 1
 fi
 
-echo "✅ Frontend rodando em http://localhost:5173"
-echo ""
+echo "✅ Login realizado com sucesso"
 
-echo "📋 ROTEIRO DE TESTES COMPLETO"
-echo "============================="
+# Teste com filtro author_id (MEUS cards)
 echo ""
+echo "📋 API Flashcards com author_id=2 (filtro MEUS):"
+MY_CARDS=$(curl -s -H "Authorization: Bearer $ALUNO_TOKEN" "http://173.208.151.106:8180/api/v1/flashcards?author_id=2&limit=200" | grep -o '"id":"fc_' | wc -l)
+echo "   Flashcards retornados: $MY_CARDS (esperado: ~$ALUNO_CARDS)"
 
-echo "1️⃣ TESTE DE ACESSO - ESTUDANTE:"
-echo "   a) Faça login como estudante (aluno@example.com / aluno123)"
-echo "   b) Verifique se aparece 'MEU ARSENAL' na sidebar"
-echo "   c) Clique em 'MEU ARSENAL' -> deve abrir /my-flashcards"
+# Teste sem filtro (TODOS os cards)
 echo ""
+echo "📋 API Flashcards SEM filtro (TODOS):"
+ALL_CARDS=$(curl -s -H "Authorization: Bearer $ALUNO_TOKEN" "http://173.208.151.106:8180/api/v1/flashcards?limit=200" | grep -o '"id":"fc_' | wc -l)
+TOTAL_CARDS=$((ADMIN_CARDS + ALUNO_CARDS))
+echo "   Flashcards retornados: $ALL_CARDS (esperado: ~$TOTAL_CARDS)"
 
-echo "2️⃣ TESTE DE CRIAÇÃO DE FLASHCARDS:"
-echo "   a) Na página 'MEU ARSENAL', clique em 'CRIAR FLASHCARD'"
-echo "   b) Teste todos os 7 tipos de flashcard:"
-echo "      - 🔵 BÁSICO (Frente/Verso)"
-echo "      - 🟢 BÁSICO INVERTIDO"
-echo "      - 🟡 LACUNAS (Cloze) - use {{c1::palavra}}"
-echo "      - 🟣 MÚLTIPLA ESCOLHA"
-echo "      - 🔴 VERDADEIRO/FALSO"
-echo "      - 🟦 DIGITE RESPOSTA"
-echo "      - 🟠 OCLUSÃO DE IMAGEM"
-echo "   c) Teste o botão 'CARREGAR EXEMPLO' para cada tipo"
-echo "   d) Configure visibilidade: PRIVADO vs PÚBLICO"
-echo "   e) Salve o flashcard"
+# Teste de decks
 echo ""
+echo "📦 API Decks (todos retornados, filtro no frontend):"
+ALL_DECKS=$(curl -s -H "Authorization: Bearer $ALUNO_TOKEN" "http://173.208.151.106:8180/api/v1/flashcard-decks" | grep -o '"id":"deck_' | wc -l)
+TOTAL_DECKS=$((ADMIN_DECKS + ALUNO_DECKS))
+echo "   Decks retornados: $ALL_DECKS (esperado: ~$TOTAL_DECKS)"
 
-echo "3️⃣ TESTE DE GESTÃO DE FLASHCARDS:"
-echo "   a) Visualize flashcards em modo grid e lista"
-echo "   b) Use filtros: busca, dificuldade, status"
-echo "   c) Teste ações: Preview, Editar, Ocultar/Publicar, Excluir"
-echo "   d) Verifique contadores de stats no topo"
 echo ""
-
-echo "4️⃣ TESTE DE IMPORT/EXPORT ANKI:"
-echo "   a) Clique na aba 'IMPORTAR/EXPORTAR'"
-echo "   b) Teste importação com arquivo: /tmp/test_deck.apkg"
-echo "   c) Teste exportação nos 4 formatos:"
-echo "      - JSON, CSV, ANKI, .APKG"
-echo "   d) Verifique que flashcards importados ficam como PRIVADO"
+echo "🌐 INSTRUÇÕES PARA TESTE MANUAL NO FRONTEND:"
+echo "=============================================="
 echo ""
-
-echo "5️⃣ TESTE DE ESTUDO:"
-echo "   a) Clique em 'ESTUDAR TODOS' na página"
-echo "   b) Teste o modal de estudo interativo"
-echo "   c) Verifique navegação entre cards"
-echo "   d) Teste botões 'Acertei/Errei'"
+echo "1. Acesse: http://173.208.151.106:5273"
+echo "2. Login: aluno@example.com / aluno123"
+echo "3. Navegue para: /student/flashcards"
 echo ""
-
-echo "6️⃣ TESTE DE PERMISSÕES - ADMIN:"
-echo "   a) Faça logout e login como admin"
-echo "   b) Vá para: /admin/flashcards/cards"
-echo "   c) Verifique filtro 'AUTOR' nos filtros"
-echo "   d) Filtre por autor específico"
-echo "   e) Verifique que admin vê author_name nos cards"
-echo "   f) Confirme que admin NÃO pode editar flashcards de estudantes"
+echo "4. VERIFICAR TOGGLE DE FLASHCARDS:"
+echo "   📍 Procure o toggle: [MEUS CARDS] [TODOS]"
+echo "   ✅ Por padrão: 'MEUS CARDS' selecionado (botão amarelo)"
+echo "   ✅ Deve mostrar: ~$ALUNO_CARDS flashcards (apenas do aluno)"
 echo ""
-
-echo "7️⃣ TESTE DE VISIBILIDADE:"
-echo "   a) Como estudante, crie flashcard PRIVADO"
-echo "   b) Como estudante, crie flashcard PÚBLICO"
-echo "   c) Como admin, verifique que vê ambos com filtros"
-echo "   d) Como outro estudante, confirme que só vê os PÚBLICOS"
+echo "5. CLICAR EM 'TODOS':"
+echo "   ✅ Toggle muda para 'TODOS' (botão amarelo)"
+echo "   ✅ Deve mostrar: ~$TOTAL_CARDS flashcards (aluno + admin)"
 echo ""
-
-echo "8️⃣ TESTE DE INTEGRAÇÃO COMPLETA:"
-echo "   a) Importe flashcards do Anki"
-echo "   b) Edite alguns importados"
-echo "   c) Crie um deck com eles"
-echo "   d) Exporte o deck completo"
-echo "   e) Teste sessão de estudo completa"
+echo "6. VERIFICAR DECKS:"
+echo "   📍 Com 'MEUS' selecionado: $ALUNO_DECKS deck(s)"
+echo "   📍 Com 'TODOS' selecionado: $TOTAL_DECKS decks"
 echo ""
-
-echo "🔍 PONTOS DE VERIFICAÇÃO IMPORTANTES:"
-echo "===================================="
+echo "🎯 COMPORTAMENTO ESPERADO:"
+echo "• PADRÃO: Aluno vê apenas seus próprios cards e decks"
+echo "• TOGGLE MEUS: Filtra apenas dados do aluno"
+echo "• TOGGLE TODOS: Mostra dados de todos os usuários"
+echo "• Cards do admin ficam disponíveis para estudo quando em 'TODOS'"
 echo ""
-echo "✓ Estudantes só veem/editam seus próprios flashcards"
-echo "✓ Admin pode filtrar e visualizar flashcards de qualquer usuário"
-echo "✓ Flashcards PRIVADOS só visíveis para o criador"
-echo "✓ Flashcards PÚBLICOS visíveis para todos"
-echo "✓ Import/export funcional nos 4 formatos"
-echo "✓ Sistema de estudo com SRS funcional"
-echo "✓ Todos os 7 tipos de flashcard implementados"
-echo "✓ Interface tática/militar consistente"
-echo ""
-
-echo "🎯 URLs IMPORTANTES PARA TESTE:"
-echo "==============================="
-echo "📚 Página do Estudante: http://localhost:5173/my-flashcards"
-echo "➕ Criar Flashcard: http://localhost:5173/student/flashcards/new"
-echo "🛡️ Admin Flashcards: http://localhost:5173/admin/flashcards/cards"
-echo "🏠 Dashboard Estudante: http://localhost:5173/dashboard"
-echo "🔧 Admin Dashboard: http://localhost:5173/admin/dashboard"
-echo ""
-
-echo "📁 ARQUIVOS DE TESTE CRIADOS:"
-echo "============================="
-echo "• /tmp/test_deck.apkg - Arquivo teste para importação"
-echo "• /tmp/test_flashcards.json - JSON de exemplo"
-echo ""
-
-echo "✨ SISTEMA PRONTO PARA TESTES COMPLETOS!"
-echo ""
-echo "Para iniciar os testes, acesse: http://localhost:5173"
+echo "📝 NOTAS IMPORTANTES:"
+echo "• Filtro aplicado via author_id no backend para flashcards"
+echo "• Filtro aplicado no frontend para decks (user_id)"
+echo "• Interface mostra toggle visível próximo aos filtros"
+echo "• Estado persiste durante a sessão"

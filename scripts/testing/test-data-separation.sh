@@ -1,134 +1,96 @@
 #!/bin/bash
 
-echo "🧪 TESTE DE SEPARAÇÃO DE DADOS - ADMIN vs ESTUDANTE"
-echo "===================================================="
+echo "🔒 TESTE - SEPARAÇÃO DE DADOS ADMIN vs ALUNO"
+echo "============================================"
 echo ""
 
-# Verificar se o servidor está rodando
-if ! curl -s http://localhost:5173 > /dev/null; then
-    echo "❌ ERRO: Frontend não está rodando em localhost:5173"
-    echo "Execute: cd frontend && npm run dev"
-    exit 1
-fi
-
-echo "✅ Frontend rodando em http://localhost:5173"
+echo "📊 SITUAÇÃO ATUAL NO BANCO:"
 echo ""
 
-echo "📋 TESTES DE SEPARAÇÃO DE DADOS"
-echo "================================"
+# Dados dos usuários
+echo "👥 USUÁRIOS:"
+docker exec estudos-postgres psql -U estudos_user -d estudos_db -c "SELECT id, name, email, role FROM users WHERE id IN (1,2);"
+
+echo ""
+echo "📋 FLASHCARDS POR AUTOR:"
+docker exec estudos-postgres psql -U estudos_user -d estudos_db -c "SELECT author_id, COUNT(*) as total, array_agg(DISTINCT category) as categorias FROM flashcards WHERE author_id IN ('1','2') GROUP BY author_id;"
+
+echo ""
+echo "📦 DECKS POR USUÁRIO:"
+docker exec estudos-postgres psql -U estudos_user -d estudos_db -c "SELECT user_id, COUNT(*) as total, array_agg(name) as deck_names FROM flashcard_decks WHERE user_id IN ('1','2') GROUP BY user_id;"
+
+echo ""
+echo "🔌 TESTANDO APIs:"
 echo ""
 
-echo "1️⃣ TESTE DE ISOLAMENTO DE DECKS:"
-echo "   a) Faça login como ADMIN (admin@studypro.com / Admin@123)"
-echo "   b) Vá para: /admin/flashcards (gestão de decks)"
-echo "   c) Anote quantos decks existem do admin"
-echo "   d) DELETE todos os decks do admin"
-echo "   e) Faça logout e login como ESTUDANTE (aluno@example.com / aluno123)"
-echo "   f) Vá para: /my-flashcards (aba 'DECKS')"
-echo "   g) ✓ VERIFICAR: Decks do estudante devem PERMANECER intactos"
-echo "   h) ✓ VERIFICAR: Estudante não deve ver decks que eram do admin"
+# Login admin
+ADMIN_TOKEN=$(curl -s -X POST -H "Content-Type: application/json" -d '{"email":"admin@studypro.com","password":"Admin@123"}' http://173.208.151.106:8180/api/v1/auth/login | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+
+# Login aluno
+ALUNO_TOKEN=$(curl -s -X POST -H "Content-Type: application/json" -d '{"email":"aluno@example.com","password":"aluno123"}' http://173.208.151.106:8180/api/v1/auth/login | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+
+echo "🔑 Tokens obtidos (primeiros 20 caracteres):"
+echo "   Admin: ${ADMIN_TOKEN:0:20}..."
+echo "   Aluno: ${ALUNO_TOKEN:0:20}..."
+
+echo ""
+echo "📋 TESTE 1: Admin vendo flashcards COM filtro created_by_admin=true:"
+ADMIN_CARDS=$(curl -s -H "Authorization: Bearer $ADMIN_TOKEN" "http://173.208.151.106:8180/api/v1/flashcards?created_by_admin=true&limit=200" | grep -o '"id":"fc_' | wc -l)
+echo "   Flashcards visíveis ao admin (só de admins): $ADMIN_CARDS"
+
+echo ""
+echo "📋 TESTE 2: Admin vendo flashcards SEM filtro:"
+ADMIN_ALL=$(curl -s -H "Authorization: Bearer $ADMIN_TOKEN" "http://173.208.151.106:8180/api/v1/flashcards?limit=200" | grep -o '"id":"fc_' | wc -l)
+echo "   Flashcards visíveis ao admin (todos): $ADMIN_ALL"
+
+echo ""
+echo "📋 TESTE 3: Aluno vendo seus próprios flashcards:"
+ALUNO_OWN=$(curl -s -H "Authorization: Bearer $ALUNO_TOKEN" "http://173.208.151.106:8180/api/v1/flashcards?author_id=2&limit=200" | grep -o '"id":"fc_' | wc -l)
+echo "   Flashcards do aluno (próprios): $ALUNO_OWN"
+
+echo ""
+echo "📋 TESTE 4: Aluno vendo TODOS os flashcards:"
+ALUNO_ALL=$(curl -s -H "Authorization: Bearer $ALUNO_TOKEN" "http://173.208.151.106:8180/api/v1/flashcards?limit=200" | grep -o '"id":"fc_' | wc -l)
+echo "   Flashcards visíveis ao aluno (todos): $ALUNO_ALL"
+
+echo ""
+echo "📦 TESTE 5: Decks - Admin vendo todos:"
+ADMIN_DECKS=$(curl -s -H "Authorization: Bearer $ADMIN_TOKEN" "http://173.208.151.106:8180/api/v1/flashcard-decks" | grep -o '"id":"deck_' | wc -l)
+echo "   Decks visíveis ao admin: $ADMIN_DECKS"
+
+echo ""
+echo "📦 TESTE 6: Decks - Aluno vendo todos:"
+ALUNO_DECKS=$(curl -s -H "Authorization: Bearer $ALUNO_TOKEN" "http://173.208.151.106:8180/api/v1/flashcard-decks" | grep -o '"id":"deck_' | wc -l)
+echo "   Decks visíveis ao aluno: $ALUNO_DECKS"
+
+echo ""
+echo "🔍 ANÁLISE DO COMPORTAMENTO ATUAL:"
+echo "===================================="
 echo ""
 
-echo "2️⃣ TESTE DE ISOLAMENTO DE FLASHCARDS:"
-echo "   a) Ainda como ESTUDANTE, vá para aba 'FLASHCARDS'"
-echo "   b) Anote quantos flashcards existem do estudante"
-echo "   c) Faça logout e login como ADMIN"
-echo "   d) Vá para: /admin/flashcards/cards"
-echo "   e) Filtre por 'Autor: Estudante' (ou nome do aluno)"
-echo "   f) DELETE todos os flashcards do admin (não do estudante!)"
-echo "   g) Faça logout e login como ESTUDANTE"
-echo "   h) ✓ VERIFICAR: Flashcards do estudante devem PERMANECER"
-echo "   i) ✓ VERIFICAR: Estudante não vê mais flashcards que eram do admin"
+echo "📋 FLASHCARDS:"
+echo "   • Admin no frontend usa: created_by_admin=true (vê só de admins)"
+echo "   • Aluno no frontend usa: SEM filtro (vê TODOS os flashcards)"
+echo "   • Aluno em MyFlashcards: author_id=user.id (vê só seus próprios)"
 echo ""
 
-echo "3️⃣ TESTE DE CRIAÇÃO - ADMIN:"
-echo "   a) Login como ADMIN"
-echo "   b) Vá para: /admin/flashcards/cards/new"
-echo "   c) Teste criação de cada um dos 7 tipos:"
-echo "      🔵 BÁSICO - Teste exemplo automático"
-echo "      🟢 BÁSICO INVERTIDO - Teste com informação extra"  
-echo "      🟡 LACUNAS (Cloze) - Use: {{c1::Brasil}} é um {{c2::país}}"
-echo "      🟣 MÚLTIPLA ESCOLHA - 4 opções com explicação"
-echo "      🔴 VERDADEIRO/FALSO - Com explicação detalhada"
-echo "      🟦 DIGITE RESPOSTA - Com dica opcional"
-echo "      🟠 OCLUSÃO IMAGEM - Upload imagem + áreas"
-echo "   d) ✓ VERIFICAR: Todos os tipos salvam corretamente"
-echo "   e) ✓ VERIFICAR: Admin pode definir status (público/privado)"
+echo "📦 DECKS:"
+echo "   • API retorna TODOS os decks para ambos"
+echo "   • Frontend filtra no cliente por user_id"
+echo "   • getUserDecks() filtra decks.filter(d => d.user_id === userId)"
 echo ""
 
-echo "4️⃣ TESTE DE CRIAÇÃO - ESTUDANTE:"
-echo "   a) Login como ESTUDANTE"
-echo "   b) Vá para: /student/flashcards/new"
-echo "   c) Teste criação dos mesmos 7 tipos do admin"
-echo "   d) ✓ VERIFICAR: Interface idêntica ao admin"
-echo "   e) ✓ VERIFICAR: Estudante pode definir PRIVADO/PÚBLICO"
-echo "   f) ✓ VERIFICAR: Flashcards criados só aparecem para o estudante"
+echo "⚠️  SITUAÇÃO ATUAL:"
+echo "   ✅ Admin vê apenas flashcards de admins (filtro created_by_admin=true)"
+echo "   ❌ Aluno vê TODOS os flashcards (sem filtro de autor)"
+echo "   ✅ Em 'Meus Flashcards' aluno vê só os próprios (author_id=user.id)"
+echo "   ✅ Decks são filtrados corretamente no frontend"
 echo ""
 
-echo "5️⃣ TESTE FUNCIONALIDADES ANKI COMPLETAS:"
-echo "========================================="
-echo "   CLOZE MÚLTIPLO:"
-echo "   a) Crie flashcard tipo LACUNAS com: 'O {{c1::Brasil}} fica na {{c2::América}} do {{c3::Sul}}'"
-echo "   b) ✓ VERIFICAR: Deve gerar 3 flashcards separados:"
-echo "      - Card 1: 'O [___] fica na América do Sul'"
-echo "      - Card 2: 'O Brasil fica na [___] do Sul'"
-echo "      - Card 3: 'O Brasil fica na América do [___]'"
-echo ""
-echo "   IMPORT/EXPORT:"
-echo "   c) Teste importação de arquivo .apkg"
-echo "   d) Teste exportação em todos os formatos:"
-echo "      - JSON: Estrutura completa dos dados"
-echo "      - CSV: Formato tabular para planilhas"
-echo "      - ANKI: Formato nativo Anki"
-echo "      - .APKG: Pacote completo importável"
-echo ""
-echo "   TIPOS ESPECÍFICOS:"
-echo "   e) ✓ BÁSICO INVERTIDO: Deve criar automaticamente card reverso"
-echo "   f) ✓ MÚLTIPLA ESCOLHA: 4 opções + explicação da resposta"
-echo "   g) ✓ OCLUSÃO IMAGEM: Áreas clicáveis + respostas personalizadas"
-echo "   h) ✓ DIGITE RESPOSTA: Campo input + dica opcional"
-echo ""
-
-echo "6️⃣ TESTE DE PERMISSÕES AVANÇADAS:"
-echo "=================================="
-echo "   a) Login como ADMIN, crie flashcard PRIVADO"
-echo "   b) Login como ESTUDANTE"
-echo "   c) ✓ VERIFICAR: Estudante NÃO vê flashcard privado do admin"
-echo "   d) Admin cria flashcard PÚBLICO"
-echo "   e) ✓ VERIFICAR: Estudante VÊ flashcard público do admin"
-echo "   f) Estudante cria flashcard PRIVADO"
-echo "   g) Login como ADMIN, filtre por autor do estudante"
-echo "   h) ✓ VERIFICAR: Admin VÊ flashcard privado do estudante (supervisão)"
-echo "   i) ✓ VERIFICAR: Admin NÃO pode editar flashcard do estudante"
-echo ""
-
-echo "7️⃣ TESTE DE DECK MANAGEMENT:"
-echo "============================"
-echo "   a) Estudante cria deck pessoal"
-echo "   b) Estudante adiciona seus próprios flashcards ao deck"
-echo "   c) ✓ VERIFICAR: Estudante NÃO pode adicionar flashcards do admin"
-echo "   d) Admin cria deck administrativo"  
-echo "   e) ✓ VERIFICAR: Admin NÃO pode adicionar flashcards do estudante"
-echo "   f) ✓ VERIFICAR: Cada usuário só gerencia seus próprios decks"
-echo ""
-
-echo "🔍 PONTOS CRÍTICOS DE VERIFICAÇÃO:"
-echo "=================================="
-echo "✓ Isolamento total: dados do admin não afetam dados do estudante"
-echo "✓ Criação funcional: ambos os usuários criam todos os tipos"
-echo "✓ Permissões respeitadas: privado/público funcionando"
-echo "✓ Funcionalidades Anki: múltiplas oclusões, import/export"
-echo "✓ Interface consistente: mesmo padrão para admin e estudante"
-echo "✓ Supervisão admin: pode visualizar mas não editar dados do estudante"
-echo ""
-
-echo "🎯 URLs DE TESTE:"
-echo "================="
-echo "🔧 Admin Decks: http://localhost:5173/admin/flashcards"
-echo "🔧 Admin Cards: http://localhost:5173/admin/flashcards/cards"
-echo "🔧 Admin New: http://localhost:5173/admin/flashcards/cards/new"
-echo "📚 Student Cards: http://localhost:5173/my-flashcards"  
-echo "📚 Student New: http://localhost:5173/student/flashcards/new"
-echo ""
-
-echo "✨ EXECUTE ESTE ROTEIRO PASSO A PASSO PARA VALIDAÇÃO COMPLETA!"
+echo "🔧 RECOMENDAÇÃO:"
+echo "   • Aluno deveria ver apenas:"
+echo "     - Seus próprios flashcards"
+echo "     - Flashcards públicos/publicados de admins (para estudo)"
+echo "   • Admin deveria ter opção de ver:"
+echo "     - Todos os flashcards (para moderação)"
+echo "     - Apenas flashcards de admins (padrão atual)"

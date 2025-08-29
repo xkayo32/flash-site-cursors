@@ -23,7 +23,8 @@ import {
   CheckCircle,
   AlertCircle,
   Lock,
-  Globe
+  Globe,
+  AlertTriangle
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -56,6 +57,8 @@ export default function MyFlashcards() {
   const [previewCard, setPreviewCard] = useState<Flashcard | null>(null);
   const [studyCards, setStudyCards] = useState<Flashcard[]>([]);
   const [showStudyModal, setShowStudyModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{deckId: string, deckName: string} | null>(null);
+  const [deleteFlashcardConfirm, setDeleteFlashcardConfirm] = useState<{id: string, front: string} | null>(null);
   
   // Stats
   const [stats, setStats] = useState({
@@ -123,14 +126,36 @@ export default function MyFlashcards() {
     }
   };
 
-  // Excluir flashcard
+  // Excluir flashcard - abrir modal
   const handleDeleteFlashcard = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este flashcard?')) return;
+    const flashcard = flashcards.find(f => f.id === id);
+    if (flashcard) {
+      const frontText = flashcard.front || flashcard.text || flashcard.question || 'este flashcard';
+      setDeleteFlashcardConfirm({ 
+        id, 
+        front: frontText.length > 100 ? frontText.substring(0, 100) + '...' : frontText 
+      });
+    }
+  };
+
+  // Confirmar exclusão de flashcard
+  const confirmDeleteFlashcard = async () => {
+    if (!deleteFlashcardConfirm) return;
     
     try {
-      await flashcardService.deleteFlashcard(id);
+      await flashcardService.deleteFlashcard(deleteFlashcardConfirm.id);
       toast.success('Flashcard excluído com sucesso');
-      loadMyFlashcards();
+      
+      // Atualizar lista imediatamente
+      setFlashcards(prev => prev.filter(f => f.id !== deleteFlashcardConfirm.id));
+      
+      // Atualizar estatísticas
+      setStats(prev => ({
+        ...prev,
+        totalCards: Math.max(0, prev.totalCards - 1)
+      }));
+      
+      setDeleteFlashcardConfirm(null);
     } catch (error) {
       toast.error('Erro ao excluir flashcard');
     }
@@ -138,16 +163,27 @@ export default function MyFlashcards() {
 
   // Excluir deck
   const handleDeleteDeck = async (deckId: string, deckName: string) => {
-    const confirmDelete = confirm(
-      `Tem certeza que deseja deletar o arsenal "${deckName}"?\n\nEsta ação não pode ser desfeita.`
-    );
-    
-    if (!confirmDelete) return;
+    setDeleteConfirm({ deckId, deckName });
+  };
+
+  // Confirmar exclusão
+  const confirmDeleteDeck = async () => {
+    if (!deleteConfirm) return;
     
     try {
-      await flashcardDeckService.deleteDeck(deckId);
+      await flashcardDeckService.deleteDeck(deleteConfirm.deckId);
       toast.success('Arsenal deletado com sucesso!');
-      loadMyDecks(); // Recarregar lista de decks
+      
+      // Atualizar a lista de decks imediatamente
+      setMyDecks(prevDecks => prevDecks.filter(deck => deck.id !== deleteConfirm.deckId));
+      
+      // Atualizar estatísticas
+      setStats(prev => ({
+        ...prev,
+        totalDecks: prev.totalDecks - 1
+      }));
+      
+      setDeleteConfirm(null);
     } catch (error) {
       console.error('Erro ao deletar deck:', error);
       toast.error('Erro ao deletar o arsenal');
@@ -737,6 +773,90 @@ export default function MyFlashcards() {
             loadMyFlashcards(); // Recarregar para atualizar estatísticas
           }}
         />
+      )}
+
+      {/* Delete Deck Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <AlertTriangle className="w-6 h-6 text-red-500 mr-3" />
+              <h3 className="text-lg font-police-title font-bold text-gray-900 dark:text-white">
+                CONFIRMAR EXCLUSÃO DE ARSENAL
+              </h3>
+            </div>
+            
+            <p className="text-gray-600 dark:text-gray-300 mb-6 font-police-body">
+              Tem certeza que deseja deletar o arsenal <strong>"{deleteConfirm.deckName}"</strong>?
+              <br />
+              <span className="text-sm text-red-500 mt-2 block">
+                Esta ação não pode ser desfeita.
+              </span>
+            </p>
+            
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => setDeleteConfirm(null)}
+                className="font-police-body"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={confirmDeleteDeck}
+                className="bg-red-500 hover:bg-red-600 text-white font-police-body"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Deletar Arsenal
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Flashcard Confirmation Modal */}
+      {deleteFlashcardConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <AlertTriangle className="w-6 h-6 text-yellow-500 mr-3" />
+              <h3 className="text-lg font-police-title font-bold text-gray-900 dark:text-white">
+                CONFIRMAR EXCLUSÃO DE FLASHCARD
+              </h3>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg mb-4">
+              <p className="text-sm text-gray-700 dark:text-gray-300 font-police-body break-words">
+                {deleteFlashcardConfirm.front}
+              </p>
+            </div>
+            
+            <p className="text-gray-600 dark:text-gray-300 mb-6 font-police-body">
+              Tem certeza que deseja excluir este flashcard?
+              <br />
+              <span className="text-sm text-yellow-600 dark:text-yellow-500 mt-2 block">
+                Esta ação não pode ser desfeita.
+              </span>
+            </p>
+            
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => setDeleteFlashcardConfirm(null)}
+                className="font-police-body"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={confirmDeleteFlashcard}
+                className="bg-yellow-500 hover:bg-yellow-600 text-black font-police-body"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Deletar Flashcard
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

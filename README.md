@@ -29,6 +29,7 @@ Sistema educacional completo para preparação de concursos públicos, especiali
 - **PostgreSQL** como banco de dados principal
 - **JWT** para autenticação
 - **Docker** para containerização
+- **Sistema híbrido**: PostgreSQL para dados principais, JSON para configurações
 
 ## 📁 Estrutura do Projeto
 
@@ -54,6 +55,27 @@ flash-site-cursors/
 ├── Makefile           # Comandos de desenvolvimento
 └── README.md          # Este arquivo
 ```
+
+## 📊 Status do Projeto
+
+### ✅ Implementado
+- Sistema completo de autenticação JWT
+- CRUD completo de cursos, módulos e lições
+- Sistema de flashcards com 7 tipos diferentes
+- Importação/exportação de decks Anki
+- Simulados e provas anteriores
+- Dashboard administrativo completo
+- Tema militar/tático para área do aluno
+- Sistema de comentários em lições
+- Upload de imagens para cursos
+- Gestão de legislação
+- Sistema de pagamentos (Stripe)
+
+### 🚧 Em Desenvolvimento
+- Sistema de notificações push
+- App mobile React Native
+- Integração com IA para geração de questões
+- Sistema de gamificação completo
 
 ## 🔧 Instalação e Configuração
 
@@ -97,7 +119,10 @@ npm run dev  # API em http://localhost:8180
 ### 👨‍🎓 Para Estudantes
 - **Cursos Estruturados**: Videoaulas, materiais didáticos e exercícios práticos
 - **Sistema de Flashcards Avançado**: 
-  - 7 tipos diferentes de cards (Básico, Cloze, Múltipla Escolha, etc.)
+  - 7 tipos diferentes de cards (Básico, Invertido, Cloze, Múltipla Escolha, V/F, Digite Resposta, Oclusão de Imagem)
+  - Importação de decks do Anki (.apkg) com suporte para versões 2.0 e 2.1
+  - Algoritmo SM-2 de repetição espaçada
+  - Criação e gerenciamento de decks personalizados
   - Algoritmo SuperMemo 2 (SM-2) para repetição espaçada
   - Importação/Exportação de decks
 - **Simulados Adaptativos**: Questões de concursos anteriores com cronômetro

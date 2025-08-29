@@ -21,7 +21,8 @@ import {
   RefreshCw,
   Zap,
   Upload,
-  X
+  X,
+  AlertTriangle
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -38,6 +39,7 @@ export default function DeckView() {
   const [flashcards, setFlashcards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [stats, setStats] = useState({
     totalCards: 0,
     studied: 0,
@@ -123,15 +125,12 @@ export default function DeckView() {
     navigate(`/student/decks/${id}/edit`);
   };
 
-  const handleDeleteDeck = async () => {
+  const handleDeleteDeck = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteDeck = async () => {
     if (!id) return;
-    
-    // Confirmar exclusão
-    const confirmDelete = window.confirm(
-      `Tem certeza que deseja deletar o arsenal "${deck?.name}"?\n\nEsta ação não pode ser desfeita.`
-    );
-    
-    if (!confirmDelete) return;
     
     try {
       await flashcardDeckService.deleteDeck(id);
@@ -140,6 +139,8 @@ export default function DeckView() {
     } catch (error) {
       console.error('Erro ao deletar deck:', error);
       toast.error('Erro ao deletar o arsenal');
+    } finally {
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -521,6 +522,45 @@ export default function DeckView() {
               />
             </div>
           </motion.div>
+        </div>
+      )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <AlertTriangle className="w-6 h-6 text-red-500 mr-3" />
+              <h3 className="text-lg font-police-title font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                CONFIRMAR EXCLUSÃO
+              </h3>
+            </div>
+            
+            <p className="text-gray-600 dark:text-gray-300 mb-6 font-police-body">
+              Tem certeza que deseja deletar o arsenal <strong>"{deck?.name}"</strong>?
+              <br />
+              <span className="text-sm text-red-500 mt-2 block">
+                Esta ação não pode ser desfeita e todos os flashcards serão removidos.
+              </span>
+            </p>
+            
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="font-police-body"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={confirmDeleteDeck}
+                className="bg-red-500 hover:bg-red-600 text-white font-police-body"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Deletar Arsenal
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>
